@@ -32,7 +32,16 @@ import { KIZART_UTAK, piercingCserelt, piercingRacs, piercingCim } from './uj-ol
 const SZANDEKOS = /4\.100|arany|arannyal|karát|antiallergén orvosi fém piercingek|Több tízezer szúrás tapasztalata után csak a legnépszerűbb|3 piercing 2 áráért! - AKCIÓ!|vélemény alapján >>|^Az anyaga alapján tehát választhatsz|^·\s*(nemesfémet|ezüstöt|titániumot)/i;
 // lapon beluli szandekos elteresek: az oszi akcio (/3-piercing-2-araert, a -regi cim ide visz; a tulajdonos kerese, 2026-10-17: a Wix-es -regi oldal szovege 1:1) –
 // a velemenyszam a Google mostani szama, "Már 15 városban" (a lista 15 varos), a varos-csempe maga a foglalo-link (nincs kulon "Időpontfoglalás" gomb), a "higiánia" elirasa javitva
-const SZANDEKOS_LAP = { '/3-piercing-2-araert-regi': /^Kiváló 4,8 \| [\d.]+ vélemény$|^Már 12 városban várunk!$|^Időpontfoglalás$|maximális higiánia\.$/ };
+// az oszi akcio oldala: a 2. kor (a tulajdonos kerese, 2026-10-17: "kicsit szoljon a hidegeknek is") szandekosan atirt sorai is (hos, "Tudtad, hogy",
+// a velemenyek cime, a divat fulpiercing kartyaja), minden mas eredeti sort tovabbra is szamon ker
+const SZANDEKOS_LAP = { '/3-piercing-2-araert-regi': new RegExp([
+  /^Kiváló 4,8 \| [\d.]+ vélemény$|^Már 12 városban várunk!$|^Időpontfoglalás$|maximális higiánia\.$/.source,
+  /^Most megéri 2 vagy 3 piercinget szúratni!$|^1 piercing 10% kedvezménnyel|^3 piercingnél mindössze 14\.900|^Az AKCIÓ 1 személyre érvényes/.source,
+  /^Az alábbi piercing típusok vesznek részt az akcióban|^Vendégeink 81%-a több piercinget szúrat egyszerre mert/.source,
+  /^Tudtad, hogy\.\.\.\?$|^Bizonyos piercing párok erősítik egymás hatását|A migrén és a shenmen piercinget mindenképpen érdemes|^Klimax piercing, slim piercing, allergia piercing/.source,
+  /^Olvasd el a visszajelzéseket!$|^Havonta közel 2\.000 ember/.source,
+  /^Divat fülpiercing$|^Nem közérzetjavító ékszer$|^Saját, vagy hozott fülbevaló|^A fülcimpába kerül$|^Steril és biztonságos behelyezés$|^G23 Titánium ékszerek$|^Ingyenes és korlátlan kontroll$/.source,
+].join('|')) };
 // a kezzel irt (uj-oldalak/sajat/) es az ujraszerkesztett oldalak (blog, Gabi tortenete, Rolunk, oszi akcio) szovege szandekosan mas: a lefedettseget nem merjuk
 const sajatOldal = (ut) => fs.existsSync(path.join(ROOT, 'uj-oldalak/sajat', ut.replace(/^\//, '') + '.html'));
 const ujraszerkesztett = (ut) => sajatOldal(ut) || ut === '/blog' || B_ALAP.get(ut) === ut;

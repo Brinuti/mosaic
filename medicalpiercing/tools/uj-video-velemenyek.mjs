@@ -26,13 +26,19 @@ export const TEMAK = {
   slim: 'Vendégeink a slim piercingről',
   allergia: 'Vendégünk az allergiáról',
   mind: 'Vendégeink videón',
+  tobb: 'Akik 2-3 piercinget szúrattak',
 };
+// a "tobb" sav (az oszi akcio oldala, a tulajdonos kerese, 2026-10-17: "az osszes testimonial videot nezd at, es tedd ide azokat, amelyikben azt mondja el
+// valaki, hogy harom piercinget, vagy kettot szuratott"): a leiratok szerint ezekben mondja a vendeg, hogy 2 vagy 3 piercinget kapott (elol a harom piercinges);
+// a 21-es es a 36-os vendeg masodik piercingje megerosito migren piercing
+const TOBB = ['20', '02', '19', '31', '14', '34', '15', '36', '21'];
+const TOBB_CIMKE = { '21': 'Migrén + megerősítő piercing', '36': 'Migrén + megerősítő piercing' };
 const IK = (n) => `<svg class="ik" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 const felirat = (kat) => `${kat.map((k) => NEV[k]).join(' + ')} piercing`;
 
 for (const [kulcs, cim] of Object.entries(TEMAK)) {
   // a tema videoi: elol azok, amelyeknek ez a fo temaja, utana a tobbi (amelyekben szinten szoba kerul)
-  const lista = kulcs === 'mind' ? [...VIDEOK] : [...VIDEOK.filter(([, k]) => k[0] === kulcs), ...VIDEOK.filter(([, k]) => k[0] !== kulcs && k.includes(kulcs))];
+  const lista = kulcs === 'tobb' ? TOBB.map((nn) => VIDEOK.find(([n]) => n === nn)) : kulcs === 'mind' ? [...VIDEOK] : [...VIDEOK.filter(([, k]) => k[0] === kulcs), ...VIDEOK.filter(([, k]) => k[0] !== kulcs && k.includes(kulcs))];
   // a tervezett boritoju video(k) elol (a tulajdonos ellenorzi a probat)
   const tervElol = (nn) => (fs.existsSync(path.join(ROOT, `assets/img/uj-velemeny-${nn}-terv.webp`)) ? 0 : 1);
   lista.sort((a, b) => tervElol(a[0]) - tervElol(b[0]));
@@ -43,8 +49,9 @@ for (const [kulcs, cim] of Object.entries(TEMAK)) {
   // kepkockaja + a vendeg legerosebb mondata + alul a keresztneve ("Katinak így segített a migrén piercing");
   // a lejatszas-jel es a cimke a kepen van (vsav-terv: az oldal sajatja rejtett)
   const terv = (nn) => fs.existsSync(path.join(ROOT, `assets/img/uj-velemeny-${nn}-terv.webp`));
-  const elemek = lista.map(([nn, kat]) => `      <li class="vsav-elem"><button type="button" class="vsav-gomb${terv(nn) ? ' vsav-terv' : ''}" data-vsav-video="/assets/video/uj-velemeny-${nn}.mp4" aria-label="Videó lejátszása: ${felirat(kat)}"><img src="/assets/img/uj-velemeny-${nn}${terv(nn) ? '-terv' : ''}.webp" alt="" width="540" height="960" loading="lazy" decoding="async"><span class="lejatszo">${IK('play')}</span><span class="vsav-cimke">${felirat(kat)}</span></button></li>`);
-  const alcim = kulcs === 'mind' ? `${lista.length} vendégünk mesél a tapasztalatairól` : lista.length > 1 ? `${lista.length} videós beszámoló` : '';
+  const cimke = (nn, kat) => (kulcs === 'tobb' && TOBB_CIMKE[nn]) || felirat(kat);
+  const elemek = lista.map(([nn, kat]) => `      <li class="vsav-elem"><button type="button" class="vsav-gomb${terv(nn) ? ' vsav-terv' : ''}" data-vsav-video="/assets/video/uj-velemeny-${nn}.mp4" aria-label="Videó lejátszása: ${cimke(nn, kat)}"><img src="/assets/img/uj-velemeny-${nn}${terv(nn) ? '-terv' : ''}.webp" alt="" width="540" height="960" loading="lazy" decoding="async"><span class="lejatszo">${IK('play')}</span><span class="vsav-cimke">${cimke(nn, kat)}</span></button></li>`);
+  const alcim = kulcs === 'tobb' ? `${lista.length} vendégünk mesél arról, hogyan hatott nála több piercing együtt` : kulcs === 'mind' ? `${lista.length} vendégünk mesél a tapasztalatairól` : lista.length > 1 ? `${lista.length} videós beszámoló` : '';
   const html = `  <!-- a vendegek videos beszamoloi (${kulcs}): tools/uj-video-velemenyek.mjs (ne kezzel szerkeszd) -->
   <section class="tarto" id="videok-${kulcs}"><div class="kat-doboz vsav-doboz">
     <h2>${cim}</h2>

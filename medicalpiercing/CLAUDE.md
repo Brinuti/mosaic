@@ -150,6 +150,19 @@ Ezen felül:
   A lapcím a mostani árral (`FRISS_CIM`, `tools/uj-fooldal.mjs`; a Wix üres leírása helyett a lap sajátja). Korábban itt a „Páros kedvezmény” (B-építő) volt, a `-regi` címen pedig
   a PDF 03-as terve szerinti kézzel írt oldal (2026-10-16; a git-előzményben: `uj-oldalak/sajat/3-piercing-2-araert-regi.html`) – a tulajdonos döntésével (2026-10-17) mindkettő
   helyett ez. A páros akció rejtett B-változata (`/b/3-piercing-2-araert`) marad.
+  **2. kör – „szóljon a hidegeknek is”** (a tulajdonos kérése, 2026-10-17): a cím „Megéri kettő vagy három közérzetjavító piercinget szúratni”, alcím: „Nemcsak azért, mert
+  kedvezményesebb árúak, hanem azért is, mert együtt jobban kifejtik egymás hatását.”, alatta előszöveg az akcióról. A hős képe **három valódi fülfotó a Drive-ról** (három különböző
+  vendég, mindegyiken három közérzetjavító piercing, divat-fülbevaló nélkül: `assets/img/uj-akcio-ful-1..3.webp`), CSS-sel lassan váltakozva (`.hos-valto`, 13,5 mp-es kör; az első
+  áll, a csökkentett mozgásnál csak az első) – tiszta videó nem volt (a Drive-os videókon divat-lyukak vagy szilikon műfül). A „Több piercing = Erősebb hatás” doboz (a galéria marad)
+  alatt **három hármas csomag** (`.csomagok`: Migrén + Shenmen + Klimax, Migrén + Shenmen + Máj, Klimax + Shenmen + Slim): hogyan erősítik egymást, kik választják – a ChatGPT-vel
+  (gpt-5.5) a szalon saját piercing-leírásaiból és a vendégvélemények kombinációiból; a kép a fül a csomag három pontjával (`assets/img/uj-csomag-a|b|c.webp`, az oldal pont-ábráiból
+  összerakva, a klimax- és a máj-ábra igazítva; a feliratos ábrák listáján); a gomb „Ezt a hármast kérem” (`data-csomag="3"`, a meglévő előválasztás). A „Tudtad, hogy...?” szakasz
+  ebbe olvadt bele (a két leggyakoribb pár + a záró mondata). A „Legnépszerűbb piercingeink” rácsból a divat fülpiercing kimaradt, a képeken jelölés: mivel szokták párban / hármasban
+  választani (`.kartya-par`). A vélemények címe „Olvasd el, hogyan segített azoknak, akik többet szúrattak”, alcíme „A piercingek erősítik egymást – nézd meg, mit írtak róla
+  viselőink:”; alatta a **2-3 piercinges vendégvideók** sávja (`reszek/video-velemeny-tobb.html`, `TOBB` a `tools/uj-video-velemenyek.mjs`-ben: a leiratok szerint a 20-as három, a
+  többi két piercinget kapott; a 21-es és 36-os második piercingje megerősítő). A csapat lapozó (`.csapat-kar`). A Trustindex-widget még a „SHENMEN – 2026” (Shenmen címkére szűr);
+  a „2-3 Piercing” címkére szűrő widget nincs a fiókban – új widget létrehozásához a tulajdonos külön engedélye kell (a fiókban ne hozz létre semmit e nélkül).
+  A `tools/uj-oldalak-teszt.mjs` `SZANDEKOS_LAP` sora a 2. kör átírt sorait is kivételnek veszi.
 - **A TikTok-landoló** (`/kozerzetjavito-piercing-soft-akcio`, a TikTok-hirdetések céloldala; a tulajdonos kérése, 2026-10-16): a szöveg **1:1 az eredeti landolóról**
   (`/regi/kozerzetjavito-piercing-soft-akcio`), de **sehol nem állhat panasz- vagy orvosi szó** („nem lehet sehol sem, se migrén, se klimax, semmi ilyesmi, nem lehet a
   thumbnail-es videók thumbnail-en se … semmi olyasmi kifejezés, ami orvosi” – a TikTok letiltja): a szövegben, a képeken és feliratukban, a videók borítóin, az alt / title /
