@@ -20,13 +20,14 @@ export const KEPEK = {
 };
 
 // Meta hirdetes-azonosito (ad.id) -> KEPEK kulcs. Fiok: MP2 hirdetesi fiok (303312235362247).
+// 03/04/05 KIKAPCSOLVA (2026-10-17, ChatGPT-javaslat): a kepen volt kollegano lehet; a tulajdonos megerositeseig az eredeti hos marad.
 export const HIRDETESEK = {
   '120254773736230022': 'koll-01', // KOLLÁZS ÚJ 10-17 - 01 Ricsi barna haj v3
   '120254773737480022': 'koll-02', // 02 Sopron férfi v3
-  '120254773738570022': 'koll-03', // 03 Viki szemüveges v3
-  '120254773870230022': 'koll-03', // 03 Viki szemüveges v4
-  '120254773739360022': 'koll-04', // 04 Viki idősebb férfi v3
-  '120254773741100022': 'koll-05', // 05 Brigitta barna haj v3
+  // '120254773738570022': 'koll-03', // 03 Viki szemüveges v3
+  // '120254773870230022': 'koll-03', // 03 Viki szemüveges v4
+  // '120254773739360022': 'koll-04', // 04 Viki idősebb férfi v3
+  // '120254773741100022': 'koll-05', // 05 Brigitta barna haj v3
   '120254773742040022': 'koll-06', // 06 Fekete felsős rövid haj v3
   '120254773743140022': 'koll-07', // 07 Gabi fekete garbós v3
   '120254773870060022': 'koll-07', // 07 Gabi fekete garbós v4
@@ -35,7 +36,7 @@ export const HIRDETESEK = {
 
 // Tartalek a hirdetes neve alapjan (utm_content), ha az ad.id meg nincs a listaban (pl. masodpeldany).
 const NEV_SZABALYOK = [
-  [/KOLL[ÁA]ZS\s+[ÚU]J\s+10-17\s*-\s*0([1-8])\b/i, (m) => 'koll-0' + m[1]],
+  [/KOLL[ÁA]ZS\s+[ÚU]J\s+10-17\s*-\s*0([12678])\b/i, (m) => 'koll-0' + m[1]],
 ];
 
 export function hosValasztas(url) {
