@@ -1603,8 +1603,14 @@ test('S0-62 HeadSpa: a 8 valodi szolgaltatasnev 4 kanonikus kulcsra kepzodik (a 
   assert.notEqual(szolgKanon(HS_NEVEK[0]), szolgKanon(HS_NEVEK[1]), 'Relax != Hair');
   assert.equal(szolgKanon('Valami (kupon) kezelés'), 'valami kupon kezeles', 'csak a VEGI (kupon) jelzes esik le');
   const base = szolgKanon(HS_PAROS);
-  assert.ok(szolgKulcsEgyezik(base, base) && szolgKulcsEgyezik(`${base} kupon`, base), 'a regi kulcs (`<kulcs> kupon`) egyezik a mostani kanonikus kulccsal');
-  assert.ok(!szolgKulcsEgyezik(`${base} kupon`, szolgKanon(HS_NEVEK[0])) && !szolgKulcsEgyezik(null, base) && !szolgKulcsEgyezik(base, null) && !szolgKulcsEgyezik(base, `${base} kupon`), 'masik szolgaltatas / ures / fordított irany nem egyezik');
+  assert.ok(szolgKulcsEgyezik(base, base, 'headspa') && szolgKulcsEgyezik(`${base} kupon`, base, 'headspa'), 'a regi kulcs (`<kulcs> kupon`) egyezik a mostani kanonikus kulccsal (HeadSpa)');
+  assert.ok(!szolgKulcsEgyezik(`${base} kupon`, base, 'pmu') && !szolgKulcsEgyezik(`${base} kupon`, base) && szolgKulcsEgyezik(base, base, 'pmu'), 'a regi alak toleranciaja csak a HeadSpa-ra szol; a pontos egyezes mindenhol');
+  assert.ok(!szolgKulcsEgyezik(`${base} kupon`, szolgKanon(HS_NEVEK[0]), 'headspa') && !szolgKulcsEgyezik(null, base, 'headspa') && !szolgKulcsEgyezik(base, null, 'headspa') && !szolgKulcsEgyezik(null, null, 'headspa') && !szolgKulcsEgyezik(base, `${base} kupon`, 'headspa'), 'masik szolgaltatas / ures / null-null / fordított irany nem egyezik');
+  assert.ok(!szolgKulcsEgyezik(`${base} kupon extra`, base, 'headspa') && !szolgKulcsEgyezik(`${base} extra`, base, 'headspa'), 'csak a pontos `<kulcs> kupon` alak, nem tetszoleges elotag-par');
+  assert.equal(szolgKanon(HS_ELO_KUPON(HS_KUPON_PAROS) + ' (26.900 Ft helyett most 19.900 Ft)'), base, 'a Ft-megjegyzes UTAN is levagjuk a (kupon)-t (sorrend)');
+  assert.equal(szolgKanon('KUPONKÓDDAL - Valami (kupon) (9 900 Ft)'), 'valami', 'Ft-zarojel + (kupon) egyutt');
+  assert.equal(szolgKanon(HS_PAROS + ' (KUPON)'), base, 'nagybetus (KUPON)');
+  assert.equal(szolgKanon(HS_PAROS + '(kupon)'), base, 'szokoz nelkul is');
 });
 
 test('S0-63 HeadSpa csere (reschedule): a kuponos <-> normal PAROS ugyanaz a szolgaltatas (angol idopont-szoveg, "(kupon)" jelzes, regi index-kulcs); masik szolgaltatas (EGYENI) -> HOLD', async () => {
@@ -1643,14 +1649,15 @@ test('S0-63 HeadSpa csere (reschedule): a kuponos <-> normal PAROS ugyanaz a szo
 
 test('S0-64 HeadSpa SZARAZ terv (irasmentes): a valodi PAROS / kuponos nevekkel a terv ures D1-valtozas nelkul adja a HeadSpa esemenyeket (kupon: ernyo es ertek nelkul), 0 platformhivas', async () => {
   const hely = HOSTOK[HS_HOST];
-  const tablak = ['foglalas_egyeztetes', 'foglalas_vendeg', 'foglalas_alias', 'foglalas_reschedule', 'meres_kuldes', 'meres_jelleg'];
+  const osszesTabla = (v) => v.sql("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name").map((r) => r.name); // MINDEN tabla (a meres_kapcsolo, a salonic_nevtabla is)
   const nevtabla = (v) => nevtablaMent(v.db, { helyek: [{ placeId: hely.placeId, nev: 'Mosaic Headspa' }], munkatarsak: [], szolgaltatasok: [{ placeId: hely.placeId, serviceId: '302999', nev: HS_PAROS }, { placeId: hely.placeId, serviceId: '303891', nev: HS_KUPON_PAROS }], arak: [{ placeId: hely.placeId, serviceId: '302999', ar: 53800 }, { placeId: hely.placeId, serviceId: '303891', ar: 53800 }] }, T0);
   const terv = async (mod) => {
     const v = vilag(); await v.kesz; await nevtabla(v);
     const u = ujUuid(); const b = hsLevel(u, mod); await lezar(v, b); v.t.set(SD_ELOTT);
+    const tablak = osszesTabla(v); assert.ok(tablak.includes('meres_kapcsolo') && tablak.includes('salonic_nevtabla') && tablak.length >= 8, 'minden tabla benne van: ' + tablak.join(','));
     const elotte = dump(v, tablak);
     const r = await v.sd({ ...b, szaraz: true });
-    assert.equal(dump(v, tablak), elotte, 'a szaraz terv nem ir a D1-be'); assert.equal(v.net.hivasok.length, 0, 'a szaraz terv nem hiv platformot');
+    assert.equal(dump(v, tablak), elotte, 'a szaraz terv MINDEN tablara irasmentes'); assert.equal(v.net.hivasok.length, 0, 'a szaraz terv nem hiv platformot');
     assert.equal(v.sql('SELECT sd_id FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0].sd_id, null, 'nincs atvetel');
     return r;
   };
@@ -1682,7 +1689,7 @@ test('S0-65 HeadSpa sd kuldes valodi kuponos PAROS-szoveggel: csak ARNYEK-cel (0
     assert.deepEqual(hivasNev(v), ['meta:HeadSpa_FoglalasElso', 'tiktok:HeadSpa_FoglalasElso'], 'kupon: nincs Schedule ernyo');
     assert.ok(v.net.hivasok.filter((h) => h.kulcs === 'meta').every((h) => !('value' in h.body.data[0].custom_data)), 'ertek nelkul');
     for (const id of eloAzonositok) assert.ok(!mind(v).includes(id), 'nincs elo azonosito: ' + id);
-    assert.ok(!/KUPONK|PÁROS|Head Spa|\(kupon\)/.test(mind(v)), 'a szolgaltatas teljes neve nem megy harmadik felnek');
+    assert.ok(!/kuponk|paros|head ?spa kezel|\(kupon\)/i.test(mind(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '')), 'a szolgaltatas neve (teljes, ekezet nelkuli kanonikus kulcs sem) nem megy harmadik felnek');
     assert.ok(mind(v).includes('headspa_foglalaselso'), 'csak a nem-szemelyes platform-kod');
     for (const p of ['google', 'ga4']) assert.ok(cellak(v).filter((c) => c.platform === p).every((c) => c.allapot === 'kihagyva' && cellaOsztaly(c).osztaly === 'jogos_0'), p);
   }

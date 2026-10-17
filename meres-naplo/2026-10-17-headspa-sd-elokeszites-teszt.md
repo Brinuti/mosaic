@@ -10,7 +10,7 @@ Mérést érintő: igen (a `salonic_direct` csere-felismerése; élő küldést 
 
 ## Tesztek
 - `node --test tools/test-salonic-direct.mjs`: 75/75 (volt 71; új: S0-62, S0-63, S0-64, S0-65).
-- Mutációs ellenőrzés: a `(kupon)` levágásának kivétele → S0-62 + S0-63 bukik; a `szolgKulcsEgyezik` helyett szigorú egyenlőség → S0-63 bukik; visszaállítva 74/74.
+- Mutációs ellenőrzés: a `(kupon)` levágásának kivétele → S0-62 + S0-63 bukik; a `szolgKulcsEgyezik` helyett szigorú egyenlőség → S0-62 + S0-63 bukik; a független review további 17 mutációja is elbukik; a review által jelzett átengedett mutációk (null/null, előtag-párosítás, levágás sorrendje, kis-nagybetű, szóköz nélküli alak, a száraz ágban `meres_kapcsolo`-írás, üzletág-szűrés nélküli tolerancia) után a tesztek kiegészültek (S0-62, S0-64, S0-65), és ezek már elbuknak; visszaállítva 75/75.
 - `test-meres` 48/48, `test-qa-nap` 40/40, `test-foglalas-kulcs` 42/42, `test-sd-smoke` 11/11.
 - GOLDEN (S0-13): a motoros kérés-törzsek bájtra azonosak.
 
