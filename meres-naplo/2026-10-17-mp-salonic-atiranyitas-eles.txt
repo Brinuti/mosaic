@@ -1,0 +1,34 @@
+Medical Piercing - Salonic-oldalak atiranyitasa a foglalomotorra: ELES ellenorzes (2026-10-17, 11:59 UTC)
+Elesites: PR #371 merge (94cad53); GTM-KMNT72W6 (Mosaic Headspa GTM-fiok, 'MP - Salonic atiranyitas', 1 Egyeni HTML cimke + Inicializalas trigger, Page Hostname = medicalpiercing.salonic.hu, 2. verzio kozzeteve);
+Salonic (MP fiok) > Online bejelentkezes > Beallitasok > '<head> reszbe illesztheto kod' = GTM-KMNT72W6 szabvanyos betoltokodja (Feri, 13:53). Mas beallitas nem valtozott.
+Futtatas: node medicalpiercing/tools/salonic-atiranyitas-eles-teszt.mjs (valodi GTM, valodi foglalas nelkul; merokeresek eldobva, kiveve a GTM-KMNT72W6 gtm.js-et; Salonic fele csak GET; a sajat /api/ nem-GET helyben valaszolva)
+
+OK   chromium/asztali: /selectLocation -> /idopontfoglalas, fbclid+utm megmarad  https://www.medicalpiercing.hu/idopontfoglalas?fbclid=test&utm_source=test&mp_honnan=salonic
+OK   chromium/asztali: /showServices/ -> motor, placeId/employeeId + fbclid/utm megmarad  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&employeeId=13509&fbclid=test&utm_source=test&mp_honnan=salonic
+OK   chromium/asztali: a motor-oldal betolt (nincs hurok)  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&employeeId=13509&fbclid=test&utm_source=test&mp_honnan=salonic
+OK   chromium/asztali: kikerulo parameter: marad a Salonicon  https://medicalpiercing.salonic.hu/selectLocation?mp_nincs_atiranyitas=1&fbclid=test
+OK   chromium/asztali: /booking/cancelBooking/ (foglalas-kezelo): nem iranyit at  https://medicalpiercing.salonic.hu/
+OK   chromium/asztali: /guestData/ (adatlap) legfelso ablakban: nem iranyit at  https://medicalpiercing.salonic.hu/
+OK   chromium/asztali: www.medicalpiercing.hu/idopontfoglalas: marad (nincs atiranyitas)  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&employeeId=13509&fbclid=test&utm_source=test&mp_honnan=salonic
+OK   chromium/asztali: keretben (/selectLocation) a Salonic marad  https://medicalpiercing.salonic.hu/selectLocation?fbclid=test
+OK   chromium/asztali: keretben (/guestData/) a Salonic marad  https://medicalpiercing.salonic.hu/
+OK   chromium/asztali: a GTM-KMNT72W6 betoltott a Salonicon  gtm.js: 7, atiranyitas.js: 5
+OK   chromium/asztali: Salonic fele csak GET
+  chromium/asztali: eldobott merokeresek: 12; helyben valaszolt /api/ nem-GET: 1
+OK   webkit/iPhone 13: /selectLocation -> /idopontfoglalas, fbclid+utm megmarad  https://www.medicalpiercing.hu/idopontfoglalas?fbclid=test&utm_source=test&mp_honnan=salonic
+OK   webkit/iPhone 13: /showServices/ -> motor, placeId/employeeId + fbclid/utm megmarad  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&employeeId=13509&fbclid=test&utm_source=test&mp_honnan=salonic
+OK   webkit/iPhone 13: a motor-oldal betolt (nincs hurok)  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&employeeId=13509&fbclid=test&utm_source=test&mp_honnan=salonic
+OK   webkit/iPhone 13: kikerulo parameter: marad a Salonicon  https://medicalpiercing.salonic.hu/selectLocation?mp_nincs_atiranyitas=1&fbclid=test
+OK   webkit/iPhone 13: /booking/cancelBooking/ (foglalas-kezelo): nem iranyit at  https://medicalpiercing.salonic.hu/
+OK   webkit/iPhone 13: /guestData/ (adatlap) legfelso ablakban: nem iranyit at  https://medicalpiercing.salonic.hu/
+OK   webkit/iPhone 13: www.medicalpiercing.hu/idopontfoglalas: marad (nincs atiranyitas)  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&employeeId=13509&fbclid=test&utm_source=test&mp_honnan=salonic
+OK   webkit/iPhone 13: keretben (/selectLocation) a Salonic marad  https://medicalpiercing.salonic.hu/selectLocation?fbclid=test
+OK   webkit/iPhone 13: keretben (/guestData/) a Salonic marad  https://medicalpiercing.salonic.hu/
+OK   webkit/iPhone 13: a GTM-KMNT72W6 betoltott a Salonicon  gtm.js: 7, atiranyitas.js: 5
+OK   webkit/iPhone 13: Salonic fele csak GET
+  webkit/iPhone 13: eldobott merokeresek: 12; helyben valaszolt /api/ nem-GET: 1
+
+Minden OK
+
+Megjegyzes: a hibas azonositoju /booking/cancelBooking/ es /guestData/ cimet a Salonic maga a fooldalra (/) iranyitja; ott a hurok-vedelem miatt nem tortent tovabbi atiranyitas.
+Visszaallitas: medicalpiercing/salonic-atiranyitas.json -> {"be": false} + merge, vagy a GTM-cimke szuneteltetese / a head-kod torlese a Salonicban.
