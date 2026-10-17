@@ -86,7 +86,7 @@ ol.lista li{padding-left:24px}
 .kt .kep.kep-egesz{object-fit:contain}
 .kt-sor{padding:10px}
 .kt-sor .ksz{grid-template-columns:minmax(0,38%) minmax(0,1fr)!important;grid-template-areas:"kep szoveg"!important;gap:12px;align-items:center}
-.kt-sor .ksz-kep .kep{aspect-ratio:4/3;object-fit:cover;max-height:none}
+.kt-sor .ksz-kep .kep{aspect-ratio:4/3;object-fit:cover;max-height:none;--mh:100000px}
 .kt-sor .cim{font-size:.98rem}
 .kt-sor p{margin-bottom:4px}
 .ikonos{display:flex;gap:12px;align-items:flex-start}
@@ -107,16 +107,16 @@ ol.lista li{padding-left:24px}
 /* kepek */
 .kep{display:block;max-width:100%;height:auto;border-radius:14px}
 .kep-link{display:block}
-.kep-ikon{width:auto;height:auto;max-width:76px;max-height:76px;border-radius:0;margin:0 auto 6px}
+.kep-ikon{width:var(--kepw,auto);height:auto;max-width:76px;max-height:76px;--mh:76px;border-radius:0;margin:0 auto 6px}
 .kep-egesz{object-fit:contain}
 [data-nagyit]{cursor:zoom-in}
-.ksz-kep .kep:not(.kep-ikon){width:100%;max-height:270px;object-fit:cover}
+.ksz-kep .kep:not(.kep-ikon){width:100%;max-height:270px;--mh:270px;object-fit:cover}
 .ksz-kep .kep.kep-egesz{object-fit:contain}
-.verem>.kep:not(.kep-ikon),.verem>.kep-link{max-width:min(100%,520px);max-height:260px;width:auto;object-fit:contain;margin-inline:auto}
-.verem>.kep-link .kep{max-height:260px;margin-inline:auto;width:auto}
+.verem>.kep:not(.kep-ikon),.verem>.kep-link{max-width:min(100%,520px);max-height:260px;--mh:260px;width:var(--kepw,auto);object-fit:contain;margin-inline:auto}
+.verem>.kep-link .kep{max-height:260px;--mh:260px;margin-inline:auto;width:var(--kepw,auto)}
 .kepsor{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;justify-content:center}
-.kepsor .kep{max-height:96px;width:auto;object-fit:contain}
-.kepsor-2 .kep{max-height:220px}
+.kepsor .kep{max-height:96px;--mh:96px;width:var(--kepw,auto);object-fit:contain}
+.kepsor-2 .kep{max-height:220px;--mh:220px}
 
 /* media: video, terkep, beagyazas */
 .video{display:block;color:var(--navy);text-decoration:none}
@@ -126,7 +126,7 @@ ol.lista li{padding-left:24px}
 .terkepdoboz iframe{display:block;width:100%;height:100%;border:0}
 .beagyaz{height:min(var(--mag,300px),560px);border-radius:14px;overflow:hidden;background:#fff}
 .beagyaz iframe{display:block;width:100%;height:100%;border:0}
-.vid{display:block;width:100%;max-height:420px;border-radius:14px;background:#000}
+.vid{display:block;width:100%;max-height:420px;--mh:420px;border-radius:14px;background:#000}
 
 /* galeria: lapozhato sav, kattintasra nagyit */
 .kar{position:relative}
@@ -179,9 +179,9 @@ ol.lista li{padding-left:24px}
 .cikk-torzs a:not(.gomb){color:var(--slate);text-decoration-color:var(--rose);text-underline-offset:3px}
 .cikk-torzs blockquote{margin:12px 0;padding:8px 16px;border-left:3px solid var(--rose);background:var(--beige-l);border-radius:0 12px 12px 0}
 .cikk-kep{margin:8px 0}
-.cikk-kep img{display:block;width:100%;max-width:100%;height:auto;max-height:640px;margin-inline:auto;object-fit:cover;border-radius:14px}
-.cikk-kep img.kep-egesz{width:auto;object-fit:contain}
-.cikk-kep img.kep-ikon{width:auto;max-height:120px}   /* a cikk kepei a szoveg szelessegeben (2026-10-16) */
+.cikk-kep img{display:block;width:100%;max-width:100%;height:auto;max-height:640px;--mh:640px;margin-inline:auto;object-fit:cover;border-radius:14px}
+.cikk-kep img.kep-egesz{width:var(--kepw,auto);object-fit:contain}
+.cikk-kep img.kep-ikon{width:var(--kepw,auto);max-height:120px;--mh:120px}   /* a cikk kepei a szoveg szelessegeben (2026-10-16) */
 .cikk-torzs .gb{margin:12px 0}
 .cikk-eszkoz{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:18px 0 6px;padding:10px 0;border-block:1px solid var(--line)}
 .kedvel{display:inline-flex;align-items:center;gap:7px;padding:.45em .95em;border-radius:999px;border:1.5px solid var(--rose);background:#fff;color:var(--slate);font:600 .85rem/1.2 var(--font);cursor:pointer}
@@ -250,11 +250,11 @@ ol.lista li{padding-left:24px}
   .ksz.van-cim,.ksz-jobb.van-cim{grid-template-areas:"cim" "kep" "szoveg";grid-template-rows:auto}
   .ksz-rovid,.ksz-rovid.ksz-nagy{grid-template-columns:minmax(0,38%) minmax(0,1fr);grid-template-areas:"kep szoveg";gap:10px;align-items:center}
   .ksz-rovid.ksz-jobb{grid-template-columns:minmax(0,1fr) minmax(0,38%);grid-template-areas:"szoveg kep"}
-  .ksz-rovid .ksz-kep .kep:not(.kep-ikon){max-height:160px}
+  .ksz-rovid .ksz-kep .kep:not(.kep-ikon){max-height:160px;--mh:160px}
   .ksz-rovid .ksz-szoveg p{font-size:.8rem;line-height:1.4}
   .ksz-rovid .ksz-szoveg p.stat{font-size:2.1rem;line-height:1.05}
-  .ksz-kep .kep:not(.kep-ikon){max-height:240px}
-  .ksz-kep .kep.kep-egesz{max-height:300px}
+  .ksz-kep .kep:not(.kep-ikon){max-height:240px;--mh:240px}
+  .ksz-kep .kep.kep-egesz{max-height:300px;--mh:300px}
   .ksz-szoveg .lista-2{columns:1}
   .oszlopok,.oszlopok.o-2,.oszlopok.o-3,.oszlopok.o-4,.oszlopok.o-5,.oszlopok.o-6{--n:1}
   .oszlopok.kartyas{--n:1}
@@ -283,7 +283,7 @@ ol.lista li{padding-left:24px}
   .racs-sor{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .racs-sor .kt-sor{padding:7px}
   .racs-sor .kt-sor .ksz{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"kep" "szoveg"!important;gap:5px}
-  .racs-sor .kt-sor .ksz-kep .kep{height:38px;aspect-ratio:auto;width:100%;object-fit:cover;border-radius:8px}
+  .racs-sor .kt-sor .ksz-kep .kep{height:38px;aspect-ratio:auto var(--ka);width:100%;object-fit:cover;border-radius:8px}
   .racs-sor .kt-sor .ksz-szoveg{text-align:center}
   .racs-sor .kt-sor .cim{font-size:.76rem}
   .racs-sor .kt-sor p{font-size:.68rem;margin-bottom:2px}
@@ -325,4 +325,4 @@ ol.lista li{padding-left:24px}
 @media (max-width:1000px){.blog-racs{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
 @media (max-width:640px){.oldal-blog main .tarto{width:min(1240px,100% - 32px)}.blog-racs{grid-template-columns:minmax(0,1fr)}.blog-lap{min-width:38px;height:38px}}
 /* allo (9:16) videok: keskeny, kozepen, a teljes kep latszik (2026-10-16) */
-.vid.vid-allo{width:auto;max-width:min(100%,300px);max-height:520px;aspect-ratio:9/16;margin-inline:auto;object-fit:cover}
+.vid.vid-allo{width:min(300px,calc(var(--mh,520px)*9/16));max-width:min(100%,300px);max-height:520px;--mh:520px;aspect-ratio:9/16;margin-inline:auto;object-fit:cover}
