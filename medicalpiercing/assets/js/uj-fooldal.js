@@ -75,14 +75,19 @@
     const diak = $$('.dia', galeria);
     const elozo = $('.galeria-elozo'), kovetkezo = $('.galeria-kov'), szamlalo = $('[data-aktualis]');
     const index = () => Math.max(0, Math.min(diak.length - 1, Math.round(galeria.scrollLeft / Math.max(1, galeria.clientWidth))));
+    let elore = false;   // (elotoltes csak a kepernyo kozeleben, gyorsitas 2026-10-17; lasd az uj-oldalak.js galeriait)
     const frissit = () => {
       const i = index();
       szamlalo.textContent = String(i + 1);
       elozo.disabled = i === 0;
       kovetkezo.disabled = i === diak.length - 1;
       // a kovetkezo ket kep (es az elozo) azonnal toltodik, hogy lapozaskor mar kesz legyen
-      [i - 1, i + 1, i + 2].forEach((j) => { const im = diak[j] && $('img', diak[j]); if (im && im.loading === 'lazy') im.loading = 'eager'; });
+      if (elore) [i - 1, i + 1, i + 2].forEach((j) => { const im = diak[j] && $('img', diak[j]); if (im && im.loading === 'lazy') im.loading = 'eager'; });
     };
+    if ('IntersectionObserver' in window) {
+      const figyel = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { figyel.disconnect(); elore = true; frissit(); } }, { rootMargin: '600px 0px' });
+      figyel.observe(galeria);
+    } else elore = true;
     const lapoz = (d) => galeria.scrollTo({ left: (index() + d) * galeria.clientWidth, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     elozo.addEventListener('click', () => lapoz(-1));
     kovetkezo.addEventListener('click', () => lapoz(1));
@@ -213,16 +218,22 @@
     f.focus();
   }));
 
-  // --- 4. Google-velemenyek: a Trustindex-widget (az oldalban a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
-  // A Trustindex-loader a widgetet csak a lap kozeleben, felhasznaloi tevekenyseg utan tolti: a 9 masodperc attol szamit, hogy a doboz kozel er a kepernyohoz
+  // --- 4. Google-velemenyek: a Trustindex-widget (a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
+  // A loader.js-t (data-ti-src) csak akkor tesszuk a lapra, amikor a doboz a kepernyo kozelebe er (gyorsitas, 2026-10-17: a lap betoltesekor a widget
+  // ~0,8 mp-re lefoglalta a telefon processzorat es ~650 KB-ot toltott, a doboz pedig tobbnyire a lap kozepen / aljan van); a 9 masodperc is ettol szamit
   // (a lap aljan levo doboz, pl. a kategoria-oldalakon, nem mutat tartalekot, amig a latogato oda nem gorget).
   // (dobozonkent: egy lapon tobb widget is lehet, pl. a velemenyek oldalan kategoriankent)
   $$('[data-trustindex]').forEach((tiHely) => {
     const tartalek = tiHely.parentElement && $('[data-tartalek]', tiHely.parentElement);
-    if (!tartalek) return;
-    const indit = () => window.setTimeout(() => { if (!$('.ti-widget', tiHely)) tartalek.hidden = false; }, 9000);
+    const indit = () => {
+      if (tiHely.dataset.tiSrc && !$('script', tiHely)) {
+        const s = document.createElement('script'); s.src = tiHely.dataset.tiSrc; s.async = true; s.defer = true;
+        tiHely.append(s);
+      }
+      if (tartalek) window.setTimeout(() => { if (!$('.ti-widget', tiHely)) tartalek.hidden = false; }, 9000);
+    };
     if ('IntersectionObserver' in window) {
-      const figyel = new IntersectionObserver((e) => { if (e[0].isIntersecting) { figyel.disconnect(); indit(); } }, { rootMargin: '600px' });
+      const figyel = new IntersectionObserver((e) => { if (e[0].isIntersecting) { figyel.disconnect(); indit(); } }, { rootMargin: '800px 0px' });
       figyel.observe(tiHely);
     } else indit();
   });

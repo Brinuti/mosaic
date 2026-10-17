@@ -120,7 +120,7 @@ function video(n) {
   const hatter = n.hurok && n.nemakt;
   const poster = n.poster || boritoKep(n.src);
   const allo = n.h && n.w && n.h > n.w * 1.2;   // allo (9:16) video: keskeny, kozepen
-  return `<video class="vid${allo ? ' vid-allo' : ''}" src="${esc(n.src)}"${poster ? ` poster="${esc(poster)}"` : ''}${hatter ? ' autoplay muted loop' : ' controls preload="metadata"'} playsinline></video>`;
+  return `<video class="vid${allo ? ' vid-allo' : ''}" src="${esc(n.src)}"${poster ? ` poster="${esc(poster)}"` : ''}${hatter ? ' autoplay muted loop' : poster ? ' controls preload="none"' : ' controls preload="metadata"'} playsinline></video>`;   // (boritoval a video csak inditaskor tolt: gyorsitas, 2026-10-17)
 }
 
 // a szalon-fotogaleria mindenhol a migren-piercing-b oldal galeriajanak kepeivel (a tulajdonos kerese, 2026-10-16): a "Budapesten a Jaszainal varunk" szekcio 10-nel tobb kepes galeriaja
@@ -489,6 +489,7 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 <link rel="icon" href="/assets/img/f18724_498d7cc07634442b9dd7173669038c57.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/f18724_498d7cc07634442b9dd7173669038c57.png">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/plus-jakarta-sans-latin.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/plus-jakarta-sans-latin-ext.woff2">
 <script src="/assets/js/suti.js"></script>
 <link rel="stylesheet" href="/assets/css/uj-fooldal.css">
 <link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat || sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}${sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-sajat.css">' : ''}
