@@ -1,0 +1,162 @@
+   72 KEP    x720 w720 h603 /assets/img/c2eb0f_6e4e940124d942d4aea355ecc21729fe.jpg  [alt: oxigenterapia-ferfiaknak.jpg]
+  103 H2     x195 w409 45px Férfi Oxigénterápia kopaszodás<br> és foltos szakáll ellen
+  297 SZ     x196 w409 17px NEM KOZMETIKA! <b>Hajgyógyászati kezelés amellyel serkenthető a hajnövekedés és a szakállnövekedés.</b>
+  360 SZ     x195 w409 15px <i>1023 Bécsi út 2 (A Kolosy térnél)</i>
+  394 SZ     x196 w409 15px Csak Arc: 33.900 Ft helyett 29.900 Ft / 2 óra
+  415 SZ     x196 w409 15px Arc + Haj: 43.900 Ft helyett 39.900 Ft / 2 óra
+  436 SZ     x195 w223 15px <b>Májusban 10% kedvezménnyel!</b>
+  470 GOMB   x195 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=oxygen
+  590 SZ     x190 w409 15px <a href="/oxigenterapia-budapest#comp-mciu8zae4"><b>Mutasd az eredményeket! >></b></a>
+  625 SZ     x307 w223 17px <a href="/oxigenterapia-budapest#comp-mnmzyliv"><b>Google 4,9 - 891 értékelésből</b></a>
+  745 KEP    x552 w808 h473 /assets/img/c2eb0f_d540831d3acb4a679ffc30073e58d2e2.jpg  [alt: oxigenterapia-mire-jo.jpg]
+  845 H1     x193 w592 40px center Így működik az Oxigénterápia
+  914 SZ     x193 w583 17px Az oxigénterápia az<b> egyik leghatékonyabb</b>, <b>fájdalommentes non invazív</b> arc- és hajgyógyászati kezelés, amely során <b>100%-os tisztaságú oxigént</b> és organikus hatóanyagokat juttatunk az arc- és fejbőr mélyebb rétegeibe.
+  985 SZ     x193 w583 17px Ez segíti a hajhagymák regenerációját, a fejbőr tisztulását és a hajnövekedés természetes beindulását – <b>az arc esetén pedig tiszító és anti aging hatású.</b>
+ 1057 SZ     x193 w583 17px 🔒 <b>Biztonságos, kockázatmentes és fájdalommentes</b><br> Az OXYGENI organikus, kemikáliamentes termékekeit használjuk, az oxigén bevitel a fejbőrbe pedig szúrás nélkül történik ezért a kezelés fájdalommentes.
+ 1152 SZ     x193 w583 17px ✨ Már <b>5–10 alkalom után látványos javulás tapasztalható</b> a kopaszodásban és szakállsűrűségben – mindezt tű, fájdalom vagy mellékhatás nélkül <b>privát szobában, kényelmes ágyon fekve, relaxáló headspa környezetben.</b>
+ 1370 KEP    x719 w721 h695 /assets/img/c2eb0f_13ed21ceed7248abb1d50fdbe73e7916.jpg  [alt: haj-panaszok-ferfi.jpg]
+ 1432 H1     x119 w484 40px center Milyen <b>HAJ</b> panaszokon hatásos?
+ 1554 SZ     x115 w491 17px <b>A kopaszodás, a hajritkulás és a makacs fejbőrproblémák elsőszámú természetes ellenszere.</b>
+ 1625 SZ     x115 w491 17px Kezelés helyett megoldás: felturbózza a fejbőr saját védekezőképességét, és belülről, sejtszinten építi újjá a hajhagymákat.Kopaszodás és hajhullás esetén az intenzív oxigén- és tápanyagbomba felébreszti a pangó hajszálereket. Erőt ad a legyengült hajhagymáknak, és masszív alapot teremt az új, vastag és strapabíró hajszálak növekedéséhez – még a kritikus zónákban is.
+ 1816 SZ     x115 w491 17px <b>EREDMÉNYEK</b>:
+ 1840 SZ     x115 w491 17px ✅ Megállított hajhullás és kopaszodás, sűrűsödő ő haj.
+ 1863 SZ     x115 w491 17px ✅ Visszahúzódó pikkelysömör és seborrhea, nyugodt fejbőr.
+ 1887 SZ     x115 w491 17px ✅ Akorpától és lerakódásoktól mentes fejbőr.
+ 1911 SZ     x115 w491 17px ✅ Megszűnő zsírosodás, kontrollált és normál faggyútermelés. ✅ Felpörgetett vérkeringés, új, életerős hajszálak megjelenése.
+ 2065 KEP    x0 w719 h640 /assets/img/c2eb0f_6f2a8657d826473ca1cecbd3b008e409.jpg  [alt: arc-panaszok-ferfi.jpg]
+ 2098 H1     x834 w491 40px center Milyen <b>ARC</b> panaszokon hatásos?
+ 2203 SZ     x834 w491 17px <b>problémás, száraz bőr, mitesszerek, foltosan növő szakáll?</b>
+ 2251 SZ     x834 w491 17px A felszíni kenegetés helyett közvetlenül a bőröd saját védekezőképességét építjük újjá. Magas nyomású, tiszta oxigén segítségével 100%-ban organikus vitaminokat és ásványi anyagokat juttatunk a bőröd legmélyebb rétegeibe – egyenesen oda, ahol a tényleges sejtanyagcsere zajlik.
+ 2393 SZ     x834 w491 17px Aknés, gyulladt bőrnél antibakteriális hatásával azonnal lehúzza a pirosságot és megakadályozza a felülfertőződést. Az oxigénnel bejuttatott vitamincsomag feltölti a legyengült szőrtüszőket, megerősíti a meglévő szakállszálakat, és ideális környezetet teremt az új szálak kibújásához, segítve a foltok feltöltését.
+ 2536 SZ     x834 w491 17px <b>EREDMÉNYEK:</b>
+ 2560 SZ     x834 w491 17px ✅ Eltűnő pattanások és mitesszerek.
+ 2584 SZ     x834 w491 17px ✅ Nyugodt, tiszta bőr a szakáll alatt is.
+ 2608 SZ     x834 w491 17px ✅ Masszívabb, feszesebb bőrszerkezet
+ 2631 SZ     x834 w491 17px ✅ Elmúló szárazság és húzódó érzés
+ 2655 SZ     x834 w491 17px ✅ Sűrűsödő szakáll, új szőrnövekedés
+ 2741 H2     x247 w980 40px center Látható Eredmények <b>hajhullás</b> esetén
+ 2840 KEP    x230 w320 h320 /assets/img/c2eb0f_f448cca3029d4a4eade5e0f4190ab59f.png
+ 2840 KEP    x560 w320 h320 /assets/img/c2eb0f_299ee47e02564927bb1da21dab0ece40.png
+ 2840 KEP    x890 w320 h320 /assets/img/c2eb0f_302abaf760db4dc59630889bf4a5754e.png
+ 3170 KEP    x230 w320 h320 /assets/img/c2eb0f_f116f69df5604b168b6e8392e47a8729.jpg
+ 3170 KEP    x560 w320 h320 /assets/img/c2eb0f_72ce5b8957b2456fbbb1b11c51978db3.png
+ 3170 KEP    x890 w320 h320 /assets/img/c2eb0f_08d02e2f11d44b79b428cc4cfd1d5a81.jpg
+ 3510 SZ     x600 w310 17px center Forrás: Oxygeni Hair
+ 3599 H2     x247 w980 40px center Valós Eredmények <b>korpás haj</b> esetén
+ 3698 KEP    x230 w320 h320 /assets/img/c2eb0f_2f952e071fa740dcb4cdeeedb03c5b17.png
+ 3698 KEP    x560 w320 h320 /assets/img/c2eb0f_a78a31ea8b664234ba15b183512c55b2.png
+ 3698 KEP    x890 w320 h320 /assets/img/c2eb0f_3aac8d284d234767aef9662911f6bd0a.jpg
+ 4038 SZ     x600 w310 17px center Forrás: Oxygeni Hair
+ 4127 H2     x247 w980 40px center Átütő Eredmények <b>pikkelysömör</b> esetén
+ 4226 KEP    x230 w320 h320 /assets/img/c2eb0f_8adf07f736c143b4ac85e44537178e74.png
+ 4226 KEP    x560 w320 h320 /assets/img/c2eb0f_dd81b565ba354283bc90d96dcc64580c.png
+ 4226 KEP    x890 w320 h320 /assets/img/c2eb0f_0f5ae9cc30d04e48a0b22c4c641aad33.jpg
+ 4566 SZ     x600 w310 17px center Forrás: Oxygeni Hair
+ 4635 H2     x247 w980 40px center Szembetűnő Eredmények <b>seborrea</b> esetén
+ 4734 KEP    x230 w320 h320 /assets/img/c2eb0f_654e529e14f546e9ad5f9dc4e69441d6.png
+ 4734 KEP    x560 w320 h320 /assets/img/c2eb0f_3d3836f45b7f4e52b4919a973a3d8486.jpeg
+ 4734 KEP    x890 w320 h320 /assets/img/c2eb0f_923f4ea03d5f451cae726893d0a322e4.jpg
+ 5074 SZ     x600 w310 17px center Forrás: Oxygeni Hair
+ 5156 H2     x230 w980 40px center 3 ok amiért <b>minket választanak</b>
+ 5273 KEP    x173 w134 h134 /assets/img/c2eb0f_8bb6fc5bff944ca9811b89220b02181b.jpg  [alt: kezeles-alulra.JPG]
+ 5280 KEP    x661 w134 h134 /assets/img/c2eb0f_984c2348443b404f8be9e1a273aefd59.jpg  [alt: mosaic-headspa-kezeloszoba.jpg]
+ 5280 KEP    x1143 w134 h134 /assets/img/c2eb0f_72b7c501b8f745c99dbc6207299ac2c4.jpg  [alt: oxygeni-oxigenterapia-termekek.jpg]
+ 5421 H2     x78 w325 28px center <b>1. HEADSPA ÁGYBAN TÖRTÉNIK A KEZELÉS</b>
+ 5421 H2     x567 w325 28px center <b>2. NE FIZESS SZÁZEZREKET ELŐRE</b>
+ 5421 H2     x1047 w325 28px center <b>3. OXYGENI TERMÉKEK VERHETETLEN ÁRON</b>
+ 5543 SZ     x78 w325 17px center Privát, csendes headspa szobában történik az oxigénterápiás kezelés, tehát <b>olyan érzés mintha egy 30.000 Ft-os Relaxáló Headspa kezelésen vennél részt</b> miközben az Oxigénterápiával újjászületik a bőröd.
+ 5543 SZ     x568 w318 17px center Nálunk nincs bérlet, de a csomagokban így is megkapod a <b>11.000 Ft - 21.000 Ft-os kedvezményt, alkalmanként fizetve</b>, így nincsen elbukott pénz, vagy soha le nem járt alkalmak. Csak azért fizetsz amit igénybe is vettél.
+ 5543 SZ     x1041 w318 17px center Csomagjainkban a kezelések között szükséges <b>OXYGENI termékeket a bolti árnál 25%-kal kedvezőbben kapod meg</b> utánajárás, várakozás, vagy szállítási költségek nélkül, és megtanítunk ezeket használni is.
+ 5804 GOMB   x618 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=oxygen
+ 5944 H1     x257 w902 40px center <b>4,9 csillagos</b> értékelés közel <b>1.000 véleményből</b>
+ 6040 IFRAME x455 w472 h317 https://www.mosaicheadspa.hu/assets/embed/c2eb0f_614b09d160b9382c4cffcde6d7828dcb.html
+ 6490 H1     x282 w902 40px center Hány alkalom szükséges?
+ 6592 KEP    x230 w600 h400 /assets/img/c2eb0f_719d9e59218349e7baf727fc8f8d1fb0.jpg  [alt: oxigenterpia-hany-alkalom-kell.jpg]
+ 6592 SZ     x863 w310 17px A szükséges alkalmak száma függ a panasz típusától és súlyosságától, de átlagosan <b>5-10 közötti kezelésszámmal </b>már nagyon látványos változást és egészségesebb arc- és fejbőrt lehet elérni.
+ 6735 SZ     x863 w310 17px <b>Az első alkalom egy állapotfelmérés (+ első kezelés)</b>, mikrokamerás vizsgálattal, ahol részletesen felmérjük a fej- és arcbőr állapotát és egyéni kezelési terv készül.
+ 6854 SZ     x863 w310 17px <b>Az állapotfelmérés ára arc+haj esetén 39.900 Ft, a további kezelések pedig 34.900 Ft-ért vehetők igénybe.</b>
+ 6938 GOMB   x906 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=oxygen
+ 7004 SZ     x230 w600 14px center Vendégeinknél 5 - 10 oxigénterápiás kezelés után látványos a változás
+ 7072 KEP    x719 w721 h855 /assets/img/c2eb0f_8bb6fc5bff944ca9811b89220b02181b.jpg  [alt: kezeles-alulra.JPG]
+ 7109 H2     x115 w534 40px center Hogyan zajlik egy 120 perces oxigénterápiás kezelés?
+ 7239 SZ     x115 w534 17px 1. <b>Mikrokamerás és manuális hajdiagnózissal</b> felmérjük a fejbőr és az arcbőr állapotát.
+ 7310 SZ     x115 w534 17px 2. A diagnózis alapján felállítjuk az <b>egyéni kezelési tervet.</b>
+ 7358 SZ     x115 w534 17px 3. Személyreszabott OXYGENI <b>otthoni bőrápoló csomagot</b> állítunk össze.
+ 7429 SZ     x115 w534 17px 4. Egy speciális enzimes méregtelenítővel <b>megtisztítjuk a fejbőrt.</b>
+ 7477 SZ     x115 w534 17px 5. Egy kézi eszközzel mélyen <b>bemasszírozzuk az enzimet.</b>
+ 7525 SZ     x115 w534 17px 6. T<b>onizáljuk a fejbőrt</b> segítve a ph érték helyreállítását.
+ 7572 SZ     x115 w534 17px 7. Egy speciális <b>hidratálóval és gőzbúrával hidratáljuk a fejbőrt.</b>
+ 7620 SZ     x115 w534 17px <b>8. 100% tisztaságú palackozott oxigénnel több mint 70 féle vitamint juttatunk a fejbőrbe.</b>
+ 7691 SZ     x115 w534 17px 9. Végül profi fodrászként <b>megszáírtjuk a hajat</b> és készen vagyunk.
+ 7739 SZ     x115 w534 17px <b>Az alkalmak számát a hajhossz és az határozza meg, hogy hanyadik az adott kezelés.</b>
+ 7927 KEP    x0 w721 h688 /assets/img/c2eb0f_72b7c501b8f745c99dbc6207299ac2c4.jpg  [alt: oxygeni-oxigenterapia-termekek.jpg]
+ 7973 H2     x845 w485 40px center Organikus, vegán OXYGENI termékeket használunk 🌿
+ 8093 SZ     x831 w485 16px center <b>A hajkamerás vizsgálat után ezekből keverjük ki neked azt a speciális pakolást, amire a fejbőrtípusodnak a leginkább szüksége van.</b>
+ 8198 SZ     x831 w485 16px center Az OXYGENI a hajápolás és a hajgyógyászat úttörője. Termékeik:
+ 8253 SZ     x874 w456 16px Prémium minőségűek,
+ 8282 SZ     x874 w456 16px Állatkísérlet mentesek,
+ 8311 SZ     x874 w456 16px Vegyszer mentesek,
+ 8339 SZ     x874 w456 16px Illatanyag mentesek,
+ 8368 SZ     x874 w456 16px Színezék mentesek,
+ 8397 SZ     x874 w456 16px <b>100%-ban természetes összetevőkből állnak,</b>
+ 8426 SZ     x874 w456 16px Minden hatóanyaguk vegán Svájcból és Olaszországból,
+ 8455 SZ     x874 w456 16px Multifunkcionálisak, azaz egyszerre ápolják a hajat és a bőrt.
+ 8665 H2     x230 w980 40px center Oxigénterápia - Árak
+ 8757 SZ     x40 w1360 10px <b>Haj csomag Az első alkalommal a kezelés előtt hajkamerás vizsgálat + kezelési terv összeállítása történik. Mikrokamerás és manuális hajdiagnózis Kezelési terv összeállítása</b> Hajmosás Fejbőr radírozás Mélytisztító hajmosás Enzimes méregtelenítő tisztítás Enzim bemasszírozás Tonizálás Hidratálás + Gőzbúra Oxigén + Vitamin fújás + Kímélő hajszárítás <b>Ár: ̶3̶3̶.̶9̶0̶0̶ ̶F̶t̶ helyett 29.900 Ft</b> 2. alkalomtól:26.000 Ft Időtartam: 120 perc <a href="/foglalo-motor?business=oxygen">FOGLALOK! </a><b>Májusban 10% kedvezménnyel! Arc + Haj csomag Az első alkalommal a kezelés előtt fejbőrkamerás vizsgálat + kezelési terv összeállítása történik. Mikrokamerás és manuális hajdiagnózis Kezelési terv összeállítása</b> Hajmosás Fejbőr + Arc radírozás Mélytisztító hajmosás + Arctonik Fej + Arcmasszázs Enzimes méregtelenítő tisztítás Enzim bemasszírozás Aloe vera Gel, Olaj Tonizálás Hidratálás + Gőzbúra Oxigén + Vitamin fújás + Kímélő hajszárítás <b>Ár: ̶4̶3̶.̶9̶0̶0̶ ̶F̶t̶ helyett 39.900 Ft</b> 2. alkalomtól: 34.900 Ft Időtartam: 120 perc<a href="/foglalo-motor?business=oxygen">FOGLALOK! </a><b>Májusban 10% kedvezménnyel!</b>
+ 9934 KEP    x719 w721 h670 /assets/img/c2eb0f_010260677f4a42c9829b6f2004fb9352.jpg  [alt: oxigenpalack.jpg]
+ 9979 H2     x118 w485 40px center 100% tisztaságú oxigén, palackból, pisztollyal.
+10108 SZ     x118 w485 17px Az oxigénterápiás kezelés hatékonyságát döntően befolyásolja, hogy milyen tisztaságú oxigént és milyen technológiával juttatjuk be a hatóanyagokat a fejbőrbe.
+10204 SZ     x118 w485 17px 🔬 A <b>100% tisztaságú, orvosi palackos oxigén</b> biztosítja a sejtszintű regenerációhoz szükséges maximális oxigénellátottságot.<br> <br> Ez nem összetévesztendő a <b>kis teljesítményű, nem szabályozható „pisztolyokkal”, amelyeket sok helyen Temuról vagy más olcsó forrásból rendelnek</b> – ezek nem képesek megfelelő nyomáson és egyenletesen oxigént juttatni a bőrbe.
+10418 SZ     x118 w485 17px 💉 A professzionális, nagy palackos oxigénkezelés során <b>speciális orvosi eszközzel (pisztollyal) dolgozunk, amely a fejbőr teljes felületén egyenletesen és biztonságosan képes bejuttatni a vitaminokat és hatóanyagokat.</b> Ez a technológia lehetővé teszi a mélyebb felszívódást, jobb sejtszintű oxigénhasznosulást, és ezzel látványosabb eredményeket.
+10604 KEP    x0 w721 h902 /assets/img/c2eb0f_30ab8f193e6a45c3a5d8dcfd8e513b45.jpg  [alt: mosaic-ferfi.jpg]
+10670 H1     x839 w485 40px center Férfi vendégekre (is) specializálódtunk.
+10784 SZ     x839 w485 17px Férfiként talán bizonytalannak érzed magad egy oxigénterápiás hajgyógyászati szalon gondolatától, de a MOSAIC-nál az egészséges fejbőr és a stresszoldás nem nemi kérdés, hanem alapvető járandóság mindenkinek.
+10903 SZ     x839 w485 17px Felejtsd el a feszengést: nálunk nem egy „női birodalomba” csöppensz, hanem egy professzionális, semleges környezetbe, ahol vendégeink egy része férfi.
+10999 SZ     x839 w485 17px Nem kell szakértőnek lenned, vagy tudnod a pontos kifejezéseket; szakembereink minden lépésen végigvezetnek, és érthetően elmagyarázzák, mi fog történni. Bármilyen fejbőrproblémával – legyen az korpásodás vagy ritkuló haj – érkezel, nálunk teljes diszkrécióra és ítélkezésmentes, szakértő segítségre találsz.
+11141 SZ     x839 w485 17px A kezelés alatt nem várunk el kötelező csevegést, sőt, bátorítunk, hogy dőlj hátra, és élvezd a csendet, miközben mi dolgozunk. A
+11213 SZ     x839 w485 17px MOSAIC Headspa az a hely, ahol bátran leteheted a mindennapi stresszt, és csak magadra koncentrálhatsz. Várjuk, hogy megtapasztald a valódi eredményeket!
+11353 GOMB   x938 w287 10px BEJELENTKEZEK!  -> /foglalo-motor?business=oxygen
+11407 SZ     x970 w223 15px <b>Májusban 10% kedvezménnyel!</b>
+11536 H2     x266 w907 40px center Eredeti kezelőágy a kényelmedért!
+11606 SZ     x230 w980 16px center Sok helyen székbe ültetve - a többi vendég között - végzik az oxigénterápiás kezeléseket. Mi a <b>kezelőágy</b> egy <b>privát és csendes kezelőszoba </b>mellett döntöttünk, hogy a MOSAIC oxigénterápiás kezelése ne csak hatékony, de egy nyugtató élmény is legyen egyben.
+11698 KEP    x230 w980 h692 /assets/img/c2eb0f_eeddb15ff8b340c7b1bfd439a91285ac.jpg  [alt: mosaic-headspa-kezelo-agy.jpg]
+12430 H2     x224 w980 40px center Ilyen gyönyörűen felújított szalonban várunk👇
+12532 KEP    x230 w980 h536 /assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg
+12532 KEP    x1210 w980 h536 /assets/img/c2eb0f_aa3b2f8ec7564c87bf16836d7d3b29d6.jpg
+12532 KEP    x2190 w980 h536 /assets/img/c2eb0f_00a2f4bd0e9b4325b2d02e77edb874e9.jpg
+12532 KEP    x17870 w980 h536 /assets/img/c2eb0f_e9339a3f8c784c08839518f96a6cf19d.jpg
+13354 KEP    x80 w808 h362 /assets/img/c2eb0f_3603018cb350411cbd011ea589e25639.jpg  [alt: szepek.jpg]
+13530 H1     x664 w583 40px center SZÉP Kártyát is elfogadunk
+13593 GOMB   x854 w223 10px IDŐPONT FOGLALÁS  -> /foglalo-motor?business=oxygen
+13647 SZ     x854 w223 15px <b>Májusban 10% kedvezménnyel!</b>
+13824 KEP    x0 w1440 h851 /assets/img/nsplsh_38734f5a4a384a46305338.jpg  [alt: Image by Sora Sagano]
+13925 H2     x283 w907 40px center Oxigénterápia - Gyakori Kérdések<br>
+13975 GOMB   x428 w642 17px left 1. KEZELÉS ELŐTT: Mit szabad és mit nem?
+14036 GOMB   x428 w642 17px left 2. KEZELÉS UTÁN: Mit szabad és mit nem?
+14097 GOMB   x428 w642 17px left 3. Mennyi idő után látható az eredmény? Hány alkalomra van szükség?
+14157 GOMB   x428 w642 17px left 4. Mennyibe kerül az Oxigénterápia?
+14218 GOMB   x428 w642 17px left 5. Milyen problémák esetén milyen eredményeket várhatok?
+14279 GOMB   x428 w642 17px left 6. Biztonságos-e a kezelés terhesség vagy szoptatás alatt?
+14340 GOMB   x428 w642 17px left 7. Milyen hatóanyagokat juttattok a fejbőrbe a kezelés során?
+14401 GOMB   x428 w642 17px left 8. Mi a különbség az oxigénterápia és más hajkezelések között?
+14461 GOMB   x428 w642 17px left 9. Kik végzik a kezelést, milyen szakmai háttérrel rendelkeznek?
+14522 GOMB   x428 w642 17px left 10. Kinek NEM ajánlott az oxigénterápiás kezelés?
+14675 KEP    x0 w1440 h846 /assets/img/11062b_c676302884b34e2eacc489eede7cbc47.jpg  [alt: Spa Salts and Stones]
+14755 H2     x258 w932 40px center Itt találsz meg minket
+14870 H3     x258 w247 26px Címünk
+14870 H3     x572 w257 26px Ahol elérsz minket
+14870 H3     x887 w280 26px Nyitvatartásunk
+14917 SZ     x572 w257 16px 06 20 247 4444
+14920 SZ     x258 w247 16px 1023 Budapest Bécsi út 2.<br> A Kolosy és a Zsigmond tér között.
+14921 SZ     x887 w103 16px Hétfő - Péntek
+14921 SZ     x990 w200 16px 8:00 – 20:00
+14946 SZ     x572 w257 16px mosaicheadspa@gmail.com
+14949 SZ     x887 w95 16px Szombat
+14949 SZ     x990 w200 16px 8:00 – 20:00
+14977 SZ     x887 w95 16px Vasárnap
+14977 SZ     x990 w200 16px ZÁRVA
+15006 GOMB   x572 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=oxygen
+15060 SZ     x571 w223 15px <b>Májusban 10% kedvezménnyel!</b>
+15268 SZ     x545 w359 14px center Térkép: a tartalom külső szolgáltatótól (Google) töltődik be.
+15298 GOMB   x642 w164 14px center Térkép megjelenítése
+15345 GOMB   x640 w167 13px center Megnyitás a Google Térképen  -> https://www.google.com/maps/search/?api=1&query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202.
