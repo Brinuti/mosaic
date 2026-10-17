@@ -24,9 +24,9 @@ Egy commit (`git revert`). D1-séma, kapcsoló, Zap nem változik. Következmén
 
 | elem | `main` | a változásban | |
 |---|---|---|---|
-| `netlify/lib/meres/hash.js` | 203394664e | fbcdc8dcfa | **VÁLTOZIK** (`emailNormal` címke-vezérelt tolerancia + hosszkorlát + `kuponNelkul`; az egy-tokenes e-mailekre azonos) |
+| `netlify/lib/meres/hash.js` | 203394664e | 41cfe4f599 | **VÁLTOZIK** (`emailNormal` címke-vezérelt tolerancia + hosszkorlát + `kuponNelkul`; az egy-tokenes e-mailekre azonos) |
 | `netlify/lib/meres/elosztas.js` | d8a4ca020e | b8a48dc737 | **VÁLTOZIK** (1 sor: az `external_id` tartalék ága) |
-| fa `netlify` | 2c837cd121 | e93a966646 | VÁLTOZIK (szándékos, a fenti 2 fájl) |
+| fa `netlify` | 2c837cd121 | a210305d92 | VÁLTOZIK (szándékos, a fenti 2 fájl) |
 | `netlify/lib/meres/salonic-direct.js` | 2ef428132f | 2ef428132f | változatlan |
 | `netlify/lib/foglalo-szamlalo.js` | 04fdf3a3fb | 04fdf3a3fb | változatlan |
 | `assets/js/suti.js` | ea41ffd20d | ea41ffd20d | változatlan |
@@ -39,3 +39,7 @@ Egy commit (`git revert`). D1-séma, kapcsoló, Zap nem változik. Következmén
 | `klon/oxigenterapia-ok.html` `157c141e5d`, `klon/fodrasz-ok.html` `1ef408bcbb`, `klon/m/oxigenterapia-ok.html` `88c2d866ae`, `klon/m/fodrasz-ok.html` `ae96e4ae97`, `wrangler.toml` `01f30c1018` | – | – | változatlan |
 
 **Átfedés a #381-gyel:** az fájllisták nem fedik egymást (a #381 a `salonic-direct.js`-t és a `test-salonic-direct.mjs`-t módosítja, ez a `hash.js`-t, `elosztas.js`-t); a `docs/booking-engine/SALONIC_DIRECT.md` 94. sorát egyik sem érinti ebben a változásban.
+
+## 5. Delta-review (`d7f33ed4`) és a további javítások
+
+Független delta-review a `d7f33ed4`-re: **PASS with notes**, blokkoló nincs (saját differenciális fuzz: 2 000 000 + 1 500 000 bemenet, címke nélkül 0 eltérés; ReDoS lezárva; a 8 mutáns közül 1 élt: a `kuponNelkul` „kupon-szó a címke előtt” szabálya). Kezelve a következő SHA-ban: (1) a doksi hibás állítása a lifecycle-ról javítva — a HeadSpa **a lifecycle éles (`elo`) üzemmódjában van** (`wrangler.toml`), az F1 azt nem érinti; count-szintű D1-olvasás (`mosaic-lifecycle`, személyes adat nélkül): HeadSpa 92 nem-teszt foglalás, 37 kuponos szolgáltatás, 0 hiányzó / hibás alakú e-mail, 0 „kupon” szó az e-mail mezőben; (2) „változatlan” állítás pontosítva (felismert címke / 320 karakter kivételével); (3) a hosszkorlát a vizsgált (címke előtti) részre vonatkozik, a címke utáni szöveg hossza nem számít (+ teszt); (4) új tesztek a `kuponNelkul` „kupon-szó a címke előtt” szabályára; a teszt a modul exportált `KUPON_CIMKE` regexét használja (nincs drift); (5) a fail-closed ára és az első kuponos HeadSpa sd-foglalás utáni élő ellenőrzés (`em` megjelent-e, C2 PASS-e) a dokumentációban.

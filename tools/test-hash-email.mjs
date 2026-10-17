@@ -3,11 +3,11 @@
 // A regi viselkedes (egyetlen e-mail token) valtozatlan; a felismert kuponkod-cimke utani szoveg (a kuponkod) sosem kerul a kimenetbe; cimke nelkul fail-closed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { emailNormal, hashEmail, kuponNelkul, sha256hex } from '../netlify/lib/meres/hash.js';
+import { KUPON_CIMKE, emailNormal, hashEmail, kuponNelkul, sha256hex } from '../netlify/lib/meres/hash.js';
 
 const regi = (e) => { const s = String(e || '').trim().toLowerCase(); return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : null; }; // a F1 elotti emailNormal, szo szerint
 const TISZTA = 'teszt.claude@example.com';
-const CIMKE_RE = /(?:kupon(?:\s*k[oó]d)?|coupon(?:\s*code)?)\s*:/i; // a teszt sajat peldanya: "van-e felismert cimke" (nem a modul belso valtozoja)
+const CIMKE_RE = KUPON_CIMKE; // a modul sajat (exportalt) cimke-regexe: nincs drift a teszt es a kod kozott
 
 function mulberry32(mag) { let a = mag >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
@@ -56,6 +56,9 @@ test('fail-closed: nincs e-mail-szeru token, vagy nincs felismert cimke a tobbto
   // hosszkorlat: 320 karakter
   const hossz = (n) => 'a'.repeat(n - '@b.hu'.length) + '@b.hu';
   assert.equal(emailNormal(hossz(320)), hossz(320)); assert.equal(emailNormal(hossz(321)), null); assert.equal(emailNormal(hossz(5000)), null);
+  // a hosszkorlat a vizsgalt (cimke elotti) reszre vonatkozik: a cimke utani szoveg hossza nem szamit
+  assert.equal(emailNormal(`${TISZTA} Kupon kód: ${'x'.repeat(5000)}`), TISZTA, 'hosszu kod / szemet a cimke utan nem veszejti el az e-mailt');
+  assert.equal(emailNormal(`${hossz(321)} Kupon kód: X`), null, 'a cimke elotti resz tul hosszu');
 });
 
 test('ReDoS-vedelem: az EMAIL_TOKEN masodfoku visszalepeset kivalto hosszu, sok pontos, @-os mezo gyorsan (hosszkorlat) null', () => {
@@ -71,6 +74,9 @@ test('kuponNelkul (az external_id tartalek-aga): a felismert cimketol kezdve sem
   assert.equal(kuponNelkul(`${TISZTA}KUPON KÓD:ABC123`), TISZTA);
   assert.equal(kuponNelkul('x'), 'x'); assert.equal(kuponNelkul(''), ''); assert.equal(kuponNelkul(null), ''); assert.equal(kuponNelkul(' '), ' ', 'cimke / kupon-szo nelkul a regi viselkedes');
   assert.equal(kuponNelkul('Teszt Elek'), 'Teszt Elek');
+  assert.equal(kuponNelkul('Kupon ABC123 Kupon kód: X'), '', 'a kupon-szo a cimke ELOTTI reszben is: a kod szovege nem hash-elodik');
+  assert.equal(kuponNelkul('Coupon ABC Coupon code: X'), '');
+  assert.equal(kuponNelkul('nincs Teszt Elek Kupon kód: X'), 'nincs Teszt Elek', 'a nem-kupon elotag valtozatlan (a regi viselkedes, nem kuponspecifikus)');
 });
 
 test('hashEmail: a kuponos mezo hash-e pontosan a tiszta e-mail SHA-256-ja; a kuponkod nincs a hash bemenetben', async () => {

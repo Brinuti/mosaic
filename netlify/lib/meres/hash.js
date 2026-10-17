@@ -7,20 +7,21 @@ export async function sha256hex(szoveg) {
 const EMAIL_TOKEN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_MAX_HOSSZ = 320; // az RFC szerinti cim <= 254 karakter; a hosszabb mezo nem e-mail (az EMAIL_TOKEN-nek van masodfoku visszalepese hosszu, @-os, sok pontos bemenetre)
 // A kuponos Salonic-levelben az "E-mail cim:" mezo az e-mail cim utan a "Kupon kod: <KOD>" sort is tartalmazza (elvalaszto nelkul is osszeerhet: "...@pelda.huKupon kod: ABC123"). DECISION #192 / F1. Felismert cimkek: "Kupon kod:", "Kuponkod:", "Kupon:", "Coupon code:", "Coupon:" (kis/nagybetu, ekezet nelkul is; a kettospont kotelezo).
-const KUPON_CIMKE = /(?:kupon(?:\s*k[oó]d)?|coupon(?:\s*code)?)\s*:/i;
+export const KUPON_CIMKE = /(?:kupon(?:\s*k[oó]d)?|coupon(?:\s*code)?)\s*:/i;
 const CSAK_EMAIL_CIMKE = /^e-?mail(?:\s*c[ií]m)?\s*:?$/i;
 /**
  * E-mail normalizalas (kisbetus, trim-elt cim). Ha a mezo pontosan egy e-mail token: valtozatlan (a regi viselkedes). DECISION #192 / F1: ha a mezoben FELISMERT kuponkod-cimke is van, a cimke ELOTTI reszbol az elso e-mail-szeru token
- * (a cimke osszeerve is vag); a cimke utani szoveg (a kuponkod) sosem kerul a kimenetbe. Cimke nelkul tovabbra is szigoru (fail-closed): tobbtokenes szoveg -> null. A cimkevel kezdodo mezo -> null. 320 karakternel hosszabb mezo -> null.
+ * (a cimke osszeerve is vag); a cimke utani szoveg (a kuponkod) sosem kerul a kimenetbe. Cimke nelkul tovabbra is szigoru (fail-closed): tobbtokenes szoveg -> null. A cimkevel kezdodo mezo -> null.
+ * Hosszkorlat: a vizsgalt resz (a cimke elotti resz, illetve cimke nelkul a teljes mezo) legfeljebb 320 karakter; a cimke UTANI szoveg hossza nem szamit.
  */
 export const emailNormal = (e) => {
   const teljes = String(e || '').trim().toLowerCase();
-  if (teljes.length > EMAIL_MAX_HOSSZ) return null;
   const vag = teljes.search(KUPON_CIMKE);
   const s = vag > 0 ? teljes.slice(0, vag).trim() : teljes;
+  if (s.length > EMAIL_MAX_HOSSZ) return null;
   if (EMAIL_TOKEN.test(s)) return s;
   if (vag > 0) { const t = s.split(/\s+/).find((x) => EMAIL_TOKEN.test(x)); if (t) return t; }
-  return EMAIL_TOKEN.test(teljes) ? teljes : null; // visszafele kompatibilis: a regi szigoru ellenorzes (pl. "x.kuponkod:y@b.hu" egyetlen token)
+  return teljes.length <= EMAIL_MAX_HOSSZ && EMAIL_TOKEN.test(teljes) ? teljes : null; // visszafele kompatibilis: a regi szigoru ellenorzes (pl. "x.kuponkod:y@b.hu" egyetlen token)
 };
 /**
  * Az external_id tartalek-agahoz (amikor nincs ervenyes e-mail es nincs `g`): a mezo kuponkod-cimketol kezdve semmi; ha a kupon / coupon szo cimke nelkul szerepel a szovegben, az egesz ures
