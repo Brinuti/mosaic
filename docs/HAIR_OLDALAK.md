@@ -78,6 +78,24 @@ Az oldalak **generáltak** – kézzel ne szerkeszd őket (a teszt ellenőrzi, h
 
 A mostani Wixes oldalakon szerepel, **ide nem vettem át** (a fodrász-oldalak H1-e kivételével, lásd fent; a tulajdonos döntheti el, hogy visszakerüljenek-e): Betti „18 év tapasztalat”, „több ezer festés”, „vendégeim 98%-a visszajár”; Noel „3 év”, „95%”; Evelin „4 év”, „90%”; a központi oldal „31 tapasztalati év”, „5,0 – Kiváló”, Noel „5,0 – 1.145 vélemény”; a lejárt „Szeptemberi akció”.
 
+## Evelin-oldal ÚJ, hirdetési változata (`/noi-hajfestes-evelin-uj`, 2026-10-18, Google Ads FOD-3)
+
+A Google Ads brief (4. szakasz) szerinti Evelin-landing, **a meglévő `/noi-hajfestes-budapest` MELLETT**, nincs élesben: `noindex, nofollow`, önmagára mutató canonical / og:url, nincs rá link sehonnan, nincs a sitemapben, a meglévő 4 fodrász-oldal bit-azonos
+(`node tools/hair-oldalak.mjs --ellenoriz`). A `/noi-hajfestes-budapest-uj` cím foglalt (a `netlify/lib/utvonal.js` 301-gyel a meglévő oldalra irányít), ezért a cím `noi-hajfestes-evelin-uj`.
+
+| Mit | Hol |
+|---|---|
+| oldal (GENERÁLT, kézzel ne szerkeszd) | `foglalas/noi-hajfestes-evelin-uj.html`; generátor: `node tools/hair-oldalak-evelin-uj.mjs` (`--ellenoriz`: csak összevet) |
+| szekciók | `tools/hair-oldalak/sablon-evelin-uj.mjs` (a `sablon.mjs` kiexportált darabjaival: `sablonReszek`; a meglévő generátor kimenete nem változott) |
+| kiegészítő stílus (a `hair-landing.css` után; `main.hl.hl-evelin-uj` alá zárva) | `assets/css/hair-evelin-uj.css` |
+| teszt | `tools/hair-teszt/evelin-uj.test.mjs` (25 teszt: statikus + böngészős) |
+
+- **Árak:** kizárólag Evelin Salonic-szolgáltatásai a pillanatképből (`salonic-hair.json`); a teszt minden „NN NNN Ft” értéket a pillanatképhez köt. Hero: Hajfestés / őszfedés 32 950 Ft-tól, Tőfestés 23 950 Ft-tól; a **balayage „-tól” ára 42 950 Ft** (a 39 950 Ft a teljes melír / szőkítés rövid hajra) – a brief „Balayage/ombre/melír 39 950 Ft-tól” sora ezért két külön sor.
+- **Árban benne van:** a hajfesték és a szárítás; a vágás ott, ahol a Salonic-szolgáltatás neve jelzi (balayage, melír, szőkítés, tőfestés + vágás). A brief „festék, vágás és szárítás az árban” mondata nem minden szolgáltatásra igaz (Salonic: „Tőfestés + Szárítás” vágás nélkül), ezért a pontos megfogalmazás áll.
+- **Foglalás:** fő CTA `…&staff=evelin&service=konzultacio`, „Festés és tőfestés időpontok” `…&staff=evelin&category=color`, „Evelin összes időpontja” `…&staff=evelin`; a fejléc / Infó-ablak / lábléc gombja `business=hair` (`<!--mh-foglalas:business=hair-->`), mobilon ragadós CTA-sáv az ingyenes konzultációval.
+- **Nem került ki ([MEGERŐSÍTENDŐ]):** hajhosszabbítás / póthaj (teljes szekció, GYIK, kártya), tapasztalati évek (a régi oldalon 4 és 18 év is szerepelt), szombati nyitvatartás (`<!--mh-nyitvatartas:hetkoznap-->`: a lábléc / Infó-ablak is csak H–P; az oldal törzsében „Hétfő–péntek: 8:00–20:00”).
+- **Mérés:** a `suti.js`-t nem módosítja; a Google-címke / GA4 / GTM minden oldalon fut a `mosaicheadspa.hu` domainen, a Meta-pixel viszont a `PIXEL_OLDALAK` listán lévő oldalakra szól (az új cím nincs rajta; élesítésnél a `suti.js` `PIXEL_FODRASZ` sorába kell felvenni). A `data-landing` azonosító `hair-evelin-ads`.
+
 ## Nyitott / ellenőrizendő
 
 1. **A Salonic és a régi árlista eltér** (`assets/js/arlistak.js`, a Betti-tábla szolgálja ki a központi, a Betti és az Evelin oldalt): a „Teljes festés / korrekció” és a „Teljes melír / airtouch” sora **fel van cserélve** (a Salonic: teljes festés 32 950 / 39 950 / 44 950 / 48 950 Ft; teljes melír 39 950 / 47 950 / 60 950 / 64 950 Ft), a „Teljes szőkítés” a régi táblában 1000 Ft-tal olcsóbb volt. **Javítva (2026-10-07, a tulajdonos kérésére):** az `arlistak.js` Betti- és Noel-táblájának árait a `tools/commonninja.mjs` a Salonic-pillanatképből írja fel (`tools/hair-oldalak/regi-arlista.mjs`; sorcímkék és sorrend a régiek), és a régi oldalak szöveges „Ár: …-tól” értékei is a Salonic legolcsóbb árai (a tőfestés ára nem ígér vágást; Noelnél a kedvezménnyel). A teszt (`hair.test.mjs`) őrzi, hogy a régi tábla és a szövegek egyezzenek a pillanatképpel. Árváltozásnál: `node tools/hair-oldalak/salonic-pillanatkep.mjs`, `node tools/commonninja.mjs --helyi` (utána a `git checkout assets/js/gyik.js`, ha a GYIK-fájl kézi módosításai eltérnek), `node tools/hair-oldalak.mjs`.

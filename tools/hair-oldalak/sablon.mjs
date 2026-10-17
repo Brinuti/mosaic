@@ -481,3 +481,8 @@ ${helySzekcio(fodrasz)}
 }
 
 export const sablonSegedek = { sticky, esc, kepTag };
+
+// A szekcio-darabok (a hirdetesi Evelin-oldal, tools/hair-oldalak/sablon-evelin-uj.mjs hasznalja): csak KIEXPORTALAS, a generalt oldalak kimenete nem valtozik.
+export const sablonReszek = {
+  esc, nyil, ik, kepTag, gomb, felcim, szekcioFej, kovetkezo, videoDoboz, galeriaSzekcio, lapozGaleria, velemenyekSzekcio, cellaHtml, egyCella, KARTYA_SZOVEG, KAT_LINK, idoSzoveg,
+};

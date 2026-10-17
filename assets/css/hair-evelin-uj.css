@@ -1,0 +1,44 @@
+/* MOSAIC Hair - az Evelin-oldal UJ, hirdetesi valtozata (/noi-hajfestes-evelin-uj, Google Ads FOD-3): kiegeszito stilus a hair-landing.css utan.
+   Minden szabaly a main.hl.hl-evelin-uj ala van zarva: a meglevo 4 fodraszat-oldal (hair-landing.css onmagaban) kinezete nem valtozik. */
+
+/* --- hero: ar-sav, hely-sor, ertekeles-sor --- */
+main.hl.hl-evelin-uj .ar-sav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+main.hl.hl-evelin-uj .ar-sav li { display: inline-flex; flex-direction: column; gap: 1px; padding: 9px 15px; border-radius: 14px; background: var(--paper); border: 1px solid var(--vonal); line-height: 1.25; }
+main.hl.hl-evelin-uj .ar-sav li b { font: 400 13px/1.25 var(--test); letter-spacing: .02em; color: var(--taupe); }
+main.hl.hl-evelin-uj .ar-sav li span { font: 500 19px/1.2 var(--cim); color: var(--eszpresszo); }
+main.hl.hl-evelin-uj .hely-sor { display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; font-size: 14.5px; line-height: 1.4; color: #2c3d3d; }
+main.hl.hl-evelin-uj .hely-sor .ik { flex: none; font-size: 19px; color: var(--bronz-s); margin-top: 1px; }
+main.hl.hl-evelin-uj .hely-sor a { flex: none; color: var(--bronz-ss); text-decoration: underline; text-underline-offset: 3px; }
+main.hl.hl-evelin-uj .ert-sor { display: inline-flex; align-items: center; gap: 9px; margin-top: 12px; font-size: 14.5px; }
+main.hl.hl-evelin-uj .ert-sor a { color: var(--bronz-ss); text-decoration: underline; text-underline-offset: 3px; }
+main.hl.hl-evelin-uj .hero-szoveg .cta-sor { margin-top: 20px; }
+
+/* --- arlista: cim a kartyak es a tabla kozott --- */
+main.hl.hl-evelin-uj .ar-ful-sor-cim { margin: clamp(28px, 5vw, 44px) 0 14px; }
+main.hl.hl-evelin-uj .szekcio-fej + .kartya-racs { margin-bottom: 0; }
+main.hl.hl-evelin-uj .ar-megj { margin-bottom: 4px; }
+main.hl.hl-evelin-uj #szolgaltatasok > .tartalom > .cta-sor { margin-top: 22px; }
+
+/* --- telefon / tablet (900 px alatt): a hero sorrendje: cim, alcim, ar, gomb (egy kepernyore fer), majd a kep, hely, ertekeles --- */
+@media (max-width: 899px) {
+  main.hl.hl-evelin-uj .hero .hero-szoveg > h1 { order: 1; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .lead { order: 2; margin-top: 2px; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .ar-sav { order: 3; margin-top: 2px; gap: 6px; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .ar-sav li { padding: 6px 12px; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .ar-sav li span { font-size: 17px; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .cta-sor { order: 4; margin-top: 4px; }
+  main.hl.hl-evelin-uj .hero .hero-kep { order: 5; aspect-ratio: 4 / 3; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .hely-sor { order: 6; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .ert-sor { order: 7; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .kovetkezo { order: 8; }
+  main.hl.hl-evelin-uj .hero-racs { gap: 10px; }
+}
+
+/* --- asztali --- */
+@media (min-width: 900px) {
+  /* a harom szolgaltatas-kartya fuggolegesen (kep felul, szoveg alul), mint a kozponti oldal negyes racsa */
+  main.hl.hl-evelin-uj .kartya-racs.harom .szolg-kartya { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  main.hl.hl-evelin-uj .kartya-racs.harom .szolg-kep { aspect-ratio: 4 / 3.2; min-height: 0; }
+  main.hl.hl-evelin-uj .kartya-racs.harom .szolg-torzs { flex: 1; padding: 18px 20px 20px; }
+  main.hl.hl-evelin-uj .hero-fodrasz h1 { font-size: clamp(32px, 3.4vw, 46px); }
+}
