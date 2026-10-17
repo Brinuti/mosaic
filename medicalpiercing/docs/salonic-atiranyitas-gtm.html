@@ -1,0 +1,14 @@
+<!-- GTM "Egyeni HTML" cimke a Medical Piercing Salonic-fiokjaban betoltott konteinerbe (docs/SALONIC_ATIRANYITAS.md).
+     Cimke neve: "MP Salonic - atiranyitas a foglalomotorra". Trigger: "Inicializalas - Minden oldal" (vagy Oldalmegtekintes),
+     feltetel: Page Hostname egyenlo medicalpiercing.salonic.hu. Tag firing: Once per page. Mas cimke ebben a konteinerben NINCS
+     (se GA4, se Meta, se TikTok: a Salonic-oldalon a Meta Schedule-t a Salonic szervere kuldi, ahhoz nem nyulunk).
+     A logika a www.medicalpiercing.hu/assets/salonic/atiranyitas.js-ben van (a repoban), a kapcsolo is: a GTM-et nem kell ujra kozzetenni. -->
+<script>
+(function () {
+  try { if (window.top !== window.self) return; } catch (e) { return; } // a sajat motorunk keretjeben (iframe) soha
+  var s = document.createElement('script');
+  s.src = 'https://www.medicalpiercing.hu/assets/salonic/atiranyitas.js';
+  s.async = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
+</script>
