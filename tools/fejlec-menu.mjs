@@ -245,6 +245,24 @@ export function fejlecAtalakit(html, mobil, angol = html.includes(NYELV_EN)) {
 }
 export const ANGOL_JELOLO = NYELV_EN;
 
+// --- oldalankenti foglalasi cel (2026-10-18, Google Ads indulas, brief 1. + 3. pont) --------------------------------------------------------------------
+// Egy sajat oldal (foglalas/*.html) forrasaban a <!--mh-foglalas:business=laser--> jelolo (opcionalisan &service= / &staff= / &category=) azt kéri, hogy az oldal
+// fejlece (FOGLALAS menugomb, asztali + mobil), az Info-ablak "Idopontfoglalas" gombja es a lablec "Idopontfoglalas" gombja az ADOTT uzletag foglalojara mutasson
+// (a kozos darabokban a menugomb a regi /idpontfoglalas oldalra, a masik ketto a business=headspa foglalora visz). Jelolo nelkul semmi nem valtozik.
+// A jelolo erteke szigoruan ellenorzott (csak a meglevo foglalo-paraméterek); hibas jelolonel a build hibaval all le (nem kerul ki rossz link).
+export const FOGLALAS_JELOLO = /<!--mh-foglalas:([^>]+?)-->/;
+const FOGLALAS_CEL_MINTA = /^business=(?:headspa|hair|oxygen|laser|pmu)(?:&(?:service|staff|category)=[A-Za-z0-9_.-]{1,40}){0,3}$/;
+export function foglalasCel(html, jelolo) {
+  if (!jelolo) return html;
+  if (!FOGLALAS_CEL_MINTA.test(jelolo)) throw new Error('mh-foglalas jelolo ervenytelen: ' + jelolo);
+  const cel = '/foglalo-motor?' + jelolo.replace(/&/g, '&amp;');
+  return html
+    .replace(/href="\/idpontfoglalas"/g, () => 'href="' + cel + '"')
+    .replace(/(class="mhp-gomb mhp-arany" )href="\/foglalo-motor\?business=headspa"/g, (m, a) => a + 'href="' + cel + '"')
+    .replace(/(class="mhl-gomb" )href="\/foglalo-motor\?business=headspa"/g, (m, a) => a + 'href="' + cel + '"');
+}
+
+
 // Az "Októberi akció" (pink) felső sáv CSAK a Head Spa oldalakon látszik (a tulajdonos kérése, 2026-10-09): ezek az oldalak az <html> elemen
 // data-mh-headspa jelölőt kapnak (build + helyi tesztszerver), a közös fejlec-lablec.css pedig minden más oldalon elrejti a sávot
 // (html:not([data-mh-headspa]) #comp-mpv0ganp). A "-regi" (rejtett, Wixes) másolatok az eredetivel egyeznek.

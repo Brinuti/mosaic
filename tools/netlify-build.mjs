@@ -26,7 +26,7 @@ import { pathToFileURL } from 'node:url';
 import { ritkit } from './css-ritkitas.mjs';
 import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
 import { popupAtkot } from './halott-popup.mjs';
-import { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo } from './fejlec-menu.mjs';
+import { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo, FOGLALAS_JELOLO, foglalasCel } from './fejlec-menu.mjs';
 import { personaOldal } from './ajandek-variansok/elore-render.mjs';
 import { CSP_CRM } from '../crm/lib/http.js';
 
@@ -75,11 +75,13 @@ for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.ends
   const forras = fs.readFileSync(path.join(ROOT, 'foglalas', f), 'utf8');
   const aktiv = (forras.match(/<!--mh-menu-aktiv:([^>]+?)-->/) || [])[1];
   const angol = forras.includes(ANGOL_JELOLO);   // angol oldal: angol menucimkek / lablec (tools/fejlec-menu.mjs)
+  const foglalasJel = (forras.match(FOGLALAS_JELOLO) || [])[1];   // <!--mh-foglalas:business=laser-->: a fejlec / lablec foglalas-gombjai az adott uzletag foglalojara mutatnak
   for (const m of [LAP_A, LAP_M]) {
     const resz = (jel, fajl) => forras.includes(jel) ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', fajl + '.html'), 'utf8') : '';
     let fejlec = fejlecAtalakit(resz('<!--mh-fejlec-->', FEJLEC[m]), m === LAP_M, angol); // az Ajandekkartya lenyilo, az onallo Paros Head Spa pont, az EN jelveny (tools/ajandek-menu.mjs, tools/fejlec-menu.mjs)
     if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, m === LAP_M);
     let lablec = fejlecAtalakit(resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]), m === LAP_M, angol);   // az uj lablec
+    if (foglalasJel) { fejlec = foglalasCel(fejlec, foglalasJel); lablec = foglalasCel(lablec, foglalasJel); }
     const kozosCss = '<style data-forras="fejlec-lablec">' + FEJLEC_CSS + '</style>';
     if (fejlec) fejlec += kozosCss; else if (lablec) lablec += kozosCss;
     fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec));

@@ -31,6 +31,12 @@ Az átalakítások **ismételhetetlen-biztosak** (az átalakított fejlécen nem
 - **Mobil menü**: az Ajándékkártya lenyíló alapból nyitva (3 kártya látszik), a többi lenyíló zárva indul (a kijelölt oldal szülője arany marad), a sorok 37 px-esek, így az egész menü kiférhet a képernyőre.
 - **Nyitvatartás**: a szombat is 8:00–20:00 mindenhol (lábléc, Infó ablak, a Wixes oldalak Kapcsolat-szekciói, az új oldalak helyszín-blokkjai, tesztek). A fodrász (MOSAIC Hair) oldalak saját szövege („szombat zárva”) változatlan, mert azt a fodrász-szolgáltatás Salonic-adata adja.
 
+## Oldalankénti foglalási cél (`<!--mh-foglalas:...-->`, 2026-10-18, Google Ads indulás)
+A közös darabokban a **FOGLALÁS menügomb** (asztali + mobil) a régi `/idpontfoglalas` oldalra, az **Infó-ablak** és a **lábléc** „Időpontfoglalás” gombja a `business=headspa` foglalóra mutat. Egy saját oldal (`foglalas/*.html`)
+az üzletága foglalójára irányíthatja mindhármat: a forrásában `<!--mh-foglalas:business=laser&service=konzult-->` (a paraméterek: `business=headspa|hair|oxygen|laser|pmu`, opcionálisan `service` / `staff` / `category`;
+bármi más → a build hibával leáll). A build (`tools/netlify-build.mjs`) a fejléc- és lábléc-darabra alkalmazza (`foglalasCel`, `tools/fejlec-menu.mjs`); jelölő nélkül semmi nem változik. Az oldal törzsében lévő
+linkeket ez nem érinti (azokat az oldal tesztjének kell ellenőriznie: nincs `/idpontfoglalas`, nincs `/mosaic-hair-idopontfoglalas`). Teszt: `node --test tools/test-foglalas-cel.mjs`.
+
 ## Angol oldalak (`<!--mh-nyelv:en-->`)
 Ha egy saját oldal forrásában (a `<!--mh-fejlec-->` után) ott van a `<!--mh-nyelv:en-->` jelölő: angol menücímkék (Couples Head Spa, Laser hair removal, …), angol akciósáv, a GYIK pont elmarad (a magyar nyitóoldal GYIK-jára vinne), a Kapcsolat az oldal saját `#helyszin` szekciójára ugrik, a nyelvváltó „HU”, a lábléc angol. Az oldalnak tehát kell egy `id="helyszin"` szekció.
 
