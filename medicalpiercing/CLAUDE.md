@@ -143,7 +143,7 @@ Ezen felül:
   A `/3-piercing-2-araert-regi` **301-gyel** ide visz, a paraméterekkel (`SAJAT_ATIRANYITASOK`, `lib/utvonal.js`); a menü, az akciós sávok és a régi „3 piercing 2 áráért! - AKCIÓ!”
   linkek közvetlenül ide mutatnak. A Wix-es eredeti a `/regi/3-piercing-2-araert-regi` címen marad (noindex). Kézzel írt oldal (`uj-oldalak/sajat/3-piercing-2-araert.html`): a
   szakaszok sorrendje és a szöveg **1:1 a Wix-es `-regi` oldalról** – hős („Most megéri 2 vagy 3 piercinget szúratni!”, a plakát egészben, négyzetes kerettel) → „Több piercing =
-  Erősebb hatás” (+ az ékszer-lapozó) → „9 ok, amiért a piercingeink működnek!” (mind a 9 pont; az eredetin görgethető szövegdobozban) → „Legnépszerűbb piercingeink 👇”
+  Erősebb hatás” (+ az ékszer-lapozó) → „9 ok, amiért a piercingeink működnek!” (mind a 9 pont; az eredetin görgethető szövegdobozban; lapozó – a `.kar` sáv, a főoldali szakértő-blokk ikonos köreivel és nagy sorszámmal, asztalon 3, tableten 2, mobilon 1 kártya + a következő széle, a tulajdonos kérése, 2026-10-17: „csinálj belőle egy szép lapozót”) → „Legnépszerűbb piercingeink 👇”
   (mind a 10 típus az eredeti listáival) → „Tudtad, hogy...?” → 93% → „Olvasd el a visszajelzéseket!” → helyszínek → „Ismerd meg csapatunkat!” –, a dobozok a mostani oldalé
   (a TikTok-landoló mintájára). Szándékos eltérés (a `tools/uj-oldalak-teszt.mjs` `SZANDEKOS_LAP` sora; minden más eredeti sort számon kér): a vélemény-szám a Google mostani
   száma, „Már 15 városban várunk!” (az eredetin 12, a lista 15 város), a város-csempe maga a foglaló-link, a „higiánia” elírás javítva; a kitelepülési napok a táblázatból.

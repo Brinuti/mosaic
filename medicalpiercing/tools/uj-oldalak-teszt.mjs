@@ -324,18 +324,20 @@ async function lapTeszt(o, nezet, ctx) {
     const m = await p.evaluate(() => { const l = document.querySelector('.lenyilo .almenu'); const q = l.getBoundingClientRect(); return { h: Math.round(q.height), links: l.querySelectorAll('a').length }; });
     ok(`${cim}: a Piercingek lenyilo menu megnyilik`, m.h > 100 && m.links >= 8, JSON.stringify(m));
   }
-  // galeria + nagyito
-  const kar = await p.$('.kar');
-  if (kar) {
+  // galeria + nagyito (minden lapozo savon - a kepes galerian es a szoveges lapozon, pl. a "9 ok" az oszi akcion - a lathato nyil lapoz;
+  // a kepes galeria kepe nagyban nyilik)
+  for (const kar of await p.$$('.kar')) {
     await kar.scrollIntoViewIfNeeded();
-    const elotte = await p.evaluate(() => document.querySelector('.kar-sav').scrollLeft);
-    const kov = await p.$('.kar-kov');
-    if (kov && await kov.isEnabled()) {
+    const kov = await kar.$('.kar-kov');
+    if (kov && await kov.isVisible() && await kov.isEnabled()) {
+      const elotte = await kar.$eval('.kar-sav', (s) => s.scrollLeft);
       await kov.click(); await p.waitForTimeout(700);
-      const utana = await p.evaluate(() => document.querySelector('.kar-sav').scrollLeft);
-      ok(`${cim}: a galeria nyila lapoz`, utana > elotte, `${elotte} -> ${utana}`);
+      const utana = await kar.$eval('.kar-sav', (s) => s.scrollLeft);
+      ok(`${cim}: a ${await kar.$('img[data-nagyit]') ? 'galeria' : 'lapozo'} nyila lapoz`, utana > elotte, `${elotte} -> ${utana}`);
     }
-    const kep = await p.$('.kar img[data-nagyit]');
+  }
+  const kep = await p.$('.kar img[data-nagyit]');
+  if (kep) {
     await kep.scrollIntoViewIfNeeded();
     await kep.click();
     const nyitva = await p.evaluate(() => { const d = document.querySelector('#kepnezo'); return d.open && !!d.querySelector('.nagyito-kep').getAttribute('src'); });
