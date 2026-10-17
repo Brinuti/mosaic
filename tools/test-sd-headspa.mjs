@@ -139,7 +139,7 @@ test('HS-06 a Zap kuponos levelenek FELTETELEZETT alakja (" (kupon)" utotag + az
   const kimenet = {};
   const esetek = [
     ['ures', { vendeg: { email: '', telefon: '+36 30 000 0001' } }, ['ph']], // nincs e-mail: csak a telefon-hash
-    ['kuponkoddal', { vendeg: { email: `${TISZTA} Kuponkód: ABC123`, telefon: '+36 30 000 0001' } }, ['ph', 'external_id']], // egy mezoben az e-mail es a kuponkod szovege (a nem-mohon "E-mail cim:" regex ezt fogna)
+    ['kuponkoddal', { vendeg: { email: `${TISZTA} Kuponkód: KUPXYZ9`, telefon: '+36 30 000 0001' } }, ['ph', 'external_id']], // egy mezoben az e-mail es a kuponkod szovege (a nem-mohon "E-mail cim:" regex ezt fogna)
   ];
   for (const [nev, mod, varhato] of esetek) {
     assert.equal(emailNormal(mod.vendeg.email), null, `${nev}: az emailNormal elutasitja (nem egyetlen e-mail token)`);
@@ -151,11 +151,11 @@ test('HS-06 a Zap kuponos levelenek FELTETELEZETT alakja (" (kupon)" utotag + az
     assert.deepEqual(kulcsok(v), varhato, `${nev}: user_data kulcsok`);
     assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 0, `${nev}: nincs ervenyes e-mail -> nincs index-sor`);
     const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes'));
-    assert.ok(!/abc123/i.test(mind), `${nev}: a kuponkod nyersen nem kerul ki / a naploba`);
+    assert.ok(!/kupxyz9/i.test(mind), `${nev}: a kuponkod nyersen nem kerul ki / a naploba`);
     kimenet[nev] = nev === 'kuponkoddal' ? extId(v) : null;
   }
   // az external_id pontosan a nyers, trim-elt + kisbetusitett TELJES szoveg SHA-256-ja (nem a UUID-bol, nem a tiszta e-mailbol kepzett)
-  const nyers = `${TISZTA} Kuponkód: ABC123`;
+  const nyers = `${TISZTA} Kuponkód: KUPXYZ9`;
   assert.ok(kimenet.kuponkoddal.includes(await sha256hex(nyers.trim().toLowerCase())), 'external_id = sha256(teljes szoveg, kisbetusen)');
   { // kontroll: a tiszta e-mail (a normal levelnel is) em + external_id; az external_id a TISZTA e-mailbol kepzett, ezert MAS, mint a kuponkodos szovegbol kepzett
     const { v, b } = await jelolt(NORMAL[0].nev, { vendeg: { email: TISZTA, telefon: '+36 30 000 0001' } });
