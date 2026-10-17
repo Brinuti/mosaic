@@ -333,3 +333,75 @@
   .ok-kar .kar-gomb{display:none}
   .ok-kar .kar-szam{display:block;margin:0 auto;width:fit-content;padding:3px 14px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.82rem;font-weight:700}
 }
+
+/* --- Az oszi akcio oldala, 2. kor (a tulajdonos kerese, 2026-10-17: "kicsit szoljon a hidegeknek is"): a hos harom valodi fulfotoja valtakozva, a harmas
+   csomagok (a "Tobb piercing = Erosebb hatas" szakaszban, a galeria alatt), a jeloles a piercing-kartyak kepen, a csapat lapozoja --- */
+/* a hos kepe: harom fulfoto (mindegyiken harom kozerzetjavito piercing); az elso all, a masik ketto lassan raattunik, majd mindketto eltunik (13,5 mp-es kor) */
+.belso .hos-racs>.hos-kep.hos-valto{position:relative;overflow:hidden;aspect-ratio:1/1;border-radius:30px;box-shadow:var(--sh)}
+.belso .hos-racs>.hos-kep.hos-valto>img{position:absolute;inset:0;width:100%;height:100%;max-height:none;--mh:100000px;aspect-ratio:auto;object-fit:cover;border-radius:0;box-shadow:none}
+.hos-valto>img:not(:first-child){opacity:0}
+.hos-valto>img:nth-child(2){animation:hosValto2 13.5s ease-in-out infinite}
+.hos-valto>img:nth-child(3){animation:hosValto3 13.5s ease-in-out infinite}
+@keyframes hosValto2{0%,28%{opacity:0}36%,92%{opacity:1}100%{opacity:0}}
+@keyframes hosValto3{0%,61%{opacity:0}69%,92%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.hos-valto>img:not(:first-child){animation:none}}
+/* a harmas csomagok: feher doboz, felul a ket leggyakoribb par (a "Tudtad, hogy...?" parjai), alatta 3 kartya; a kep a ful a csomag harom pontjaval (egeszben) */
+.csomagok{margin-top:26px;padding:30px;border:1px solid var(--line);border-radius:var(--r-l);background:#fff;box-shadow:var(--sh-s)}
+.csomagok>.kat-fej{margin-bottom:16px}
+.csomag-parok{grid-template-columns:repeat(2,max-content);justify-content:center;gap:12px;margin:0 auto 22px}
+.csomag-racs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.csomag{display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--beige-l),#fff 45%);text-align:left}
+.csomag-fej{display:flex;align-items:center;gap:14px}
+.csomag-kep{flex:none;width:104px;margin:0;border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+.csomag-kep img{display:block;width:100%;height:auto;aspect-ratio:1/1}
+.csomag-cimke{margin:0 0 2px;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose-i)}
+.csomag h3{margin:0;font-size:1.15rem;line-height:1.25;color:var(--navy)}
+.csomag-tagok{margin:3px 0 0;font-size:.88rem;font-weight:700;color:var(--mut)}
+.csomag-pontok{display:grid;gap:6px;margin:4px 0 2px;padding:0;list-style:none}
+.csomag-pontok li{position:relative;padding-left:17px;font-size:.9rem;line-height:1.4;color:var(--ink)}
+.csomag-pontok li::before{content:"";position:absolute;left:2px;top:.45em;width:8px;height:8px;border-radius:50%;background:#e8473f;box-shadow:0 0 0 3px rgba(232,71,63,.18)}
+.csomag>p{margin:0;font-size:.9rem;line-height:1.55;color:var(--mut)}
+.csomag>p b{color:var(--navy)}
+.csomag>.csomag-ar{margin-top:auto;padding-top:4px;color:var(--navy)}
+.csomag>.gomb{width:100%;justify-content:center}
+.csomag-lab{margin-top:18px;align-items:center;text-align:center}
+/* a piercing-kartyak: 9 tipus, asztalon 5 + 4 (a masodik sor kozepen); a kepen alul: mivel szoktak parban / harmasban valasztani */
+.piercing-racs-9{display:flex;flex-wrap:wrap;justify-content:center}
+.piercing-racs-9>.kartya{flex:0 0 calc((100% - 56px) / 5);min-width:0}
+.kartya-kep{position:relative}
+.kartya-par{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 16px);padding:4px 10px 5px;border-radius:12px;background:var(--rose-i);color:#fff;font-size:.74rem;font-weight:700;line-height:1.25;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.16)}
+.kartya-par small{display:block;font-size:.6rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;opacity:.9}
+/* a csapat lapozoja (a .kar sav, uj-oldalak.js 1.): asztalon 4, tableten 2, mobilon 1 kartya + a kovetkezo szele */
+.csapat-kar{position:relative;container-type:inline-size}
+.csapat-kar .kar-sav{gap:18px;padding:4px 2px 16px}
+.csapat-kar .kar-dia.piercer-kartya{flex:0 0 calc((100% - 54px) / 4);min-width:0;background:#fff;border-radius:var(--r-l)}
+.csapat-kar .piercer-kartya>img{aspect-ratio:4/3;object-fit:cover}
+.csapat-kar .piercer-test{padding:16px 18px 18px}
+.csapat-kar .piercer-test h3{font-size:1.08rem}
+.csapat-kar .piercer-test p:not(.piercer-szerep){margin-bottom:14px;font-size:.88rem}
+.csapat-kar .kar-gomb{top:calc(50% - 10px);top:calc(4px + (100cqw - 58px) * 3 / 32);width:46px;height:46px;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+.csapat-kar .kar-gomb:hover:not(:disabled){background:var(--rose);color:#fff}
+.csapat-kar .kar-gomb .ik{width:22px;height:22px}
+.csapat-kar .kar-elozo{left:-14px}
+.csapat-kar .kar-kov{right:-14px}
+.csapat-kar .kar-szam{display:none}
+@media (max-width:1000px){
+  .csomag-racs{grid-template-columns:minmax(0,1fr);max-width:640px;margin-inline:auto}
+  .piercing-racs-9>.kartya{flex-basis:calc((100% - 28px) / 3)}
+  .csapat-kar .kar-dia.piercer-kartya{flex-basis:calc((100% - 18px) / 2)}
+  .csapat-kar .kar-gomb{top:calc(4px + (100cqw - 22px) * 3 / 16)}
+}
+@media (max-width:760px){
+  .csomagok{margin-top:18px;padding:22px 14px}
+  .csomag-parok{grid-template-columns:minmax(0,1fr);justify-content:stretch}
+  .csomag{padding:16px}
+  .csomag-kep{width:88px}
+  .piercing-racs-9>.kartya{flex-basis:calc((100% - 10px) / 2)}
+  .kartya-par{bottom:16px;font-size:.68rem}
+  .csapat-kar .kar-sav{gap:12px;padding:4px 16px 14px;scroll-padding-inline:16px}
+  .csapat-kar .kar-dia.piercer-kartya{flex-basis:78%}
+  .csapat-kar .kar-gomb{display:none}
+  .csapat-kar .kar-szam{display:block;margin:0 auto;width:fit-content;padding:3px 14px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.82rem;font-weight:700}
+  #csapat{padding-inline:0}
+  #csapat>.kat-fej{padding-inline:16px}
+}
