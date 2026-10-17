@@ -35,12 +35,13 @@ Ezen felül:
   `medicalpiercing.pages.dev` (élessel azonos tartalom) / előnézeti címen – ott a mérőkódok nem töltődnek be, a statisztikát nem szennyezi (a Google PageSpeed szolgáltatás kulcs nélküli
   kerete gyakran elfogy). Ami a gyorsítás része, és új oldalnál / új képnél is tartsd:
   - **Google-vélemények (Trustindex)**: a `loader.js` nem a lapban áll, hanem `data-ti-src`-ben (`reszek/velemenyek.html`), és a `uj-fooldal.js` 4. pontja csak akkor teszi a lapra,
-    amikor a doboz 800 px-re a képernyő közelébe ér (előtte a lap betöltésekor ~0,8 mp-re lefoglalta a telefon processzorát és ~650 KB-ot töltött).
+    ha a doboz a megnyitáskor látszik, különben az első görgetés / érintés után, amikor 800 px-re a képernyő közelébe ér (előtte a lap betöltésekor ~0,8 mp-re lefoglalta
+    a telefon processzorát és ~650 KB-ot töltött; a főoldalon a doboz közvetlenül az első képernyő alatt van).
   - **Galériák** (`uj-oldalak.js` 1., `uj-fooldal.js` 2b.): a következő képek előtöltése csak a képernyő közelében és a lap betöltése után (korábban minden galéria 9 nagy képet töltött
     azonnal, a lap alján levő szalon-galéria is; a hősben a többi kép az elsőtől vette el a sávszélességet).
-  - **Válaszadó képek**: `python3 tools/kep-valtozatok.py` (a 400 px-nél szélesebb `<img>` képek 320 / 480 / 800 / 1200 / 1600 px-es WebP-változatai, JPG/PNG esetén az eredeti méretben is:
+  - **Válaszadó képek**: `python3 tools/kep-valtozatok.py` (a 400 px-nél szélesebb `<img>` képek 320 / 400 / 480 / 640 / 800 / 1200 / 1600 px-es WebP-változatai, JPG/PNG esetén az eredeti méretben is:
     `assets/img/valtozat/` + `jegyzek.json`), `node tools/kep-meretek.mjs` (a képek megjelenési szélessége lapanként: asztali 1440 és 820 px, mobil 390 px → `uj-oldalak/kep-meretek.json`),
-    a build (`tools/valaszado-kepek.mjs`) ebből írja a `srcset` + `sizes` attribútumot. **Új kép vagy elrendezés-változás után futtasd a kettőt (build → kep-valtozatok → kep-meretek →
+    a build (`tools/valaszado-kepek.mjs`) ebből írja a `srcset` + `sizes` attribútumot (a lap `<link rel="preload" as="image">` sora `imagesrcset`-et kap, hogy ne az eredetit töltse). **Új kép vagy elrendezés-változás után futtasd a kettőt (build → kep-valtozatok → kep-meretek →
     build)**; a nem mért kép változatlan, eredeti méretben marad (nem romlik el, csak nem gyorsul). A `src` mindig az eredeti, a képnagyító is azt nyitja.
   - **Tömörített stílusok és szkriptek** (`tools/tomorites.mjs`, esbuild): csak a saját `uj-*.css`, `uj-fooldal.js`, `uj-oldalak.js`, `motor/motor.js`, `terkep.js`, `tipus.js`; a mérőkód
     fájljai (`suti.js`, `mp-meres.js`, `motor-indito.js`, `salonic-adapter.js`, `booking-id.js`) **változatlanul** mennek ki. Az esbuild nélkül a lépés kimarad (a lap ugyanúgy működik).

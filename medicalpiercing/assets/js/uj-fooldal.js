@@ -232,10 +232,16 @@
       }
       if (tartalek) window.setTimeout(() => { if (!$('.ti-widget', tiHely)) tartalek.hidden = false; }, 9000);
     };
-    if ('IntersectionObserver' in window) {
-      const figyel = new IntersectionObserver((e) => { if (e[0].isIntersecting) { figyel.disconnect(); indit(); } }, { rootMargin: '800px 0px' });
-      figyel.observe(tiHely);
-    } else indit();
+    // ha a doboz a megnyitaskor latszik, azonnal; kulonben az elso gorgetes / erintes / billentyu utan, amikor 800 px-re a kepernyo kozelebe er
+    // (a fooldalon a doboz kozvetlenul az elso kepernyo alatt van: a 800 px-es kozelseg miatt a megnyitaskor toltott volna)
+    if (!('IntersectionObserver' in window)) { indit(); return; }
+    let kesz = false;
+    const egyszer = () => { if (!kesz) { kesz = true; lathato.disconnect(); kozel.disconnect(); indit(); } };
+    const lathato = new IntersectionObserver((e) => { if (e[0].isIntersecting) egyszer(); });
+    const kozel = new IntersectionObserver((e) => { if (e[0].isIntersecting) egyszer(); }, { rootMargin: '800px 0px' });
+    lathato.observe(tiHely);
+    const elso = () => { ['scroll', 'pointerdown', 'touchstart', 'keydown'].forEach((t) => window.removeEventListener(t, elso)); if (!kesz) kozel.observe(tiHely); };
+    ['scroll', 'pointerdown', 'touchstart', 'keydown'].forEach((t) => window.addEventListener(t, elso, { passive: true }));
   });
 
   // --- 4d. a keves velemenyt mutato widget (pl. a lep-oldal sajat, szurt widgetje: 1 velemeny) ne nyuljon a teljes szelessegre (a tulajdonos kerese, 2026-10-16) ---

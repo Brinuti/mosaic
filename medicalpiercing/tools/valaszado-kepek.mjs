@@ -48,7 +48,8 @@ export function valaszadoKepek(ROOT, DIST) {
     if (!fs.existsSync(fajl)) continue;
     const mobil = kulcs.startsWith('_m/');
     const h = fs.readFileSync(fajl, 'utf8');
-    const u = h.replace(/<img\b[^>]*>/g, (tag) => {
+    const kapott = new Map();   // kep -> [srcset, sizes]: a lap <link rel="preload" as="image"> sora is ezt kapja (kulonben az eredetit is letoltene)
+    let u = h.replace(/<img\b[^>]*>/g, (tag) => {
       if (/\ssrcset=/.test(tag)) return tag;
       const m = tag.match(/\ssrc="\/assets\/img\/([^"?#]+)((?:\?[^"#]*)?)"/);
       if (!m) return tag;
@@ -62,7 +63,13 @@ export function valaszadoKepek(ROOT, DIST) {
       const vw = (px, szeles) => Math.min(100, Math.ceil((px * TARTALEK / szeles) * 100));
       const sizes = mobil ? `${vw(w[0], 390)}vw` : `(max-width: 1000px) ${vw(w[1], 820)}vw, (min-width: 1440px) ${Math.ceil(w[0] * TARTALEK)}px, ${vw(w[0], 1440)}vw`;
       kepDb++;
+      kapott.set(nev, [elemek.join(', '), sizes]);
       return tag.replace(/\ssrc="/, ` srcset="${elemek.join(', ')}" sizes="${sizes}" src="`);
+    });
+    u = u.replace(/<link\b(?=[^>]*\srel="preload")(?=[^>]*\sas="image")[^>]*>/g, (tag) => {
+      const m = tag.match(/\shref="\/assets\/img\/([^"?#]+)/);
+      const k = m && kapott.get(m[1]);
+      return k && !/imagesrcset=/.test(tag) ? tag.replace(/\shref="/, ` imagesrcset="${k[0]}" imagesizes="${k[1]}" href="`) : tag;
     });
     if (u !== h) { fs.writeFileSync(fajl, u); lapDb++; }
   }

@@ -1,6 +1,6 @@
 # A nagy kepek kisebb valtozatai a valaszado kepekhez (srcset; gyorsitas, 2026-10-17: a Lighthouse / PageSpeed minden oldalon a "Properly size images"
 # tetelt jelezte, oldalankent atlagosan ~600 KB folosleges kepbajttal). Az uj oldalak (dist/_a, dist/_m, a /regi nelkul) <img src> kepeibol
-# a 400 px-nel szelesebbeknek 320 / 480 / 800 / 1200 / 1600 px szeles WebP valtozata keszul, a JPG / PNG kepeknek az eredeti szelessegben is (modern formatum):
+# a 400 px-nel szelesebbeknek 320 / 400 / 480 / 640 / 800 / 1200 / 1600 px szeles WebP valtozata keszul, a JPG / PNG kepeknek az eredeti szelessegben is (modern formatum):
 #   assets/img/valtozat/<kep neve kiterjesztes nelkul>-<szelesseg>.webp     + assets/img/valtozat/jegyzek.json (a build ebbol irja a srcset-et)
 #   python3 tools/kep-valtozatok.py        (a build utan; csak a hianyzo / regebbi valtozatokat kesziti)
 # A meretezes arcot / tartalmat nem modosit (csak kicsinyit). A build a srcset-et a tools/kep-meretek.mjs mert megjelenesi meretei szerint teszi a lapokra.
@@ -10,7 +10,7 @@ from PIL import Image
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMG = os.path.join(R, 'assets/img')
 KI = os.path.join(IMG, 'valtozat')
-SZELESSEGEK = (320, 480, 800, 1200, 1600)
+SZELESSEGEK = (320, 400, 480, 640, 800, 1200, 1600)
 MIN = 400            # ennel keskenyebb kepnek nem kell valtozat
 MINOSEG = 80
 
@@ -41,7 +41,7 @@ for nev in sorted(hivatkozott):
     if W <= MIN and not jpg:
         continue
     alap = os.path.splitext(nev)[0]
-    celok = [w for w in SZELESSEGEK if w * 1.15 < W]
+    celok = [w for w in SZELESSEGEK if w * 1.1 < W]
     if jpg:
         celok.append(W)   # (az eredeti meretben is WebP)
     if not celok:
