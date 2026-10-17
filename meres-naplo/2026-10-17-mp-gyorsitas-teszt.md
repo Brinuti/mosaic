@@ -57,5 +57,44 @@ szabálya rendezi. Szemrevételezve: allergia, máj, pajzsmirigy, lép, vastagb�
 - `meres-teszt`: 85 ellenőrzés, 0 hiba (a mérési események útja változatlan)
 - korábban, ugyanerre a JS-re: `motor-tipus` asztali 120 / mobil 124 ellenőrzés, minden rendben, `motor` 26/26, `motor-formazas` 90, `csomag` 12, `forras` 1224 – rendben
 
-### Teljes utómérés (157 oldal)
-A merge után a `medicalpiercing.pages.dev`-en, ugyanazzal a módszerrel – az eredményt ide írom.
+### Teljes utómérés (157 oldal, a #369 merge után, `medicalpiercing.pages.dev`)
+| | Pontszám (átlag) | LCP | TBT | CLS | Letöltött adat | 90 pont alatt |
+|---|---|---|---|---|---|---|
+| Mobil | 96,6 → **99,1** | 2,32 → **1,67 s** | 26 → **3 ms** | 0,005 → 0,007 | 556 → **272 KB** | 16 → **1** oldal |
+| Asztali | 99,8 → **99,9** | 0,53 → **0,41 s** | 1 → **0 ms** | 0,001 → 0,002 | 621 → **283 KB** | 0 → 0 |
+
+**Visszaesés, amit a teljes mérés mutatott:** 5 lapon (mobilon `/allasajanlat-sopron`, 3 városlap, asztalon 1 városlap) elrendezés-csúszás jelent meg (CLS 0 → 0,12–0,21; pontszám
+100 → 90–94). Ok: a `width:auto` + `height:auto` kép (`.verem>.kep`, városcsempe, állásajánlat-kép) doboza a betöltés előtt 0 × 0 volt; eddig a kép az első kirajzolás előtt megérkezett,
+a kisebb képváltozatok viszont a merge után még nem voltak a Cloudflare gyorsítótárában, ezért később jöttek, és a kép lejjebb tolta a láblécet. Késleltetett képekkel
+(`tools/csuszas-teszt.mjs`) ugyanez **58 lapon** jött elő (a nagy része korábban is így volt, csak a gyors betöltés elfedte; kettőt én okoztam: a feliratos ábrák
+`aspect-ratio:auto` szabálya és a hős álló videójának `preload="none"`-ja).
+A `migren-piercing` (97 → 92) és a `szurathatok-arany-shenmen-piercinget-is` (94 → 90) mérési szórás: újramérve 99 pont, illetve bájtra azonos hálózati forgalom.
+
+**Javítás (2. kör):** a build (`kepDobozok`) minden új lapon az `<img>`-re írja a fájl valódi szélességét és arányát (`--kw`, `--ka`); a CSS ebből a betöltés előtt is a végleges
+dobozt adja (`width:var(--kepw,auto)`, a `max-height` mellett `--mh`, `aspect-ratio:auto var(--ka)`; álló videó: min(300px, max-height × 9/16); a középre igazított oszlopban a
+galéria-sáv `align-self:stretch`). Részletek: `medicalpiercing/CLAUDE.md`, „Gyorsítás – minden oldalon”.
+- `tools/csuszas-teszt.mjs` (képek 1,5 s késéssel, első képernyő, asztali + mobil, 206 + 206 lap): **58 lapon csúszás → 0**
+- `tools/doboz-teszt.mjs` (minden kép / videó doboza betöltés előtt és után): **1130 eltérő doboz → 33** (a maradék a lap alján, a kártyarácsban – a csúszásteszt szerint nem csúszik
+  az első képernyő –, egy régi Wix-lap 22 px-es ikonja, és időzítési különbségek, egyenként visszamérve egyezők)
+- a végleges kinézet az alaphoz mérve (412 lapnézet, minden kép mérete): **4 lapon változott**, mind szándékosan – az `adatkezeles`, `aszf`, `nyeremenyjatek` és a daith-cikk
+  kis képeit (497, 574, 500 px) a srcset 1,15-ös ráhagyása 520–621 px-re nagyította (homályosabb), most újra a valódi méretükben látszanak
+- tesztek a végső buildre: `uj-oldalak-teszt` 174 oldal / 5729 ellenőrzés / 0 hiba; `uj-b-teszt` 1042 / 0; `uj-fooldal-teszt` rendben; `meres-teszt` rendben;
+  `motor-teszt`, `motor-tipus-teszt`, `motor-formazas-teszt` rendben
+
+### Utómérés az érintett lapokon (a 2. kör előnézetén)
+Lighthouse, mobil + asztali, a 2. kör előnézetén (`claude-medicalpiercing-cloud.medicalpiercing.pages.dev`, második futás, meleg Cloudflare-gyorsítótár):
+
+| Lap | Előtte | A #369 után | Most (CLS) |
+|---|---|---|---|
+| `/allasajanlat-sopron` mobil | 100 | 90 (CLS 0,208) | **100** (0) |
+| `/varosok/this-is-a-title-01` mobil | 100 | 91 (0,185) | **100** (0) |
+| `/varosok/bekescsaba` mobil | 100 | 94 (0,145) | **100** (0) |
+| `/varosok/3530-…miskolc…` mobil | 100 | 94 (0,148) | **97** (0) |
+| `/varosok/8800-nagykanizsa…` asztali | 100 | 96 (0,119) | **100** (0) |
+| `/allasajanlat-marketing` mobil | 89 (0,216) | 89 (0,216) | **100** (0) |
+| `/allasajanlat` mobil | 93 (0,141) | 94 (0,141) | **100** (0) |
+| `/piercer-mester-brigitta` mobil | 77 (0,447) | 95 | **98** (0) |
+| főoldal mobil / asztali | 80 / 99 | 100 / 99 | **100 / 100** |
+
+A `/migren-piercing` mobilon 95–99 között ingadozik az előnézeten és az élesen is (öt-öt futás: a lassabb futásokban a mérőgépen későbbre esik az első kirajzolás),
+átlag ~97, mint előtte. A `/fooldal-b` (régi, rejtett B-főoldal) asztali CLS-e 0,167 – előtte is ennyi volt, nem a gyorsítás okozta.
