@@ -291,19 +291,22 @@
 
 /* Az oszi akcio oldala (/3-piercing-2-araert; a tulajdonos kerese, 2026-10-17: a Wix-es eredeti szakaszai es szovege, a mostani dobozokkal):
    a "9 ok" lapozoja, a 10 piercing-kartya (mind latszik, asztalon 2 x 5), a piercing-bevezeto mondat */
-/* a "9 ok" lapozo (a .kar sav, uj-oldalak.js 1.): feher kartyak a fooldali szakerto-blokk ikonos koreivel, nagy sorszammal; asztalon 3, tableten 2 latszik,
-   mobilon egy (a kovetkezo szele kilog, ujjal huzhato), a nyilak helyett a szamlalo */
+/* a "9 ok" lapozo (a .kar sav, uj-oldalak.js 1.): feher kartyak, felul a Drive-rol valasztott valodi foto (a kepcimkezo tablazata alapjan, 3:2, a kivagas kesz:
+   assets/img/uj-ok-<n>.webp; csak a mostani csapat), a sarkaban rozsas korben a sorszam; asztalon 3, tableten 2 latszik, mobilon egy (a kovetkezo szele kilog,
+   ujjal huzhato), a nyilak helyett a szamlalo (a tulajdonos kerese, 2026-10-17: "tegyel bele fotokat ... olyan fotot, amit talalsz a Drive-on") */
 .ok-doboz{display:block;padding:34px 30px 26px}
 .ok-doboz .kat-fej{margin-bottom:22px}
-.ok-kar{position:relative}
+.ok-kar{position:relative;container-type:inline-size}
 .ok-kar .kar-sav{gap:18px;padding:4px 2px 16px}
-.ok-kar .kar-dia{position:relative;flex:0 0 calc((100% - 36px) / 3);display:flex;flex-direction:column;gap:10px;padding:22px 22px 24px;overflow:visible;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh-s);text-align:left}
-.ok-fej{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px}
-.ok-fej .kor{flex:none}
-.ok-szam{font-size:2.6rem;font-weight:800;line-height:1;color:var(--rose);opacity:.55;letter-spacing:-.02em}
+.ok-kar .kar-dia{position:relative;flex:0 0 calc((100% - 36px) / 3);display:flex;flex-direction:column;padding:0;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh-s);text-align:left}
+.ok-kep{position:relative;margin:0;aspect-ratio:3/2;background:var(--beige-l)}
+.ok-dia .ok-kep img{display:block;width:100%;height:100%;aspect-ratio:3/2;object-fit:cover}
+.ok-szam{position:absolute;left:18px;bottom:-22px;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:var(--rose);color:#fff;font-size:1.2rem;font-weight:800;line-height:1;box-shadow:0 4px 12px rgba(0,0,0,.16)}
+.ok-szoveg{display:flex;flex-direction:column;gap:10px;padding:34px 22px 24px}
 .ok-dia h3{margin:0;font-size:1.08rem;line-height:1.3;color:var(--navy)}
 .ok-dia p{margin:0;color:var(--mut);font-size:.93rem;line-height:1.6}
-.ok-kar .kar-gomb{top:calc(50% - 10px);width:46px;height:46px;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+/* a nyilak a fotok kozepenek magassagaban (a kartya szelessegebol: a sav 4 px-es felso resse + a 3:2-es foto fele) */
+.ok-kar .kar-gomb{top:calc(50% - 10px);top:calc(4px + (100cqw - 40px) / 9);width:46px;height:46px;box-shadow:0 3px 12px rgba(0,0,0,.18)}
 .ok-kar .kar-gomb:hover:not(:disabled){background:var(--rose);color:#fff}
 .ok-kar .kar-gomb .ik{width:22px;height:22px}
 .ok-kar .kar-elozo{left:-14px}
@@ -316,14 +319,15 @@
   /* a hos feliratos plakatja asztalon is egeszben: negyzetes keret (a galerias hos szabalya a szoveghasab magassagara vagta) */
   .belso .hos-racs>.hos-kep.hos-kep-negyzet{aspect-ratio:1/1;min-height:0;height:auto;width:100%;max-width:520px;justify-self:end;align-self:center}
 }
-@media (max-width:1000px){.ok-kar .kar-dia{flex-basis:calc((100% - 18px) / 2)}}
+@media (max-width:1000px){.ok-kar .kar-dia{flex-basis:calc((100% - 18px) / 2)}.ok-kar .kar-gomb{top:calc(4px + (100cqw - 22px) / 6)}}
 @media (max-width:760px){
   .piercingek-bev{margin:-6px 0 14px;font-size:.95rem}
   .ok-doboz{padding:22px 0 16px;text-align:center}
   .ok-doboz .kat-fej{margin-bottom:14px;padding-inline:16px}
   .ok-kar .kar-sav{gap:12px;padding:4px 16px 14px;scroll-padding-inline:16px}
-  .ok-kar .kar-dia{flex-basis:84%;padding:18px 18px 20px}
-  .ok-szam{font-size:2.2rem}
+  .ok-kar .kar-dia{flex-basis:84%}
+  .ok-szam{left:14px;bottom:-20px;width:42px;height:42px;font-size:1.1rem}
+  .ok-szoveg{padding:30px 18px 20px}
   .ok-kar .kar-gomb{display:none}
   .ok-kar .kar-szam{display:block;margin:0 auto;width:fit-content;padding:3px 14px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.82rem;font-weight:700}
 }
