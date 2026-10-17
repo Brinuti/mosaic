@@ -20,23 +20,26 @@ export const KEPEK = {
 };
 
 // Meta hirdetes-azonosito (ad.id) -> KEPEK kulcs. Fiok: MP2 hirdetesi fiok (303312235362247).
-// 03/04/05 KIKAPCSOLVA (2026-10-17, ChatGPT-javaslat): a kepen volt kollegano lehet; a tulajdonos megerositeseig az eredeti hos marad.
+// 04/05 KIKAPCSOLVA (2026-10-17, ChatGPT-javaslat): a kepen volt kollegano lehet; a tulajdonos megerositeseig az eredeti hos marad. 03 (Viki szemuveges): a tulajdonos engedelyezte (2026-10-17 18:26).
 export const HIRDETESEK = {
   '120254773736230022': 'koll-01', // KOLLÁZS ÚJ 10-17 - 01 Ricsi barna haj v3
   '120254773737480022': 'koll-02', // 02 Sopron férfi v3
-  // '120254773738570022': 'koll-03', // 03 Viki szemüveges v3
-  // '120254773870230022': 'koll-03', // 03 Viki szemüveges v4
+  '120254773738570022': 'koll-03', // 03 Viki szemüveges v3
+  '120254773870230022': 'koll-03', // 03 Viki szemüveges v4
   // '120254773739360022': 'koll-04', // 04 Viki idősebb férfi v3
   // '120254773741100022': 'koll-05', // 05 Brigitta barna haj v3
   '120254773742040022': 'koll-06', // 06 Fekete felsős rövid haj v3
   '120254773743140022': 'koll-07', // 07 Gabi fekete garbós v3
   '120254773870060022': 'koll-07', // 07 Gabi fekete garbós v4
   '120254773744650022': 'koll-08', // 08 Szivli Ricsi v3
+  // v6 (2026-10-17, adszet 120252935982690022)
+  '120254774199610022': 'koll-01', '120254774201250022': 'koll-02', '120254774201590022': 'koll-03',
+  '120254774203410022': 'koll-06', '120254774204070022': 'koll-07', '120254774204830022': 'koll-08',
 };
 
 // Tartalek a hirdetes neve alapjan (utm_content), ha az ad.id meg nincs a listaban (pl. masodpeldany).
 const NEV_SZABALYOK = [
-  [/KOLL[ÁA]ZS\s+[ÚU]J\s+10-17\s*-\s*0([12678])\b/i, (m) => 'koll-0' + m[1]],
+  [/KOLL[ÁA]ZS\s+[ÚU]J\s+10-17\s*-\s*0([123678])\b/i, (m) => 'koll-0' + m[1]],
 ];
 
 export function hosValasztas(url) {
@@ -53,6 +56,10 @@ export function hosValasztas(url) {
 }
 
 // A HTML-valaszban az elso <img fetchpriority="high"> kepet csereli, a kep-eloltolto <link> sort a sajat kepre irja.
+// A hirdetes-kepek negyzetesek (kollazs-panelek): a hos kerete is negyzetes lesz, csak a csereltnel (a tulajdonos kerese, 2026-10-17).
+const NEGYZET = '<style id="hirdetes-hos-negyzet">.hos-kep:has(>img[data-hirdetes-hos]){aspect-ratio:auto!important;min-height:0!important;height:auto!important;align-self:start}'
+  + 'img[data-hirdetes-hos]{position:static!important;display:block;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:1/1!important;object-fit:cover}</style>';
+
 export function hosCsere(valasz, kulcs) {
   const [alt, valt] = KEPEK[kulcs];
   const nagy = valt[valt.length - 1];
@@ -62,7 +69,7 @@ export function hosCsere(valasz, kulcs) {
   const ujValasz = new HTMLRewriter()
     .on('link[rel="preload"][as="image"]', { element(el) { el.remove(); } })
     .on('head', { element(el) {
-      el.append(`<link rel="preload" as="image" href="${D}${nagy[0]}" imagesrcset="${srcset}" imagesizes="(max-width: 820px) 100vw, 640px" fetchpriority="high">`, { html: true });
+      el.append(`<link rel="preload" as="image" href="${D}${nagy[0]}" imagesrcset="${srcset}" imagesizes="(max-width: 820px) 100vw, 640px" fetchpriority="high">` + NEGYZET, { html: true });
     } })
     .on('img[fetchpriority="high"]', { element(el) {
       if (kesz) return;
