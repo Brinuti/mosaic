@@ -3,8 +3,8 @@
 // A Salonic-fiok (medicalpiercing.salonic.hu) GTM-cimkeje tolti be (docs/salonic-atiranyitas-gtm.html), CSAK a legfelso ablakban:
 // a sajat motorunk keretben (iframe) nyitja a Salonic /guestData/ adatlapjat - ott ez a fajl le sem toltodik, es ha megis, itt is kilep.
 // Aki kozvetlenul a Salonic foglalo oldalaira erkezik (regi hirdetesek, Google-profil, konyvjelzo), az a www.medicalpiercing.hu
-// /idopontfoglalas cimere kerul (location.replace), ahol a motor betolteskor magatol megnyilik, a Salonic-cimbol kiolvashato
-// helyszinnel / kezelessel / szakemberrel; a kattintas-azonositok (fbclid, gclid, ttclid, utm_*) a cimben maradnak.
+// fooldalara kerul (location.replace; Feri, 2026-10-17: a foglalo NEM nyilik meg magatol, helyszint / kezelest nem valasztunk elo),
+// a kattintas-azonositok (fbclid, gclid, ttclid, utm_*) a cimben maradnak.
 //
 // NEM iranyit at: keretben; nem foglalo oldalon (adatlap /guestData/, /booking/*, /user/*, ajandekkartya, jogi oldalak, nyelvvaltas,
 // lemondas, "A foglalasod"); ha a cimben ismeretlen parameter van (pl. egy SMS-/e-mail-link azonositoja); ha a cimben, vagy ebben a
@@ -16,7 +16,7 @@
   'use strict';
   var BE = __ATIRANYITAS_BE__; // 1 | 0
   var SALONIC_HOST = 'medicalpiercing.salonic.hu';
-  var CEL = 'https://www.medicalpiercing.hu/idopontfoglalas';
+  var CEL = 'https://www.medicalpiercing.hu/'; // Feri, 2026-10-17: a fooldalra, a foglalo NEM nyilik meg magatol
   var KIKERULO = 'mp_nincs_atiranyitas';
   var TAROLO = 'mp_atiranyitas';
   // a Salonic foglalasi tolcserenek oldalai (minden mas: marad)
@@ -24,7 +24,6 @@
   // ismert parameterek; barmi mas (pl. foglalas-azonosito, token) eseten nem iranyitunk at
   var ISMERT = /^(placeid|employeeid|serviceid|specid|startdate|back|lang|_gl|fbclid|gclid|gbraid|wbraid|ttclid|msclkid|igsh|igshid|srsltid|mibextid|utm_[a-z_]+|hsa_[a-z_]+)$/i;
   var TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|msclkid|utm_[a-z_]+)$/i;
-  var szam = function (v) { return v && /^-?\d{1,9}$/.test(v) ? v : null; };
 
   /** A cel cime (string) vagy null, ha ezt a Salonic-cimet nem iranyitjuk at. Tiszta fuggveny (teszt: tools/salonic-atiranyitas-teszt.mjs). */
   function celCim(href) {
@@ -38,14 +37,6 @@
       if (!ISMERT.test(kulcsok[i])) return null;
     }
     var c = new URL(CEL);
-    var placeId = szam(p.get('placeId'));
-    var employeeId = szam(p.get('employeeId')) || (/^\/employees\/(\d+)/i.exec(u.pathname) || [])[1] || null;
-    var serviceId = szam(p.get('serviceId'));
-    var specId = szam(p.get('specId'));
-    if (placeId) c.searchParams.set('placeId', placeId);
-    if (serviceId && +serviceId > 0) c.searchParams.set('serviceId', serviceId);
-    if (employeeId && +employeeId > 0) c.searchParams.set('employeeId', employeeId);
-    if (specId) c.searchParams.set('specId', specId);
     for (i = 0; i < kulcsok.length; i++) {
       if (TOVABB.test(kulcsok[i]) && !c.searchParams.has(kulcsok[i])) c.searchParams.set(kulcsok[i], p.get(kulcsok[i]));
     }

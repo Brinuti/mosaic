@@ -1,5 +1,7 @@
 # Salonic-oldalak átirányítása a saját foglalómotorra
 
+> **Módosítás (Feri, 2026-10-17 14:04):** az átirányítás célja a **főoldal** (`https://www.medicalpiercing.hu/`), a foglaló **nem nyílik meg magától**, és helyszínt / kezelést / szakembert nem viszünk át a Salonic-címből (bizonytalan). Csak a kattintás-azonosítók (fbclid, gclid, ttclid, msclkid, utm_*) és az `mp_honnan=salonic` jelölő megy tovább; az alábbi, /idopontfoglalas-ra vonatkozó részek ennyiben módosulnak.
+
 Feri kérése (2026-10-17): aki közvetlenül (legfelső ablakban) a `medicalpiercing.salonic.hu` foglalóoldalaira érkezik – főleg régi
 hirdetések `.../showServices/...` linkjei –, automatikusan a saját foglalómotorunkba kerüljön, úgy, hogy a motor által keretben (iframe)
 használt Salonic-adatlap ne sérüljön. Élesítés előtt a Meta Schedule-párosítást le kellett ellenőrizni.
