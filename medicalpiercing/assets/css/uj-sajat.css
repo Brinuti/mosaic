@@ -429,7 +429,9 @@
   .tobb-doboz>.galeria{aspect-ratio:auto;height:auto;min-height:360px;contain:size;align-self:stretch}
 }
 @media (max-width:760px){
-  .hos-akcio{padding:12px 14px;text-align:center}
+  /* a mobil hos sorrendje: cim, kep, alcim, az akcios doboz, gombok (a .hos-szoveg itt display:contents, a sorrend az order-bol jon, uj-kategoria.css) */
+  .kat-hos-b .hos-akcio{order:3}
+  .hos-akcio{margin:0;padding:12px 14px;text-align:center}
   .hos-akcio .akcio-fej{justify-content:center}
   .akcio-arak-doboz{padding:12px 10px 10px}
   .akcio-arak-doboz .akcio-fej{justify-content:center}

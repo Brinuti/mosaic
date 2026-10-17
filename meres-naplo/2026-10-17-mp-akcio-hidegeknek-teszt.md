@@ -46,3 +46,10 @@ Nem érinti (a mérőkód fájljai nem változtak; a csomag-gomb a meglévő `da
   (5.033); a /regi/ archívum változatlan. Ellenőrzés: az összes új lap látható szövegében csak 5033 / 5.033 maradt.
 - tesztek (3. kör): `uj-oldalak-teszt` 174 oldal, 5769 ellenőrzés, 0 hiba; `uj-b-teszt` 1042 / rendben; `uj-fooldal-teszt` rendben; `meres-teszt` rendben;
   `csuszas-teszt`: az első futásban 1 lap jelzett (a párhuzamos tesztek terhelése alatt), az újrafuttatásban 206 + 206 lap, nincs csúszás
+
+## 4. kör – mobil hős sorrendje (2026-10-17)
+- A tulajdonos jelzése: mobilon az akciós doboz a cím fölé került. Ok: a mobil hősben a `.hos-szoveg` `display:contents`, a sorrend az `order`-ből jön (`uj-kategoria.css`),
+  az új `.hos-akcio` doboznak nem volt sorszáma, így elsőként jelent meg.
+- Javítás (`uj-sajat.css`): `.kat-hos-b .hos-akcio{order:3}`, mobilon a doboz alsó margója 0 (a gombsor saját 22 px-es térköze marad).
+- Mért sorrend (iPhone 13, 390 px): cím 123 → kép 221 → alcím 591 → akciós doboz 666 → gombok 883 → értékelés 991.
+- `uj-oldalak-teszt` (a két akció-cím) 63 / 0, `csuszas-teszt` 206 + 206 lap: nincs csúszás.
