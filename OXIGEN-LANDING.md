@@ -134,3 +134,26 @@ Szabályok / döntések:
 - Az oldalon továbbra is igaz: **nincs kötelező bérlet** (a szekcióban és a GYIK-ban is így szerepel).
 - A „konzultáció” = hajkamerás állapotfelmérés + konzultáció (a 4 990 Ft-os, illetve az első kezelés része); az „ingyenes” szó direkt nincs ott, mert az állapotfelmérés fizetős.
 - A bérletnek nincs gombja (a tulajdonos kérésére); a vásárlás útja nincs az oldalon kidolgozva. Nincs `data-cta`, nem küld mérési eseményt.
+
+## Férfi oxigén oldal (`/oxigenterapia-ferfiaknak`, 2026-10-17)
+
+A régi (Wixes) férfi oxigén oldal újrastílusa **ennek a landingnek a stílusában és komponenseivel** (`oxigen-landing.css` változatlanul), a tartalom **szó szerint a régi oldalból**
+(szöveg, kép, link, GYIK-válasz, ár – az elavult / hibás elemek is, lásd a PR „Észrevételek” részét). Folyamat: `docs/OLDAL_UJRASTILUS.md`.
+
+| Mit | Hol |
+|---|---|
+| oldal | `foglalas/oxigenterapia-ferfiaknak.html` (egy fájl az asztalinak és a mobilnak; a build a `klon/` azonos nevű oldalait felülírja) |
+| kiegészítő stílus (önálló, a landing CSS-éhez nem nyúl) | `assets/css/oxigen-ferfi.css` |
+| rejtett régi példány (noindex) | `klon/oxigenterapia-ferfiaknak-regi.html`, `klon/m/oxigenterapia-ferfiaknak-regi.html` (`tools/ujrastilus/regi-peldany.mjs`) |
+| teszt + a régi oldal kinyert tartalma | `tools/ujrastilus-teszt/oxigen-ferfi.test.mjs`, `tools/ujrastilus-teszt/forras/oxigen-ferfi.folyam.txt` |
+
+Szerkezet (a régi sorrendben): hero (egy kép a landing keretes galéria-dobozában) → „Így működik” (a landing zöld `.allapot` szekciója) → HAJ / ARC panaszok (kép + szöveg + pipa-lista) →
+4 eredmény-galéria (a landing lapozható `.ba` sora; a régi oldal galériái: 6 / 3 / 3 / 3 kép) → „3 ok” (`.miert-kartya`, 3 oszlop) → Trustindex (a régi oldal widgetje) → „Hány alkalom” →
+120 perces kezelés lépései → vegán termékek → árak (`.ar-kartya`, Haj csomag + Arc + Haj csomag) → palack / pisztoly → férfi vendégek → kezelőágy → szalon-galéria (a régi oldal **19 képes** galériája,
+`assets/js/galeriak.js`, `comp-mnn4k98w5`) → SZÉP Kártya → GYIK (10 kérdés, a válaszok az `assets/js/gyik.js`-ből, `c2eb0f_193bec92…`) → „Itt találsz meg minket” + térkép.
+
+- Nincs mérés: nincs `data-cta`, dataLayer-esemény; a gombok a régi oldal linkjére (`/foglalo-motor?business=oxygen`) mutatnak.
+- Nincs mobil sticky sáv: az `oxigen-landing.js` a `.jelek` szekcióhoz kötné, a régi férfi oldalon ilyen nincs (és új szöveget sem találtunk ki).
+- A Google-térkép a `klon.js` hozzájárulás-kapus megoldása (`window.MH_TABLAK.beagyazasok` → `#terkep-doboz`); a Trustindex az `oxigen-landing.js` `#ti-doboz[data-forras]` keretében.
+- A „Google 4,9 - 891 értékelésből” szám élő (a build által feltett `google-szam.js` az aktuális darabszámra cseréli); a „közel 1.000 véleményből” cím `data-gv-ki` jelölést kap, hogy ne cserélődjön.
+- A két dekorációs Wix szekció-háttérkép (GYIK: `nsplsh_38734f5a…`, térkép: `11062b_c6763028…`) nem került át (a landing stílusában nincsenek háttérképes szekciók).
