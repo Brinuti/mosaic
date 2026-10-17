@@ -131,39 +131,54 @@ test('HS-05 visszatero vendeg (uj_vendeg=false), normal es kuponos: csak Visszaj
   }
 });
 
-test('HS-06 a Zap kuponos levelenek FELTETELEZETT alakja (" (kupon)" utotag + az "E-mail cim:" mezo nem egyetlen e-mail token): az sd lefut, de az esemeny em NELKUL megy ki, nincs vendeg-index sor, az external_id pedig a TELJES szovegbol kepzett hash (mas, mint a vendeg tiszta e-mailjebol) - ez a mai eles kuponos HeadSpa esemenyek tuneteit (nincs em, nincs index-sor) reprodukalja', async () => {
+test('HS-06 (F1 javitva, DECISION #192) a kuponos level "E-mail cim:" mezoje az e-mail UTAN a kuponkod-sort is tartalmazza (elvalaszto nelkul is): az sd az ELSO e-mail-szeru tokent hasheli - az em, az external_id es a vendeg-index hash UGYANAZ, mint a normal levelnel -, a kuponkod sehova nem kerul; nincs e-mail -> csak ph, nincs index-sor', async () => {
   const s = KUPONOS[0];
   const TISZTA = 'teszt.claude@example.com';
   const kulcsok = (v) => Object.keys(metaTestek(v)[0].user_data);
-  const extId = (v) => JSON.stringify(metaTestek(v)[0].user_data.external_id);
-  const kimenet = {};
-  const esetek = [
-    ['ures', { vendeg: { email: '', telefon: '+36 30 000 0001' } }, ['ph']], // nincs e-mail: csak a telefon-hash
-    ['kuponkoddal', { vendeg: { email: `${TISZTA} Kuponkód: KUPXYZ9`, telefon: '+36 30 000 0001' } }, ['ph', 'external_id']], // egy mezoben az e-mail es a kuponkod szovege (a nem-mohon "E-mail cim:" regex ezt fogna)
+  const ud = (v, k) => JSON.stringify(metaTestek(v)[0].user_data[k]);
+  const tel = '+36 30 000 0001';
+  // kontroll: a normal levelnel (egyetlen e-mail token)
+  const kontroll = await jelolt(NORMAL[0].nev, { vendeg: { email: TISZTA, telefon: tel } });
+  await kontroll.v.sd(kontroll.b);
+  assert.deepEqual(kulcsok(kontroll.v), ['em', 'ph', 'external_id']);
+  const emH = await sha256hex(TISZTA);
+  assert.ok(ud(kontroll.v, 'em').includes(emH) && ud(kontroll.v, 'external_id').includes(emH));
+  const indexH = kontroll.v.sql('SELECT email_h FROM foglalas_vendeg')[0].email_h;
+  assert.ok(/^[0-9a-f]{32}$/.test(indexH));
+  // a kuponos level e-mail mezojenek lehetseges alakjai (3 valos level szerkezete: az e-mail, kozvetlenul utana a kuponkod-sor, elvalaszto biztositasa nelkul)
+  const alakok = [
+    ['szokozzel', `${TISZTA} Kupon kód: KUPXYZ9`],
+    ['ujsorral', `${TISZTA}\nKupon kód: KUPXYZ9`],
+    ['elvalaszto nelkul (osszeer)', `${TISZTA}Kupon kód: KUPXYZ9`],
+    ['nagybetuvel, tobb szokozzel', `  ${TISZTA.toUpperCase()}   KUPON KÓD:  KUPXYZ9 `],
+    ['ekezet nelkul, kettospont utan szokoz nelkul', `${TISZTA} Kupon kod:KUPXYZ9`],
+    ['angol cimke', `${TISZTA} Coupon code: KUPXYZ9`],
+    ['rovid cimke, osszeerve', `${TISZTA}Kupon:KUPXYZ9`],
   ];
-  for (const [nev, mod, varhato] of esetek) {
-    assert.equal(emailNormal(mod.vendeg.email), null, `${nev}: az emailNormal elutasitja (nem egyetlen e-mail token)`);
-    const { v, b } = await jelolt(`${s.nev} (kupon)`, mod);
+  for (const [nev, email] of alakok) {
+    assert.equal(emailNormal(email), TISZTA, `${nev}: az emailNormal a tiszta e-mailt adja`);
+    const { v, b } = await jelolt(`${s.nev} (kupon)`, { vendeg: { email, telefon: tel } });
     const r = await v.sd(b);
     assert.deepEqual([r.allapot, r.uzletag, r.jelleg, r.ertek_minoseg], ['kesz', 'headspa', 'elso', 'unknown_discount'], nev);
     assert.deepEqual(nevek(v, 'meta'), ['FoglalasElso'], nev);
-    assert.ok(!kulcsok(v).includes('em'), `${nev}: nincs e-mail-hash`);
-    assert.deepEqual(kulcsok(v), varhato, `${nev}: user_data kulcsok`);
-    assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 0, `${nev}: nincs ervenyes e-mail -> nincs index-sor`);
-    const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes'));
-    assert.ok(!/kupxyz9/i.test(mind), `${nev}: a kuponkod nyersen nem kerul ki / a naploba`);
-    kimenet[nev] = nev === 'kuponkoddal' ? extId(v) : null;
+    assert.deepEqual(kulcsok(v), ['em', 'ph', 'external_id'], `${nev}: user_data kulcsok (mint a normal levelnel)`);
+    assert.ok(ud(v, 'em').includes(emH), `${nev}: em = sha256(tiszta e-mail)`);
+    assert.ok(ud(v, 'external_id').includes(emH), `${nev}: external_id = sha256(tiszta e-mail) -> a vendeg a kuponos es a normal foglalasa kozott azonosithato`);
+    { const tt = JSON.stringify(tiktokTestek(v)[0].user); assert.ok(tt.includes(emH), `${nev}: TikTok user.email / external_id = sha256(tiszta e-mail)`); assert.equal(tt.split(emH).length - 1, 2, `${nev}: a TikTok-on mind az email, mind az external_id a tiszta e-mail hash-e`); }
+    assert.deepEqual(v.sql('SELECT email_h FROM foglalas_vendeg').map((x) => x.email_h), [indexH], `${nev}: a vendeg-index HMAC azonos a normal levelevel`);
+    const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_vendeg'));
+    assert.ok(!/kupxyz9/i.test(mind), `${nev}: a kuponkod nyersen nem kerul ki / a naploba / az indexbe`);
   }
-  // az external_id pontosan a nyers, trim-elt + kisbetusitett TELJES szoveg SHA-256-ja (nem a UUID-bol, nem a tiszta e-mailbol kepzett)
-  const nyers = `${TISZTA} Kuponkód: KUPXYZ9`;
-  assert.ok(kimenet.kuponkoddal.includes(await sha256hex(nyers.trim().toLowerCase())), 'external_id = sha256(teljes szoveg, kisbetusen)');
-  { // kontroll: a tiszta e-mail (a normal levelnel is) em + external_id; az external_id a TISZTA e-mailbol kepzett, ezert MAS, mint a kuponkodos szovegbol kepzett
-    const { v, b } = await jelolt(NORMAL[0].nev, { vendeg: { email: TISZTA, telefon: '+36 30 000 0001' } });
-    await v.sd(b);
-    assert.deepEqual(kulcsok(v), ['em', 'ph', 'external_id']);
-    assert.ok(extId(v).includes(await sha256hex(TISZTA)), 'external_id = sha256(tiszta e-mail)');
-    assert.notEqual(extId(v), kimenet.kuponkoddal, 'ugyanaz a vendeg a kuponos levelben MAS external_id-t kap (a vendeg nem azonosithato a ket foglalas kozott)');
-    assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 1);
+  // nincs e-mail: csak a telefon-hash, nincs index-sor, a kuponkod ekkor sem kerul sehova
+  for (const [nev, email] of [['ures', ''], ['csak kuponkod', 'Kupon kód: KUPXYZ9']]) {
+    assert.equal(emailNormal(email), null, nev);
+    const { v, b } = await jelolt(`${s.nev} (kupon)`, { vendeg: { email, telefon: tel } });
+    const r = await v.sd(b);
+    assert.deepEqual([r.allapot, r.uzletag], ['kesz', 'headspa'], nev);
+    assert.deepEqual(kulcsok(v), ['ph'], `${nev}: csak a telefon-hash`);
+    assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 0, `${nev}: nincs e-mail -> nincs index-sor`);
+    const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes'));
+    assert.ok(!/kupxyz9/i.test(mind), `${nev}: a kuponkod nem kerul ki`);
   }
 });
 test('HS-07 kapcsolo-elkulonites es visszagorgetes: salonic_direct:pmu=1 NEM kapcsolja be a HeadSpat; salonic_direct:headspa=1 be, =0 ki; a PMU-t nem erinti', async () => {
