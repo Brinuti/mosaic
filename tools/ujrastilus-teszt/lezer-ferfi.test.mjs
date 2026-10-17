@@ -1,5 +1,6 @@
-// A regi (Wixes) "Vegleges lezeres szortelenites ferfiaknak" oldal (vegleges-szortelenites-ferfiaknak) ujrastilusa bongeszos tesztjei (Playwright). Nincs dist/ es nincs kulso halozat: a konnyu helyi szerver (tools/headspa-teszt/szerver.mjs)
-// allitja ossze az oldalt.
+// A regi (Wixes) "Vegleges lezeres szortelenites ferfiaknak" oldal (vegleges-szortelenites-ferfiaknak) ujrastilusa (a /lezeres-szortelenites-budapest landing stilusaban + komponenseivel:
+// assets/css/lezer-landing.css + assets/css/lezer-ferfi-landing.css) bongeszos tesztjei (Playwright). Nincs dist/ es nincs kulso halozat: a konnyu helyi szerver
+// (tools/headspa-teszt/szerver.mjs) allitja ossze az oldalt.
 //
 //   node --test tools/ujrastilus-teszt/lezer-ferfi.test.mjs
 //
@@ -83,7 +84,43 @@ describe(`/${NEV}`, () => {
     assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('main h1')).fontFamily), /Playfair Display/);
     assert.deepEqual(nincs, [], '404-es helyi kereseik');
     assert.deepEqual(hibak, []);
+    // a hero kep elotoltve (fetchpriority=high), a tobbi kep lusta (a hero-kepen es az ertekeles-csillagon kivul); minden kepnek szeles / magas
+    const html = await p.content();
+    assert.match(olvas(`foglalas/${nev}.html`), /<link rel="preload" href="\/assets\/img\/c2eb0f_ed3e3ce785064556bc644c86c7777436\.jpg" as="image" fetchpriority="high">/);
+    assert.equal(await p.locator('.hero-kep img[fetchpriority="high"]').count(), 1);
+    assert.deepEqual(await p.$$eval('main img', (l) => l.filter((i) => !i.getAttribute('width') || !i.getAttribute('height')).map((i) => i.getAttribute('src'))), [], 'width / height nelkuli kepek');
+    // (a forras-HTML-bol: a nyit() a gorgetes elott a lusta kepeket kenyszeritve betolti)
+    const forrasKepek = [...olvas(`foglalas/${nev}.html`).matchAll(/<img\s[^>]*>/g)].map((m) => m[0]);
+    assert.deepEqual(forrasKepek.filter((t) => !/loading="lazy"/.test(t)).map((t) => /src="([^"]*)"/.exec(t)[1]), ['/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png', '/assets/img/c2eb0f_ed3e3ce785064556bc644c86c7777436.jpg'], 'nem lusta kepek: csak a hero-ertekeles csillagai es a hero-kep');
+    // nincs meroKod / nyomkovetes az oldalon (a suti.js utvonal-alapu; az oldal neve ugyanaz)
+    assert.doesNotMatch(olvas(`foglalas/${nev}.html`), /data-cta|dataLayer|gtag\(|fbq\(|ttq\.|googletagmanager|connect\.facebook/);
+    assert.ok(html.length > 10000);
     await ctx.close();
+  });
+
+  test('STILUS: a /lezeres-szortelenites-budapest landing komponensei (lezer-landing.css) + a sajat kiegeszito CSS; NEM a regi rendszer (headspa-oldal.css / lezer-variansok.css); a szinek / betuk / gombok azonosak a mintaoldaleval', async () => {
+    const src = olvas(`foglalas/${nev}.html`);
+    assert.ok(src.includes('<link rel="stylesheet" href="/assets/css/lezer-landing.css">'), 'lezer-landing.css');
+    assert.ok(src.includes('<link rel="stylesheet" href="/assets/css/lezer-ferfi-landing.css">'), 'lezer-ferfi-landing.css');
+    assert.ok(src.indexOf('lezer-landing.css') < src.indexOf('lezer-ferfi-landing.css'), 'a kiegeszito CSS a minta CSS UTAN toltodik');
+    assert.doesNotMatch(src, /headspa-oldal\.css|lezer-variansok\.css/, 'a regi rendszer stilusai nincsenek hasznalatban');
+    assert.ok(fs.existsSync(path.join(GYOKER, 'assets/css/lezer-ferfi-landing.css')));
+    const jellemzok = () => ({
+      body: getComputedStyle(document.body).backgroundColor + '|' + getComputedStyle(document.body).fontFamily,
+      h1: getComputedStyle(document.querySelector('main h1')).fontFamily + '|' + getComputedStyle(document.querySelector('main h1')).color,
+      arany: getComputedStyle(document.querySelector('main .gomb-arany')).backgroundImage + '|' + getComputedStyle(document.querySelector('main .gomb-arany')).borderRadius,
+      hero: getComputedStyle(document.querySelector('main .hero')).backgroundImage,
+      kartya: getComputedStyle(document.querySelector('main .alkalmas-kartya, main .elony-kartya')).borderRadius,
+      helyszin: getComputedStyle(document.querySelector('main .helyszin')).backgroundColor,
+      gyik: getComputedStyle(document.querySelector('main .harmonika-racs summary')).backgroundColor + '|' + getComputedStyle(document.querySelector('main .harmonika-racs details')).backgroundColor,
+    });
+    const a = await nyit(nev), b = await nyit('lezeres-szortelenites-budapest');
+    const ja = await a.p.evaluate(jellemzok), jb = await b.p.evaluate(jellemzok);
+    // a hero hatterkep (gradiens), a testszin, a cim-betu, az arany gomb, a kartyak, a helyszin, a GYIK: ugyanaz, mint a mintaoldalon
+    assert.deepEqual(ja, jb);
+    // a komponensek ott vannak: hero, arany gombok, harmonika-GYIK, helyszin, Trustindex-doboz
+    for (const sel of ['.hero .hero-kep img', '.gomb.gomb-arany', '.harmonika-racs details', '.helyszin .hely-sor', '#trustindex', '.kedv-sor', '.rombusz']) assert.ok(await a.p.locator(sel).count() > 0, sel);
+    await a.ctx.close(); await b.ctx.close();
   });
 
   test('a regi oldal MINDEN szovege, kepe, linkje megvan (tartalom-hűseg): sorok, gombok, arkartyak, GYIK, kepek', async () => {
@@ -112,13 +149,13 @@ describe(`/${NEV}`, () => {
     const regiLinkek = sorok.filter((s) => s.t === 'GOMB').map((s) => /\s->\s+(\S+)\s*$/.exec(s.raw)?.[1]).filter(Boolean);
     assert.deepEqual([...new Set(regiLinkek)].filter((h) => !hrefek.includes(h)), [], 'hianyzo linkek');
     // arkartyak: 2 csomag + 4 testresz-csoport (3 + 3 + 4 + 3 sor)
-    assert.equal(await p.locator('.lv-csomag').count(), 2);
-    assert.equal(await p.locator('.lv-tr-csoport').count(), 4);
-    assert.equal(await p.locator('.lv-tr-tetel').count(), 13, 'HAT / MELL / HAS 3 + ARC 3 + TEST 4 + 2 LAB 3 sor');
-    assert.equal(await p.locator('.lv-promo').count() >= 6, true, 'a "20% majusi kedvezmennyel!" sorok');
+    assert.equal(await p.locator('.fl-csomag').count(), 2);
+    assert.equal(await p.locator('.fl-tr-csoport').count(), 4);
+    assert.equal(await p.locator('.fl-tr-tetel').count(), 13, 'HAT / MELL / HAS 3 + ARC 3 + TEST 4 + 2 LAB 3 sor');
+    assert.equal(await p.locator('.kedv-sor, .fl-promo').count() >= 12, true, 'a "20% majusi kedvezmennyel!" sorok');
     assert.equal(await p.locator('[data-video]').count(), 0, 'a ferfi oldalon nincs video');
-    // Trustindex + GYIK
-    assert.equal(await p.getAttribute('#trustindex', 'data-embed'), '/assets/embed/c2eb0f_614b09d160b9382c4cffcde6d7828dcb.html');
+    // Trustindex: a minta-oldal (/lezeres-szortelenites-budapest) csuszkas widgetje (a regi oldal 8a7562c4... widgetje lebego tipusu, nagy ures teruletet hagyna; ugyanazok a Google-velemenyek)
+    assert.equal(await p.getAttribute('#trustindex', 'data-embed'), '/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html');
     const gy = JSON.parse(/window\.MH_GYIK = (\{[\s\S]*\});?\s*$/.exec(olvas('assets/js/gyik.js'))[1])['c2eb0f_7101a51e50aef2435d5ed679e90074d4'];
     const kerdesek = await p.$$eval('main .gyik details', (l) => l.map((d) => ({ k: d.querySelector('summary').textContent.trim(), v: d.querySelector('.gy-valasz').textContent })));
     assert.equal(kerdesek.length, gy.length);
@@ -150,25 +187,30 @@ describe(`/${NEV}`, () => {
     assert.ok(!olvas('tools/lcp-elofeltoltes.json').includes(`"${nev}"`), 'LCP-tabla');
   });
 
-  test('mukodes: a galeria lapozo gombja mozgatja a savot (9 kep); a GYIK harmonika nyilik; a terkep-gomb betolti a terkepet; a foglalo-gombok linkje valtozatlan', async () => {
+  test('mukodes: a szalon-kepek racsa (9 kep); a GYIK harmonika nyilik (10 kerdes, a regi valaszokkal); a terkep-gomb betolti a terkepet; a Trustindex-keret betoltodik; a foglalo-gombok linkje valtozatlan', async () => {
     const { p, ctx } = await nyit(nev);
-    const sav = p.locator('.korhinta-sav');
-    await sav.scrollIntoViewIfNeeded();
-    assert.equal(await sav.locator('figure').count(), 9, 'szalon-galeria: 9 kep');
-    const elotte = await sav.evaluate((e) => e.scrollLeft);
-    await p.locator('.korhinta-gomb.kovetkezo').click();
-    await p.waitForTimeout(700);
-    assert.ok(await sav.evaluate((e) => e.scrollLeft) > elotte, 'a lapozo mozgatja a savot');
+    assert.equal(await p.locator('.fl-szalon-racs figure img').count(), 9, 'szalon-galeria: 9 kep');
+    assert.equal(await p.locator('.korhinta').count(), 0, 'nincs regi korhinta');
     const elso = p.locator('.gyik details').first();
+    await elso.locator('summary').scrollIntoViewIfNeeded();
     await elso.locator('summary').click();
     assert.equal(await elso.evaluate((d) => d.open), true);
     assert.match(await elso.locator('.gy-valasz').innerText(), /Crystal Freeze/);
+    const utolso = p.locator('.gyik details').last();
+    await utolso.locator('summary').click();
+    assert.match(await utolso.locator('.gy-valasz').innerText(), /SZIGORÚAN TILOS/);
     assert.match(await p.locator('#terkep-hely').innerText(), /Térkép: a tartalom külső szolgáltatótól \(Google\) töltődik be\./);
     await p.locator('#terkep-gomb').scrollIntoViewIfNeeded();
     await p.locator('#terkep-gomb').click();
     await p.waitForSelector('#terkep iframe', { timeout: 3000 });
+    // a Trustindex az azonos eredetu embed-fajlt iframe-ben tolti (a kulso loader a tesztben le van tiltva)
+    assert.equal(await p.locator('#trustindex iframe.ti-keret').count(), 1);
+    assert.match(await p.getAttribute('#trustindex iframe.ti-keret', 'src'), /\/assets\/embed\/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6\.html$/);
     const foglal = await p.$$eval('main a[href^="/foglalo-motor"]', (l) => l.map((a) => a.getAttribute('href')));
     assert.ok(foglal.includes('/foglalo-motor?business=laser'), 'foglalo-link');
+    assert.ok(foglal.length >= 14, 'a regi oldal foglalo-gombjai: ' + foglal.length);
+    assert.deepEqual([...new Set(foglal)], ['/foglalo-motor?business=laser'], 'minden foglalo-gomb a regi oldal linkjere mutat (nincs naptar / Salonic-link: a foglalasi folyamat valtozatlan)');
+    assert.equal(await p.locator('#foglalas, #foglalo, #arlista, #szamolo, a[data-terulet]').count(), 0, 'a noi landing arlistaja / kalkulatora / idopont-valasztoja nincs az oldalon');
     await ctx.close();
   });
 
@@ -178,7 +220,8 @@ describe(`/${NEV}`, () => {
       assert.equal(await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), 0, 'vizszintes tobblet');
       const kilog = await p.$$eval('main img', (l) => l.filter((i) => !i.closest('.korhinta') && i.getBoundingClientRect().right > innerWidth + 1).map((i) => i.currentSrc.split('/').pop()));
       assert.deepEqual(kilog, [], 'kikilogo kepek');
-      assert.ok(await p.locator('.lv-csomag').first().isVisible());
+      assert.ok(await p.locator('.fl-csomag').first().isVisible());
+      assert.ok(await p.locator('.fl-tr-csoport').first().isVisible());
       await ctx.close();
     });
   }

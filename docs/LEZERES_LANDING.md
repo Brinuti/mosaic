@@ -16,6 +16,13 @@ kérésére, 2026-10-04): a korábbi Wixes klón helyét vette át (a `foglalas/
 | `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (84 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
+## A férfi oldal (`/vegleges-szortelenites-ferfiaknak`) ugyanezt a stílust használja (2026-10-17)
+
+A régi férfi oldal (Feri kérése: „még a régi rendszer szerint készült el, nem szép”) a landing **komponenseivel** készült újra: `assets/css/lezer-landing.css` (hero, kártyák, arany gombok, harmonika-GYIK, helyszín, Trustindex-doboz) + a csak a férfi oldalra való
+`assets/css/lezer-ferfi-landing.css`. A **tartalom szó szerint a régi férfi oldalé** (nem a női landingé: a női képek / árak / ikonok nincsenek rajta), a foglaló-gombok a régi `/foglalo-motor?business=laser` linkek.
+A női landing `lezer-landing.js`-e (árlista-tábla, kalkulátor, naptár) itt **nincs** használatban (a női árakra / Salonic-szolgáltatásokra épül); a Trustindex-keretet / térképet a `headspa-oldal.js` kezeli. Részletek: `tools/lezer-variansok/README.md`.
+A `lezer-landing.css` módosítása a férfi oldalt is érinti (a közös komponensek), ezért a CSS-változtatás után a férfi oldalt is nézd meg (`tools/ujrastilus-teszt/lezer-ferfi.test.mjs` a stílus-azonosságot is ellenőrzi).
+
 ## Ajándékkártya (2026-10-07, a tulajdonos kérése)
 
 A hero gombsorában a „Szabad kezelési időpontok” gomb mellett egy **„Ajándékkártya”** gomb áll, utána (2026-10-07, a tulajdonos kérése) az „Ingyenes konzultáció” már csak egyszerű, aláhúzott szöveges link (`.cta-link`, nem gomb; mobilon középre kerül). Az Ajándékkártya gomb közvetlen oldal-link a `/lezeres-ajandekkartya` oldalra (nem hash, nem Salonic, ugyanabban az ablakban). A garancia után, Zsófi előtt külön szekció (`#ajandek`, `.ajk`): „Személyre szabott ajándékkártya!”, a lézeres mockup-kép (`assets/img/ajandek/atadas-szemelyre-lezer.jpg`), három pont (PDF, személyre szabható, 6 hónap) és az „Ajándékkártyát választok” gomb. A kártya-oldal és a vásárlás leírása: `AJANDEK.md` („Lézeres szőrtelenítés ajándékkártya”). Teszt: `node --test tools/lezer-teszt/ajandek-link.test.mjs` (statikus, build nélkül).

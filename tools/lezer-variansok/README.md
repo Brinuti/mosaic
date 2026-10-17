@@ -19,10 +19,13 @@ A hét oldal ugyanazt a sablont követi (az élő `/lezeres-szortelenites-budape
 - Teszt: `node --test tools/ujrastilus-teszt/lezer-variansok.test.mjs` (könnyű szerver, dist nélkül): betöltés, meta, H1, tartalom-hűség (a kinyert sorok ÉS a régi HTML minden szövegcsomópontja), képek, linkek,
   árkártyák, GYIK, videó, körhinta, telefon (390 / 360 px), `-regi` fájlok.
 
-## A férfi oldal: `vegleges-szortelenites-ferfiaknak`
+## A férfi oldal: `vegleges-szortelenites-ferfiaknak` (már NEM ebből a rendszerből készül)
 
-Külön generátor: `node tools/lezer-variansok/gen-ferfi.mjs` (forrás: `forras/ferfi.folyam.txt`; a segédfüggvényeket a `gen.mjs`-ből használja). **Indexelhető** marad (a régi oldal sem volt noindex).
-Eltérések a női oldalaktól: a konzultáció-szakaszban fotó van (nem videó), nincs Elysion-összehasonlítás, az árlista férfi csomagokat / testrészeket mutat (2 csomag, 4 testrész-csoport),
-a galéria 9 képes, a helyszín-szakaszban a klon.js hozzájárulás-kapus Google-térkép áll (szövegei a régi oldaléi).
-- A `brutalis-simasag` kép (`d25d1e56…`) a régi oldalon a konzultáció- és a „Felejtsd el a pengét” doboz **takart** háttere (a látszó kép a doboz bal oldali csempéje): az új oldalra nem került.
-- Teszt: `node --test tools/ujrastilus-teszt/lezer-ferfi.test.mjs`. Rejtett régi példány: `/vegleges-szortelenites-ferfiaknak-regi`.
+A férfi oldal **kikerült** ebből a sablonrendszerből: a `/lezeres-szortelenites-budapest` landing stílusában és komponenseivel készült újra (Feri kérése, 2026-10-17: „ez még a régi rendszer szerint készült el, nem szép”).
+- **Nincs generátora.** A korábbi `gen-ferfi.mjs` (és a `gen.mjs` segédfüggvényeire épülő `lv-*` sablon) kivezetve (törölve; a git előzményben megvan). A `foglalas/vegleges-szortelenites-ferfiaknak.html` **kézzel szerkesztett HTML**.
+- Stílus: `assets/css/lezer-landing.css` (a női landing komponensei: hero, kártyák, arany gombok, harmonika-GYIK, helyszín) + a csak erre az oldalra való `assets/css/lezer-ferfi-landing.css` (utána töltődik be). A `lezer-variansok.css` / `headspa-oldal.css` ezen az oldalon már nincs használatban.
+- Működés: `assets/js/headspa-oldal.js` (Trustindex-keret, Google-térkép hozzájárulás-kapuval). A `lezer-landing.js` a női árlista tábláját / kalkulátorát / naptárát várja, ezért ide nem jó: a foglaló-gombok a régi oldal `/foglalo-motor?business=laser` linkjei, változatlanul.
+- Tartalom: szó szerint a régi (Wixes) oldalról (a `forras/ferfi.folyam.txt` + `ferfi.json` a régi oldal kinyert tartalma; **ezek maradnak**, a teszt és az `ellenor.mjs` ezekhez méri). Az árak / „májusi 20%” / „nyárra” a régi oldalé, nem javítottuk (lásd a PR „Észrevételek”).
+  Csak a megjelenés új: a ✅ jelek helyett a minta ikonjai; a hero H1 két sorra bontva (főcím + arany ajánlat-sor, mint a mintán; a szöveg ugyanaz); a Trustindex a minta csúszkás widgetje (`95e68e62…`), mert a régi oldal `614b09d1…` widgetje lebegő típusú (nagy üres területet hagy).
+- A régi `brutalis-simasag` kép (`d25d1e56…`) a régi oldalon a konzultáció- és a „Felejtsd el a pengét” doboz **takart** háttere volt (a női „Hónalj előtte / utána” kép), az új oldalra nem került.
+- Teszt: `node --test tools/ujrastilus-teszt/lezer-ferfi.test.mjs` (a régi oldal minden szövege / képe / linkje + stílus-azonosság a mintaoldallal + 390 / 360 px). Rejtett régi példány: `/vegleges-szortelenites-ferfiaknak-regi` (változatlan).
