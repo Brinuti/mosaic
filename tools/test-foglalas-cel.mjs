@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fejlecAtalakit, foglalasCel, FOGLALAS_JELOLO } from './fejlec-menu.mjs';
+import { fejlecAtalakit, foglalasCel, FOGLALAS_JELOLO, nyitvatartasHetkoznap, NYITVATARTAS_JELOLO } from './fejlec-menu.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const darab = (n) => fs.readFileSync(path.join(ROOT, 'assets/fejlec', n + '.html'), 'utf8');
@@ -71,4 +71,22 @@ test('ismetelhetetlen-biztos: ketszer alkalmazva ugyanaz', () => {
   const x = epit('business=oxygen&service=466147');
   assert.equal(foglalasCel(x.fa, 'business=oxygen&service=466147'), x.fa);
   assert.equal(foglalasCel(x.la, 'business=oxygen&service=466147'), x.la);
+});
+
+test('nyitvatartas-jelolo: a lablec es az Info-ablak csak a hetkoznapokat irja (szombat / vasarnap nincs), jelolo nelkul a kozos szoveg marad', () => {
+  const alap = epit(null);
+  assert.ok(/Hétfő – Szombat/.test(alap.la) && /Vasárnap/.test(alap.la), 'alapbol Hetfo - Szombat + Vasarnap');
+  assert.ok(/Hétfő – Szombat/.test(alap.fa), 'az Info-ablakban is');
+  assert.ok(NYITVATARTAS_JELOLO.test('<!--mh-nyitvatartas:hetkoznap-->') && !NYITVATARTAS_JELOLO.test('<main></main>'));
+  for (const nev of ['fa', 'fm', 'la', 'lm']) {
+    const uj = nyitvatartasHetkoznap(alap[nev]);
+    assert.ok(!/Szombat|Vasárnap|ZÁRVA/.test(uj.replace(/Ajándékkártya/g, '')), nev + ': nincs szombat / vasarnap / zarva');
+    assert.equal(nyitvatartasHetkoznap(uj), uj, nev + ': idempotens');
+  }
+  assert.ok(nyitvatartasHetkoznap(alap.la).includes('Hétfő – Péntek: 8:00 – 20:00'));
+  assert.ok(nyitvatartasHetkoznap(alap.fa).includes('<b>Hétfő – Péntek:</b> 8:00 – 20:00'));
+  assert.ok(!nyitvatartasHetkoznap(alap.fa).includes('mhp-sor-masodik'));
+  // a masik atalakitassal egyutt is jo (a build ebben a sorrendben hivja)
+  const egyutt = nyitvatartasHetkoznap(foglalasCel(alap.la, 'business=laser'));
+  assert.ok(egyutt.includes('business=laser') && egyutt.includes('Hétfő – Péntek'));
 });

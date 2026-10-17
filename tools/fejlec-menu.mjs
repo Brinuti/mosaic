@@ -262,6 +262,16 @@ export function foglalasCel(html, jelolo) {
     .replace(/(class="mhl-gomb" )href="\/foglalo-motor\?business=headspa"/g, (m, a) => a + 'href="' + cel + '"');
 }
 
+// Nyitvatartas-jelolo: <!--mh-nyitvatartas:hetkoznap--> -> a lablec es az Info-ablak CSAK a hetkoznapi nyitvatartast irja ("Hetfo - Pentek: 8:00 - 20:00"); a szombatrol / vasarnaprol
+// nem all semmi (a szombati nyitvatartas megerositesre var, a mostani oldalak ellentmondanak egymasnak: brief 6. pont). Jelolo nelkul a kozos "Hetfo - Szombat" szoveg marad.
+export const NYITVATARTAS_JELOLO = /<!--mh-nyitvatartas:hetkoznap-->/;
+export function nyitvatartasHetkoznap(html) {
+  return html
+    .replace('Hétfő – Szombat: 8:00 – 20:00<br>Vasárnap: ZÁRVA', 'Hétfő – Péntek: 8:00 – 20:00')
+    .replace('<b>Hétfő – Szombat:</b> 8:00 – 20:00', '<b>Hétfő – Péntek:</b> 8:00 – 20:00')
+    .replace(/<p class="mhp-sor mhp-sor-masodik">(?:(?!<\/p>)[\s\S])*?<\/p>/, '');
+}
+
 
 // Az "Októberi akció" (pink) felső sáv CSAK a Head Spa oldalakon látszik (a tulajdonos kérése, 2026-10-09): ezek az oldalak az <html> elemen
 // data-mh-headspa jelölőt kapnak (build + helyi tesztszerver), a közös fejlec-lablec.css pedig minden más oldalon elrejti a sávot

@@ -35,7 +35,8 @@ Az átalakítások **ismételhetetlen-biztosak** (az átalakított fejlécen nem
 A közös darabokban a **FOGLALÁS menügomb** (asztali + mobil) a régi `/idpontfoglalas` oldalra, az **Infó-ablak** és a **lábléc** „Időpontfoglalás” gombja a `business=headspa` foglalóra mutat. Egy saját oldal (`foglalas/*.html`)
 az üzletága foglalójára irányíthatja mindhármat: a forrásában `<!--mh-foglalas:business=laser&service=konzult-->` (a paraméterek: `business=headspa|hair|oxygen|laser|pmu`, opcionálisan `service` / `staff` / `category`;
 bármi más → a build hibával leáll). A build (`tools/netlify-build.mjs`) a fejléc- és lábléc-darabra alkalmazza (`foglalasCel`, `tools/fejlec-menu.mjs`); jelölő nélkül semmi nem változik. Az oldal törzsében lévő
-linkeket ez nem érinti (azokat az oldal tesztjének kell ellenőriznie: nincs `/idpontfoglalas`, nincs `/mosaic-hair-idopontfoglalas`). Teszt: `node --test tools/test-foglalas-cel.mjs`.
+linkeket ez nem érinti (azokat az oldal tesztjének kell ellenőriznie: nincs `/idpontfoglalas`, nincs `/mosaic-hair-idopontfoglalas`). A `<!--mh-nyitvatartas:hetkoznap-->` jelölő a **lábléc és az Infó-ablak nyitvatartását** „Hétfő – Péntek: 8:00 – 20:00”-ra szűkíti (a szombatról / vasárnapról semmi nem áll rajta: a szombati nyitvatartás megerősítésre vár, a mostani oldalak ellentmondanak egymásnak; brief 6. pont); jelölő nélkül a közös „Hétfő – Szombat” szöveg marad.
+Teszt: `node --test tools/test-foglalas-cel.mjs`.
 
 ## Angol oldalak (`<!--mh-nyelv:en-->`)
 Ha egy saját oldal forrásában (a `<!--mh-fejlec-->` után) ott van a `<!--mh-nyelv:en-->` jelölő: angol menücímkék (Couples Head Spa, Laser hair removal, …), angol akciósáv, a GYIK pont elmarad (a magyar nyitóoldal GYIK-jára vinne), a Kapcsolat az oldal saját `#helyszin` szekciójára ugrik, a nyelvváltó „HU”, a lábléc angol. Az oldalnak tehát kell egy `id="helyszin"` szekció.

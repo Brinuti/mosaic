@@ -26,7 +26,7 @@ import { pathToFileURL } from 'node:url';
 import { ritkit } from './css-ritkitas.mjs';
 import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
 import { popupAtkot } from './halott-popup.mjs';
-import { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo, FOGLALAS_JELOLO, foglalasCel } from './fejlec-menu.mjs';
+import { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo, FOGLALAS_JELOLO, foglalasCel, NYITVATARTAS_JELOLO, nyitvatartasHetkoznap } from './fejlec-menu.mjs';
 import { personaOldal } from './ajandek-variansok/elore-render.mjs';
 import { CSP_CRM } from '../crm/lib/http.js';
 
@@ -82,6 +82,7 @@ for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.ends
     if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, m === LAP_M);
     let lablec = fejlecAtalakit(resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]), m === LAP_M, angol);   // az uj lablec
     if (foglalasJel) { fejlec = foglalasCel(fejlec, foglalasJel); lablec = foglalasCel(lablec, foglalasJel); }
+    if (NYITVATARTAS_JELOLO.test(forras)) { fejlec = nyitvatartasHetkoznap(fejlec); lablec = nyitvatartasHetkoznap(lablec); }   // <!--mh-nyitvatartas:hetkoznap-->: a szombati nyitvatartas megerositesig csak H-P
     const kozosCss = '<style data-forras="fejlec-lablec">' + FEJLEC_CSS + '</style>';
     if (fejlec) fejlec += kozosCss; else if (lablec) lablec += kozosCss;
     fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec));
