@@ -1,0 +1,47 @@
+// Valaszado kepek az uj oldalakon (a build hivja, tools/build.mjs; gyorsitas, 2026-10-17): a Lighthouse / PageSpeed minden oldalon a
+// "Properly size images" tetelt jelezte (pl. a blogcikkek 2560 px-es fotoi, a szalon-galeria 1936 px-es kepei egy 300 px-es helyen).
+// A <img src="/assets/img/<kep>"> kap egy srcset-et a kisebb valtozatokkal (tools/kep-valtozatok.py -> assets/img/valtozat/, jegyzek.json)
+// es egy sizes-t a kep valodi megjelenesi szelessegebol (tools/kep-meretek.mjs -> uj-oldalak/kep-meretek.json, lapankent, asztali / mobil):
+// a bongeszo a kepernyohoz (es a pixelsuruseghez) illo meretet tolti. A src marad az eredeti (a kepnagyito is azt nyitja, uj-oldalak.js).
+// A JPG / PNG kepek WebP-valtozatot is kapnak az eredeti meretben (modern formatum). Ahol nincs mert meret (uj kep, uj lap), a kep valtozatlan marad.
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+
+const TARTALEK = 1.15;   // a mert szelesseg folott ennyivel nagyobb helyre szamolunk (kis elrendezes-valtozas ne tegye homalyossa a kepet)
+
+export function valaszadoKepek(ROOT, DIST) {
+  const jp = path.join(ROOT, 'assets/img/valtozat/jegyzek.json'), mp = path.join(ROOT, 'uj-oldalak/kep-meretek.json');
+  if (!fs.existsSync(jp) || !fs.existsSync(mp)) return 'nincs valtozat-jegyzek vagy mert meret: kihagyva';
+  const jegyzek = JSON.parse(fs.readFileSync(jp, 'utf8')), meretek = JSON.parse(fs.readFileSync(mp, 'utf8'));
+  const jelek = new Map();
+  const jel = (f) => {
+    if (!jelek.has(f)) { const p = path.join(DIST, 'assets/img/valtozat', f); jelek.set(f, fs.existsSync(p) ? crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex').slice(0, 8) : null); }
+    return jelek.get(f);
+  };
+  let lapDb = 0, kepDb = 0;
+  for (const [kulcs, kepek] of Object.entries(meretek)) {
+    const fajl = path.join(DIST, kulcs + '.html');
+    if (!fs.existsSync(fajl)) continue;
+    const mobil = kulcs.startsWith('_m/');
+    const h = fs.readFileSync(fajl, 'utf8');
+    const u = h.replace(/<img\b[^>]*>/g, (tag) => {
+      if (/\ssrcset=/.test(tag)) return tag;
+      const m = tag.match(/\ssrc="\/assets\/img\/([^"?#]+)((?:\?[^"#]*)?)"/);
+      if (!m) return tag;
+      const nev = m[1], j = jegyzek[nev], w = kepek[nev];
+      if (!j || !w) return tag;
+      const alap = nev.replace(/\.[^./]+$/, '');
+      const elemek = [];
+      for (const vw of j.valtozatok) { const v = jel(`${alap}-${vw}.webp`); if (v) elemek.push(`/assets/img/valtozat/${alap}-${vw}.webp?v=${v} ${vw}w`); }
+      if (!elemek.length) return tag;
+      if (!j.valtozatok.includes(j.w)) elemek.push(`/assets/img/${nev}${m[2]} ${j.w}w`);
+      const vw = (px, szeles) => Math.min(100, Math.ceil((px * TARTALEK / szeles) * 100));
+      const sizes = mobil ? `${vw(w[0], 390)}vw` : `(max-width: 1000px) ${vw(w[1], 820)}vw, (min-width: 1440px) ${Math.ceil(w[0] * TARTALEK)}px, ${vw(w[0], 1440)}vw`;
+      kepDb++;
+      return tag.replace(/\ssrc="/, ` srcset="${elemek.join(', ')}" sizes="${sizes}" src="`);
+    });
+    if (u !== h) { fs.writeFileSync(fajl, u); lapDb++; }
+  }
+  return `${lapDb} lapon ${kepDb} kep kapott valaszado meretet`;
+}

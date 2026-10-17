@@ -9,6 +9,7 @@
     "teszt": "node tools/funkcio-teszt.mjs"
   },
   "dependencies": {
+    "esbuild": "0.28.2",
     "worker-mailer": "^1.2.1"
   }
 }

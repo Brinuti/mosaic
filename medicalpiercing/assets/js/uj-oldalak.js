@@ -54,10 +54,10 @@
     const mutat = (i) => {
       idx = (i + csoport.length) % csoport.length;
       const im = csoport[idx];
-      kep.src = im.currentSrc || im.src;
+      kep.src = im.src || im.currentSrc;   // (az eredeti, nagy kep: a lapon a srcset kisebb valtozatot tolthet, tools/valaszado-kepek.mjs)
       kep.alt = im.alt || '';
       szam.textContent = String(idx + 1);
-      const k = csoport[(idx + 1) % csoport.length]; if (k && csoport.length > 1) new Image().src = k.currentSrc || k.src;
+      const k = csoport[(idx + 1) % csoport.length]; if (k && csoport.length > 1) new Image().src = k.src || k.currentSrc;
     };
     document.addEventListener('click', (e) => {
       const im = e.target.closest && e.target.closest('img[data-nagyit]');

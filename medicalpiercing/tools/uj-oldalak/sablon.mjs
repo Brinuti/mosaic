@@ -438,11 +438,12 @@ function blogFo(ROOT, adat) {
       return k ? k.src : '';
     } catch { return ''; }
   };
+  // (az elso harom kartya kepe a lap legnagyobb, elso kepernyon latszo eleme: nem lusta, az elso elsobbseget kap - gyorsitas, 2026-10-17)
   const kartya = (p, i) => {
     const kep = p.kep || kepek.get(String(p.cim).trim()) || sajatKep(p.href);
     const meta = metaTisztit(p.meta);
     return `<li class="blog-kartya"><a href="${esc(belso(p.href))}">
-      <span class="blog-kep">${kep ? `<img src="${esc(kep)}" alt="" loading="lazy" decoding="async">` : ''}</span>
+      <span class="blog-kep">${kep ? `<img src="${esc(kep)}" alt=""${i < 3 ? (i ? '' : ' fetchpriority="high"') : ' loading="lazy"'} decoding="async">` : ''}</span>
       <span class="blog-test">${meta ? `<span class="blog-meta">${esc(meta)}</span>` : ''}<b>${esc(p.cim)}</b>${p.kivonat ? `<span class="blog-kivonat">${esc(p.kivonat)}</span>` : ''}<span class="blog-tovabb">Tovább olvasom »</span></span>
     </a></li>`;
   };
