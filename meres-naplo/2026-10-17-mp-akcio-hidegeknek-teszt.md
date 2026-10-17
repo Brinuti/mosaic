@@ -53,3 +53,13 @@ Nem érinti (a mérőkód fájljai nem változtak; a csomag-gomb a meglévő `da
 - Javítás (`uj-sajat.css`): `.kat-hos-b .hos-akcio{order:3}`, mobilon a doboz alsó margója 0 (a gombsor saját 22 px-es térköze marad).
 - Mért sorrend (iPhone 13, 390 px): cím 123 → kép 221 → alcím 591 → akciós doboz 666 → gombok 883 → értékelés 991.
 - `uj-oldalak-teszt` (a két akció-cím) 63 / 0, `csuszas-teszt` 206 + 206 lap: nincs csúszás.
+
+## 5. kör – „2-3 Piercing” Trustindex-widget (2026-10-17)
+- A tulajdonos kifejezett engedélye (2026-10-17): „engedélyezem az új Trustindex-widget létrehozását a 2-3 Piercing címkére”.
+- Trustindex: a „SHENMEN - 2026” (679552) klónja → „2-3 PIERCING - 2026” (838417, kulcs `a956e9c8305984117f761d63e99`); a forrás és a nyelv az eredetié (minden forrás,
+  magyar), a címkeszűrő: csak „2-3 Piercing” (16479). Az eredeti widget változatlan (ellenőrizve: továbbra is csak a Shenmen címke). Más nem változott a fiókban.
+- Az akció-oldal vélemény-doboza erre a widgetre mutat (`<!--#velemenyek ti=…-->`). Helyben, a Trustindex engedve: asztalon és mobilon 44 vélemény-kártya, a minták
+  több piercingről szólnak („Három piercinget szúrt nekem…”, „egy klimax és egy shenmen…”, „Nekem 3 piercingem lett…”); a tartalék-doboz rejtve.
+- `uj-oldalak-teszt` (a két akció-cím) 63 / 0, `uj-fooldal-teszt` rendben.
+- Mérés: nem érint (a vélemény-widget nem mérőkód).
+- Rollback: a lapban a `ti=` paraméter törlése (vissza a főoldali widgetre); a Trustindex-widget törölhető, az eredeti érintetlen.
