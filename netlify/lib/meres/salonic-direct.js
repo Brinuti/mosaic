@@ -50,6 +50,9 @@ export async function vendegHash(env, v = {}, nev = '') {
   const h = async (jel, x) => (x ? (await hmacHex(env.GUEST_HMAC_KEY_V1, `v1|${jel}|${x}`)).slice(0, 32) : null);
   return { email_h: await h('e', emailNormal(v.email)), tel_h: await h('t', telefonSzamjegy(v.telefon)), nev_h: await h('n', nevNorm(nev)) };
 }
+/** PII-mentes mezo-allapot: SOHA nem az ertek, csak 'hianyzik' | 'ervenytelen_formatum' | 'ervenyes' (a hash-index kimaradasanak diagnosztikajahoz). */
+export const mezoAllapot = (nyers, normal) => (!String(nyers == null ? '' : nyers).trim() ? 'hianyzik' : normal(nyers) ? 'ervenyes' : 'ervenytelen_formatum');
+export const vendegMezoAllapot = (v, nev) => ({ email: mezoAllapot((v || {}).email, emailNormal), telefon: mezoAllapot((v || {}).telefon, telefonSzamjegy), nev: mezoAllapot(nev, nevNorm) });
 /** "Ugyanaz a vendeg" (#131): azonos e-mail-hash ES (azonos telefon-hash VAGY azonos nev-hash). */
 export const azonosVendeg = (a, b) => !!(a && b && a.email_h && a.email_h === b.email_h && ((a.tel_h && a.tel_h === b.tel_h) || (a.nev_h && a.nev_h === b.nev_h)));
 
@@ -127,24 +130,26 @@ export const sdIndexBe = (env) => String((env && env.MERES_SALONIC_DIRECT) || ''
 export async function vendegIndexSor(db, env, { mezok, vendeg, nev, now, allapot = 'aktiv', forras = 'level', szaraz = false }) {
   const uzletag = SALONIC_UZLETAG[mezok.host];
   const uuid = String(mezok.uuid || '').toLowerCase();
-  if (!uzletag) return { ok: false, miert: 'ismeretlen host' };
-  if (!UUID_MINTA.test(uuid)) return { ok: false, miert: 'ervenytelen uuid' };
+  const mezoK = vendegMezoAllapot(vendeg, nev); // PII-mentes: csak enum (a kimaradas okanak lathatosagahoz)
+  if (!uzletag) return { ok: false, miert: 'ismeretlen host', kod: 'ismeretlen_host', mezok: mezoK };
+  if (!UUID_MINTA.test(uuid)) return { ok: false, miert: 'ervenytelen uuid', kod: 'ervenytelen_uuid', mezok: mezoK };
   const h = await vendegHash(env, vendeg || {}, nev);
-  if (!h) return { ok: false, miert: 'nincs GUEST_HMAC_KEY_V1' };
-  if (!h.email_h) return { ok: false, miert: 'nincs ervenyes e-mail' };
+  if (!h) return { ok: false, miert: 'nincs GUEST_HMAC_KEY_V1', kod: 'nincs_guest_hmac_kulcs', mezok: mezoK };
+  if (!h.email_h) return { ok: false, miert: 'nincs ervenyes e-mail', kod: 'nincs_ervenyes_email', mezok: mezoK };
   const t = sec(now || Date.now());
   const level = Date.parse(mezok.leveldatum || '');
   const ido = Number.isFinite(level) ? Math.round(level / 1000) : t;
   const kezdet = kezdetSzamol(mezok, ido);
-  if (szaraz) return { ok: true, uj: null, kezdet: !!kezdet };
+  if (szaraz) return { ok: true, uj: null, kezdet: !!kezdet, kod: 'szaraz', mezok: mezoK };
   await parositasSema(db);
   const r = await db.prepare("INSERT INTO foglalas_vendeg (uuid, uzletag, szolg_kulcs, kezdet, nev_h, tel_h, email_h, allapot, forras, ido, lejar) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11) ON CONFLICT(uuid) DO NOTHING")
     .bind(uuid, uzletag, szolgKanon(mezok.szolgaltatas), kezdet, h.nev_h, h.tel_h, h.email_h, allapot === 'torolve' ? 'torolve' : 'aktiv', forras, ido, ido + MEGORZES_NAP * 86400).run();
-  return { ok: true, uj: !!(r.meta && r.meta.changes > 0), kezdet: !!kezdet };
+  const uj = !!(r.meta && r.meta.changes > 0);
+  return { ok: true, uj, kezdet: !!kezdet, kod: uj ? 'ok_uj' : 'ok_meglevo', mezok: mezoK };
 }
 /** A foglalas-kulcs.js horga (minden letrehozo level, MERES_SALONIC_DIRECT=1 / MERES_SD_INDEX=1 mellett). */
 export async function vendegIndexIr({ db, env, mezok, bejovo = {}, now }) {
-  if (!sdIndexBe(env)) return { ok: false, miert: 'az index nincs bekapcsolva' };
+  if (!sdIndexBe(env)) return { ok: false, miert: 'az index nincs bekapcsolva', kod: 'nincs_bekapcsolva' };
   const t = now ? now() : Date.now();
   const r = await vendegIndexSor(db, env, { mezok, vendeg: bejovo.vendeg, nev: bejovo.nev, now: t });
   if (r.uj) await db.prepare('DELETE FROM foglalas_vendeg WHERE lejar < ?1').bind(sec(t)).run(); // a 180 napnal regebbi sorok torlese: csak uj sor beszurasakor (egy levelre 4 proba van)

@@ -714,6 +714,19 @@ export async function kezelKulcs(request, env) {
   return valasz(405, { ok: false });
 }
 
+/** Hibauzenet PII-mentesitese a valaszba / naploba: e-mail es hosszu szamsor maszkolva, 120 karakterre vagva. */
+const hibaKod = (e) => `${(e && e.name) || 'Error'}: ${String((e && e.message) || e || '').replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, '<email>').replace(/\d{6,}/g, '<szam>').slice(0, 120)}`;
+/** A vendeg-hash index iras (fail-open: sosem dob, sosem akaszt) es az eredmenye PII-mentes alakban: { allapot: 'ok'|'meglevo'|'kihagyva'|'hiba', kod, mezok?, hiba? }. */
+async function vendegIndexJelentes(deps, env, mezok, o, r) {
+  if (!o.vendeg) return { allapot: 'kihagyva', kod: 'nincs_vendeg_mezo' };
+  if (typeof o.vendeg !== 'object') return { allapot: 'kihagyva', kod: 'vendeg_nem_objektum' };
+  try {
+    const x = await deps.vendegIndexIr({ db: env.KULCS_DB, env, mezok, bejovo: o, kulcs: r.kulcs, now: deps.now });
+    if (x && x.ok) return { allapot: x.uj === false ? 'meglevo' : 'ok', kod: x.kod || (x.uj === false ? 'ok_meglevo' : 'ok_uj'), mezok: x.mezok };
+    return { allapot: 'kihagyva', kod: (x && x.kod) || 'ismeretlen', mezok: x && x.mezok };
+  } catch (e) { return { allapot: 'hiba', kod: 'kivetel', hiba: hibaKod(e) }; } // az index sosem akaszthatja meg a parositast
+}
+
 /** /api/foglalas-egyeztetes: POST (az e-mail-oldal kerdez; kulcsos) | GET ?kulcs=..&uuid=.. (allapot) | GET ?kulcs=..&riasztas=1[&formatum=html] (parositatlan lista) */
 async function kezelEgyeztetesBelso(request, env, deps = {}) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
@@ -747,7 +760,8 @@ async function kezelEgyeztetesBelso(request, env, deps = {}) {
     }
     const r = await egyeztet(env.KULCS_DB, mezok, fuggosegek);
     // vendeg-hash index (reschedule-felismeres): minden letrehozo level hash-elt vendegadata (nyers adat nincs), csak MERES_SALONIC_DIRECT=1 mellett; fail-open
-    if (deps.vendegIndexIr && o.vendeg && (String(env.MERES_SALONIC_DIRECT) === '1' || String(env.MERES_SD_INDEX) === '1')) { try { await deps.vendegIndexIr({ db: env.KULCS_DB, env, mezok, bejovo: o, kulcs: r.kulcs, now: deps.now }); } catch (e) { /* az index sosem akaszthatja meg a parositast */ } }
+    // Az eredmeny a VALASZBA kerul (r.vendeg_index: PII-mentes kod + mezo-allapot enum, ertek soha), igy a Zap-futas naplojabol latszik, miert maradt ki az index-sor.
+    if (deps.vendegIndexIr && (String(env.MERES_SALONIC_DIRECT) === '1' || String(env.MERES_SD_INDEX) === '1')) r.vendeg_index = await vendegIndexJelentes(deps, env, mezok, o, r);
     // QA-2 ARNYEK: a parositott foglalasra az esemenyek kuldese (alap + ernyo); a kuldes az elo allapot ellenorzese UTAN fut, es sosem akaszthatja meg a parositast.
     // Minden "parositott" valasznal lefut (az elosztas idempotens: a mar vegleges cellara nem kuld ujra), igy a halasztott kuldes a level ismetlesekor potolhato.
     if (deps.esemenyKuldo && r.allapot === 'parositott' && r.booking_id && String(env.MERES_ELOSZTO) === '1') {
