@@ -33,6 +33,18 @@ export function teljesKepek(ROOT, DIST) {
   return `${lapDb} lapon ${kepDb} feliratos kep egeszben`;
 }
 
+// A borítós (poster) videók az új lapokon csak indításkor töltődnek (preload="none"; gyorsítás, 2026-10-17: a hős álló videója preload="metadata"-val
+// mobilon a lap megnyitásakor akár 650 KB-ot is letöltött; a borító a tervezett kép, a doboz méretét a CSS adja).
+export function videoElotoltes(DIST) {
+  let db = 0;
+  for (const fajl of ujLapok(DIST)) {
+    const h = fs.readFileSync(fajl, 'utf8');
+    const u = h.replace(/<video\b[^>]*>/g, (tag) => (/\sposter="[^"]+"/.test(tag) && /\spreload="metadata"/.test(tag) && !/\sautoplay\b/.test(tag) ? (db++, tag.replace(/\spreload="metadata"/, ' preload="none"')) : tag));
+    if (u !== h) fs.writeFileSync(fajl, u);
+  }
+  return `${db} boritos video preload="none"`;
+}
+
 export function valaszadoKepek(ROOT, DIST) {
   const jp = path.join(ROOT, 'assets/img/valtozat/jegyzek.json'), mp = path.join(ROOT, 'uj-oldalak/kep-meretek.json');
   if (!fs.existsSync(jp) || !fs.existsSync(mp)) return 'nincs valtozat-jegyzek vagy mert meret: kihagyva';

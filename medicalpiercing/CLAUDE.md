@@ -45,7 +45,7 @@ Ezen felül:
     build)**; a nem mért kép változatlan, eredeti méretben marad (nem romlik el, csak nem gyorsul). A `src` mindig az eredeti, a képnagyító is azt nyitja.
   - **Tömörített stílusok és szkriptek** (`tools/tomorites.mjs`, esbuild): csak a saját `uj-*.css`, `uj-fooldal.js`, `uj-oldalak.js`, `motor/motor.js`, `terkep.js`, `tipus.js`; a mérőkód
     fájljai (`suti.js`, `mp-meres.js`, `motor-indito.js`, `salonic-adapter.js`, `booking-id.js`) **változatlanul** mennek ki. Az esbuild nélkül a lépés kimarad (a lap ugyanúgy működik).
-  - Betűk: a `plus-jakarta-sans-latin-ext.woff2` is előtöltve (a magyar ő / ű ebben van, a hős szövegében is); borítós videó `preload="none"`; a blog első három kártyaképe nem lusta.
+  - Betűk: a `plus-jakarta-sans-latin-ext.woff2` is előtöltve (a magyar ő / ű ebben van, a hős szövegében is); borítós videó `preload="none"` (a `sablon.mjs` `video()`-ja, és a build `videoElotoltes` lépése minden új lapon: a poszteres, nem automatikusan induló `<video preload="metadata">` → `none`, a hős álló videója mobilon különben ~650 KB-ot töltött); a blog első három kártyaképe nem lusta.
   - Nem változott (mérést érintene, külön döntés kell): a `suti.js` a `<head>`-ben szinkron töltődik (a hozzájárulás-alapértékek miatt), ez a „megjelenítést blokkoló” tétel egy része.
 - **Feliratos ábrák és szöveges képek soha nem vágódnak le** (a tulajdonos kérése, 2026-10-17: „ezek a képek látszódjanak teljesen … le van vágva” – a pajzsmirigy-ábra): a lista
   `uj-oldalak/teljes-kepek.json` (a pont helye a testen: allergia / máj / pajzsmirigy / lép / vastagbél; a fülpontos ábrák; a „Tragus / Shenmen / Klimax pont”, „Vagus ideg” címkés fotók;

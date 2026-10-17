@@ -34,4 +34,28 @@ megjelenítést blokkoló fájlok (157), modern képformátum (29), a Google-vé
 A mérőkód fájljai nem változtak, a mérési események útja ugyanaz (a `meres-teszt` 85 ellenőrzése rendben). A Trustindex nem mérőkód (véleménydoboz). Új esemény, konverzió nincs.
 
 ## Eredmények
-EREDMENYEK
+### Mintamérés (16 oldal, a PR előnézetén, a változtatások után)
+A minta: főoldal, a 9 piercing-típus oldalából 4, akció, árlista, csapatunk, vélemények, blog, 3 blogcikk (köztük a leglassabbak).
+
+| | Pontszám | LCP | Letöltött adat |
+|---|---|---|---|
+| Mobil | 91,2 → **99,1** | 3,04 s → **1,89 s** | 1068 KB → **497 KB** |
+| Asztali | 99,6 → **99,8** | 0,64 s → **0,54 s** | 1243 KB → **486 KB** |
+
+Kiemelve (mobil): főoldal 80 → **100** (TBT 651 ms → 0, 1338 KB → 445 KB), menstruációs cikk 75 → **99**, mi-az-a-migrén 78 → **100**, csapatunk 94 → **100**, vélemények 94 → **100**.
+A Piercer mester Brigitta lap mobilon 657 KB-ot töltött a hős videója miatt (`preload="metadata"`): a build `videoElotoltes` lépése a 4 borítós videót `preload="none"`-ra teszi
+(megnyitáskor 0 videókérés, lejátszásra indul a letöltés – Playwrighttal ellenőrizve).
+
+### Feliratos ábrák
+Minden új lapon (asztali 1440 / 820 px, mobil 390 px) a listás képek 100%-a látszik (a kép teljes területe a dobozon belül); a régi Wix-lapok közül egy cikkben volt vágás, azt a `klon.css`
+szabálya rendezi. Szemrevételezve: allergia, máj, pajzsmirigy, lép, vastagbél piercing oldala asztalon és mobilon, a 93%-kép, a fülpontos ábrák, a városcsempék.
+
+### Tesztek a végső buildre
+- `uj-oldalak-teszt`: 174 oldal, 5729 ellenőrzés, 0 hiba
+- `uj-b-teszt`: 19 B-oldal, 1042 ellenőrzés, 0 hiba
+- `uj-fooldal-teszt`: 102 ellenőrzés, 0 hiba
+- `meres-teszt`: 85 ellenőrzés, 0 hiba (a mérési események útja változatlan)
+- korábban, ugyanerre a JS-re: `motor-tipus` asztali 120 / mobil 124 ellenőrzés, minden rendben, `motor` 26/26, `motor-formazas` 90, `csomag` 12, `forras` 1224 – rendben
+
+### Teljes utómérés (157 oldal)
+A merge után a `medicalpiercing.pages.dev`-en, ugyanazzal a módszerrel – az eredményt ide írom.
