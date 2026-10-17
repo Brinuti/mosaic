@@ -78,8 +78,8 @@ export async function onRequest(context) {
     h.set('content-security-policy', CSP_CRM);
   }
   const kesz = new Response(valasz.body, { status: valasz.status, headers: h });
-  // Hirdeteshez illo hos-kep (netlify/lib/hirdetes-hos.js): csak GET, 200-as HTML, ad_id parameterrel; barmilyen hiba -> az eredeti lap
-  if (request.method === 'GET' && valasz.status === 200 && url.searchParams.has('ad_id') && /text\/html/.test(h.get('content-type') || '')) {
+  // Hirdeteshez illo hos-kep (netlify/lib/hirdetes-hos.js): csak GET, 200-as HTML, ad_id vagy (a meglevo hirdetesekben) szamos utm_content parameterrel; barmilyen hiba -> az eredeti lap
+  if (request.method === 'GET' && valasz.status === 200 && (url.searchParams.has('ad_id') || url.searchParams.has('utm_content')) && /text\/html/.test(h.get('content-type') || '')) {
     try {
       const hos = await hosValasztas(url, context.env.HOS_DB);
       if (hos) return hosCsere(kesz, hos);
