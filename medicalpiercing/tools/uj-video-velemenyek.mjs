@@ -26,7 +26,7 @@ export const TEMAK = {
   slim: 'Vendégeink a slim piercingről',
   allergia: 'Vendégünk az allergiáról',
   mind: 'Vendégeink videón',
-  tobb: 'Akik 2-3 piercinget szúrattak',
+  tobb: 'Videóban mesélnek a vendégeink, akik több piercinget szúrattak',
 };
 // a "tobb" sav (az oszi akcio oldala, a tulajdonos kerese, 2026-10-17: "az osszes testimonial videot nezd at, es tedd ide azokat, amelyikben azt mondja el
 // valaki, hogy harom piercinget, vagy kettot szuratott"): a leiratok szerint ezekben mondja a vendeg, hogy 2 vagy 3 piercinget kapott (elol a harom piercinges);

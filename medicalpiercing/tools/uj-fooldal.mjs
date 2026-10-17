@@ -103,6 +103,9 @@ function szovegJavitBelso(html) {
       let x = t.replace(/(\d) (?=\d{3}(?!\d))/g, '$1\u00a0').replace(/(\d) (Ft|forint)\b/g, '$1\u00a0$2')
         .replace(/([a-záéíóöőúüű]),([a-záéíóöőúüű])/gi, '$1, $2');   // a Wix-szovegben a vesszo utan neha hianyzik a szokoz ("felaron,a")
       if (/4\.100/.test(x)) x = x.replace(/(?:[Tt]öbb mint\s+)?4\.100\+?/g, `<span data-ti-darab>${GOOGLE_DB}</span>`);
+      // minden mas regi velemenyszam is (a tulajdonos kerese, 2026-10-17: "mindenhol 5000 valamennyi legyen, amennyi az aktualis"): pl. "Több mint 3.400 értékelés",
+      // "Kiváló 4,8 | 2.436 vélemény", "4 900+ Google-vélemény", "Több mint 1.700 vendégünk írta le", "4.600+ vendégünk leírta" -> a Google mostani szama
+      x = x.replace(/(?:[Tt]öbb mint\s+)?\b[1-4][.\u00a0 ]?\d{3}\+?(?=\s*(?:Google[- ])?(?:vélemény|értékelés)|\s+vendégünk (?:írta|leírta))/g, `<span data-ti-darab>${GOOGLE_DB}</span>`);
       return '>' + x + '<';
     });
 }

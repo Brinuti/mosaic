@@ -18,8 +18,8 @@ export const KATEGORIA_UTAK = new Set(['/migren-piercing', '/shenmen-piercing', 
 // EZ AZ ALAP: az uj /uj/migren-piercing, /uj/shenmen-piercing, /uj/klimax-piercing, /uj/slim-etvagycsokkento-piercing oldal a -b oldal tartalmabol epul
 // (a cim "b" nelkuli, a menu es a belso linkek ugyanide mutatnak). A tartalom: uj-oldalak/tartalom/*-piercing-b.json. A tobbi kategoria-oldalnak
 // (allergia, maj, pajzsmirigy, lep, vastagbel) nincs -b oldala: azok a regi kategoria-sablonnal maradnak.
-// a Google-velemenyek szama: build ideju tartalek (2026-10-16: 5 030), az oldal betoltesekor a /api/ertekeles mostani szama irja felul (uj-fooldal.js 4c.)
-export const GOOGLE_DB = '5030';
+// a Google-velemenyek szama: build ideju tartalek (2026-10-17: 5 033), az oldal betoltesekor a /api/ertekeles mostani szama irja felul (uj-fooldal.js 4c.)
+export const GOOGLE_DB = '5033';
 
 export const B_ALAP = new Map([
   ['/migren-piercing', '/migren-piercing-b'],
