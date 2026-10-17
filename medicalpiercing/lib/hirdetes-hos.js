@@ -48,7 +48,8 @@ export const KIZART = new Set(['120254773739360022', '120254773741100022']);
 // Automatikus tarolo (2026-10-17): a mosaic-szerver oranként menti az MP2 aktiv hirdeteseinek kepet a riport-D1
 // hirdetes_hos tablajaba (ad.id kulccsal). Elsobbsege van; ha nincs talalat, jon a fix HIRDETESEK es a nev-szabaly.
 export async function hosValasztas(url, db) {
-  const ad = (url.searchParams.get('mp_ad') || '').trim();
+  // Egyseges parameter minden vallalkozasnal: ad_id={{ad.id}} (2026-10-17); a regi mp_ad atmenetileg is mukodik.
+  const ad = (url.searchParams.get('ad_id') || url.searchParams.get('mp_ad') || '').trim();
   if (/^\d{6,25}$/.test(ad) && !KIZART.has(ad) && db) {
     try {
       const sor = await db.prepare('SELECT forras FROM hirdetes_hos WHERE hirdetes_id = ?1 AND aktiv = 1').bind(ad).first();
