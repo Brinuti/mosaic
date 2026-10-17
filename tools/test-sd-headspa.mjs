@@ -11,7 +11,7 @@ import { cellaOsztaly } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { arnyekCel } from '../netlify/lib/meres/qa-nap.js';
 import { emailNormal, sha256hex } from '../netlify/lib/meres/hash.js';
-import { sdIdentitas, szolgKanon } from '../netlify/lib/meres/salonic-direct.js';
+import { sdIdentitas, szolgKanon, szolgKulcsEgyezik } from '../netlify/lib/meres/salonic-direct.js';
 import { SALONIC_UZLETAG } from '../netlify/lib/meres/esemeny-modell.js';
 import { T0, level, lezar, ujUuid, vilag } from './lib-sd-teszt.mjs';
 
@@ -70,19 +70,21 @@ test('HS-01 a HeadSpa uzletag es host az sd szamara ismert (SALONIC_UZLETAG / HO
   for (const k of ['egyeni 50 perces mosaic relax head spa kezeles 30 perc hajszaritas', 'paros mosaic head spa kezeles 50 perc szaritas']) assert.ok(csoportok.has(k), k);
 });
 
-test('HS-02 ISMERT KORLAT: a Zap kuponos levelnel " (kupon)" utotagot fuz a szolgaltatasnevhez (subject: KUPONKOD) - ez mas kanonikus kulcsot ad, mint a normal szolgaltatas; a kupon-felismeres es az ertek ettol fuggetlen', () => {
+test('HS-02 (F2 javitva a #381-gyel) a Zap kuponos levelnel " (kupon)" utotagot fuz a szolgaltatasnevhez (subject: KUPONKOD): a szolgKanon a ZARO utotagot leveszi -> kupon <-> normal es kupon <-> kupon azonos kulcs; a regi "<kulcs> kupon" index-kulcs CSAK a HeadSpa-ra egyezik (egyiranyu)', () => {
   for (const s of SZOLG) {
     const zap = `${s.nev} (kupon)`;
-    assert.equal(szolgKanon(zap), `${szolgKanon(s.nev)} kupon`, `${s.id}: az utotag a kulcs veget bovitI (nem vagja le)`);
+    assert.equal(szolgKanon(zap), szolgKanon(s.nev), `${s.id}: a zaro utotag nem kerul a kulcsba`);
   }
-  // kupon <-> kupon (ugyanaz a csalad, akar normal, akar kuponos nevbol indul a Zap-utotag) azonos kulcsot ad; kupon <-> normal (utotag nelkul) nem
   for (const csalad of new Set(SZOLG.map((x) => x.csalad))) {
     const [n, k] = [NORMAL, KUPONOS].map((l) => l.find((x) => x.csalad === csalad));
     assert.equal(szolgKanon(`${n.nev} (kupon)`), szolgKanon(`${k.nev} (kupon)`), `${csalad}: kupon <-> kupon azonos kulcs`);
-    assert.notEqual(szolgKanon(`${k.nev} (kupon)`), szolgKanon(n.nev), `${csalad}: kupon <-> normal MAS kulcs (ismert korlat)`);
+    assert.equal(szolgKanon(`${k.nev} (kupon)`), szolgKanon(n.nev), `${csalad}: kupon <-> normal azonos kulcs`);
+    const kanon = szolgKanon(n.nev);
+    assert.equal(szolgKulcsEgyezik(`${kanon} kupon`, kanon, 'headspa'), true, `${csalad}: a regi, mar indexelt "<kulcs> kupon" kulcs a HeadSpa-ra egyezik`);
+    assert.equal(szolgKulcsEgyezik(`${kanon} kupon`, kanon, 'pmu'), false, `${csalad}: mas uzletagra nem`);
+    assert.equal(szolgKulcsEgyezik(kanon, `${kanon} kupon`, 'headspa'), false, `${csalad}: egyiranyu (a tarolt kanonikus nem egyezik a "... kupon" kanonikussal)`);
   }
 });
-
 test('HS-03 a 4 NORMAL HeadSpa szolgaltatas, uj vendeg: FoglalasElso + ernyo (Meta: Schedule, TikTok: CompletePayment), Google / GA4 jogos_0; ertek = lista-ar (exact)', async () => {
   for (const s of NORMAL) {
     const { v, u, b, probak } = await jelolt(s.nev);
