@@ -258,9 +258,9 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   await vedett('lefedettseg', async () => {
     if (!eOszl.size || !kOszl.size || !eOszl.has('booking_id')) return;
     const sdVan = eOszl.has('sd_id') && eOszl.has('sd_allapot');
-    const jellegVan = (await oszlopok(db, 'meres_jelleg')).size > 0; // a rogzitett foglalas-jelleg: a HeadSpa KONZULTACIOHOZ a modell szandekosan nem keszit esemenyt (#101) -> szabalyos, nem technikai kimaradas
+    const jellegVan = (await oszlopok(db, 'meres_jelleg')).size > 0; // a rogzitett foglalas-jelleg: a HeadSpa KONZULTACIOHOZ (#101) es a KUPONOS foglalashoz (#194: nem konverzio) a modell szandekosan nem keszit esemenyt -> szabalyos, nem technikai kimaradas (szabalyos_esemeny_nelkul)
     const jellegKulcs = sdVan ? "COALESCE(CASE WHEN e.allapot = 'parositott' THEN e.booking_id END, e.sd_id)" : "CASE WHEN e.allapot = 'parositott' THEN e.booking_id END"; // regi semaban nincs sd_id
-    const jellegOszlop = jellegVan ? ', (SELECT j.jelleg FROM meres_jelleg j WHERE j.source_id = ' + jellegKulcs + ') AS jelleg' : ', NULL AS jelleg';
+    const jellegOszlop = jellegVan ? ', (SELECT j.jelleg FROM meres_jelleg j WHERE j.source_id = ' + jellegKulcs + ') AS jelleg, (SELECT j.kupon FROM meres_jelleg j WHERE j.source_id = ' + jellegKulcs + ') AS kupon' : ', NULL AS jelleg, NULL AS kupon';
     const sql = `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.letrehozva AS ido${jellegOszlop} FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND ((e.allapot = 'parositott' AND e.booking_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.booking_id AND k.esemeny_tipus = 'alap'))${sdVan ? " OR (e.sd_id IS NOT NULL AND e.sd_allapot = 'kesz' AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.esemeny_tipus = 'alap'))" : ''}) ORDER BY e.letrehozva, e.uuid`;
     const frissHatar = Math.floor(mostMs / 1000) - FRISS_MP;
     for (const r of await mind(db, sql, from, to)) {
@@ -269,6 +269,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
       const b = bizt(nev).lefedettseg;
       if (r.ido > frissHatar) b.friss_kizarva++;
       else if (nev === 'headspa' && r.jelleg === 'konzultacio') b.szabalyos_esemeny_nelkul++;
+      else if (r.kupon) b.szabalyos_esemeny_nelkul++; // DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio -> szandekosan nincs esemenye (nem technikai kimaradas)
       else b.parositott_esemeny_nelkul++;
     }
   }, hibak);

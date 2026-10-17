@@ -1,6 +1,6 @@
 // QA-2 eseménymodell (DECISION-LOG #97): ALAPESEMENYEK (FoglalasElso, Konzultacio, Visszajaro, Ajandekkartya) kulon maradnak; mellettuk SAJAT azonositoju ERNYOESEMENY sul el
 // (erre optimalizal a Meta): HeadSpa / szor / PMU: Schedule; fodrasz: Fodrasz_AkviziciosFoglalas; oxigen: Oxigen_AkviziciosFoglalas.
-// Az ernyobe NEM kerul: visszajaro, kupon. Azonosito: <esemeny>:<source_entity_id> (foglalasnal a booking_id, Stripe-kartyanal a pi_, utalasos kartyanal a sajat order_id).
+// Az ernyobe NEM kerul: visszajaro, kupon. (DECISION #194 ota a kuponos foglalas semmilyen esemenyt nem kap: esemenyek() ures listat ad.) Azonosito: <esemeny>:<source_entity_id> (foglalasnal a booking_id, Stripe-kartyanal a pi_, utalasos kartyanal a sajat order_id).
 // A dontes tiszta fuggveny (nincs I/O): tesztelheto, es a bongeszo / szerver ugyanazt a szabalyt latja.
 
 export const UZLETAGAK = Object.freeze(['headspa', 'fodrasz', 'oxigen', 'szor', 'pmu']);
@@ -51,6 +51,10 @@ export function foglalasJelleg({ szolgaltatasNev = '', ujVendeg = null, kategori
 export function esemenyek(fk, tabla = KONZULTACIO_ERTEK) {
   if (!fk || !UZLETAGAK.includes(fk.uzletag)) return [];
   if (!SOURCE_ID_MINTA.test(String(fk.source_entity_id || '')) && !SD_ID_MINTA.test(String(fk.source_entity_id || ''))) return [];
+  // DECISION #194 (Feri, 2026-10-17): a KUPONOS (ajandekkartyas) FOGLALAS NEM KONVERZIO, semmilyen csatornan: sem alapesemeny (FoglalasElso / Konzultacio / Visszajaro), sem ernyo (Schedule ...), sem Google-feltoltes.
+  // A kupon-jelzest a foglalasJelleg adja (a szolgaltatas neveben / kategoriajaban "kupon"); a ketto kozul a motor (foglalas-esemeny.js) es a Salonic-direct (salonic-direct.js) is ezen a fuggvenyen at kepezi az esemenyeket.
+  // Az ajandekkartya VASARLASA (tipus 'ajandekkartya') valtozatlan konverzio. A kuponos foglalas durva nyoma a meres_jelleg tablaban marad (kupon = 1).
+  if (fk.tipus === 'foglalas' && fk.kupon) return [];
   const salonicAr = Number.isFinite(Number(fk.ertek)) ? Math.max(0, Math.round(Number(fk.ertek))) : 0; // a tenyleges ar (Salonic-level / Stripe)
   const penznem = 'HUF';
   const alap = fk.tipus === 'ajandekkartya' ? 'Ajandekkartya'

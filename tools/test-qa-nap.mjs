@@ -765,6 +765,24 @@ test('N33 lefedettseg szelei: a nap hatara felig nyitott [from, to); sd csak "ke
   assert.equal(j.osszes.lefedettseg.szabalyos_esemeny_nelkul, 1);
 });
 
+test('N33b (DECISION #194) a KUPONOS foglalas esemeny nelkul SZABALYOS (nem technikai kimaradas): meres_jelleg.kupon = 1 -> szabalyos_esemeny_nelkul (motoros mb_ es sd_ sor is); jelleg-sor nelkul / kupon = 0 ugyanez a sor HIANY (parositott_esemeny_nelkul)', async () => {
+  const w = await vilag();
+  w.futtat('CREATE TABLE IF NOT EXISTS meres_jelleg (source_id TEXT PRIMARY KEY, jelleg TEXT NOT NULL, kupon INTEGER NOT NULL, forras TEXT NOT NULL, ido INTEGER NOT NULL) WITHOUT ROWID');
+  // k1: motoros kuponos (parositott, esemeny nelkul) -> szabalyos; k2: sd kuponos (kesz, esemeny nelkul) -> szabalyos
+  w.egyeztetes({ uuid: w.uuid('k1'), kulcs: HEADSPA(11), t: FROM + 300, booking_id: 'mb_k1' });
+  w.futtat("INSERT INTO meres_jelleg (source_id, jelleg, kupon, forras, ido) VALUES ('mb_k1', 'elso', 1, 'elso_level', ?)", FROM + 300);
+  w.egyeztetes({ uuid: w.uuid('k2'), kulcs: HEADSPA(12), t: FROM + 310, allapot: 'parositatlan', sd_id: 'sd_k2', sd_allapot: 'kesz' });
+  w.futtat("INSERT INTO meres_jelleg (source_id, jelleg, kupon, forras, ido) VALUES ('sd_k2', 'visszajaro', 1, 'elso_level', ?)", FROM + 310);
+  // ellenpelda: k3 kupon = 0 (normal foglalas, esemeny nelkul = HIANY), k4 jelleg-sor nelkul (HIANY)
+  w.egyeztetes({ uuid: w.uuid('k3'), kulcs: HEADSPA(13), t: FROM + 320, booking_id: 'mb_k3' });
+  w.futtat("INSERT INTO meres_jelleg (source_id, jelleg, kupon, forras, ido) VALUES ('mb_k3', 'elso', 0, 'elso_level', ?)", FROM + 320);
+  w.egyeztetes({ uuid: w.uuid('k4'), kulcs: HEADSPA(14), t: FROM + 330, booking_id: 'mb_k4' });
+  const j = await w.jelentes();
+  const h = j.uzletagak.headspa.lefedettseg;
+  assert.deepEqual([h.parositott_esemeny_nelkul, h.szabalyos_esemeny_nelkul], [2, 2], 'k3 (kupon=0) + k4 (nincs jelleg-sor) hiany; k1 + k2 (kupon=1) szabalyos');
+  assert.equal(j.osszes.lefedettseg.szabalyos_esemeny_nelkul, 2);
+});
+
 test('N34 az adatbazisbol jovo szoveg nem lehet objektum-kulcs veszely: forras / sd_allapot "__proto__" / "constructor" nem torik el a jelentest', async () => {
   const w = await vilag();
   w.egyeztetes({ uuid: w.uuid('g1'), kulcs: HEADSPA(), t: FROM + 10, allapot: 'parositatlan', sd_id: 'sd_x', sd_allapot: 'constructor', sd_ido: FROM + 10 });

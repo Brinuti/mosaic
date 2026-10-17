@@ -16,7 +16,8 @@ const SD_ELOTT = T0 + 1300_000; // a letrehozo level utan ~21,7 perccel
 const MEGJ_99 = 'A korábbi 16 órás foglalásomat cserélném erre.';
 let szam = 0;
 const uuid = (u8) => `${u8}-0000-4000-8000-${String(++szam).padStart(12, '0')}`;
-const lefuttat = (v, u8) => Object.fromEntries(smokeSql(u8).map((q) => [q.nev, v.D.db.prepare(q.sql).all(...q.params).map((r) => ({ ...r }))]));
+const JELLEG_SEMA = 'CREATE TABLE IF NOT EXISTS meres_jelleg (source_id TEXT PRIMARY KEY, jelleg TEXT NOT NULL, kupon INTEGER NOT NULL, forras TEXT NOT NULL, ido INTEGER NOT NULL) WITHOUT ROWID'; // az eles D1-ben a tabla megvan (X1, 2026-10-07); a tesztvilagban az elso kiertekeles hozza letre, a nem-sd eseteknek itt biztositjuk
+const lefuttat = (v, u8) => { v.D.db.exec(JELLEG_SEMA); return Object.fromEntries(smokeSql(u8).map((q) => [q.nev, v.D.db.prepare(q.sql).all(...q.params).map((r) => ({ ...r }))])); };
 const allapotok = (e) => Object.fromEntries(e.kriteriumok.map((x) => [x.id, x.allapot]));
 
 async function termeszetes({ host = 'mosaic-pmu.salonic.hu', uzletag = 'pmu', u8 = 'c0ffee01', lev = {}, mostSet = SD_ELOTT } = {}) {
@@ -210,14 +211,24 @@ test('SM12 TERMESZETES HeadSpa sd-foglalas (a motor lezart, az sd atvette): mind
   assert.equal(allapotok(ertekel(u8, csakPmu, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C12, 'WARN');
 });
 
-test('SM13 HeadSpa kuponos sd-foglalas: F1 utan az e-mail mezobol (e-mail + kuponkod-sor) az e-mail kinyerheto -> van index-sor, C2 PASS; az F1 elotti (index nelkuli) kuponos sor tovabbra is C2 WARN, de a verdikt PASS marad; a nem-HeadSpa/pmu/oxigen uzletag tovabbra is C1 FAIL', async () => {
+test('SM13 HeadSpa kuponos sd-foglalas (DECISION #194: a kuponos foglalas nem konverzio): nincs esemeny-sor, ez SZABALYOS (C5 / C6 / C7 / C8 = NA, verdikt PASS); az e-mail mezobol (F1) van index-sor, C2 PASS; az F1 elotti (index nelkuli) kuponos sor C2 WARN, a verdikt PASS marad; ha a kuponos foglalasra mégis van esemeny-sor / kiment kerelem, C5 / C7 / C8 FAIL; a nem-HeadSpa/pmu/oxigen uzletag tovabbra is C1 FAIL', async () => {
   const { v, u8 } = await termeszetes({ host: HS_LEVEL.host, uzletag: 'headspa', u8: 'c0ffee41', lev: { ...HS_LEVEL, szolgaltatas: 'KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás (kupon)', vendeg: { email: 'teszt.claude@example.com Kuponkód: ABC123', telefon: VENDEG.telefon } } });
-  const e0 = ertekel(u8, lefuttat(v, u8), { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
+  const jo0 = lefuttat(v, u8);
+  assert.equal(jo0.cellak.length, 0, 'a kuponos foglalas nem kuld esemenyt'); assert.equal(Number(jo0.level[0].kupon), 1, 'a level sor kupon-jele a meres_jelleg-bol');
+  const e0 = ertekel(u8, jo0, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
   assert.equal(allapotok(e0).C1, 'PASS'); assert.equal(allapotok(e0).C2, 'PASS', 'F1 utan a kuponos levelnek is van vendeg-index sora'); assert.equal(e0.verdikt, 'PASS', JSON.stringify(e0.kriteriumok.filter((x) => x.allapot !== 'PASS')));
+  assert.deepEqual(['C5', 'C6', 'C7', 'C8'].map((id) => allapotok(e0)[id]), ['NA', 'NA', 'NA', 'NA'], 'a kuponos foglalasnal az esemeny-kriteriumok NA (nem hiba)');
+  assert.match(e0.kriteriumok.find((x) => x.id === 'C5').reszlet, /DECISION #194/);
   v.D.db.prepare('DELETE FROM foglalas_vendeg').run(); // az F1 elotti kuponos sorok alakja: nincs index-sor
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = '10427|1|1792000000' WHERE uuid LIKE ?1").run('c0ffee41%'); // a valodi levelnek van kulcsa (place = 10427): az uzletag ebbol derul ki (esemeny-sor / index nelkul nincs mas forras)
   const e = ertekel(u8, lefuttat(v, u8), { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
   assert.equal(allapotok(e).C1, 'PASS'); assert.equal(allapotok(e).C2, 'WARN'); assert.equal(e.verdikt, 'PASS', JSON.stringify(e.kriteriumok.filter((x) => x.allapot !== 'PASS')));
-  const jo = lefuttat(v, u8); const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '10823|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'fodrasz' }));
+  // ellenpróba: kuponos foglalasra esemeny-sor (kiment kerelem) NEM lehet - a smoke ezt hibanak mutatja
+  const jo = lefuttat(v, u8);
+  const rossz = JSON.parse(JSON.stringify(jo)); rossz.cellak = [{ platform: 'meta', uzletag: 'headspa', esemeny_tipus: 'alap', esemeny_nev: 'FoglalasElso', allapot: 'elkuldve', forras: 'salonic_direct', indok: null, url: 'https://graph.facebook.com/v21.0/28616665324611098/events', cel: null }];
+  const er = ertekel(u8, rossz, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
+  assert.equal(er.verdikt, 'FAIL'); assert.deepEqual(['C5', 'C7', 'C8'].map((id) => allapotok(er)[id]), ['FAIL', 'FAIL', 'FAIL'], 'kuponos foglalas + esemeny-sor -> FAIL');
+  const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '10823|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'fodrasz' }));
   assert.equal(allapotok(ertekel(u8, hair, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C1, 'FAIL');
 });
 
