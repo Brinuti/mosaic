@@ -1635,6 +1635,15 @@ test('S0-63 HeadSpa csere (reschedule): a kuponos <-> normal PAROS ugyanaz a szo
     assert.deepEqual([r.csere.reschedule_from, r.csere.reschedule_to, r.csere.regi_uuid_elo8], ['2026-10-16T14:00:00.000Z', '2026-10-20T14:00:00.000Z', regi.slice(0, 8)], nev);
     assert.equal(v.net.hivasok.length, 0, nev + ': nincs uj konverzio');
   }
+  { // a regi ` kupon` kulcs toleranciaja CSAK a HeadSpa-ra szol: PMU-nal ugyanez a tarolt kulcs HOLD (a hivas az uzletagot adja at)
+    const v = vilag(); await v.kesz;
+    const regi = ujUuid(); assert.ok((await v.post(level(regi, { ld: { startDate: '2026-10-16T16:00:00+02:00' }, level_datuma: iso(T0 - 3 * 86400_000), uj_vendeg: false }))).ok);
+    v.sql("UPDATE foglalas_vendeg SET szolg_kulcs = szolg_kulcs || ' kupon' WHERE uuid = ?1", regi);
+    const u = ujUuid(); const b = level(u, { megjegyzes: MEGJ }); await lezar(v, b); v.t.set(SD_ELOTT);
+    const r = await v.sd(b);
+    assert.deepEqual([r.uzletag, r.allapot, r.csere.allapot, r.csere.jeloltek.azonos_vendeg_szolgaltatas], ['pmu', 'halasztva', 'suspected', 0]);
+    assert.equal(v.net.hivasok.length, 0);
+  }
   { // masik szolgaltatas (EGYENI Relax) a regi PAROS helyett: a jelolt nem azonos szolgaltatas -> HOLD, 0 kuldes
     const v = vilag(); await v.kesz;
     const regi = ujUuid();
@@ -1657,7 +1666,8 @@ test('S0-64 HeadSpa SZARAZ terv (irasmentes): a valodi PAROS / kuponos nevekkel 
     const tablak = osszesTabla(v); assert.ok(tablak.includes('meres_kapcsolo') && tablak.includes('salonic_nevtabla') && tablak.length >= 8, 'minden tabla benne van: ' + tablak.join(','));
     const elotte = dump(v, tablak);
     const r = await v.sd({ ...b, szaraz: true });
-    assert.equal(dump(v, tablak), elotte, 'a szaraz terv MINDEN tablara irasmentes'); assert.equal(v.net.hivasok.length, 0, 'a szaraz terv nem hiv platformot');
+    assert.equal(dump(v, tablak), elotte, 'a szaraz terv MINDEN tablara irasmentes');
+    assert.deepEqual(osszesTabla(v), tablak, 'a szaraz terv uj tablat sem hoz letre'); assert.equal(v.net.hivasok.length, 0, 'a szaraz terv nem hiv platformot');
     assert.equal(v.sql('SELECT sd_id FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0].sd_id, null, 'nincs atvetel');
     return r;
   };
