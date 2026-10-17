@@ -17,7 +17,7 @@
 - A Zap (`01a1125b…`, v. `01a1346f…`, csak olvasás) forrása: 5. lépés minden létrehozó levélre `sd_atvetel`; kuponos levélnél a szolgáltatásnév „ (kupon)” utótagot kap.
 - Vendégadat egyik lekérdezésben / tesztben sem szerepel (UUID-előtagok, darabszámok, kulcsnevek).
 
-## 3. Védett elemek (alap: `main` `ae6c96d`)
+## 3. Védett elemek (alap: `main` `d6e235a`; a táblázat az `ae6c96d`-vel is azonos, a közbeni `main`-változás csak `medicalpiercing/` + napló)
 
 | elem | `main` | a változásban | |
 |---|---|---|---|
