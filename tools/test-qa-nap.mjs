@@ -814,6 +814,49 @@ test('N33c (DECISION #194, review F-3) a Meta / TikTok lampa nevezojebol a KUPON
   assert.deepEqual([h.arnyek.meta.nevezo_parositott, h.arnyek.meta.lampa, h.arnyek.meta.arany_parositott], [0, 'n/a', null]);
 });
 
+test('N33d (delta-review 3) a lampa nevezojet CSAK a PAROSITOTT kuponos sorok csokkentik: az sd-atvett (nem parositott) kuponos sorok es a HeadSpa-konzultacio (esemeny nelkul, de nem kupon) a nevezot NEM modositjak', async () => {
+  const JELLEG = 'CREATE TABLE IF NOT EXISTS meres_jelleg (source_id TEXT PRIMARY KEY, jelleg TEXT NOT NULL, kupon INTEGER NOT NULL, forras TEXT NOT NULL, ido INTEGER NOT NULL) WITHOUT ROWID';
+  const jelleg = (w, id, j, kupon, t) => w.futtat("INSERT INTO meres_jelleg (source_id, jelleg, kupon, forras, ido) VALUES (?, ?, ?, 'elso_level', ?)", id, j, kupon, t);
+  const feltolt = async ({ esemenyes = 10, sdKuponos = 0, konzultacio = 0, kuponosParositott = 0 }) => {
+    const w = await vilag(); w.futtat(JELLEG);
+    for (let i = 0; i < esemenyes; i++) { // parositott, normal foglalas + Meta / TikTok alapesemeny
+      w.egyeztetes({ uuid: w.uuid('n0'), kulcs: HEADSPA(), t: FROM + 10 + i, booking_id: 'mb_n' + i });
+      w.kuldes({ esemeny_id: 'nm' + i, platform: 'meta', uzletag: 'headspa', t: FROM + 100 + i }); w.kuldes({ esemeny_id: 'nt' + i, platform: 'tiktok', uzletag: 'headspa', t: FROM + 100 + i });
+    }
+    for (let i = 0; i < sdKuponos; i++) { // az sd vette at (nem 'parositott'), kuponos, esemeny nelkul
+      w.egyeztetes({ uuid: w.uuid('s0'), kulcs: HEADSPA(), t: FROM + 400 + i, allapot: 'parositatlan', sd_id: 'sd_c' + i, sd_allapot: 'kesz' });
+      jelleg(w, 'sd_c' + i, 'elso', 1, FROM + 400 + i);
+    }
+    for (let i = 0; i < konzultacio; i++) { // parositott HeadSpa-konzultacio: a modell szandekosan nem keszit esemenyt (#101), de NEM kupon
+      w.egyeztetes({ uuid: w.uuid('z0'), kulcs: HEADSPA(), t: FROM + 600 + i, booking_id: 'mb_z' + i });
+      jelleg(w, 'mb_z' + i, 'konzultacio', 0, FROM + 600 + i);
+    }
+    for (let i = 0; i < kuponosParositott; i++) { // parositott, kuponos
+      w.egyeztetes({ uuid: w.uuid('k0'), kulcs: HEADSPA(), t: FROM + 800 + i, booking_id: 'mb_k' + i });
+      jelleg(w, 'mb_k' + i, 'elso', 1, FROM + 800 + i);
+    }
+    return (await w.jelentes()).uzletagak.headspa;
+  };
+  // 1) sd-atvett kuponos sorok: a nevezo marad 10 (nem csokken 5-tel), a lampa zold; a kuponos sorok a lefedettsegben szabalyosak
+  let h = await feltolt({ sdKuponos: 5 });
+  assert.deepEqual([h.valos.parositott, h.arnyek.meta.nevezo_parositott, h.arnyek.meta.lampa, h.lampa], [10, 10, 'zold', 'zold']);
+  assert.equal(h.lefedettseg.szabalyos_esemeny_nelkul, 5, 'az sd-atvett kuponos sorok szabalyos nullak a lefedettsegben');
+  // 1b) ugyanez 2 hianyzo esemennyel: 8 < 0,9 x 10 -> sarga (ha az sd-atvett kuponosok levonodnanak, a nevezo 5 lenne es 8 >= 4,5 -> zold lenne)
+  { const w = await vilag(); w.futtat(JELLEG);
+    for (let i = 0; i < 10; i++) { w.egyeztetes({ uuid: w.uuid('n0'), kulcs: HEADSPA(), t: FROM + 10 + i, booking_id: 'mb_n' + i }); if (i >= 2) { w.kuldes({ esemeny_id: 'nm' + i, platform: 'meta', uzletag: 'headspa', t: FROM + 100 + i }); w.kuldes({ esemeny_id: 'nt' + i, platform: 'tiktok', uzletag: 'headspa', t: FROM + 100 + i }); } }
+    for (let i = 0; i < 5; i++) { w.egyeztetes({ uuid: w.uuid('s0'), kulcs: HEADSPA(), t: FROM + 400 + i, allapot: 'parositatlan', sd_id: 'sd_c' + i, sd_allapot: 'kesz' }); jelleg(w, 'sd_c' + i, 'elso', 1, FROM + 400 + i); }
+    const x = (await w.jelentes()).uzletagak.headspa;
+    assert.deepEqual([x.arnyek.meta.alap_elkuldve, x.arnyek.meta.nevezo_parositott, x.arnyek.meta.lampa, x.arnyek.tiktok.lampa, x.lampa], [8, 10, 'sarga', 'sarga', 'sarga']); }
+  // 2) HeadSpa-konzultacio (3 db, esemeny nelkul): a nevezo 13 marad (NEM 10), 10 < 0,9 x 13 -> sarga; a lefedettsegben szabalyos
+  h = await feltolt({ konzultacio: 3 });
+  assert.deepEqual([h.valos.parositott, h.arnyek.meta.nevezo_parositott, h.arnyek.meta.lampa, h.arnyek.tiktok.lampa, h.lampa], [13, 13, 'sarga', 'sarga', 'sarga']);
+  assert.equal(h.lefedettseg.szabalyos_esemeny_nelkul, 3);
+  // 3) vegyes: parositott kuponos 4 (levonodik) + sd-atvett kuponos 5 + konzultacio 3 (nem) -> nevezo = 10 + 3 = 13; alap_elkuldve 10 -> sarga
+  h = await feltolt({ kuponosParositott: 4, sdKuponos: 5, konzultacio: 3 });
+  assert.deepEqual([h.valos.parositott, h.arnyek.meta.nevezo_parositott, h.arnyek.meta.lampa], [17, 13, 'sarga']);
+  assert.equal(h.lefedettseg.szabalyos_esemeny_nelkul, 4 + 5 + 3);
+});
+
 test('N34 az adatbazisbol jovo szoveg nem lehet objektum-kulcs veszely: forras / sd_allapot "__proto__" / "constructor" nem torik el a jelentest', async () => {
   const w = await vilag();
   w.egyeztetes({ uuid: w.uuid('g1'), kulcs: HEADSPA(), t: FROM + 10, allapot: 'parositatlan', sd_id: 'sd_x', sd_allapot: 'constructor', sd_ido: FROM + 10 });

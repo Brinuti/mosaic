@@ -297,3 +297,65 @@ test('F4b a megjegyzes-kulcs HIANYA (elfelejtett Zap-lekepezes): kuponos foglala
     assert.equal(r.allapot, varhato, szolg);
   }
 });
+
+// ---------- delta-review: a kuponos kapu a SZARAZ es az UJRAFUTTATASI agon, a kupon-felismero lathatatlan karakterei ----------
+test('F4c (delta-review 1) kuponos foglalas SZARAZ terve csere-szoval: terv.mod === "normal", csere null, 0 terv-esemeny, irasmentes (minden tabla azonos), 0 halozati hivas; a NORMAL foglalas szaraz terve ugyanazzal a megjegyzessel csere-gyanus', async () => {
+  for (const [szolg, kuponos] of [[`${HS_KUPON_PAROS} (kupon)`, true], [`COUPON - ${HS_PAROS}`, true], [HS_PAROS, false]]) {
+    const v = vilag({ kapcsolo: 'headspa' }); await v.kesz;
+    const u = u8uuid('c0ffee0d'); const b = hsLevel(u, { megjegyzes: MEGJ, szolgaltatas: szolg });
+    await lezar(v, b); v.t.set(SD_ELOTT);
+    const elotte = dumpMind(v); const net0 = v.net.hivasok.length, sal0 = v.net.salonic.length;
+    const r = await v.post({ ...b, muvelet: 'sd_atvetel', szaraz: true });
+    assert.equal(r.allapot, 'szaraz_terv', szolg);
+    if (kuponos) { assert.equal(r.terv.mod, 'normal', szolg); assert.equal(r.terv.csere, null, szolg); assert.deepEqual(r.terv.terv_esemenyek, [], szolg + ': a kuponos foglalasnak nincs terv-esemenye'); }
+    else { assert.equal(r.terv.mod, 'suspected', szolg); assert.equal(r.terv.csere.allapot, 'suspected', szolg); }
+    assert.deepEqual(dumpMind(v), elotte, szolg + ': a szaraz terv minden tablat valtozatlanul hagy (0 sor)');
+    assert.deepEqual([v.net.hivasok.length, v.net.salonic.length], [net0, sal0], szolg + ': 0 halozati hivas');
+  }
+});
+
+test('F4d (delta-review 2) kuponos UJRAFUTTATAS: a megszakadt `atveve` sor es a hianyzo_mezo-potlas (regi HOLD) csere-szoval is `kesz`, csere null, nincs HOLD / riasztas / reschedule audit-sor; a NORMAL foglalas ugyanitt csere-gyanus (HOLD)', async () => {
+  const CSERE_MEGJ = MEGJ;
+  for (const [szolg, kuponos] of [[`${HS_KUPON_PAROS} (kupon)`, true], [HS_PAROS, false]]) {
+    for (const ag of ['atveve', 'hianyzo_potlas']) {
+      const nev = `${kuponos ? 'kuponos' : 'normal'} / ${ag}`;
+      const v = vilag({ kapcsolo: 'headspa' }); await v.kesz;
+      const u = u8uuid('c0ffee0e'); const b = hsLevel(u, { megjegyzes: '', szolgaltatas: szolg }); // az elso futas csere-szo nelkul: kesz
+      await lezar(v, b); v.t.set(SD_ELOTT);
+      assert.equal((await v.sd(b)).allapot, 'kesz', nev + ': elso futas');
+      if (ag === 'atveve') { // megszakadt Worker: az atvetel `atveve`-ben maradt, 300 s utan ujra atveheto
+        v.D.db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = 'atveve' WHERE uuid = ?1").run(u);
+        v.t.set(SD_ELOTT + 400_000);
+      } else { // a regi (#194 elotti) kod HOLD-ja: a megjegyzes-kulcs hianyzott, a sor halasztva + hianyzo_mezo audit-sor; most megerkezik a megjegyzes
+        v.D.db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = 'halasztva', riasztas = 1 WHERE uuid = ?1").run(u);
+        v.D.db.prepare("INSERT INTO foglalas_reschedule (uuid, sd_id, allapot, ok, ido, frissitve) SELECT uuid, sd_id, 'hianyzo_mezo', 'regi HOLD', ?2, ?2 FROM foglalas_egyeztetes WHERE uuid = ?1").run(u, Math.floor(SD_ELOTT / 1000));
+        v.t.set(SD_ELOTT + 60_000);
+      }
+      const r = await v.sd({ ...b, megjegyzes: CSERE_MEGJ }); // az ujrafuttatas mar csere-szoval erkezik
+      if (kuponos) {
+        assert.equal(r.allapot, 'kesz', `${nev}: ${JSON.stringify(r).slice(0, 300)}`); assert.equal(r.csere, null, nev); assert.ok(!r.riasztas, nev + ': nincs riasztas');
+        assert.equal(v.net.hivasok.length, 0, nev);
+        assert.deepEqual(v.sql("SELECT sd_allapot, riasztas FROM foglalas_egyeztetes WHERE uuid = ?1", u).map((x) => [x.sd_allapot, x.riasztas]), [['kesz', 0]], nev);
+        assert.deepEqual(v.sql('SELECT allapot FROM foglalas_reschedule WHERE uuid = ?1', u).filter((x) => x.allapot !== 'hianyzo_mezo_potolva' && x.allapot !== 'hianyzo_mezo').length, 0, nev + ': nincs suspected / confirmed audit-sor');
+      } else {
+        assert.equal(r.csere && r.csere.allapot, 'suspected', nev); assert.equal(r.allapot, 'halasztva', nev); assert.equal(r.riasztas, true, nev);
+      }
+    }
+  }
+});
+
+test('F6b (delta-review 4) a kupon-felismero lathatatlan karakterei a SZO KOZEPEN is: zero-width space / non-joiner / joiner, bal-jobb jelek, word joiner es invisible operatorok, soft hyphen, mongol vowel separator, BOM; tobb karakter egyutt; "coupon" is', () => {
+  const LATHATATLAN = ['​', '‌', '‍', '‎', '‏', '⁠', '⁡', '⁢', '⁣', '⁤', '­', '᠎', '﻿'];
+  for (const lk of LATHATATLAN) {
+    const kod = 'U+' + lk.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
+    for (const alap of ['ku{}pon', 'k{}upon', 'kupo{}n', 'cou{}pon', 'KUPON{}KÓDDAL']) {
+      const szo = alap.replace('{}', lk);
+      assert.equal(kuponJelzes(`${szo} - Head Spa`), true, `${kod}: ${JSON.stringify(szo)}`);
+      assert.equal(foglalasJelleg({ szolgaltatasNev: szo, ujVendeg: true }).kupon, true, `foglalasJelleg ${kod}`);
+    }
+  }
+  assert.equal(kuponJelzes('ku​﻿­po‍n'), true, 'tobb lathatatlan karakter egyutt');
+  assert.equal(kuponJelzes('ku﻿pon'), true, 'BOM a szo kozepen');
+  // a lathatatlan karakter nem hoz letre kupont ott, ahol nincs: valos nevek
+  for (const nev of ['Head​ Spa kezelés', 'Ko﻿rrekció', 'Relax­kezelés']) assert.equal(kuponJelzes(nev), false, JSON.stringify(nev));
+});
