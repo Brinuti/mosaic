@@ -54,14 +54,17 @@ export async function vendegHash(env, v = {}, nev = '') {
 export const azonosVendeg = (a, b) => !!(a && b && a.email_h && a.email_h === b.email_h && ((a.tel_h && a.tel_h === b.tel_h) || (a.nev_h && a.nev_h === b.nev_h)));
 
 // --- szolgaltatas kanonikus kulcsa (a lifecycle-kodtol FUGGETLEN: a meres es az eletciklus kodja nem importalja egymast) ------------------
-/** Ket Salonic-szolgaltatasnev ugyanaz-e: emoji, akcio- / kupon-elotag, zarojeles ar-megjegyzes, "X Ft helyett most Y Ft" nelkul, ekezet- es jel-fuggetlenul. */
+/** Ket Salonic-szolgaltatasnev ugyanaz-e: emoji, akcio- / kupon-elotag, zarojeles ar-megjegyzes, "X Ft helyett most Y Ft", a kuponos foglalasok vegi "(kupon)" jelzese nelkul, ekezet- es jel-fuggetlenul. */
 export function szolgKanon(s) {
   let t = String(s || '').normalize('NFC').replace(/[\p{Extended_Pictographic}‍️]+/gu, ' ').replace(/\s+/g, ' ').trim();
   for (let i = 0; i < 2; i++) t = t.replace(/^(KUPONK[ÓO]DDAL|AKCI[ÓO])\s*-\s*/i, '');
   t = t.replace(/\s*\([^)]*\bFt\b[^)]*\)/gi, '').replace(/\s*-\s*[\d.\s]+Ft helyett most.*$/i, '');
+  t = t.replace(/\s*\(\s*kupon\s*\)\s*$/i, ''); // az eles HeadSpa kuponos foglalasok szovege "KUPONKÓDDAL - <nev> (kupon)" (2026-10-17: 11 foglalas, mind): a jelzes nem a szolgaltatas resze
   const k = norm(t);
   return k || null;
 }
+/** A 2026-10-13 es 10-17 kozott indexelt, MEG a "(kupon)" levagasa elotti kulcs (`<kulcs> kupon`) egyezese a mostani kanonikus kulccsal: az indexben tarolt regi kulcsot nem irjuk at (D1 adat nem valtozik), a csere-keresesnel tolerans. */
+export const szolgKulcsEgyezik = (tarolt, kanon) => !!tarolt && !!kanon && (tarolt === kanon || tarolt === `${kanon} kupon`);
 
 // --- megjegyzes (CSAK a Salonic "Megjegyzes" mezoje; a vendeg szabad szovege) -----------------------------------------------------------
 /** Csere- / athelyezes-gyanu a megjegyzesben (ekezet-fuggetlen). A gyanu nem dont: csak a csere-agat nyitja meg (igazolas vagy HOLD). */
@@ -207,7 +210,7 @@ async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megj
   const { results } = await db.prepare('SELECT uuid, szolg_kulcs, kezdet, nev_h, tel_h, email_h, allapot, ido FROM foglalas_vendeg WHERE email_h = ?1 AND uzletag = ?2 AND uuid <> ?3 AND lejar >= ?4 ORDER BY ido DESC LIMIT 50').bind(h.email_h, uzletag, uuid, t0).all();
   const lista = results || [];
   // jelolt: azonos vendeg, azonos kanonikus szolgaltatas, ELSO (a letrehozasi ideje a mostani ele esik), es meg nem kezdodott el a mostani level erkezesekor (1 oras turessel)
-  const azonos = lista.filter((c) => azonosVendeg(h, c) && c.szolg_kulcs && c.szolg_kulcs === szolgKulcs && Number.isFinite(c.kezdet) && c.kezdet >= t0 - 3600 && c.ido <= t0 + 60);
+  const azonos = lista.filter((c) => azonosVendeg(h, c) && szolgKulcsEgyezik(c.szolg_kulcs, szolgKulcs) && Number.isFinite(c.kezdet) && c.kezdet >= t0 - 3600 && c.ido <= t0 + 60);
   const mutatott = azonos.filter((c) => mutatEgyre(em, c.kezdet));
   const jeloltek = { indexben: lista.length, azonos_vendeg_szolgaltatas: azonos.length, mutatott: mutatott.length };
   if (mutatott.length === 0) return gyanus(azonos.length ? 'a megjegyzesben szereplo idopont az index egyetlen jeloltjere sem mutat' : 'nincs azonos vendeg / szolgaltatas jelolt az indexben (vendeg-hash eltero, vagy a korabbi foglalas nincs az indexben)', { jeloltek });
