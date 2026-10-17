@@ -24,7 +24,9 @@ function verzio(forras) { let h = 0; for (const c of String(forras)) h = (h * 31
 
 // -> { ad, v } vagy null. Bármilyen hiba: null (az oldal valtozatlan).
 export async function hosValasztas(url, db) {
-  const ad = (url.searchParams.get('ad_id') || '').trim();
+  // Az egyseges ad_id={{ad.id}} mellett a meglevo Mosaic-hirdetesek utm_content={{ad.id}}-t kuldenek (GA4-ben ellenorizve, 2026-10-17):
+  // ha nincs ad_id, a csupa szambol allo utm_content is hirdetes-ID-nek szamit (futo hirdeteshez igy nem kell nyulni).
+  const ad = (url.searchParams.get('ad_id') || url.searchParams.get('utm_content') || '').trim();
   if (!AD_RE.test(ad) || KIZART.has(ad) || !db) return null;
   try {
     const sor = await db.prepare('SELECT forras FROM hirdetes_hos WHERE hirdetes_id = ?1 AND fiok_id = ?2 AND aktiv = 1').bind(ad, FIOK).first();
