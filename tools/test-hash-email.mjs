@@ -62,7 +62,8 @@ test('fail-closed: nincs e-mail-szeru token, vagy nincs felismert cimke a tobbto
 });
 
 test('ReDoS-vedelem: az EMAIL_TOKEN masodfoku visszalepeset kivalto hosszu, sok pontos, @-os mezo gyorsan (hosszkorlat) null', () => {
-  const rossz = ['a@' + '.x'.repeat(50000) + '@', 'a@x.' + 'x.'.repeat(60000), 'Kupon kód: ' + 'a@x.x'.repeat(30000)];
+  const rossz = ['a@' + '.x'.repeat(50000) + '@', 'a@x.' + 'x.'.repeat(60000), 'Kupon kód: ' + 'a@x.x'.repeat(30000),
+    'a@Kupon:' + 'x.'.repeat(30000) + '@']; // az utolso: a cimke elotti resz rovid, a teljes mezo hosszu es kovas - a zaro kompatibilitasi agnak is hosszkorlatos
   const t0 = Date.now();
   for (const m of rossz) assert.equal(emailNormal(m), null);
   assert.ok(Date.now() - t0 < 500, `gyors: ${Date.now() - t0} ms`);
