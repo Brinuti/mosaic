@@ -21,6 +21,7 @@ import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
 import { kulcsbol } from '../lib/utvonal.js';
 import { valaszadoKepek, teljesKepek, videoElotoltes, kepDobozok } from './valaszado-kepek.mjs';
 import { tomorit } from './tomorites.mjs';
+import { GOOGLE_DB } from './uj-oldalak/kategoria.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -175,6 +176,21 @@ else if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.
     n++;
   }
   console.log(`nyitvatartas H-P 09:00-19:00: ${n} lapon`);
+}
+
+// a regi velemenyszamok (a tulajdonos kerese, 2026-10-17: "mindenhol 5000 valamennyi legyen, amennyi az aktualis"): az uj lapokon a szovegJavit
+// (tools/uj-fooldal.mjs) mar a Google mostani szamat irta (data-ti-darab, a lap frissiti); itt a maradek: a nem /regi/ alatti Wix-lapok (pl. egy blogcikk
+// "Több mint 1.000 értékelés" sora) es a <strong>-ba tett szam ("<strong>4.183</strong> vélemény"). A /regi/ archivum (a tesztek osszevetesi alapja) valtozatlan.
+{
+  let n = 0;
+  const db = Number(GOOGLE_DB).toLocaleString('de-DE');   // 5.033 (a Wix-szovegek ezres-pontos irasa)
+  for (const ki of ['_a', '_m']) for (const f of fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html') && !/^regi[\\/]/.test(x))) {
+    const fajl = path.join(DIST, ki, f);
+    const html = fs.readFileSync(fajl, 'utf8');
+    const uj = html.replace(/(>\s*)(?:[Tt]öbb mint\s+)?[1-4][.\u00a0 ]?\d{3}\+?(?=\s*(?:<\/strong>)?\s*(?:Google[- ])?(?:vélemény|értékelés)|\s+vendégünk (?:írta|leírta))/g, `$1${db}`);
+    if (uj !== html) { fs.writeFileSync(fajl, uj); n++; }
+  }
+  console.log(`regi velemenyszam -> ${db}: ${n} lapon`);
 }
 
 // kitelepulesek: a videki helyszinek idopontjai a tablazatbol. Ha a tablazat nem erheto el, a

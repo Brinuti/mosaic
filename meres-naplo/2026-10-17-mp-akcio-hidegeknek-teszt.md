@@ -32,3 +32,15 @@ Nem érinti (a mérőkód fájljai nem változtak; a csomag-gomb a meglévő `da
 - `uj-b-teszt`: 19 B-oldal, 1042 ellenőrzés, rendben; `uj-fooldal-teszt` rendben; `csuszas-teszt` (206 + 206 lap): nincs csúszás; `meres-teszt` rendben
 - a csomag-gomb („Ezt a hármast kérem”) megnyitja a foglalót a 3 piercinges csomaggal (a helyszín-lépéstől, mint a meglévő csomag-gomboknál)
 - a hős képváltása: 0,5 mp – 1. fotó, 6 mp – 2., 10,5 mp – 3.; szemrevételezés 1440 px és iPhone 13 teljes oldal; vízszintes túlcsordulás nincs
+
+## 3. kör (a tulajdonos kérései, 2026-10-17, az élesítés után)
+- alcím: „…mert együtt, egymást erősítve jobban kifejtik hatásukat.” (az „egymás hatását” magyartalan); „Vendégeink nagy többsége” a „81%-a” helyett
+- az akció kiemelése: a hősben keretes előszöveg „Őszi akció · visszavonásig” jellel; a „Több piercing” dobozban az 1 / 2 / 3 piercing ára kiemelt csempéken
+  („Akció · visszavonásig tart”, a 3 piercing „Legjobban megéri”); asztalon a galéria pontosan a szöveghasáb magasságában (500 px széles)
+- a két páros csempe (Migrén + Shenmen, Klimax + Slim) kimaradt; a csomag-kártyákon az ár középen (asztalon és mobilon)
+- a piercing-rács címe: „Ezeket a piercingeket érdemes párban vagy hármasban választani 👇” (a kérés szövege megszakadt, a képek jelöléseihez igazítva)
+- a videós blokk címe: „Videóban mesélnek a vendégeink, akik több piercinget szúrattak”
+- a „9 ok” lapozó kártyái mobilon is egyforma méretűek (a mobil saját magasság visszavonva)
+- **véleményszám mindenhol a mostani** (5 033, a lap betöltéskor frissíti): az új lapokon minden régi szám („Több mint 3.400 értékelés”, „1.745 értékelés”,
+  „2.436 vélemény”, „4 900+ Google-vélemény”, „4.600+ vendégünk leírta” …) a Google mostani száma; a nem /regi/ alatti Wix-lapokon (pl. egy blogcikk) a build írja át
+  (5.033); a /regi/ archívum változatlan. Ellenőrzés: az összes új lap látható szövegében csak 5033 / 5.033 maradt.

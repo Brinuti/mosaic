@@ -324,9 +324,8 @@
   .piercingek-bev{margin:-6px 0 14px;font-size:.95rem}
   .ok-doboz{padding:22px 0 16px;text-align:center}
   .ok-doboz .kat-fej{margin-bottom:14px;padding-inline:16px}
-  /* mobilon egyszerre egy kartya latszik: mindegyik a sajat szovegenek magassagaban, a sav a latszo kartya magassagat veszi fel (data-kar-igazit,
-     uj-oldalak.js 1.; kulonben a rovid szovegu kartyak aljan nagy ures sav maradt) */
-  .ok-kar .kar-sav{gap:12px;padding:4px 16px 14px;scroll-padding-inline:16px;align-items:flex-start;overflow-y:hidden;transition:height .25s ease}
+  /* mobilon is egyforma meretu kartyak (a tulajdonos kerese, 2026-10-17: "a lapozo minden szoveg ugyanakkora lenne") */
+  .ok-kar .kar-sav{gap:12px;padding:4px 16px 14px;scroll-padding-inline:16px}
   .ok-kar .kar-dia{flex-basis:84%}
   .ok-szam{left:14px;bottom:-20px;width:42px;height:42px;font-size:1.1rem}
   .ok-szoveg{padding:30px 18px 20px}
@@ -362,7 +361,7 @@
 .csomag-pontok li::before{content:"";position:absolute;left:2px;top:.45em;width:8px;height:8px;border-radius:50%;background:#e8473f;box-shadow:0 0 0 3px rgba(232,71,63,.18)}
 .csomag>p{margin:0;font-size:.9rem;line-height:1.55;color:var(--mut)}
 .csomag>p b{color:var(--navy)}
-.csomag>.csomag-ar{margin-top:auto;padding-top:4px;color:var(--navy)}
+.csomag>.csomag-ar{margin-top:auto;padding-top:4px;color:var(--navy);text-align:center}
 .csomag>.gomb{width:100%;justify-content:center}
 .csomag-lab{margin-top:18px;align-items:center;text-align:center}
 /* a piercing-kartyak: 9 tipus, asztalon 5 + 4 (a masodik sor kozepen); a kepen alul: mivel szoktak parban / harmasban valasztani */
@@ -404,4 +403,37 @@
   .csapat-kar .kar-szam{display:block;margin:0 auto;width:fit-content;padding:3px 14px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.82rem;font-weight:700}
   #csapat{padding-inline:0}
   #csapat>.kat-fej{padding-inline:16px}
+}
+
+/* --- Az oszi akcio oldala, 3. kor (a tulajdonos kerese, 2026-10-17): az akcio kiemelese – a hosben keretes elo-szoveg "Oszi akcio · visszavonasig" jellel,
+   a "Tobb piercing" dobozban az 1 / 2 / 3 piercing ara csempeken ("Akcio · visszavonasig tart"); asztalon a galeria pontosan olyan magas, mint a szoveg --- */
+.akcio-fej{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 8px;font-size:.92rem;font-weight:700;line-height:1.3}
+.akcio-jel{display:inline-block;padding:4px 12px;border-radius:99px;background:var(--rose-i);color:#fff;font-size:.74rem;font-weight:800;letter-spacing:.08em;line-height:1.3;text-transform:uppercase}
+.hos-akcio{margin:0 0 18px;padding:14px 18px 14px;border:1px solid var(--line);border-left:4px solid var(--rose-i);border-radius:18px;background:#fff;box-shadow:var(--sh-s)}
+.hos-akcio .akcio-fej{color:var(--rose-i)}
+.hos-akcio>.hos-bevezeto{margin:0}
+.hos-akcio b{color:var(--navy);font-weight:800}
+.akcio-arak-doboz{width:100%;margin:4px 0 14px;padding:14px 14px 12px;border-radius:18px;background:linear-gradient(135deg,var(--slate),#5c5d73);color:#fff;box-shadow:var(--sh-s)}
+.akcio-arak-doboz .akcio-fej{color:#fff}
+.akcio-arak-doboz .akcio-jel{background:var(--rose)}
+.akcio-arlista{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.akcio-arlista li{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:10px 6px;border-radius:12px;background:rgba(255,255,255,.1);text-align:center}
+.akcio-arlista span{font-size:.8rem;font-weight:600;opacity:.88}
+.akcio-arlista b{font-size:1.3rem;font-weight:800;line-height:1.15}
+.akcio-arlista small{font-size:.72rem;opacity:.82}
+.akcio-arlista em{margin-top:3px;font-style:normal;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.akcio-arlista .akcio-legjobb{background:var(--rose-i);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+@media (min-width:1001px){
+  .tt-akcio.tobb-doboz{grid-template-columns:minmax(0,1fr) minmax(0,500px);align-items:stretch}
+  /* a galeria a szoveghasab magassagat veszi fel (a sajat merete nem szamit bele a sor magassagaba) */
+  .tobb-doboz>.galeria{aspect-ratio:auto;height:auto;min-height:360px;contain:size;align-self:stretch}
+}
+@media (max-width:760px){
+  .hos-akcio{padding:12px 14px;text-align:center}
+  .hos-akcio .akcio-fej{justify-content:center}
+  .akcio-arak-doboz{padding:12px 10px 10px}
+  .akcio-arak-doboz .akcio-fej{justify-content:center}
+  .akcio-arlista{gap:6px}
+  .akcio-arlista b{font-size:1.08rem}
+  .akcio-arlista span{font-size:.74rem}
 }

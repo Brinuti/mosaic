@@ -29,7 +29,7 @@ import { KATEGORIA_UTAK, KATEGORIA_B_UTAK, B_ALAP, kategoriaCserelt, hosGaleriaK
 import { KIZART_UTAK, piercingCserelt, piercingRacs, piercingCim } from './uj-oldalak/sablon.mjs';
 // a tulajdonos kereseire (2026-10-16) atirt / lecserelt szovegek: az eredeti oldalon megvannak, az uj oldalon szandekosan nem
 // (a 4.100+ helyett a Google mostani szama; arany / 14 karatos bevonat helyett G23 titanium; a regi akcio-link helyett az oszi akcio; az ertekeles-sor a Trustindexbol)
-const SZANDEKOS = /4\.100|arany|arannyal|karát|antiallergén orvosi fém piercingek|Több tízezer szúrás tapasztalata után csak a legnépszerűbb|3 piercing 2 áráért! - AKCIÓ!|vélemény alapján >>|^Az anyaga alapján tehát választhatsz|^·\s*(nemesfémet|ezüstöt|titániumot)/i;
+const SZANDEKOS = /4\.100|\b[1-4][.\u00a0 ]?\d{3}\+?\s*(?:Google[- ])?(?:vélemény|értékelés)|[1-4][.\u00a0 ]?\d{3}\+? vendégünk (?:írta|leírta)|arany|arannyal|karát|antiallergén orvosi fém piercingek|Több tízezer szúrás tapasztalata után csak a legnépszerűbb|3 piercing 2 áráért! - AKCIÓ!|vélemény alapján >>|^Az anyaga alapján tehát választhatsz|^·\s*(nemesfémet|ezüstöt|titániumot)/i;
 // lapon beluli szandekos elteresek: az oszi akcio (/3-piercing-2-araert, a -regi cim ide visz; a tulajdonos kerese, 2026-10-17: a Wix-es -regi oldal szovege 1:1) –
 // a velemenyszam a Google mostani szama, "Már 15 városban" (a lista 15 varos), a varos-csempe maga a foglalo-link (nincs kulon "Időpontfoglalás" gomb), a "higiánia" elirasa javitva
 // az oszi akcio oldala: a 2. kor (a tulajdonos kerese, 2026-10-17: "kicsit szoljon a hidegeknek is") szandekosan atirt sorai is (hos, "Tudtad, hogy",
@@ -39,7 +39,7 @@ const SZANDEKOS_LAP = { '/3-piercing-2-araert-regi': new RegExp([
   /^Most megéri 2 vagy 3 piercinget szúratni!$|^1 piercing 10% kedvezménnyel|^3 piercingnél mindössze 14\.900|^Az AKCIÓ 1 személyre érvényes/.source,
   /^Az alábbi piercing típusok vesznek részt az akcióban|^Vendégeink 81%-a több piercinget szúrat egyszerre mert/.source,
   /^Tudtad, hogy\.\.\.\?$|^Bizonyos piercing párok erősítik egymás hatását|A migrén és a shenmen piercinget mindenképpen érdemes|^Klimax piercing, slim piercing, allergia piercing/.source,
-  /^Olvasd el a visszajelzéseket!$|^Havonta közel 2\.000 ember/.source,
+  /^Olvasd el a visszajelzéseket!$|^Havonta közel 2\.000 ember|^Legnépszerűbb piercingeink 👇$/.source,
   /^Divat fülpiercing$|^Nem közérzetjavító ékszer$|^Saját, vagy hozott fülbevaló|^A fülcimpába kerül$|^Steril és biztonságos behelyezés$|^G23 Titánium ékszerek$|^Ingyenes és korlátlan kontroll$/.source,
 ].join('|')) };
 // a kezzel irt (uj-oldalak/sajat/) es az ujraszerkesztett oldalak (blog, Gabi tortenete, Rolunk, oszi akcio) szovege szandekosan mas: a lefedettseget nem merjuk
