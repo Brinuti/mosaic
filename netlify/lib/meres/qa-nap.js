@@ -255,20 +255,23 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   }, hibak);
 
   // 5d) lefedettseg: a parositott (motor: booking_id) vagy kesz sd (sd_id) levelek, amelyekhez NINCS alap esemeny-sor a meres_kuldes-ben = technikai kimaradas (a nevezoben marad: nincs_sor)
+  const kuponParositott = new Map(); // uzletag -> a PAROSITOTT (motoros), kuponos, esemeny nelkuli foglalasok szama: a lampa nevezojebol kivonjuk (DECISION #194)
   await vedett('lefedettseg', async () => {
     if (!eOszl.size || !kOszl.size || !eOszl.has('booking_id')) return;
     const sdVan = eOszl.has('sd_id') && eOszl.has('sd_allapot');
-    const jellegVan = (await oszlopok(db, 'meres_jelleg')).size > 0; // a rogzitett foglalas-jelleg: a HeadSpa KONZULTACIOHOZ a modell szandekosan nem keszit esemenyt (#101) -> szabalyos, nem technikai kimaradas
+    const jellegVan = (await oszlopok(db, 'meres_jelleg')).size > 0; // a rogzitett foglalas-jelleg: a HeadSpa KONZULTACIOHOZ (#101) es a KUPONOS foglalashoz (#194: nem konverzio) a modell szandekosan nem keszit esemenyt -> szabalyos, nem technikai kimaradas (szabalyos_esemeny_nelkul)
     const jellegKulcs = sdVan ? "COALESCE(CASE WHEN e.allapot = 'parositott' THEN e.booking_id END, e.sd_id)" : "CASE WHEN e.allapot = 'parositott' THEN e.booking_id END"; // regi semaban nincs sd_id
-    const jellegOszlop = jellegVan ? ', (SELECT j.jelleg FROM meres_jelleg j WHERE j.source_id = ' + jellegKulcs + ') AS jelleg' : ', NULL AS jelleg';
-    const sql = `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.letrehozva AS ido${jellegOszlop} FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND ((e.allapot = 'parositott' AND e.booking_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.booking_id AND k.esemeny_tipus = 'alap'))${sdVan ? " OR (e.sd_id IS NOT NULL AND e.sd_allapot = 'kesz' AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.esemeny_tipus = 'alap'))" : ''}) ORDER BY e.letrehozva, e.uuid`;
+    const jellegOszlop = jellegVan ? ', (SELECT j.jelleg FROM meres_jelleg j WHERE j.source_id = ' + jellegKulcs + ') AS jelleg, (SELECT j.kupon FROM meres_jelleg j WHERE j.source_id = ' + jellegKulcs + ') AS kupon' : ', NULL AS jelleg, NULL AS kupon';
+    const sql = `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.allapot AS allapot, e.letrehozva AS ido${jellegOszlop} FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND ((e.allapot = 'parositott' AND e.booking_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.booking_id AND k.esemeny_tipus = 'alap'))${sdVan ? " OR (e.sd_id IS NOT NULL AND e.sd_allapot = 'kesz' AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.esemeny_tipus = 'alap'))" : ''}) ORDER BY e.letrehozva, e.uuid`;
     const frissHatar = Math.floor(mostMs / 1000) - FRISS_MP;
     for (const r of await mind(db, sql, from, to)) {
       if (probaSet.has(r.u8)) continue;
       const nev = placeUzletag(r.kulcs);
       const b = bizt(nev).lefedettseg;
+      if (r.kupon && r.allapot === 'parositott') kuponParositott.set(nev, (kuponParositott.get(nev) || 0) + 1); // a frissesseg itt nem szamit: a kuponos foglalas SOHA nem kap esemenyt, a lampa nevezojeben sem szerepelhet
       if (r.ido > frissHatar) b.friss_kizarva++;
       else if (nev === 'headspa' && r.jelleg === 'konzultacio') b.szabalyos_esemeny_nelkul++;
+      else if (r.kupon) b.szabalyos_esemeny_nelkul++; // DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio -> szandekosan nincs esemenye (nem technikai kimaradas)
       else b.parositott_esemeny_nelkul++;
     }
   }, hibak);
@@ -287,16 +290,18 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   for (const [nev, u] of Object.entries(uz)) {
     let lampa = 'zold';
     const b = u.biztonsag;
+    const nevezo = Math.max(0, u.valos.parositott - (kuponParositott.get(nev) || 0)); // a kuponos foglalas szandekosan esemeny nelkuli: nem tehet sargava (DECISION #194)
     if (b.elo_id_talalat > 0 || b.dupla > 0 || b.nem_arnyek_cel > 0) lampa = 'piros';
     for (const p of ['meta', 'tiktok']) { // csak a Meta es a TikTok jelez sargat; a GA4 es a Google tajekoztato (hozzajarulas / kattintasazonosito miatt)
       const a = u.arnyek[p];
       if (nev === 'ismeretlen') { a.lampa = 'n/a'; a.arany = null; a.arany_parositott = null; continue; } // a besorolatlan level (pl. meg kulcs nelkuli) nem rothato egyik uzletag arnyek-esemenyeire
       a.arany = hanyados(a.alap_elkuldve, u.valos.letrehozo_level); // tajekoztato: az elkuldott alap-esemenyek / valos
-      a.arany_parositott = hanyados(a.alap_elkuldve, u.valos.parositott); // a lampa alapja: az elkuldott alap-esemenyek / valos.parositott
-      a.lampa = u.valos.parositott === 0 ? 'n/a' : (a.alap_elkuldve < KUSZOB * u.valos.parositott ? 'sarga' : 'zold');
+      a.nevezo_parositott = nevezo; // = valos.parositott - a kuponos (nem konverzio, esemeny nelkuli) parositott foglalasok (DECISION #194)
+      a.arany_parositott = hanyados(a.alap_elkuldve, nevezo); // a lampa alapja: az elkuldott alap-esemenyek / (valos.parositott - kuponos)
+      a.lampa = nevezo === 0 ? 'n/a' : (a.alap_elkuldve < KUSZOB * nevezo ? 'sarga' : 'zold');
       if (a.lampa === 'sarga' && LAMPA_RANG[lampa] < LAMPA_RANG.sarga) lampa = 'sarga';
     }
-    for (const p of ['google', 'ga4']) { const g = u.arnyek[p]; g.lampa = 'tajekoztato'; g.arany = hanyados(g.alap_elkuldve, u.valos.letrehozo_level); g.arany_parositott = hanyados(g.alap_elkuldve, u.valos.parositott); }
+    for (const p of ['google', 'ga4']) { const g = u.arnyek[p]; g.lampa = 'tajekoztato'; g.arany = hanyados(g.alap_elkuldve, u.valos.letrehozo_level); g.arany_parositott = hanyados(g.alap_elkuldve, nevezo); }
     u.lampa = lampa;
     if (LAMPA_RANG[lampa] > LAMPA_RANG[osszLampa]) osszLampa = lampa;
     // booking coverage + platform eligibility (tajekoztato szamlalok: nem valtoztatjak a lampat)

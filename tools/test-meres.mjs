@@ -677,15 +677,17 @@ test('X1: a javitas ELOTTI sorok (nincs rogzitett jelleg): az elso alapesemeny j
   assert.deepEqual(z, { jelleg: 'konzultacio', kupon: false, forras: 'meglevo_sorok', ujonnan: true });
   assert.equal(x.h.hivasok.length, n);
 });
-test('X1: a kupon-jelzes is az elso levelnel rogzul (a 2. level nem hoz letre ernyoesemenyt); ket kulonbozo foglalas jellege fuggetlen', async () => {
+test('X1: a kupon-jelzes is az elso levelnel rogzul (DECISION #194: a kuponos foglalas semmilyen esemenyt nem kap, a 2. level sem); ket kulonbozo foglalas jellege fuggetlen', async () => {
   const D = d1(); const h = halozat(); const f = h.f; const e = TELJES_ENV; const kuld = (id, szolgaltatas, ujVendeg = true) => foglalasEsemenyKuldes({ db: D, env: e, mezok: { host: 'mosaic-hair.salonic.hu', uuid: UUID, szolgaltatas, leveldatum: '2026-10-06T13:36:32Z' }, bejovo: { uj_vendeg: ujVendeg }, eredmeny: { booking_id: id }, fetchImpl: f, now: () => NOW });
   const A = 'mb_0muwqaaaaaaaaaaaaaaaaaaa', B = 'mb_0muwqbbbbbbbbbbbbbbbbbbb';
   const r1 = await kuld(A, 'KUPONKODDAL - Fodrász konzultáció'); assert.deepEqual([r1.jelleg, r1.kupon], ['konzultacio', true]);
-  const n = h.hivasok.length; assert.equal(n, 2, 'Meta + TikTok (erkezesi adat nelkul a GA4 tiltva, a Google kattintas nelkul kihagyva), ernyo a kuponnal nincs');
-  const r2 = await kuld(A, 'Fodrász konzultáció'); // a kupon-szoveg nelkuli level: a kupon marad
-  assert.deepEqual([r2.kupon, r2.jelleg_rogzites.eltero, r2.esemenyek.map((x) => x.nev)], [true, true, ['Konzultacio']]); assert.equal(h.hivasok.length, n, 'a 2. level nem kuldott semmit');
-  const sorok = (await naploLeker(D, A)).kuldesek; assert.deepEqual([...new Set(sorok.map((k) => k.esemeny_nev))], ['Konzultacio'], 'ernyo nincs');
+  assert.deepEqual([r1.allapot, r1.kupon_nem_konverzio], ['nincs_esemeny', true], 'DECISION #194: kuponos foglalas = nem konverzio'); assert.equal(h.hivasok.length, 0, 'egyetlen platformra sem megy ki semmi');
+  const r2 = await kuld(A, 'Fodrász konzultáció'); // a kupon-szoveg nelkuli level: a kupon marad (X1: az elso level jellege rogzul)
+  assert.deepEqual([r2.kupon, r2.jelleg_rogzites.eltero, r2.allapot, r2.kupon_nem_konverzio], [true, true, 'nincs_esemeny', true]); assert.equal(h.hivasok.length, 0, 'a 2. level sem kuldott semmit');
+  const sorok = (await naploLeker(D, A)).kuldesek; assert.deepEqual(sorok, [], 'a kuponos foglalashoz nincs meres_kuldes-sor (sem alap, sem ernyo)');
+  assert.deepEqual({ ...D.db.prepare('SELECT jelleg, kupon FROM meres_jelleg WHERE source_id = ?').get(A) }, { jelleg: 'konzultacio', kupon: 1 }, 'a kupon-jelzes a meres_jelleg-ben marad (a jelentesek ebbol latjak)');
   const rb = await kuld(B, 'Fodrász konzultáció', false); assert.deepEqual([rb.jelleg, rb.jelleg_rogzites.forras], ['visszajaro', 'elso_level'], 'a B foglalast az A jellege nem erinti');
+  assert.ok(h.hivasok.length > 0, 'a nem kuponos B foglalas tovabbra is kuld (Visszajaro)');
 });
 test('X1: MERES_ELOSZTO kikapcsolva - nincs rogzites (nem ir tablat), a valasz jelzi', async () => {
   const D = d1(); const r = await foglalasEsemenyKuldes({ db: D, env: {}, mezok: { host: 'mosaic-hair.salonic.hu', uuid: UUID, szolgaltatas: 'Fodrász konzultáció' }, bejovo: { uj_vendeg: true }, eredmeny: { booking_id: BID }, fetchImpl: halozat().f, now: () => NOW });

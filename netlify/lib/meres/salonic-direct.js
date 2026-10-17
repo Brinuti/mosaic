@@ -13,11 +13,11 @@
 //      -> reschedule_confirmed (0 uj esemeny; ha a regi foglalas meg el: riasztas); csere-gyanu, de nem igazolhato -> reschedule_suspected (HOLD: a cellak halasztva + riasztas, 0 kuldes)
 //   7. kuldes: ugyanaz az elosztas() mint a motornal, de forras=salonic_direct, attr_minoseg=C_salonic_direct, sajat determinisztikus identity (sd_<24 hex>, HMAC)
 // A tarolt adat: HMAC-hash-ek (vendeg), a Salonic-UUID es a determinisztikus sd azonosito; nyers e-mail / telefon / nev / megjegyzes SOHA nincs a D1-ben vagy a valaszban.
-import { SALONIC_UZLETAG, foglalasJelleg, esemenyek, konzultacioTabla } from './esemeny-modell.js';
+import { SALONIC_UZLETAG, foglalasJelleg, esemenyek, konzultacioTabla, kuponJelzes } from './esemeny-modell.js';
 import { emailNormal, telefonSzamjegy } from './hash.js';
 import { elosztas, meresSema, kapcsolokOlvas } from './elosztas.js';
 import { jellegRogzit } from './jelleg-rogzites.js';
-import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes, evKovetkeztet, isoUnix, nevtablaBetolt, norm, sema as parositasSema } from '../foglalas-kulcs.js';
+import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes, evKovetkeztet, isoUnix, nevtablaBetolt, nevtablaMent, norm, sema as parositasSema } from '../foglalas-kulcs.js';
 
 export const SD_MIN_KOR_MP = 20 * 60;          // legalabb ennyi ido a letrehozo level erkezese utan (a motoros 4 proba ~14-15 perc alatt lezarul)
 export const SD_MAX_KOR_MP = 48 * 3600;        // ennel regebbi foglalasra nincs automatikus kuldes (naplo + riasztas)
@@ -63,9 +63,15 @@ export function szolgKanon(s) {
   const k = norm(t);
   return k || null;
 }
-/** A 2026-10-13 es 10-17 kozott indexelt, MEG a "(kupon)" levagasa elotti kulcs (`<kulcs> kupon`) egyezese a mostani kanonikus kulccsal: az indexben tarolt regi kulcsot nem irjuk at (D1 adat nem valtozik), a csere-keresesnel tolerans.
- *  Csak a HeadSpa-ra (ott keletkeztek ilyen sorok; mas uzletagban nincs "(kupon)" jelzes), egyiranyu (a tarolt a regi alak), es az index 180 napos megorzese (`MEGORZES_NAP`) utan - 2027-04 - torolheto. */
-export const szolgKulcsEgyezik = (tarolt, kanon, uzletag) => !!tarolt && !!kanon && (tarolt === kanon || (uzletag === 'headspa' && tarolt === `${kanon} kupon`));
+/**
+ * A vendeg-hash index szolgaltatas-kulcsa (DECISION #194 / N1): a kanonikus kulcs (szolgKanon: az F2 szerint a "(kupon)" jelzes nelkul) + a KUPON-JELZES (` kupon` vegzodes kuponos foglalasnal).
+ * Igy a kuponos <-> normal par SOHA nem csere-jelolt (a kuponos foglalas nem konverzio: ha egy normal foglalast a kuponos "cserejenek" vennenk, a normal foglalas konverzioja elveszne).
+ * A 2026-10-13 es 10-17 (F2 elotti) kozott indexelt kuponos sorok kulcsa mar ilyen (`<kulcs> kupon`); az F2 (10-17 19:53 UTC) utan, ennek a valtozasnak az elesitese elott indexelt kuponos sorok kulcsa kupon-jelzes nelkuli
+ * (a jelzes nem tarolodott): azok normalnak latszanak - ez a maradek ablak (HeadSpa sd nincs bekapcsolva, a sorok legfeljebb 180 napig elnek: MEGORZES_NAP).
+ */
+export const szolgIndexKulcs = (s) => { const k = szolgKanon(s); return k && kuponJelzes(s) ? `${k} kupon` : k; };
+/** A tarolt index-kulcs egyezik-e a mostani foglalas index-kulcsaval: szigoru egyenloseg (a kupon-jelzes a kulcs resze). A harmadik parameter (uzletag) a regi alairasi kompatibilitasert marad, nem hasznalt. */
+export const szolgKulcsEgyezik = (tarolt, kulcs) => !!tarolt && !!kulcs && tarolt === kulcs;
 
 // --- megjegyzes (CSAK a Salonic "Megjegyzes" mezoje; a vendeg szabad szovege) -----------------------------------------------------------
 /** Csere- / athelyezes-gyanu a megjegyzesben (ekezet-fuggetlen). A gyanu nem dont: csak a csere-agat nyitja meg (igazolas vagy HOLD). */
@@ -143,7 +149,7 @@ export async function vendegIndexSor(db, env, { mezok, vendeg, nev, now, allapot
   if (szaraz) return { ok: true, uj: null, kezdet: !!kezdet };
   await parositasSema(db);
   const r = await db.prepare("INSERT INTO foglalas_vendeg (uuid, uzletag, szolg_kulcs, kezdet, nev_h, tel_h, email_h, allapot, forras, ido, lejar) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11) ON CONFLICT(uuid) DO NOTHING")
-    .bind(uuid, uzletag, szolgKanon(mezok.szolgaltatas), kezdet, h.nev_h, h.tel_h, h.email_h, allapot === 'torolve' ? 'torolve' : 'aktiv', forras, ido, ido + MEGORZES_NAP * 86400).run();
+    .bind(uuid, uzletag, szolgIndexKulcs(mezok.szolgaltatas), kezdet, h.nev_h, h.tel_h, h.email_h, allapot === 'torolve' ? 'torolve' : 'aktiv', forras, ido, ido + MEGORZES_NAP * 86400).run();
   return { ok: true, uj: !!(r.meta && r.meta.changes > 0), kezdet: !!kezdet };
 }
 /** A foglalas-kulcs.js horga (minden letrehozo level, MERES_SALONIC_DIRECT=1 / MERES_SD_INDEX=1 mellett). */
@@ -176,19 +182,43 @@ async function indexBackfillMuvelet({ db, env, bejovo, fuggosegek }) {
  * A tenyleges ar feloldasa; a Salonic szalon-ertesitoje NEM tartalmaz arat. Sorrend: (1) a Zap "ar" mezoje (ha van), (2) a nevtabla szolgaltatas-lista ara (data-price),
  * KEDVEZMENY-gyanu (kupon a szolgaltatas nevben / "kedvezmeny" a munkatars cimkejeben) -> unknown_discount (a lista-ar nem tenyleges ar), (3) nincs ar -> unknown_price.
  * -> { ertek, minoseg: 'exact' | 'unknown_discount' | 'unknown_price', forras }. A konzultacio a rogzitett tabla-erteket kapja (exact).
+ *
+ * DECISION #194 / a meresi oldal 6. pontja (a salonic_direct PMU `Visszajaro` ertek nelkul ment): ket ok, ket javitas.
+ *  (a) PMU "Korrekcio": a Salonic nyilvanos PMU-listajaban AR NELKUL szerepel (data-price ures), mert az eredeti kezeles araban benne van (a brief: "a 4-7 het utani korrekcio az arban") -> a tenyleges ar 0 Ft (exact, forras
+ *      'korrekcio_az_arban'). Csak a PMU-n, csak a PONTOS "Korrekcio" nevre (ekezet- / kisbetu-fuggetlen, a szeleken trim; a dekoralt valtozatok - "Korrekcio (15 000 Ft)", "AKCIO - Korrekcio", emoji-s - NEM); mas ar nelkuli szolgaltatas tovabbra is unknown_price (fail-closed, nem talalunk ki arat).
+ *  (b) a nevtabla a PMU-fiokra NEM tartalmazott szolgaltatast / arat (D1: csak a 'hely' sor, 2026-10-08): a nevtabla lusta frissitese a parositas 2. agahoz kotott (nevtablabolKulcs), a PMU-nal az 1. ag (Salonic-oldal) mindig
+ *      sikeres, ezert a PMU-tabla soha nem frissult. Ha a fiokhoz EGYETLEN szolgaltatas sincs a nevtablaban (vagy a keresett nev nem szerepel), az ar-feloldas egyszer (fiokonkent legfeljebb NEVTABLA_AR_FRISSIT_MP-enkent,
+ *      workerenkent) CELZOTTAN frissiti az adott fiok nevtablajat (fuggosegek.nevtablaFrissito = ugyanaz a frissito, amit a parositas hasznal) es ujraprobalja; a frissites hibaja nem akadalyoz (fail-closed: unknown_price).
  */
-export async function arFeloldas(db, { jelleg, mezok, bejovo = {} }) {
+export const NEVTABLA_AR_FRISSIT_MP = 600;
+const arFrissitesUtoljara = new Map(); // placeId -> ms (workerenkent): egy fiok nevtablajat ar-feloldas miatt legfeljebb NEVTABLA_AR_FRISSIT_MP-enkent epitjuk ujra
+export const arFrissitesNullaz = () => arFrissitesUtoljara.clear(); // csak teszthez (a workerenkenti szabaly allapotanak nullazasa)
+export async function arFeloldas(db, { jelleg, mezok, bejovo = {}, fuggosegek = null }) {
   if (jelleg === 'konzultacio') return { ertek: 0, minoseg: 'exact', forras: 'konzultacio_tabla' };
   const zap = bejovo.ar === null || bejovo.ar === undefined || bejovo.ar === '' ? NaN : Number(bejovo.ar);
   if (Number.isFinite(zap) && zap >= 0) return { ertek: Math.round(zap), minoseg: 'exact', forras: 'zap_ar' };
-  const kedvezmeny = (mezok.munkatarsak || []).some((m) => /kedvezm/i.test(String(m))) || /kupon/i.test(fold(mezok.szolgaltatas));
+  if (SALONIC_UZLETAG[mezok.host] === 'pmu' && fold(mezok.szolgaltatas).trim() === 'korrekcio') return { ertek: 0, minoseg: 'exact', forras: 'korrekcio_az_arban' };
+  const kedvezmeny = (mezok.munkatarsak || []).some((m) => /kedvezm/i.test(String(m))) || kuponJelzes(mezok.szolgaltatas);
   const hely = HOSTOK[mezok.host]; // a placeId a HOST-bol (a SALONIC_UZLETAG meres-nevei - fodrasz / oxigen / szor - mas nevsemat hasznalnak, mint a BUSINESSES - hair / oxygen / laser)
   let lista = null;
   if (hely) {
-    const tabla = await nevtablaBetolt(db);
-    const sid = [...new Set(tabla.szolgaltatasok.filter((x) => x.placeId === hely.placeId && norm(x.nev) === norm(mezok.szolgaltatas)).map((x) => x.serviceId))];
-    const arak = sid.length === 1 ? tabla.arak.filter((a) => a.placeId === hely.placeId && a.serviceId === sid[0] && Number.isFinite(a.ar) && a.ar >= 0) : [];
-    if (arak.length === 1) lista = Math.round(arak[0].ar);
+    const listaAr = (tabla) => {
+      const sid = [...new Set(tabla.szolgaltatasok.filter((x) => x.placeId === hely.placeId && norm(x.nev) === norm(mezok.szolgaltatas)).map((x) => x.serviceId))];
+      const arak = sid.length === 1 ? tabla.arak.filter((a) => a.placeId === hely.placeId && a.serviceId === sid[0] && Number.isFinite(a.ar) && a.ar >= 0) : [];
+      return { sid, ar: arak.length === 1 ? Math.round(arak[0].ar) : null };
+    };
+    let tabla = await nevtablaBetolt(db);
+    let talalat = listaAr(tabla);
+    const nincsSzolgaltatas = !tabla.szolgaltatasok.some((x) => x.placeId === hely.placeId);
+    const ismeretlenNev = talalat.sid.length === 0;
+    if (talalat.ar === null && !kedvezmeny && (nincsSzolgaltatas || ismeretlenNev) && fuggosegek && typeof fuggosegek.nevtablaFrissito === 'function') {
+      const most = fuggosegek.now ? fuggosegek.now() : Date.now();
+      if (most - (arFrissitesUtoljara.get(hely.placeId) || 0) > NEVTABLA_AR_FRISSIT_MP * 1000) {
+        arFrissitesUtoljara.set(hely.placeId, most);
+        try { const uj = await fuggosegek.nevtablaFrissito(hely.uzletag); if (uj) { await nevtablaMent(db, uj, most); tabla = await nevtablaBetolt(db); talalat = listaAr(tabla); } } catch (e) { /* a frissites hibaja nem akadalyoz: marad az unknown_price (fail-closed) */ }
+      }
+    }
+    lista = talalat.ar;
   }
   if (kedvezmeny) return { ertek: 0, minoseg: 'unknown_discount', forras: 'kedvezmeny_gyanu' + (lista !== null ? ' (lista-ar ismert, nem tenyleges)' : '') };
   if (lista !== null) return { ertek: lista, minoseg: 'exact', forras: 'szolgaltatas_lista' };
@@ -197,7 +227,10 @@ export async function arFeloldas(db, { jelleg, mezok, bejovo = {} }) {
 
 // --- csere-dontes (#131) ----------------------------------------------------------------------------------------------------------------------
 const MEGJEGYZES_MAX = 4000;
-async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes, t0, host, fetchImpl }) {
+async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes, t0, host, fetchImpl, kuponos = false }) {
+  // DECISION #194 / review F-4: a KUPONOS uj foglalas nem konverzio (semmilyen esemeny nem megy ki), ezert nincs mit visszatartani: a csere-felismeres nem fut (se HOLD, se riasztas, se reschedule audit-sor).
+  // A NORMAL uj foglalas vizsgalata valtozatlan: a kuponos sor az index-kulcs kupon-jelzese miatt nem jelolt (N1), a normal foglalas konverzioja kuponos par miatt sem veszhet el.
+  if (kuponos) return { allapot: 'nincs_gyanu', kupon_kihagyva: true };
   // DECISION #132: a Megjegyzes LETEZO, de ures mezoje normalis (nincs csere-gyanu); a HIANYZO payload-kulcs (elfelejtett Zap-lekepezes) hianyzo_mezo: HOLD + riasztas, mert a csere-felismeres vak lenne
   if (typeof megjegyzes !== 'string') return { allapot: 'suspected', hianyzo: true, ok: 'hianyzo_mezo: a megjegyzes payload-kulcs hianyzik (a Zap 5. lepese kuldje; ures szoveg is lehet)' };
   if (megjegyzes.length > MEGJEGYZES_MAX) return { allapot: 'suspected', gyanu: true, ok: `a megjegyzes tul hosszu (> ${MEGJEGYZES_MAX} karakter): a csere-felismeres nem ellenorizheto automatikusan` }; // csonkolas helyett HOLD: a "helyett" a vegen sem veszhet el
@@ -210,8 +243,8 @@ async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megj
   await parositasSema(db);
   const { results } = await db.prepare('SELECT uuid, szolg_kulcs, kezdet, nev_h, tel_h, email_h, allapot, ido FROM foglalas_vendeg WHERE email_h = ?1 AND uzletag = ?2 AND uuid <> ?3 AND lejar >= ?4 ORDER BY ido DESC LIMIT 50').bind(h.email_h, uzletag, uuid, t0).all();
   const lista = results || [];
-  // jelolt: azonos vendeg, azonos kanonikus szolgaltatas, ELSO (a letrehozasi ideje a mostani ele esik), es meg nem kezdodott el a mostani level erkezesekor (1 oras turessel)
-  const azonos = lista.filter((c) => azonosVendeg(h, c) && szolgKulcsEgyezik(c.szolg_kulcs, szolgKulcs, uzletag) && Number.isFinite(c.kezdet) && c.kezdet >= t0 - 3600 && c.ido <= t0 + 60);
+  // jelolt: azonos vendeg, azonos kanonikus szolgaltatas ES azonos kupon-jelzes (DECISION #194 / N1: kuponos <-> normal par nem csere-jelolt), ELSO (a letrehozasi ideje a mostani ele esik), es meg nem kezdodott el a mostani level erkezesekor (1 oras turessel)
+  const azonos = lista.filter((c) => azonosVendeg(h, c) && szolgKulcsEgyezik(c.szolg_kulcs, szolgKulcs) && Number.isFinite(c.kezdet) && c.kezdet >= t0 - 3600 && c.ido <= t0 + 60);
   const mutatott = azonos.filter((c) => mutatEgyre(em, c.kezdet));
   const jeloltek = { indexben: lista.length, azonos_vendeg_szolgaltatas: azonos.length, mutatott: mutatott.length };
   if (mutatott.length === 0) return gyanus(azonos.length ? 'a megjegyzesben szereplo idopont az index egyetlen jeloltjere sem mutat' : 'nincs azonos vendeg / szolgaltatas jelolt az indexben (vendeg-hash eltero, vagy a korabbi foglalas nincs az indexben)', { jeloltek });
@@ -251,7 +284,7 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
   const ujVendeg = typeof bejovo.uj_vendeg === 'boolean' ? bejovo.uj_vendeg : null;
   const kapott = foglalasJelleg({ szolgaltatasNev: mezok.szolgaltatas || '', ujVendeg, kategoria: '' });
   const zar = szaraz ? { ...kapott, forras: 'szaraz' } : await jellegRogzit(db, sdId, kapott, most); // az elso kiertekeles jellege rogzul (mint a motornal, X1)
-  const ar = await arFeloldas(db, { jelleg: zar.jelleg, mezok, bejovo });
+  const ar = await arFeloldas(db, { jelleg: zar.jelleg, mezok, bejovo, fuggosegek: szaraz ? null : fuggosegek }); // a SZARAZ terv irasmentes es halozatmentes: a nevtabla-frissites (hivas + nevtablaMent) csak az eles uton fut
   const fk = { tipus: 'foglalas', uzletag, source_entity_id: sdId, jelleg: zar.jelleg, kupon: zar.kupon, ertek: ar.ertek, ido: t0, szolgaltatas: mezok.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: null }, oldal: null, uuid,
     forras: 'salonic_direct', attr_minoseg: 'C_salonic_direct', attr_jelek: attrJelek(v), ertek_minoseg: ar.minoseg, ertek_forras_jel: ar.forras };
   if (mod === 'confirmed' || mod === 'feloldva_confirmed') fk.fixAllapot = { allapot: 'kihagyva', indok: `reschedule_confirmed${mod === 'feloldva_confirmed' ? ' (feloldva)' : ''}: nincs uj konverzio (korabbi foglalas: ${String((csere && csere.regi_uuid) || '?').slice(0, 8)})` };
@@ -356,7 +389,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   const olvas = () => db.prepare('SELECT * FROM foglalas_egyeztetes WHERE uuid = ?1').bind(uuid).first();
   let sor = await olvas();
   const h = await vendegHash(env, bejovo.vendeg || {}, bejovo.nev);
-  const szolgKulcs = szolgKanon(mezok.szolgaltatas);
+  const szolgKulcs = szolgIndexKulcs(mezok.szolgaltatas); // DECISION #194 / N1: a kupon-jelzes a kulcs resze (kuponos <-> normal par nem csere-jelolt)
   const kezdet = kezdetSzamol(mezok, t0);
   const futas = { db, env, uuid, sdId, uzletag, mezok, bejovo, fuggosegek, t0, szaraz };
 
@@ -424,7 +457,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
     let mod = 'normal', csere = null;
     if (!hianyzoPotlas && csereRow && (csereRow.allapot === 'confirmed' || csereRow.allapot === 'suspected' || csereRow.allapot === 'hianyzo_mezo')) { mod = csereRow.allapot === 'confirmed' ? 'confirmed' : 'suspected'; csere = csereRow.allapot === 'hianyzo_mezo' ? { ...csereRow, hianyzo: true } : csereRow; }
     else if (allapot === 'atveve' || hianyzoPotlas) {
-      csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
+      csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl, kuponos: kuponJelzes(mezok.szolgaltatas) });
       mod = csere.allapot === 'confirmed' ? 'confirmed' : csere.allapot === 'suspected' ? 'suspected' : 'normal';
       if (mod !== 'normal') await rescheduleIr(db, { uuid, sdId, allapot: csereAllapotNev(csere), d: csere, t });
       else if (hianyzoPotlas) await rescheduleIr(db, { uuid, sdId, allapot: 'hianyzo_mezo_potolva', d: { ok: 'a megjegyzes kulcs megerkezett: nincs csere-gyanu' }, t });
@@ -451,7 +484,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   if (sor && sor.allapot === 'fuggoben' && sor.kovetkezo && t < sor.kovetkezo + 300) return { ...alap, allapot: 'varakozas', miert: 'a motoros parositas meg nincs lezarva (fuggoben)', kuldes: 0 };
 
   if (szaraz) { // IRASMENTES terv: a vegso probat nem futtatjuk (az irna), a tobbi lepest kiszamoljuk
-    const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
+    const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl, kuponos: kuponJelzes(mezok.szolgaltatas) });
     const mod = csere.allapot === 'confirmed' ? 'confirmed' : csere.allapot === 'suspected' ? 'suspected' : 'normal';
     const k = await kuldesFuttat({ ...futas, mod, csere });
     return { ...alap, allapot: 'szaraz_terv', terv: { motor_allapot: sor ? sor.allapot : 'nincs sor', vegso_proba: 'lenne (szarazon nem fut: irna)', atvetel: 'atomi UPSERT lenne', mod, csere: csereKimenet(csere), ...k }, kuldes: 0 };
@@ -483,7 +516,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   try { await vendegIndexSor(db, env, { mezok, vendeg: bejovo.vendeg, nev: bejovo.nev, now: most, forras: 'sd_atvetel' }); } catch (e) { /* az index sosem akadalyozhatja a kuldest */ }
 
   // --- CSERE-DONTES ---
-  const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
+  const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl, kuponos: kuponJelzes(mezok.szolgaltatas) });
   const mod = csere.allapot === 'confirmed' ? 'confirmed' : csere.allapot === 'suspected' ? 'suspected' : 'normal';
   if (mod !== 'normal') await rescheduleIr(db, { uuid, sdId, allapot: csereAllapotNev(csere), d: csere, t });
   const k = await kuldesFuttat({ ...futas, mod, csere });

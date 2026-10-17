@@ -110,7 +110,11 @@ export async function elosztas(db, fk, deps = {}) {
   await meresSema(db);
   const t = sec(now);
   const lista = esemenyek(fk, konzultacioTabla(env));
-  if (!lista.length) return { allapot: 'nincs_esemeny', miert: 'a forras-entitasbol nem kepezheto esemeny' };
+  if (!lista.length) {
+    // DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio -> nincs esemeny, nincs meres_kuldes-sor, platformra semmi nem megy ki (a kupon-jelzes a meres_jelleg-ben marad; a jelentesek szabalyos nullanak veszik)
+    if (fk.tipus === 'foglalas' && fk.kupon) return { allapot: 'nincs_esemeny', kupon_nem_konverzio: true, miert: 'DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio, semmilyen esemeny nem megy ki' };
+    return { allapot: 'nincs_esemeny', miert: 'a forras-entitasbol nem kepezheto esemeny' };
+  }
   // D5 (DECISION #131): ismeretlen tenyleges ar (kedvezmenygyanu / nincs ar) -> a tenyleges arra epulo esemeny ERTEK NELKUL megy; a konzultacio-tabla erteke (fix) marad
   if (fk.ertek_minoseg && fk.ertek_minoseg !== 'exact') for (const e of lista) if (e.ertek_forras === 'tenyleges_ar') e.ertek_nelkul = true;
   // az ertek forrasa a naplohoz / a QA-hoz (pl. 'szolgaltatas_lista' a Salonic-direct, Zap-ar nelkuli esetben); a motoros foglalasnal nincs ilyen mezo

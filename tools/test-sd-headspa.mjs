@@ -11,8 +11,8 @@ import { cellaOsztaly } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { arnyekCel } from '../netlify/lib/meres/qa-nap.js';
 import { emailNormal, sha256hex } from '../netlify/lib/meres/hash.js';
-import { sdIdentitas, szolgKanon, szolgKulcsEgyezik } from '../netlify/lib/meres/salonic-direct.js';
-import { SALONIC_UZLETAG } from '../netlify/lib/meres/esemeny-modell.js';
+import { sdIdentitas, szolgIndexKulcs, szolgKanon, szolgKulcsEgyezik } from '../netlify/lib/meres/salonic-direct.js';
+import { SALONIC_UZLETAG, kuponJelzes } from '../netlify/lib/meres/esemeny-modell.js';
 import { T0, level, lezar, ujUuid, vilag } from './lib-sd-teszt.mjs';
 
 const HOST = 'mosaicheadspa.salonic.hu';
@@ -70,21 +70,33 @@ test('HS-01 a HeadSpa uzletag es host az sd szamara ismert (SALONIC_UZLETAG / HO
   for (const k of ['egyeni 50 perces mosaic relax head spa kezeles 30 perc hajszaritas', 'paros mosaic head spa kezeles 50 perc szaritas']) assert.ok(csoportok.has(k), k);
 });
 
-test('HS-02 (F2 javitva a #381-gyel) a Zap kuponos levelnel " (kupon)" utotagot fuz a szolgaltatasnevhez (subject: KUPONKOD): a szolgKanon a ZARO utotagot leveszi -> kupon <-> normal es kupon <-> kupon azonos kulcs; a regi "<kulcs> kupon" index-kulcs CSAK a HeadSpa-ra egyezik (egyiranyu)', () => {
+test('HS-02 (F2 + DECISION #194 / N1) a Zap kuponos levelnel " (kupon)" utotagot fuz a szolgaltatasnevhez: a szolgKanon a ZARO utotagot leveszi (kupon <-> normal azonos kanon), de az index-kulcs (szolgIndexKulcs) a kupon-jelzest MEGTARTJA -> a kuponos <-> normal par NEM azonos kulcs (nem csere-jelolt), kupon <-> kupon az; a szolgKulcsEgyezik szigoru egyenloseg', () => {
   for (const s of SZOLG) {
     const zap = `${s.nev} (kupon)`;
-    assert.equal(szolgKanon(zap), szolgKanon(s.nev), `${s.id}: a zaro utotag nem kerul a kulcsba`);
+    assert.equal(szolgKanon(zap), szolgKanon(s.nev), `${s.id}: a zaro utotag nem kerul a kanonikus kulcsba`);
+    assert.equal(kuponJelzes(s.nev), s.kupon, `${s.id}: a kupon-jelzes a nevbol (KUPONKODDAL elotag)`);
+    assert.equal(kuponJelzes(zap), true, `${s.id}: a Zap " (kupon)" utotagja kupon-jelzes`);
   }
   for (const csalad of new Set(SZOLG.map((x) => x.csalad))) {
     const [n, k] = [NORMAL, KUPONOS].map((l) => l.find((x) => x.csalad === csalad));
-    assert.equal(szolgKanon(`${n.nev} (kupon)`), szolgKanon(`${k.nev} (kupon)`), `${csalad}: kupon <-> kupon azonos kulcs`);
-    assert.equal(szolgKanon(`${k.nev} (kupon)`), szolgKanon(n.nev), `${csalad}: kupon <-> normal azonos kulcs`);
+    assert.equal(szolgKanon(`${n.nev} (kupon)`), szolgKanon(`${k.nev} (kupon)`), `${csalad}: kupon <-> kupon azonos kanon`);
+    assert.equal(szolgKanon(`${k.nev} (kupon)`), szolgKanon(n.nev), `${csalad}: kupon <-> normal azonos kanon`);
     const kanon = szolgKanon(n.nev);
-    assert.equal(szolgKulcsEgyezik(`${kanon} kupon`, kanon, 'headspa'), true, `${csalad}: a regi, mar indexelt "<kulcs> kupon" kulcs a HeadSpa-ra egyezik`);
-    assert.equal(szolgKulcsEgyezik(`${kanon} kupon`, kanon, 'pmu'), false, `${csalad}: mas uzletagra nem`);
-    assert.equal(szolgKulcsEgyezik(kanon, `${kanon} kupon`, 'headspa'), false, `${csalad}: egyiranyu (a tarolt kanonikus nem egyezik a "... kupon" kanonikussal)`);
+    // az index-kulcs: a normal foglalas kulcsa a kanon, a kuponosé `<kanon> kupon` (mindegy, hogy a Zap " (kupon)" utotagot fuzott-e)
+    assert.equal(szolgIndexKulcs(n.nev), kanon, `${csalad}: normal -> a kanonikus kulcs`);
+    assert.equal(szolgIndexKulcs(k.nev), `${kanon} kupon`, `${csalad}: kuponos -> kanon + kupon`);
+    assert.equal(szolgIndexKulcs(`${k.nev} (kupon)`), `${kanon} kupon`, `${csalad}: a Zap " (kupon)" utotagjaval is ugyanaz`);
+    assert.equal(szolgIndexKulcs(`${n.nev} (kupon)`), `${kanon} kupon`, `${csalad}: a normal nev + Zap-utotag is kuponos`);
+    // szigoru egyezes: kupon <-> normal soha, kupon <-> kupon es normal <-> normal igen
+    assert.equal(szolgKulcsEgyezik(szolgIndexKulcs(n.nev), szolgIndexKulcs(k.nev)), false, `${csalad}: normal <-> kuponos NEM egyezik (N1: nem csere-jelolt)`);
+    assert.equal(szolgKulcsEgyezik(szolgIndexKulcs(k.nev), szolgIndexKulcs(n.nev)), false, `${csalad}: kuponos <-> normal sem`);
+    assert.equal(szolgKulcsEgyezik(szolgIndexKulcs(k.nev), szolgIndexKulcs(`${k.nev} (kupon)`)), true, `${csalad}: kupon <-> kupon egyezik`);
+    assert.equal(szolgKulcsEgyezik(szolgIndexKulcs(n.nev), szolgIndexKulcs(n.nev)), true, `${csalad}: normal <-> normal egyezik`);
+    assert.equal(szolgKulcsEgyezik(`${kanon} kupon`, kanon), false, `${csalad}: a regi "<kulcs> kupon" tarolt kulcs sem egyezik a kupon-jelzes nelkuli kulccsal (a tolerancia megszunt)`);
+    assert.equal(szolgKulcsEgyezik(null, kanon), false); assert.equal(szolgKulcsEgyezik(kanon, null), false);
   }
 });
+
 test('HS-03 a 4 NORMAL HeadSpa szolgaltatas, uj vendeg: FoglalasElso + ernyo (Meta: Schedule, TikTok: CompletePayment), Google / GA4 jogos_0; ertek = lista-ar (exact)', async () => {
   for (const s of NORMAL) {
     const { v, u, b, probak } = await jelolt(s.nev);
@@ -104,24 +116,24 @@ test('HS-03 a 4 NORMAL HeadSpa szolgaltatas, uj vendeg: FoglalasElso + ernyo (Me
   }
 });
 
-test('HS-04 a 4 KUPONOS HeadSpa szolgaltatas, uj vendeg: csak FoglalasElso (nincs Schedule), ERTEK NELKUL (unknown_discount); a lista-ar nem megy ki', async () => {
+test('HS-04 (DECISION #194) a 4 KUPONOS HeadSpa szolgaltatas, uj vendeg: a kuponos (ajandekkartyas) foglalas NEM konverzio - SEMMILYEN esemeny nem megy ki (se FoglalasElso, se Schedule), 0 halozati hivas, 0 meres_kuldes sor; az alapesemeny-jelleg es a kupon-jel rogzul (meres_jelleg.kupon=1), a vendeg-index sor megvan', async () => {
   for (const s of KUPONOS) {
     const { v, b } = await jelolt(s.nev);
     const r = await v.sd(b);
-    assert.deepEqual([r.allapot, r.uzletag, r.jelleg, r.ertek_minoseg], ['kesz', 'headspa', 'elso', 'unknown_discount'], s.id);
-    assert.match(r.ertek_forras, /^kedvezmeny_gyanu/, s.id);
-    assert.deepEqual(nevek(v, 'meta'), ['FoglalasElso'], `${s.id}: kupon -> nincs ernyoesemeny`);
-    assert.deepEqual(nevek(v, 'tiktok'), ['FoglalasElso'], s.id);
-    assert.equal(cellak(v).filter((c) => c.esemeny_nev === 'Schedule').length, 0, s.id);
-    assert.deepEqual(metaTestek(v).map((d) => d.event_name), ['HeadSpa_FoglalasElso'], s.id);
-    assert.ok(metaTestek(v).every((d) => !('value' in d.custom_data) && !('currency' in d.custom_data)), `${s.id}: ertek nelkul`);
-    assert.ok(tiktokTestek(v).every((d) => !('value' in d.properties)), s.id);
-    assert.deepEqual(tiktokTestek(v).map((d) => d.event), ['HeadSpa_FoglalasElso'], `${s.id}: TikTokon sincs ernyo-esemeny`);
+    assert.deepEqual([r.allapot, r.uzletag, r.jelleg, r.kupon, r.ertek_minoseg], ['kesz', 'headspa', 'elso', true, 'unknown_discount'], s.id);
+    assert.deepEqual([r.esemeny_kuldes.allapot, r.esemeny_kuldes.kupon_nem_konverzio], ['nincs_esemeny', true], `${s.id}: a kuldes-eredmeny jelzi, hogy a kupon miatt nincs esemeny`);
+    assert.equal(cellak(v).length, 0, `${s.id}: nincs meres_kuldes sor (egyik platformra sem)`);
+    assert.equal(v.net.hivasok.length, 0, `${s.id}: 0 kimeno halozati hivas`);
+    assert.deepEqual(v.sql('SELECT jelleg, kupon FROM meres_jelleg').map((x) => [x.jelleg, x.kupon]), [['elso', 1]], `${s.id}: a jelleg + kupon-jel rogzul (tartos nyom)`);
+    assert.deepEqual(v.sql('SELECT uzletag, szolg_kulcs FROM foglalas_vendeg').map((x) => [x.uzletag, / kupon$/.test(x.szolg_kulcs)]), [['headspa', true]], `${s.id}: a vendeg-index sor kupon-jelzett kulccsal`);
+    // ismetelt feldolgozas: tovabbra sincs esemeny, nincs dupla
+    const r2 = await v.sd(b);
+    assert.equal(r2.allapot, 'kesz', s.id); assert.equal(cellak(v).length, 0, `${s.id}: ismetelve sem`); assert.equal(v.net.hivasok.length, 0);
   }
 });
 
-test('HS-05 visszatero vendeg (uj_vendeg=false), normal es kuponos: csak Visszajaro (Meta / TikTok), nincs Schedule; Google / GA4 jogos_0', async () => {
-  for (const s of [NORMAL[0], KUPONOS[0], NORMAL[2], KUPONOS[2]]) {
+test('HS-05 visszatero vendeg (uj_vendeg=false): a NORMAL foglalas csak Visszajaro (Meta / TikTok), nincs Schedule; Google / GA4 jogos_0 - a KUPONOS visszatero foglalas sem konverzio (DECISION #194): semmilyen esemeny', async () => {
+  for (const s of [NORMAL[0], NORMAL[2]]) {
     const { v, b } = await jelolt(s.nev, { uj_vendeg: false });
     const r = await v.sd(b);
     assert.deepEqual([r.allapot, r.uzletag, r.jelleg], ['kesz', 'headspa', 'visszajaro'], s.id);
@@ -131,9 +143,17 @@ test('HS-05 visszatero vendeg (uj_vendeg=false), normal es kuponos: csak Visszaj
     assert.equal(cellak(v).filter((c) => c.esemeny_nev === 'Schedule').length, 0, s.id);
     for (const p of ['google', 'ga4']) for (const c of cellak(v).filter((x) => x.platform === p)) assert.equal(cellaOsztaly(c).osztaly, 'jogos_0', `${s.id} ${p}`);
   }
+  for (const s of [KUPONOS[0], KUPONOS[2]]) {
+    const { v, b } = await jelolt(s.nev, { uj_vendeg: false });
+    const r = await v.sd(b);
+    assert.deepEqual([r.allapot, r.uzletag, r.jelleg, r.kupon], ['kesz', 'headspa', 'visszajaro', true], s.id);
+    assert.equal(r.esemeny_kuldes.kupon_nem_konverzio, true, s.id);
+    assert.equal(cellak(v).length, 0, `${s.id}: kuponos visszatero foglalas: nincs meres_kuldes sor`);
+    assert.equal(v.net.hivasok.length, 0, `${s.id}: 0 kimeno hivas`);
+  }
 });
 
-test('HS-06 (F1 javitva, DECISION #192) a kuponos level "E-mail cim:" mezoje az e-mail UTAN a kuponkod-sort is tartalmazza (elvalaszto nelkul is): az sd az ELSO e-mail-szeru tokent hasheli - az em, az external_id es a vendeg-index hash UGYANAZ, mint a normal levelnel -, a kuponkod sehova nem kerul; nincs e-mail -> csak ph, nincs index-sor', async () => {
+test('HS-06 (F1 javitva, DECISION #192; DECISION #194: a kuponos foglalas nem kuld esemenyt) a kuponos level "E-mail cim:" mezoje az e-mail UTAN a kuponkod-sort is tartalmazza (elvalaszto nelkul is): a normal level em / external_id hash-e a tiszta e-mail hash-e, a kuponos level vendeg-index hash-e UGYANAZ, mint a normal leveleke, a kuponkod sehova nem kerul; nincs e-mail -> nincs index-sor', async () => {
   const s = KUPONOS[0];
   const TISZTA = 'teszt.claude@example.com';
   const kulcsok = (v) => Object.keys(metaTestek(v)[0].user_data);
@@ -162,22 +182,20 @@ test('HS-06 (F1 javitva, DECISION #192) a kuponos level "E-mail cim:" mezoje az 
     const { v, b } = await jelolt(`${s.nev} (kupon)`, { vendeg: { email, telefon: tel } });
     const r = await v.sd(b);
     assert.deepEqual([r.allapot, r.uzletag, r.jelleg, r.ertek_minoseg], ['kesz', 'headspa', 'elso', 'unknown_discount'], nev);
-    assert.deepEqual(nevek(v, 'meta'), ['FoglalasElso'], nev);
-    assert.deepEqual(kulcsok(v), ['em', 'ph', 'external_id'], `${nev}: user_data kulcsok (mint a normal levelnel)`);
-    assert.ok(ud(v, 'em').includes(emH), `${nev}: em = sha256(tiszta e-mail)`);
-    assert.ok(ud(v, 'external_id').includes(emH), `${nev}: external_id = sha256(tiszta e-mail) -> a vendeg a kuponos es a normal foglalasa kozott azonosithato`);
-    { const tt = JSON.stringify(tiktokTestek(v)[0].user); assert.ok(tt.includes(emH), `${nev}: TikTok user.email / external_id = sha256(tiszta e-mail)`); assert.equal(tt.split(emH).length - 1, 2, `${nev}: a TikTok-on mind az email, mind az external_id a tiszta e-mail hash-e`); }
-    assert.deepEqual(v.sql('SELECT email_h FROM foglalas_vendeg').map((x) => x.email_h), [indexH], `${nev}: a vendeg-index HMAC azonos a normal levelevel`);
+    // DECISION #194: a kuponos foglalas nem konverzio -> nincs kimeno esemeny; az F1 hatasa a vendeg-indexben latszik (a csere-felismeres a kuponos <-> kuponos parra tovabbra is mukodik)
+    assert.equal(cellak(v).length, 0, `${nev}: kuponos foglalas: nincs esemeny`);
+    assert.equal(v.net.hivasok.length, 0, `${nev}: 0 kimeno hivas`);
+    assert.deepEqual(v.sql('SELECT email_h FROM foglalas_vendeg').map((x) => x.email_h), [indexH], `${nev}: a vendeg-index HMAC azonos a normal levelevel (az F1 az ELSO e-mail-szeru tokent hasheli)`);
     const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_vendeg'));
     assert.ok(!/kupxyz9/i.test(mind), `${nev}: a kuponkod nyersen nem kerul ki / a naploba / az indexbe`);
   }
-  // nincs e-mail: csak a telefon-hash, nincs index-sor, a kuponkod ekkor sem kerul sehova
+  // nincs e-mail: nincs index-sor, a kuponkod ekkor sem kerul sehova (es a kuponos foglalas ugyis nem kuld esemenyt)
   for (const [nev, email] of [['ures', ''], ['csak kuponkod', 'Kupon kód: KUPXYZ9']]) {
     assert.equal(emailNormal(email), null, nev);
     const { v, b } = await jelolt(`${s.nev} (kupon)`, { vendeg: { email, telefon: tel } });
     const r = await v.sd(b);
     assert.deepEqual([r.allapot, r.uzletag], ['kesz', 'headspa'], nev);
-    assert.deepEqual(kulcsok(v), ['ph'], `${nev}: csak a telefon-hash`);
+    assert.equal(cellak(v).length, 0, `${nev}: nincs esemeny`);
     assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 0, `${nev}: nincs e-mail -> nincs index-sor`);
     const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes'));
     assert.ok(!/kupxyz9/i.test(mind), `${nev}: a kuponkod nem kerul ki`);
