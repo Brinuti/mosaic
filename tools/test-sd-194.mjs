@@ -73,8 +73,8 @@ test('K4 az egyeztetosor (sorEpit): a kuponos, esemeny nelkuli foglalas NEM kap 
   assert.equal(regiKuponosVanEsemeny.kupon_nem_konverzio, false, 'ha van esemeny, nem "esemeny nelkuli"');
 });
 
-test('F6 a kupon-felismero EGYETLEN helyen (kuponJelzes): "kupon" / "coupon", ekezet-, kisbetu- es zero-width-fuggetlen (NFD is); az "AJANDEKKARTYAVAL - ..." nem jelzes-azonosito szo; minden fogyasztoja ezt hasznalja', async () => {
-  const KUPONOS = ['KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces Head Spa', 'Head Spa kezelés (kupon)', 'COUPON - Head Spa kezelés', 'Coupon code - Head Spa', 'KÚPONKÓDDAL - Head Spa', 'KU\u0301PONKÓDDAL - Head Spa' /* NFD: U + kombinalo ekezet */,
+test('F6 a kupon-felismero EGYETLEN helyen (kuponJelzes): "kupon" / "coupon", ekezet-, kisbetu- es zero-width-fuggetlen (NFD is); az "AJANDEKKARTYAVAL - ..." is jelzes (DECISION #195); minden fogyasztoja ezt hasznalja', async () => {
+  const KUPONOS = ['KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces Head Spa', 'Head Spa kezelés (kupon)', 'COUPON - Head Spa kezelés', 'Coupon code - Head Spa', 'AJÁNDÉKKÁRTYÁVAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés', 'Ajándékkártyával - Head Spa', 'AJANDEKKARTYAVAL', 'AJÁNDÉKKÁRTYÁ\u200BVAL - Head Spa', 'KÚPONKÓDDAL - Head Spa', 'KU\u0301PONKÓDDAL - Head Spa' /* NFD: U + kombinalo ekezet */,
     'ku\u200Bpon - Head Spa', 'KU\u200DPON Head Spa', 'ku\u2060pon', 'ku\u00ADpon', '\uFEFFkupon', 'cou\u200Bpon', 'Kupon'];
   for (const nev of KUPONOS) {
     assert.equal(kuponJelzes(nev), true, JSON.stringify(nev));
@@ -84,8 +84,8 @@ test('F6 a kupon-felismero EGYETLEN helyen (kuponJelzes): "kupon" / "coupon", ek
   }
   // kategoria is jelzes
   assert.equal(foglalasJelleg({ szolgaltatasNev: 'Head Spa', ujVendeg: true, kategoria: 'KUPONOS' }).kupon, true);
-  // nem kuponos: valos nevek, az "AJANDEKKARTYAVAL" (kulon DECISION kerdese), ures / hianyzo bemenet
-  for (const nev of ['💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés', 'AJÁNDÉKKÁRTYÁVAL - Head Spa kezelés', 'Ajándékkártya beváltás', 'Korrekció', 'Soft powder', '', null, undefined]) {
+  // nem kuponos: valos nevek, az "Ajandekkartya bevaltas" (-val nelkul), ures / hianyzo bemenet
+  for (const nev of ['💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés', 'Ajándékkártya beváltás', 'Ajándékkártyát vásárolok', 'Korrekció', 'Soft powder', '', null, undefined]) {
     assert.equal(kuponJelzes(nev), false, JSON.stringify(nev));
   }
   // az ar-feloldas kedvezmeny-gyanuja is ugyanezt a felismerot hasznalja: ismert lista-ar mellett is unknown_discount (a lista-ar nem tenyleges ar)
