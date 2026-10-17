@@ -20,6 +20,7 @@ import { WorkerMailer } from 'worker-mailer';
 import { utvonal } from '../netlify/lib/utvonal.js';
 import { levelek } from '../netlify/lib/levelek.js';
 import { koszonoRogzit } from '../netlify/lib/ajandek.js';
+import { hosValasztas, hosCsere, hosKepValasz } from '../netlify/lib/hirdetes-hos.js';
 
 // A regi ajandekkartya-koszonooldal: sikeres vasarlas utan az /ajandek oldal egy lathatatlan keretben tolti be (hirdetesi
 // konverzio). A betoltest a rendeles (PaymentIntent) metadataba naplozzuk (koszono_ekkor): belso adat, hozzajarulastol fuggetlen.
@@ -54,6 +55,10 @@ export async function onRequest(context) {
       }));
     }
   }
+  // hirdeteshez illo hos-kep: a tarolt kep (netlify/lib/hirdetes-hos.js)
+  if (url.pathname.startsWith('/hirdetes-hos-kep/')) {
+    try { return await hosKepValasz(request, context.env.HOS_DB); } catch { return new Response('Not found', { status: 404 }); }
+  }
   const d = utvonal(decodeURIComponent(url.pathname), request.headers.get('user-agent'));
   if (!d) return context.next();
   if (d.atiranyit) {
@@ -72,7 +77,15 @@ export async function onRequest(context) {
     h.set('referrer-policy', 'no-referrer');
     h.set('content-security-policy', CSP_CRM);
   }
-  return new Response(valasz.body, { status: valasz.status, headers: h });
+  const kesz = new Response(valasz.body, { status: valasz.status, headers: h });
+  // Hirdeteshez illo hos-kep (netlify/lib/hirdetes-hos.js): csak GET, 200-as HTML, ad_id parameterrel; barmilyen hiba -> az eredeti lap
+  if (request.method === 'GET' && valasz.status === 200 && url.searchParams.has('ad_id') && /text\/html/.test(h.get('content-type') || '')) {
+    try {
+      const hos = await hosValasztas(url, context.env.HOS_DB);
+      if (hos) return hosCsere(kesz, hos);
+    } catch (e) { console.error('hirdetes-hos', e && e.message); }
+  }
+  return kesz;
 }
 
 async function urlap(context) {
