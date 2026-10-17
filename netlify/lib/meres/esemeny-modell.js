@@ -30,12 +30,12 @@ export function konzultacioTabla(env = {}) {
   for (const u of UZLETAGAK) if (u !== 'headspa' && u in ext && (ext[u] === null || (Number.isFinite(Number(ext[u])) && Number(ext[u]) >= 0))) t[u] = ext[u] === null ? null : Math.round(Number(ext[u]));
   return t;
 }
-const KUPON = /kupon|coupon|ajandekkartyaval/; // pl. "KUPONKODDAL - ... HeadSpa kezeles", "AJANDEKKARTYAVAL - ... HeadSpa kezeles" (DECISION #195); a bemenet a kuponJelzes()-ben normalizalt (ekezetmentes, kisbetus, lathatatlan karakterek nelkuli)
+const KUPON = /kupon|coupon|^[^a-z0-9]*ajandekkartyaval\b/; // pl. "KUPONKODDAL - ... HeadSpa kezeles", "AJANDEKKARTYAVAL - ... HeadSpa kezeles" (DECISION #195: csak a szolgaltatasnev ELEJEN allo "ajandekkartyaval" szo); a bemenet a kuponJelzes()-ben normalizalt (ekezetmentes, kisbetus, lathatatlan karakterek nelkuli)
 const LATHATATLAN = /[\u00AD\u180E\u200B-\u200F\u2060-\u2064\uFEFF]/g; // soft hyphen, zero-width space / joiner / non-joiner, bal-jobb jelek, word joiner, BOM
 /**
- * A kupon-jelzes EGYETLEN felismeroje (DECISION #194 / #195; a motor, az sd, az ar-feloldas es az index-kulcs is ezt hasznalja): "kupon", "coupon" vagy "ajandekkartyaval" a szovegben,
+ * A kupon-jelzes EGYETLEN felismeroje (DECISION #194 / #195; a motor, az sd, az ar-feloldas es az index-kulcs is ezt hasznalja): "kupon" vagy "coupon" a szovegben, illetve a szoveg ELEJEN allo "ajandekkartyaval" szo (nem vezeto betu/szam elottuk, pl. emoji vagy szokoz igen),
  * ekezet-fuggetlenul (NFD, a "KUPONKODDAL" es a "KUPONKÓDDAL" / "KÚPONKÓDDAL" egyarant), kis-nagybetu-fuggetlenul, a lathatatlan (zero-width) karakterek nelkul ("ku\u200Bpon").
- * Az "AJANDEKKARTYAVAL - ..." szolgaltatasnev kuponosnak szamit (DECISION #195: a #194 elve szerint nem konverzio); az "Ajandekkartya bevaltas" (-val/-vel nelkul) NEM jelzes.
+ * Az "AJANDEKKARTYAVAL - ..." szolgaltatasnev-ELOTAG kuponosnak szamit (DECISION #195: a #194 elve szerint nem konverzio); a mondat kozepi "... (ajandekkartyaval is fizetheto)", az "ajandekkartyavalo" es az "Ajandekkartya bevaltas" (-val/-vel nelkul) NEM jelzes.
  */
 export const kuponJelzes = (s) => KUPON.test(String(s ?? '').replace(LATHATATLAN, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
 
