@@ -155,7 +155,7 @@ test('SM8 PII-mentes kimenet: sem e-mail, sem telefon, sem nev, sem hash, sem te
   assert.equal(spawnSync(process.execPath, [cli, 'sql', 'rossz'], { encoding: 'utf8' }).status !== 0, true);
 });
 
-test('SM9 a jeloltek-lekerdezes: csak pmu / oxigen letrehozo levelek, csokkeno idorendben, max. 20', async () => {
+test('SM9 a jeloltek-lekerdezes: pmu / oxigen letrehozo levelek (a hair nem), csokkeno idorendben, max. 20', async () => {
   const v = vilag(); await v.kesz;
   for (const [h, u8] of [['mosaic-pmu.salonic.hu', 'c0ffee11'], ['mosaic-hair.salonic.hu', 'c0ffee12'], ['mosaic-oxigen.salonic.hu', 'c0ffee13']]) { const u = uuid(u8); v.t.tick(60); await v.post(level(u, { host: h })); }
   v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = '14585|1|1792000000' WHERE uuid LIKE 'c0ffee11%'").run(); // a pmu level kulcsa (a prodban a Salonic-oldalbol szarmazik); az oxigen levelt a hash-index uzletagja talalja meg (nincs kulcsa)
@@ -220,16 +220,18 @@ test('SM13 HeadSpa kuponos sd-foglalas (az e-mail nem hashelheto: a mai eles kup
 
 test('SM14 a jeloltek-lekerdezes a HeadSpa-nal CSAK a motoron kivuli sorokat adja (sd-atvett / parositatlan / ellentmondo); a motor altal parositott HeadSpa-foglalas nem jelolt', async () => {
   const v = vilag(); await v.kesz; await v.kapcsol('headspa', true);
-  const sd = uuid('c0ffee50'), parositatlan = uuid('c0ffee51'), motoros = uuid('c0ffee52');
-  for (const u of [sd, parositatlan, motoros]) { v.t.tick(60); await v.post(level(u, HS_LEVEL)); }
+  const sd = uuid('c0ffee50'), parositatlan = uuid('c0ffee51'), motoros = uuid('c0ffee52'), ellentmondo = uuid('c0ffee53'), fuggoben = uuid('c0ffee54');
+  for (const u of [sd, parositatlan, motoros, ellentmondo, fuggoben]) { v.t.tick(60); await v.post(level(u, HS_LEVEL)); }
   v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = '10427|1|1792000000' WHERE uuid LIKE 'c0ffee5%'").run();
   v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositott', booking_id = 'mb_x2', kuldve = 1 WHERE uuid LIKE 'c0ffee52%'").run();
   v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositatlan' WHERE uuid LIKE 'c0ffee51%'").run();
   v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositatlan', sd_id = 'sd_x', sd_allapot = 'kesz' WHERE uuid LIKE 'c0ffee50%'").run();
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'ellentmondas' WHERE uuid LIKE 'c0ffee53%'").run();
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'fuggoben' WHERE uuid LIKE 'c0ffee54%'").run();
   v.D.db.prepare("DELETE FROM foglalas_vendeg").run(); // a kuponos levelek valodi alakja: nincs index-sor, a jelolt a kulcsbol (place) kerul be
   const q = jeloltekSql(Math.floor(T0 / 1000) - 10);
   const sorok = v.D.db.prepare(q.sql).all(...q.params).map((r) => ({ ...r }));
-  assert.deepEqual(sorok.map((r) => r.u8).sort(), ['c0ffee50', 'c0ffee51'], 'az sd-atvett es a parositatlan igen, a motoros parositott nem');
+  assert.deepEqual(sorok.map((r) => r.u8).sort(), ['c0ffee50', 'c0ffee51', 'c0ffee53'], 'az sd-atvett, a parositatlan es az ellentmondo igen; a motoros parositott es a meg futo (fuggoben) nem');
   // kulcs es index nelkuli sd-sor: a headspa sd-cellakbol talaljuk meg
   v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = NULL WHERE uuid LIKE 'c0ffee50%'").run();
   v.D.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, letrehozva, frissitve, forras, salonic_uuid) VALUES ('e1','FoglalasElso','alap','meta','headspa','sd_x','elkuldve',1,1,'salonic_direct', ?1)").run(sd);

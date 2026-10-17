@@ -8,7 +8,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { HOSTOK, kulcsIras, nevtablaMent } from '../netlify/lib/foglalas-kulcs.js';
 import { cellaOsztaly } from '../netlify/lib/meres/egyeztetes-sor.js';
-import { emailNormal } from '../netlify/lib/meres/hash.js';
+import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
+import { arnyekCel } from '../netlify/lib/meres/qa-nap.js';
+import { emailNormal, sha256hex } from '../netlify/lib/meres/hash.js';
 import { sdIdentitas, szolgKanon } from '../netlify/lib/meres/salonic-direct.js';
 import { SALONIC_UZLETAG } from '../netlify/lib/meres/esemeny-modell.js';
 import { T0, level, lezar, ujUuid, vilag } from './lib-sd-teszt.mjs';
@@ -71,15 +73,17 @@ test('HS-01 a HeadSpa uzletag es host az sd szamara ismert (SALONIC_UZLETAG / HO
 test('HS-02 ISMERT KORLAT: a Zap kuponos levelnel " (kupon)" utotagot fuz a szolgaltatasnevhez (subject: KUPONKOD) - ez mas kanonikus kulcsot ad, mint a normal szolgaltatas; a kupon-felismeres es az ertek ettol fuggetlen', () => {
   for (const s of SZOLG) {
     const zap = `${s.nev} (kupon)`;
-    assert.equal(szolgKanon(zap), szolgKanon(zap), 'stabil');
-    assert.ok(szolgKanon(zap).endsWith(' kupon') && szolgKanon(zap).startsWith(szolgKanon(s.nev)), 'az utotag a kulcs veget bovitI (nem vagja le)');
+    assert.equal(szolgKanon(zap), `${szolgKanon(s.nev)} kupon`, `${s.id}: az utotag a kulcs veget bovitI (nem vagja le)`);
   }
-  // a reschedule-egyeztetes (azonos vendeg + azonos kanonikus kulcs) kupon <-> normal kozott igy NEM talal; kupon <-> kupon kozott igen
-  assert.notEqual(szolgKanon(NORMAL[0].nev), szolgKanon(`${KUPONOS[0].nev} (kupon)`));
-  assert.equal(szolgKanon(`${KUPONOS[0].nev} (kupon)`), szolgKanon(`${KUPONOS[0].nev} (kupon)`));
+  // kupon <-> kupon (ugyanaz a csalad, akar normal, akar kuponos nevbol indul a Zap-utotag) azonos kulcsot ad; kupon <-> normal (utotag nelkul) nem
+  for (const csalad of new Set(SZOLG.map((x) => x.csalad))) {
+    const [n, k] = [NORMAL, KUPONOS].map((l) => l.find((x) => x.csalad === csalad));
+    assert.equal(szolgKanon(`${n.nev} (kupon)`), szolgKanon(`${k.nev} (kupon)`), `${csalad}: kupon <-> kupon azonos kulcs`);
+    assert.notEqual(szolgKanon(`${k.nev} (kupon)`), szolgKanon(n.nev), `${csalad}: kupon <-> normal MAS kulcs (ismert korlat)`);
+  }
 });
 
-test('HS-03 a 4 NORMAL HeadSpa szolgaltatas, uj vendeg: FoglalasElso + Schedule (Meta, TikTok), Google / GA4 jogos_0; ertek = lista-ar (exact)', async () => {
+test('HS-03 a 4 NORMAL HeadSpa szolgaltatas, uj vendeg: FoglalasElso + ernyo (Meta: Schedule, TikTok: CompletePayment), Google / GA4 jogos_0; ertek = lista-ar (exact)', async () => {
   for (const s of NORMAL) {
     const { v, u, b, probak } = await jelolt(s.nev);
     assert.deepEqual(probak.map((x) => x.allapot), ['fuggoben', 'fuggoben', 'fuggoben', 'parositatlan'], s.id);
@@ -89,6 +93,7 @@ test('HS-03 a 4 NORMAL HeadSpa szolgaltatas, uj vendeg: FoglalasElso + Schedule 
     assert.deepEqual(nevek(v, 'meta'), ['FoglalasElso', 'Schedule'], s.id);
     assert.deepEqual(nevek(v, 'tiktok'), ['FoglalasElso', 'Schedule'], s.id);
     assert.deepEqual(metaTestek(v).map((d) => d.event_name), ['HeadSpa_FoglalasElso', 'Schedule'], s.id);
+    assert.deepEqual(tiktokTestek(v).map((d) => d.event), ['HeadSpa_FoglalasElso', 'CompletePayment'], `${s.id}: TikTokon a HeadSpa ernyoje CompletePayment (nem Schedule)`);
     assert.ok(metaTestek(v).every((d) => d.custom_data.value === s.ar && d.custom_data.currency === 'HUF'), s.id);
     assert.ok(tiktokTestek(v).every((d) => d.properties.value === s.ar), s.id);
     for (const p of ['google', 'ga4']) for (const c of cellak(v).filter((x) => x.platform === p)) assert.equal(cellaOsztaly(c).osztaly, 'jogos_0', `${s.id} ${p}: jogos 0 (nem hiany)`);
@@ -109,6 +114,7 @@ test('HS-04 a 4 KUPONOS HeadSpa szolgaltatas, uj vendeg: csak FoglalasElso (ninc
     assert.deepEqual(metaTestek(v).map((d) => d.event_name), ['HeadSpa_FoglalasElso'], s.id);
     assert.ok(metaTestek(v).every((d) => !('value' in d.custom_data) && !('currency' in d.custom_data)), `${s.id}: ertek nelkul`);
     assert.ok(tiktokTestek(v).every((d) => !('value' in d.properties)), s.id);
+    assert.deepEqual(tiktokTestek(v).map((d) => d.event), ['HeadSpa_FoglalasElso'], `${s.id}: TikTokon sincs ernyo-esemeny`);
   }
 });
 
@@ -125,7 +131,7 @@ test('HS-05 visszatero vendeg (uj_vendeg=false), normal es kuponos: csak Visszaj
   }
 });
 
-test('HS-06 a Zap kuponos levelenek VALOS alakja (" (kupon)" utotag + az "E-mail cim:" mezo nem egyetlen e-mail token): az sd lefut, de az esemeny em NELKUL megy ki, nincs vendeg-index sor, az external_id pedig a TELJES szovegbol kepzett hash (mas, mint a vendeg tiszta e-mailjebol) - ez a mai eles kuponos HeadSpa esemenyek tuneteit reprodukalja', async () => {
+test('HS-06 a Zap kuponos levelenek FELTETELEZETT alakja (" (kupon)" utotag + az "E-mail cim:" mezo nem egyetlen e-mail token): az sd lefut, de az esemeny em NELKUL megy ki, nincs vendeg-index sor, az external_id pedig a TELJES szovegbol kepzett hash (mas, mint a vendeg tiszta e-mailjebol) - ez a mai eles kuponos HeadSpa esemenyek tuneteit (nincs em, nincs index-sor) reprodukalja', async () => {
   const s = KUPONOS[0];
   const TISZTA = 'teszt.claude@example.com';
   const kulcsok = (v) => Object.keys(metaTestek(v)[0].user_data);
@@ -144,18 +150,22 @@ test('HS-06 a Zap kuponos levelenek VALOS alakja (" (kupon)" utotag + az "E-mail
     assert.ok(!kulcsok(v).includes('em'), `${nev}: nincs e-mail-hash`);
     assert.deepEqual(kulcsok(v), varhato, `${nev}: user_data kulcsok`);
     assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 0, `${nev}: nincs ervenyes e-mail -> nincs index-sor`);
-    assert.ok(!JSON.stringify(v.net.hivasok).includes('ABC123') && !JSON.stringify(v.sql('SELECT * FROM meres_kuldes')).includes('ABC123'), `${nev}: a kuponkod nyersen nem kerul ki / a naploba`);
-    kimenet[nev] = v.net.hivasok.length ? extId(v) : null;
+    const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes'));
+    assert.ok(!/abc123/i.test(mind), `${nev}: a kuponkod nyersen nem kerul ki / a naploba`);
+    kimenet[nev] = nev === 'kuponkoddal' ? extId(v) : null;
   }
-  { // kontroll: a tiszta e-mail (a normal levelnel is) em + external_id; az external_id MAS, mint a kuponkodos szovegbol kepzett
+  // az external_id pontosan a nyers, trim-elt + kisbetusitett TELJES szoveg SHA-256-ja (nem a UUID-bol, nem a tiszta e-mailbol kepzett)
+  const nyers = `${TISZTA} Kuponkód: ABC123`;
+  assert.ok(kimenet.kuponkoddal.includes(await sha256hex(nyers.trim().toLowerCase())), 'external_id = sha256(teljes szoveg, kisbetusen)');
+  { // kontroll: a tiszta e-mail (a normal levelnel is) em + external_id; az external_id a TISZTA e-mailbol kepzett, ezert MAS, mint a kuponkodos szovegbol kepzett
     const { v, b } = await jelolt(NORMAL[0].nev, { vendeg: { email: TISZTA, telefon: '+36 30 000 0001' } });
     await v.sd(b);
     assert.deepEqual(kulcsok(v), ['em', 'ph', 'external_id']);
-    assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 1);
+    assert.ok(extId(v).includes(await sha256hex(TISZTA)), 'external_id = sha256(tiszta e-mail)');
     assert.notEqual(extId(v), kimenet.kuponkoddal, 'ugyanaz a vendeg a kuponos levelben MAS external_id-t kap (a vendeg nem azonosithato a ket foglalas kozott)');
+    assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg')[0].n, 1);
   }
 });
-
 test('HS-07 kapcsolo-elkulonites es visszagorgetes: salonic_direct:pmu=1 NEM kapcsolja be a HeadSpat; salonic_direct:headspa=1 be, =0 ki; a PMU-t nem erinti', async () => {
   const { v, b } = await jelolt(NORMAL[0].nev, {}, { kapcsolo: 'pmu' }); // csak a PMU-sor van (az eles mostani allapota: mind=1, oxigen=1, pmu=1, headspa NINCS)
   const ki = await v.sd(b);
@@ -181,7 +191,7 @@ test('HS-07 kapcsolo-elkulonites es visszagorgetes: salonic_direct:pmu=1 NEM kap
   assert.deepEqual([pr.allapot, pr.uzletag], ['kesz', 'pmu'], 'a kapcsolok uzletagonkent fuggetlenek');
 });
 
-test('HS-08 SZARAZ terv a HeadSpa-kapcsolo bekapcsolasa mellett: a D1 nem valtozik, nem kuld; a terv azonos az ujrafuttatassal; az eles sd ezutan ugyanazt csinalja', async () => {
+test('HS-08 SZARAZ terv a HeadSpa-kapcsolo bekapcsolasa mellett: a D1 nem valtozik, nem kuld; ismetelve azonos terv; a terv esemenyei (id, nev, tipus, ertek) azonosak az utana lefuto eles sd celláival', async () => {
   const { v, b } = await jelolt(NORMAL[2].nev);
   const elotte = dump(v);
   const terv = await v.sd({ ...b, szaraz: true });
@@ -189,11 +199,17 @@ test('HS-08 SZARAZ terv a HeadSpa-kapcsolo bekapcsolasa mellett: a D1 nem valtoz
   assert.equal(terv.uzletag, 'headspa');
   assert.equal(dump(v), elotte, 'a szaraz terv nem ir');
   assert.equal(v.net.hivasok.length, 0, 'a szaraz terv nem kuld');
+  const masodik = await v.sd({ ...b, szaraz: true });
+  assert.deepEqual(masodik.terv, terv.terv, 'ismetelve azonos terv'); assert.equal(dump(v), elotte); assert.equal(v.net.hivasok.length, 0);
+  assert.deepEqual([terv.terv.jelleg, terv.terv.kupon, terv.terv.ertek_minoseg, terv.terv.ertek_forras], ['elso', false, 'exact', 'szolgaltatas_lista']);
   const el = await v.sd(b);
   assert.deepEqual([el.allapot, el.uzletag], ['kesz', 'headspa']);
-  assert.equal(nevek(v, 'meta').length, 2);
+  const tervE = terv.terv.terv_esemenyek.map((e) => [e.esemeny_id, e.nev, e.tipus, e.ertek]).sort();
+  const eloE = [...new Map(cellak(v).map((c) => [c.esemeny_nev, c])).values()].map((c) => [c.esemeny_nev, c.esemeny_tipus, c.ertek]);
+  assert.deepEqual(tervE.map(([, nev, tipus, ertek]) => [nev, tipus, ertek]).sort(), eloE.sort(), 'a terv esemenyei = az eles cellak esemenyei');
+  const sdId = await sdIdentitas(v.e, b.uuid);
+  assert.ok(terv.terv.terv_esemenyek.every((e) => e.esemeny_id.endsWith(`:${sdId}`)), 'a terv azonositoi az sd identitasbol kepzodnek');
 });
-
 test('HS-09 a motor mar kuldott a HeadSpa-foglalasra (kulcs-iras + parositas): az sd_atvetel motor_kuldte, 0 uj kuldes, nincs atvetel (a mai HeadSpa-foglalasok tobbsege ez)', async () => {
   const v = vilag({ kapcsolo: 'headspa' }); await v.kesz; await nevtabla(v);
   const s = NORMAL[0]; const u = ujUuid(); const bid = 'mb_0muwq2ciorsos0tznsfyli1';
@@ -226,12 +242,27 @@ test('HS-10 ugyanarra a Salonic-UUID-ra erkezo masodik level (paros: eltero "uj 
   assert.equal(dupla, 0);
 });
 
-test('HS-11 a HeadSpa sd kimenet csak ARNYEK-celra megy, nyers vendegadat / kuponkod / szolgaltatasnev nincs a kerelmekben es a D1-ben', async () => {
+test('HS-11 a HeadSpa sd kimenet: minden kiment kerelem ARNYEK-cel (arnyekCel), nincs elo ID; a nyers vendegadat (e-mail, telefon, nev) es a szolgaltatasnev nincs a kimeno kerelmekben, es a D1-ben sincs nyers e-mail / telefon / nev', async () => {
   const { v, b } = await jelolt(NORMAL[0].nev);
   await v.sd(b);
-  const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_vendeg')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes'));
-  for (const tiltott of ['teszt.claude@example.com', '+36 30 000 0001', '36300000001', 'Teszt Claude', 'Teszt Terapeuta']) assert.ok(!mind.includes(tiltott), tiltott);
-  for (const h of v.net.hivasok) assert.ok(!/head spa kezel|hajsz|PÁROS|EGYÉNI|Relax/i.test(JSON.stringify(h.body)), `${h.kulcs}: szolgaltatasnev nincs a payloadban`);
-  for (const h of v.net.hivasok.filter((x) => x.kulcs === 'meta')) assert.ok(h.url.includes('graph.facebook.com'), h.url);
-  assert.ok(v.net.hivasok.every((h) => /^(meta|tiktok|google|ga4)$/.test(h.kulcs)));
+  const kiment = v.sql("SELECT platform, kerelem FROM meres_kuldes WHERE allapot = 'elkuldve'");
+  assert.equal(kiment.length, 4, 'Meta + TikTok x (alap + ernyo)');
+  for (const k of kiment) assert.ok(arnyekCel({ platform: k.platform, kerelem: k.kerelem }, { GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' }), `${k.platform}: a cel nem ARNYEK`);
+  const hivasok = JSON.stringify(v.net.hivasok);
+  for (const id of [...ELO_CELOK.meta, ...ELO_CELOK.tiktok, ...ELO_CELOK.ga4, ...ELO_CELOK.google_primary]) assert.ok(!hivasok.includes(String(id)) && !JSON.stringify(kiment).includes(String(id)), `elo ID a kerelemben: ${id}`);
+  assert.ok(v.net.hivasok.length === 4 && v.net.hivasok.every((h) => /^(meta|tiktok)$/.test(h.kulcs)), 'csak a Meta es a TikTok hivasa');
+  for (const h of v.net.hivasok) assert.ok(!/head spa kezel|hajsz|PÁROS|EGYÉNI|Relax/i.test(JSON.stringify(h.body)), `${h.kulcs}: szolgaltatasnev nincs a kimeno payloadban`);
+  const d1 = JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_vendeg')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes'));
+  for (const tiltott of ['teszt.claude@example.com', '+36 30 000 0001', '36300000001', 'Teszt Claude', 'Teszt Terapeuta']) assert.ok(!(hivasok + d1).includes(tiltott), tiltott);
+});
+
+test('HS-12 a globalis `salonic_direct` sor (uzletag nelkul) a HeadSpat IS bekapcsolja, ha nincs `salonic_direct:headspa` sor; az uzletag-sor 0 felulirja - ezert a bekapcsolas elott a globalis sornak hianyoznia KELL (ma: nincs)', async () => {
+  const { v, b } = await jelolt(NORMAL[0].nev, {}, { kapcsolo: 'mind' }); // `mind` = a globalis salonic_direct sor (NEM a meres_kapcsolo `mind` fo-kuldesi kulcsa)
+  assert.deepEqual(v.sql("SELECT kulcs, be FROM meres_kapcsolo WHERE kulcs LIKE 'salonic_direct%'"), [{ kulcs: 'salonic_direct', be: 1 }]);
+  const be = await v.sd(b);
+  assert.deepEqual([be.allapot, be.uzletag], ['kesz', 'headspa'], 'a globalis sor 1 -> a HeadSpa is megy (uzletag-sor nelkul)');
+  await v.kapcsol('headspa', false); // az uzletag-sor felulirja a globalis sort
+  const u2 = ujUuid(); const b2 = hsLevel(u2, KUPONOS[0].nev); await lezar(v, b2); v.t.set(SD_ELOTT + 4000_000);
+  const ki = await v.sd(b2);
+  assert.deepEqual([ki.allapot, ki.miert], ['ki', 'a salonic_direct kapcsolo ki: salonic_direct:headspa']);
 });

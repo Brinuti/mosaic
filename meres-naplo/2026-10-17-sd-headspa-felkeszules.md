@@ -6,7 +6,7 @@
 
 | parancs | eredmény |
 |---|---|
-| `node --test tools/test-sd-headspa.mjs` | **11/11 PASS** (HS-01..HS-11, a valós 8 HeadSpa-szolgáltatásnévvel) |
+| `node --test tools/test-sd-headspa.mjs` | **12/12 PASS** (HS-01..HS-12, a valós 8 HeadSpa-szolgáltatásnévvel) |
 | `node --test tools/test-sd-smoke.mjs` | **14/14 PASS** (SM1..SM11 régi + SM12..SM14 új HeadSpa) |
 | `node --test tools/test-salonic-direct.mjs` | **71/71 PASS** (változatlan; az sd mag nem módosult) |
 

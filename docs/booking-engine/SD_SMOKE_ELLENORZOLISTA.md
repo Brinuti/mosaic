@@ -1,13 +1,13 @@
 # Salonic-direct (sd) smoke ellenorzolista (2026-10-13; a meresi oldal / GPT DECISION #166, 6. pont)
 
-**Cel:** az elso VALODI sd-atvetel (pmu / oxigen) ellenorzese, es ha termeszetes ilyen foglalas nem jon, ugyanez egy kontrollalt TESZTFOGLALASRA. **Csak olvaso:** a lista egyetlen utasitasa sem ir; nem kuld; PII-mentes (nev / e-mail / telefon / hash nincs, uuid csak 8 karakteres elotag).
+**Cel:** az elso VALODI sd-atvetel (pmu / oxigen; 2026-10-17 ota a HeadSpa is, DECISION #191 elokeszites: `salonic_direct:headspa`, lasd SALONIC_DIRECT_HEADSPA.md) ellenorzese, es ha termeszetes ilyen foglalas nem jon, ugyanez egy kontrollalt TESZTFOGLALASRA. **Csak olvaso:** a lista egyetlen utasitasa sem ir; nem kuld; PII-mentes (nev / e-mail / telefon / hash nincs, uuid csak 8 karakteres elotag).
 
 **Hatarido:** ha **2026-10-15 12:30 UTC-ig** nem jon termeszetes kozvetlen pmu / oxigen foglalas, **1 kontrollalt tesztfoglalas** jon, utana lemondjuk, es **nem szamit a T2-mintaba**.
 
 > A tesztfoglalas leadasa es lemondasa a Salonic eles naptaraban tortenik (kulso rendszer, a szalon valodi naptara): ehhez a **tulajdonos kulon, kifejezett jovahagyasa** kell. Az ellenorzolista ezutan ugyanaz.
 
 ## Menete
-1. **Jeloltek** (termeszetes foglalasnal): `node tools/sd-smoke-ellenorzes.mjs jeloltek --tol <unix>` -> egy SQL (JSON: `sql`, `params`); a D1-en (csak olvasas) futtatva a pmu / oxigen letrehozo leveleket adja (`u8` = 8 karakteres uuid-elotag, `allapot`, `sd_allapot`). A tesztfoglalasnal az `u8` a letrehozo level (Zap-futas) uuid-jenak elso 8 karaktere.
+1. **Jeloltek** (termeszetes foglalasnal): `node tools/sd-smoke-ellenorzes.mjs jeloltek --tol <unix>` -> egy SQL (JSON: `sql`, `params`); a D1-en (csak olvasas) futtatva a pmu / oxigen letrehozo leveleket adja; **HeadSpa-nal csak a motoron kivuli sorokat** (sd-atvett, `parositatlan`, `ellentmondas`, vagy `salonic_direct` HeadSpa-cellaval rendelkezo), hogy a motoros HeadSpa-foglalasok tomege ne zavarja (max. 20 sor: amig a HeadSpa sd KI van, a parositatlan HeadSpa-sorok kiszoritvathatnak PMU / oxigen jelolteket - ilyenkor szukitsd a `--tol` erteket) (`u8` = 8 karakteres uuid-elotag, `allapot`, `sd_allapot`). A tesztfoglalasnal az `u8` a letrehozo level (Zap-futas) uuid-jenak elso 8 karaktere.
 2. **Idoablak:** letrehozo level T0 -> a motoros parositas lezar (~14-15 perc, `parositatlan`) -> az sd 5. lepese **T0 + >= 20 perc** (`SD_MIN_KOR_MP`) utan veszi at. Az ellenorzest T0 + ~25 perckor erdemes futtatni; korabban a verdikt `FOLYAMATBAN`.
 3. **SQL-ek:** `node tools/sd-smoke-ellenorzes.mjs sql <u8>` -> 8 `SELECT` (`level`, `index`, `cellak`, `motor_cellak`, `dupla`, `elo_id`, `reschedule`, `kapcsolok`), `?1` = az `u8`. Futtatas a D1-en (csak olvasas), az eredmenyek egy JSON-ba: `{ "level": [...], "index": [...], ... }`.
 4. **Ertekeles:** `node tools/sd-smoke-ellenorzes.mjs ertekel <u8> <eredmenyek.json>` -> kriterium-tabla + `VERDIKT: PASS | FAIL | FOLYAMATBAN` (a FAIL kilepesi kodja 2). A tabla a #167-be kerul rovid PASS / eszkalacio komment formajaban (eszkalacional az elso mondat a `be:false` javaslat).
@@ -18,8 +18,8 @@
 | # | Nev | PASS | FAIL / WARN |
 |---|---|---|---|
 | C0 | `eredmenyek_teljesek` | mind a 8 SELECT eredmenye (tomb) megvan | FAIL: barmelyik hianyzik / nem tomb; a COUNT-os `motor_cellak` es `elo_id` pontosan 1 sort kell adjon (az ures tomb = a futtato elnyelte / kihagyta). Egy kimaradt lekerdezes nem lehet PASS |
-| C1 | `level_latva` | a letrehozo level megvan, uzletag pmu / oxigen (kulcs, hash-index vagy az sd cellak uzletagabol) | FAIL: nincs sor / az elotag nem egyertelmu / az sd NEM pmu-oxigen uzletagra vett at; WARN: nem pmu / oxigen level (sd nelkul) |
-| C2 | `hash_index` | `foglalas_vendeg` sor `email_h`-val | WARN: nincs sor, vagy jelolo sor (`*_nincs_email`): e-mail nelkul a csere-felismeres nem lehetseges |
+| C1 | `level_latva` | a letrehozo level megvan, uzletag pmu / oxigen / headspa (kulcs, hash-index vagy az sd cellak uzletagabol) | FAIL: nincs sor / az elotag nem egyertelmu / az sd NEM pmu / oxigen / headspa uzletagra vett at; WARN: mas uzletagu level (sd nelkul) |
+| C2 | `hash_index` | `foglalas_vendeg` sor `email_h`-val | WARN: nincs sor, vagy jelolo sor (`*_nincs_email`): e-mail nelkul a csere-felismeres nem lehetseges. **HeadSpa kuponos levelnel ez a mai alakban varhato WARN** (a kuponos levelek e-mailje nem hashelheto, lasd SALONIC_DIRECT_HEADSPA.md F1): a verdikt ilyenkor 11 PASS + 1 WARN = PASS |
 | C3 | `sd_atvetel` | `sd_allapot = kesz` | FOLYAMATBAN: nincs sd-atvetel, de a level fiatalabb 30 percnel / `atveve`; FAIL: elmaradt (`sd_hianyzik`), `halasztva` / `tartva` / `lejart`; NA: a motor parositott es kuldott (az sd nem vett at) |
 | C4 | `kor_ido` | **IDEIGLENES szabaly (DECISION #183, 2026-10-14):** az atvetel a `foglalas_egyeztetes.letrehozva`-tol merve **>= 1140 mp** (= 20 perc - 60 mp tures, az ismert Zapier-keses; a production a level SAJAT datumatol szamol, a sor letrehozasa kesobbi). **Vegleges** (kesobb): `level_datuma` oszlop a D1-ben, C4 = levéldatum + 1200 mp, +-30 mp (#180) | FAIL: 1140 mp-nel korabban; WARN: az sd INSERT-je hozta letre a sort (`sd_ido = letrehozva`: a levelhorog nem futott, a level kora nem ellenorizheto) |
 | C5 | `esemeny_sorok` | mind a 4 platformon van alap esemeny-sor az sd azonositoja alatt | FAIL: hianyzo platform |
