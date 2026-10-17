@@ -526,9 +526,23 @@ test('PARSE-bontas (naptar-API): a nem JSON valasz kind=JSON; a HTTP-hiba es az 
 test('PARSE-bontas: a PARSE argumentum-ellenorzese (startUnix) kind nelkul marad; a metaadat-jegyzes nem dob, ha a valasznak nincs fejlece / a torzs nem szoveg', async () => {
   const a = createSalonicAdapter({ fetchImpl: fakeFetch(gyorsRoutes()), now: nowFixed, businesses: gyorsCfg });
   const svc = (await a.getServices('gyors')).find((s) => s.durationMin);
-  await assert.rejects(() => a.beginBooking({ business: 'gyors', serviceId: svc.serviceId, startUnix: 'nem szam' }), (e) => e.code === 'PARSE' && e.kind === undefined);
+  await assert.rejects(() => a.beginBooking({ business: 'gyors', serviceId: svc.serviceId, startUnix: 'nem szam' }), (e) => e.code === 'PARSE' && e.kind === undefined && !('kind' in e));
   const furcsa = async () => ({ ok: true, status: 200, headers: { get: () => { throw new Error('fejlec hiba'); } }, text: async () => 12345 });
   const b = createSalonicAdapter({ fetchImpl: furcsa, now: () => 0 });
-  await assert.rejects(() => b.getServices('oxygen'), (e) => e instanceof SalonicError && e.code === 'PARSE', 'a hibas fejlec-olvasas nem akasztja meg a lekerest');
+  await assert.rejects(() => b.getServices('oxygen'), (e) => e instanceof SalonicError && e.code === 'PARSE' && e.business === 'oxygen' && e.kind === undefined && !('kind' in e), 'a hibas fejlec-olvasas nem akasztja meg a lekerest; metaadat nelkul sima PARSE (kind mezo sincs)');
+});
+
+test('PARSE-bontas: az egyidoben futo lekeresek kindje fuggetlen (nincs kozos allapot): azonos URL-re adott kulonbozo valaszok mindegyike a sajat hibajat kapja', async () => {
+  const sorrend = [{ kes: 25, resp: { status: 200, body: htmlHossz(900), headers: HTML }, kind: 'SHORT' }, { kes: 0, resp: { status: 200, body: '', headers: HTML }, kind: 'EMPTY' }, { kes: 10, resp: { status: 200, body: htmlHossz(8000), headers: { 'content-type': 'text/plain' } }, kind: 'NOTHTML' }];
+  let n = 0;
+  const f = async () => { const k = sorrend[n++ % sorrend.length]; await new Promise((r) => setTimeout(r, k.kes)); return { ok: true, status: 200, headers: { get: (h) => k.resp.headers[String(h).toLowerCase()] ?? null }, text: async () => k.resp.body }; };
+  // harom kulon adapter-peldany, egyszerre; mindegyik a sajat valaszat latja (a hivo-lokalis metaadat miatt nincs felulirhato kozos bejegyzes)
+  const eredmenyek = await Promise.all(sorrend.map(async () => { try { await createSalonicAdapter({ fetchImpl: f, now: () => 0 }).getServices('oxygen'); return 'nincs hiba'; } catch (e) { return e.kind; } }));
+  assert.deepEqual([...eredmenyek].sort(), ['EMPTY', 'NOTHTML', 'SHORT']);
+  // ugyanaz egyetlen peldanyon: a parhuzamos, azonos URL-u lekeresek (a cached nem vonja ossze a futokat) sem keverik a metaadatot
+  n = 0;
+  const kozos = createSalonicAdapter({ fetchImpl: f, now: () => 0 });
+  const kozosEredmeny = await Promise.all(sorrend.map(() => kozos.getServices('oxygen').then(() => 'nincs hiba', (e) => e.kind)));
+  assert.deepEqual([...kozosEredmeny].sort(), ['EMPTY', 'NOTHTML', 'SHORT'], 'mindegyik parhuzamos lekeres a sajat valaszanak megfelelo kindet kapja');
 });
 

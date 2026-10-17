@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { createStepMeter, ESEMENYEK, HIBA_TIPUSOK as KLIENS_HIBAK, RESERVED_BY_STEPS, tisztaOldal, hibaReszlet, HIBA_KODOK as KLIENS_KODOK, RESZLET_LEPES as KLIENS_RESZLET } from '../assets/js/booking-engine/lepes-meres.js';
 import { createTracker, EVENTS } from '../assets/js/booking-engine/tracking.js';
@@ -404,6 +405,23 @@ test('hiba-reszlet (PARSE-bontas): minden kind x hibakod x HTTP-statusz x nezet 
     assert.equal(ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus })).ok, true, `${String(kind)} / ${String(code)} / ${String(status)} / ${String(step)} -> ${tipus}`); db++;
   }
   assert.ok(db > 3000);
+});
+
+test('PARSE-bontas visszagorgetes: a LEPES_MERES.md-ben dokumentalt DELETE (GLOB) minden uzletag / nap PARSE_* reszlet-sorait torli; a sima PARSE.0, a mas reszletek es az error sor erintetlen', async () => {
+  const doksi = fs.readFileSync(new URL('../docs/booking-engine/LEPES_MERES.md', import.meta.url), 'utf8');
+  const m = doksi.match(/`(DELETE FROM lepes_szamlalo WHERE lepes = 'error_reszlet' AND tipus GLOB '[^']*';)`/);
+  assert.ok(m, 'a rollback-SQL szerepel a dokumentumban');
+  const D = d1(); const env = { SZAMLALO_DB: D, SZAMLALO_OLVASO_HASH: HASH };
+  const sorok = [['oxygen', '2026-10-17', 'salonic_api.OX1.PARSE_SHORT.0'], ['oxygen', '2026-10-17', 'salonic_api.OX1.PARSE_EMPTY.0'], ['laser', '2026-10-17', 'salonic_api.LA1.PARSE_NOLIST.0'], ['oxygen', '2026-10-16', 'salonic_api.OX1.PARSE_JSON.0'],
+    ['oxygen', '2026-10-17', 'salonic_api.OX1.PARSE.0'], ['oxygen', '2026-10-17', 'salonic_api.C1.HTTP.503'], ['oxygen', '2026-10-17', 'timeout.C1.TIMEOUT.0']];
+  for (const [uzletag, nap, tipus] of sorok) await kezel(post({ lepes: 'error_reszlet', uzletag, tipus }), env, ido(nap + 'T10:00:00Z'));
+  await kezel(post({ lepes: 'error', uzletag: 'oxygen', tipus: 'salonic_api' }), env, ido('2026-10-17T10:00:00Z'));
+  const elotte = D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE lepes='error_reszlet'").get().n;
+  assert.equal(elotte, sorok.length);
+  D.db.exec(m[1]);
+  const maradt = D.db.prepare("SELECT tipus FROM lepes_szamlalo WHERE lepes='error_reszlet' ORDER BY tipus").all().map((r) => r.tipus);
+  assert.deepEqual(maradt, ['salonic_api.C1.HTTP.503', 'salonic_api.OX1.PARSE.0', 'timeout.C1.TIMEOUT.0'], 'csak a PARSE_* sorok tunnek el');
+  assert.equal(D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE lepes='error'").get().n, 1, 'az error sor erintetlen');
 });
 
 test('POST + GET: a PARSE-bontas D1-be kerul, a hiba_reszlet kimenetben es a CSV-ben latszik; a regi PARSE kulcs mellette valtozatlan', async () => {
