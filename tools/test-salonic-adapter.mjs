@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  BOOKING_ID_PARAM, BUSINESSES, SalonicError, createSalonicAdapter, decodeEntities, echoedBookingId, parseCalendarId, parseCustomCss, parseServices, parseSpecs, slotsFromApi, verifyConfirmation,
+  BOOKING_ID_PARAM, BUSINESSES, PARSE_KIND_MIN_HOSSZ, SalonicError, createSalonicAdapter, decodeEntities, echoedBookingId, parseCalendarId, parseCustomCss, parseKind, parseServices, parseSpecs, slotsFromApi, verifyConfirmation,
 } from '../assets/js/booking-engine/salonic-adapter.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -186,7 +186,7 @@ function fakeFetch(routes) {
       if (re.test(String(url))) {
         const r = typeof resp === 'function' ? resp(calls.length) : resp;
         if (r instanceof Error) throw r;
-        return { ok: r.status >= 200 && r.status < 300, status: r.status, text: async () => r.body };
+        return { ok: r.status >= 200 && r.status < 300, status: r.status, text: async () => r.body, ...(r.headers ? { headers: { get: (k) => r.headers[String(k).toLowerCase()] ?? null } } : {}) };
       }
     }
     return { ok: false, status: 404, text: async () => 'nincs' };
@@ -463,3 +463,86 @@ test('verifyConfirmation: a sajat azonosito visszhangja nem befolyasolja az ok-o
   const nelkul = verifyConfirmation(redirect(), pmuExpected);
   assert.deepEqual(nelkul.bookingId, { sent: null, returned: false, where: null });
 });
+
+// --- PARSE-bontas (#178): mit kapott az adapter, amikor "nem talaltam szolgaltatast" / "a naptar-API valasza nem JSON" -------------------------------------------------------
+const htmlHossz = (n) => '<html><body>' + 'x'.repeat(n) + '</body></html>';
+const HTML = { 'content-type': 'text/html; charset=UTF-8' };
+
+test('parseKind: zart ertekek es precedencia (ures > nem html > rovid > nincs elem); metaadat nelkul null', () => {
+  assert.equal(PARSE_KIND_MIN_HOSSZ, 5000);
+  assert.equal(parseKind([{ ct: 'text/html', len: 0 }]), 'EMPTY');
+  assert.equal(parseKind([{ ct: 'text/plain', len: 9000 }, { ct: 'text/html', len: 100 }]), 'NOTHTML');
+  assert.equal(parseKind([{ ct: 'text/html', len: 4999 }]), 'SHORT');
+  assert.equal(parseKind([{ ct: 'text/html', len: 5000 }]), 'NOLIST');
+  assert.equal(parseKind([{ ct: '', len: 9000 }]), 'NOLIST', 'ismeretlen tartalom-tipus: a hossz dont');
+  assert.equal(parseKind([{ ct: 'text/html', len: 0 }, { ct: 'text/plain', len: 100 }]), 'EMPTY', 'az ures a legerosebb jel');
+  for (const nincs of [undefined, null, [], [null, undefined], 'x', 12, {}]) assert.equal(parseKind(nincs), null, String(nincs));
+});
+
+test('PARSE-bontas (oxigen: kategoria-oldal): a szolgaltatas-lista PARSE hibaja megmondja, mit kaptunk (ures / nem html / rovid / nincs elem); fejlec nelkul a hossz dont; a kind nem szivarog ki mas hibakra', async () => {
+  const esetek = [
+    ['ures torzs', { status: 200, body: '', headers: HTML }, 'EMPTY'],
+    ['csak szokoz', { status: 200, body: '  \n ', headers: HTML }, 'EMPTY'],
+    ['nem html', { status: 200, body: htmlHossz(8000), headers: { 'content-type': 'text/plain' } }, 'NOTHTML'],
+    ['json hibavalasz', { status: 200, body: JSON.stringify({ error: 'x'.repeat(6000) }), headers: { 'content-type': 'application/json' } }, 'NOTHTML'],
+    ['rovid html (hiba- / karbantartasi sablon)', { status: 200, body: htmlHossz(900), headers: HTML }, 'SHORT'],
+    ['normal meretu html elem nelkul', { status: 200, body: htmlHossz(8000), headers: HTML }, 'NOLIST'],
+    ['fejlec nelkuli valasz (regi hamis halozat)', { status: 200, body: htmlHossz(8000) }, 'NOLIST'],
+  ];
+  for (const [nev, resp, kind] of esetek) {
+    const a = createSalonicAdapter({ fetchImpl: fakeFetch([[/selectSpecialization/, resp]]), now: () => 0 });
+    await assert.rejects(() => a.getServices('oxygen'), (e) => e instanceof SalonicError && e.code === 'PARSE' && e.kind === kind && e.business === 'oxygen' && e.status === undefined, nev);
+  }
+  // nem PARSE hibakon nincs kind: 404 / 5xx / halozati hiba
+  for (const resp of [{ status: 404, body: htmlHossz(900), headers: HTML }, { status: 503, body: '', headers: HTML }]) {
+    const a = createSalonicAdapter({ fetchImpl: fakeFetch([[/selectSpecialization/, resp]]), now: () => 0 });
+    await assert.rejects(() => a.getServices('oxygen'), (e) => e.code === 'HTTP' && e.kind === undefined);
+  }
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: fakeFetch([[/selectSpecialization/, new Error('ECONNRESET')]]), now: () => 0 }).getServices('oxygen'), (e) => e.code === 'HTTP' && e.kind === undefined);
+});
+
+test('PARSE-bontas (lezer, specIds): a legerosebb jelu oldal dont; ha van elem a listaban, nincs hiba (a mukodo ut valtozatlan)', async () => {
+  const ketOldal = (a1, a2) => fakeFetch([[/specId=66404/, a1], [/specId=66405/, a2]]);
+  const kind = async (f) => { try { await createSalonicAdapter({ fetchImpl: f, now: () => 0 }).getServices('laser'); return null; } catch (e) { return e.code === 'PARSE' ? e.kind : 'MAS:' + e.code; } };
+  assert.equal(await kind(ketOldal({ status: 200, body: htmlHossz(6000), headers: HTML }, { status: 200, body: htmlHossz(6000), headers: HTML })), 'NOLIST');
+  assert.equal(await kind(ketOldal({ status: 200, body: htmlHossz(6000), headers: HTML }, { status: 200, body: htmlHossz(700), headers: HTML })), 'SHORT');
+  assert.equal(await kind(ketOldal({ status: 200, body: htmlHossz(6000), headers: HTML }, { status: 200, body: '', headers: HTML })), 'EMPTY');
+  assert.equal(await kind(ketOldal({ status: 200, body: fx('hair-showServices.html'), headers: HTML }, { status: 200, body: htmlHossz(700), headers: HTML })), null, 'ha az egyik kategoriaban van elem, nincs PARSE hiba (a mukodes nem valtozik)');
+  assert.equal(await kind(ketOldal({ status: 200, body: fx('hair-showServices.html') }, { status: 200, body: fx('hair-showServices.html') })), null, 'fejlec nelkul is ugyanaz');
+});
+
+test('PARSE-bontas (naptar-API): a nem JSON valasz kind=JSON; a HTTP-hiba es az API_STATUS kind nelkul marad; a sikeres lekeres es a feldolgozas valtozatlan', async () => {
+  const ujAdapter = (apiResp) => createSalonicAdapter({ fetchImpl: fakeFetch(gyorsRoutes().filter(([re]) => !/getAvailableTimes/.test(String(re))).concat([[/getAvailableTimes/, apiResp], [/selectDate/, ok("calendarId: 'cal-beallitott'")]])), now: nowFixed, businesses: gyorsCfg }); // selectDate: a beallitott naptar-azonosito "elutasitasanal" az adapter innen olvassa ujra (itt azonos -> az API_STATUS hiba marad)
+  const szolg = async (a) => (await a.getServices('gyors')).find((s) => s.durationMin).serviceId;
+  for (const resp of [ok('<html>hiba</html>'), ok(''), { status: 200, body: htmlHossz(900), headers: HTML }]) {
+    const a = ujAdapter(resp);
+    await assert.rejects(async () => a.getAvailability('gyors', await szolg(a), { days: 14 }), (e) => e.code === 'PARSE' && e.kind === 'JSON');
+  }
+  { const a = ujAdapter({ status: 503, body: '' }); await assert.rejects(async () => a.getAvailability('gyors', await szolg(a), { days: 14 }), (e) => e.code === 'HTTP' && e.status === 503 && e.kind === undefined); }
+  { const a = ujAdapter(ok(JSON.stringify({ status: 'error' }))); await assert.rejects(async () => a.getAvailability('gyors', await szolg(a), { days: 14 }), (e) => e.code === 'API_STATUS' && e.kind === undefined); }
+  { const a = ujAdapter(ok(JSON.stringify(apiFixture()))); const slots = await a.getAvailability('gyors', await szolg(a), { days: 14 }); assert.ok(slots.length > 0, 'a sikeres ut valtozatlan'); }
+});
+
+test('PARSE-bontas: a PARSE argumentum-ellenorzese (startUnix) kind nelkul marad; a metaadat-jegyzes nem dob, ha a valasznak nincs fejlece / a torzs nem szoveg', async () => {
+  const a = createSalonicAdapter({ fetchImpl: fakeFetch(gyorsRoutes()), now: nowFixed, businesses: gyorsCfg });
+  const svc = (await a.getServices('gyors')).find((s) => s.durationMin);
+  await assert.rejects(() => a.beginBooking({ business: 'gyors', serviceId: svc.serviceId, startUnix: 'nem szam' }), (e) => e.code === 'PARSE' && e.kind === undefined && !('kind' in e));
+  const furcsa = async () => ({ ok: true, status: 200, headers: { get: () => { throw new Error('fejlec hiba'); } }, text: async () => 12345 });
+  const b = createSalonicAdapter({ fetchImpl: furcsa, now: () => 0 });
+  await assert.rejects(() => b.getServices('oxygen'), (e) => e instanceof SalonicError && e.code === 'PARSE' && e.business === 'oxygen' && e.kind === undefined && !('kind' in e), 'a hibas fejlec-olvasas nem akasztja meg a lekerest; metaadat nelkul sima PARSE (kind mezo sincs)');
+});
+
+test('PARSE-bontas: az egyidoben futo lekeresek kindje fuggetlen (nincs kozos allapot): azonos URL-re adott kulonbozo valaszok mindegyike a sajat hibajat kapja', async () => {
+  const sorrend = [{ kes: 25, resp: { status: 200, body: htmlHossz(900), headers: HTML }, kind: 'SHORT' }, { kes: 0, resp: { status: 200, body: '', headers: HTML }, kind: 'EMPTY' }, { kes: 10, resp: { status: 200, body: htmlHossz(8000), headers: { 'content-type': 'text/plain' } }, kind: 'NOTHTML' }];
+  let n = 0;
+  const f = async () => { const k = sorrend[n++ % sorrend.length]; await new Promise((r) => setTimeout(r, k.kes)); return { ok: true, status: 200, headers: { get: (h) => k.resp.headers[String(h).toLowerCase()] ?? null }, text: async () => k.resp.body }; };
+  // harom kulon adapter-peldany, egyszerre; mindegyik a sajat valaszat latja (a hivo-lokalis metaadat miatt nincs felulirhato kozos bejegyzes)
+  const eredmenyek = await Promise.all(sorrend.map(async () => { try { await createSalonicAdapter({ fetchImpl: f, now: () => 0 }).getServices('oxygen'); return 'nincs hiba'; } catch (e) { return e.kind; } }));
+  assert.deepEqual([...eredmenyek].sort(), ['EMPTY', 'NOTHTML', 'SHORT']);
+  // ugyanaz egyetlen peldanyon: a parhuzamos, azonos URL-u lekeresek (a cached nem vonja ossze a futokat) sem keverik a metaadatot
+  n = 0;
+  const kozos = createSalonicAdapter({ fetchImpl: f, now: () => 0 });
+  const kozosEredmeny = await Promise.all(sorrend.map(() => kozos.getServices('oxygen').then(() => 'nincs hiba', (e) => e.kind)));
+  assert.deepEqual([...kozosEredmeny].sort(), ['EMPTY', 'NOTHTML', 'SHORT'], 'mindegyik parhuzamos lekeres a sajat valaszanak megfelelo kindet kapja');
+});
+

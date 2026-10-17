@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { createStepMeter, ESEMENYEK, HIBA_TIPUSOK as KLIENS_HIBAK, RESERVED_BY_STEPS, tisztaOldal, hibaReszlet, HIBA_KODOK as KLIENS_KODOK, RESZLET_LEPES as KLIENS_RESZLET } from '../assets/js/booking-engine/lepes-meres.js';
 import { createTracker, EVENTS } from '../assets/js/booking-engine/tracking.js';
@@ -372,3 +373,68 @@ test('meter.error furcsa reszlet-ertekkel sem dob, es a kimenet mindig zart alak
   }
   for (const rossz of [5, [], {}, null, true]) assert.equal(ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus: rossz })).ok, false, JSON.stringify(rossz));
 });
+
+// --- #178: PARSE-bontas (PARSE_EMPTY / NOTHTML / SHORT / NOLIST / JSON) -------------------------------------------------------------------------------------------------
+test('hibaReszlet: PARSE-bontas - PARSE + kind -> PARSE_<KIND> (zart lista); ismeretlen / hianyzo kind marad PARSE; mas kodnal a kind figyelmen kivul; HTTP-statusz tovabbra sem', () => {
+  for (const k of ['EMPTY', 'NOTHTML', 'SHORT', 'NOLIST', 'JSON']) assert.equal(hibaReszlet('salonic_api', 'OX1', { code: 'PARSE', status: 200, kind: k }), `salonic_api.OX1.PARSE_${k}.0`, k);
+  for (const k of [undefined, null, '', 'MAS', 'empty', 12, {}, 'PARSE_SHORT', 'SHORT\n']) assert.equal(hibaReszlet('salonic_api', 'OX1', { code: 'PARSE', kind: k }), 'salonic_api.OX1.PARSE.0', String(k));
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'HTTP', status: 503, kind: 'SHORT' }), 'salonic_api.C1.HTTP.503', 'a kind csak PARSE mellett szamit');
+  assert.equal(hibaReszlet('salonic_api', 'LA1', { code: 'API_STATUS', status: 200, kind: 'JSON' }), 'salonic_api.LA1.API_STATUS.200');
+  assert.equal(hibaReszlet('timeout', 'C1', { code: 'PARSE', kind: 'SHORT' }), 'timeout.C1.TIMEOUT.0');
+  assert.equal(hibaReszlet('client_error', 'C1', { code: 'PARSE', kind: 'SHORT' }), 'client_error.C1.NONE.0');
+  assert.equal(hibaReszlet('no_slots', 'C1', { code: 'PARSE', kind: 'SHORT' }), null);
+});
+
+test('ervenyesit: a PARSE_* kodok csak salonic_api mellett es HTTP-statusz nelkul fogadhatok el; ismeretlen PARSE_* / kisbetus / lezaratlan elutasitva; a kliens es a szerver lista tovabbra is azonos', () => {
+  const ok = (tipus) => ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus })).ok;
+  for (const k of ['EMPTY', 'NOTHTML', 'SHORT', 'NOLIST', 'JSON']) assert.equal(ok(`salonic_api.OX1.PARSE_${k}.0`), true, k);
+  for (const rossz of ['salonic_api.OX1.PARSE_SHORT.200', 'salonic_api.OX1.PARSE_SHORT.503', 'timeout.OX1.PARSE_SHORT.0', 'client_error.OX1.PARSE_EMPTY.0', 'salonic_api.OX1.PARSE_MAS.0', 'salonic_api.OX1.PARSE_.0',
+    'salonic_api.OX1.PARSE_short.0', 'no_slots.OX1.PARSE_SHORT.0', 'salonic_api.OX1.PARSE_SHORT', 'salonic_api.OX1.PARSE_SHORT.0.0']) assert.equal(ok(rossz), false, rossz);
+  assert.deepEqual(KLIENS_KODOK, SZERVER_KODOK);
+});
+
+test('hiba-reszlet (PARSE-bontas): minden kind x hibakod x HTTP-statusz x nezet kombinaciot, amit a kliens elo tud allitani, a szerver elfogad', () => {
+  const kindok = [undefined, null, 'EMPTY', 'NOTHTML', 'SHORT', 'NOLIST', 'JSON', 'MAS', 12, '', 'SHORT\n'];
+  const kodok = ['PARSE', 'HTTP', 'API_STATUS', 'SERVICE_NOT_FOUND', 'OTHER', 'TIMEOUT', undefined, 'valami_mas'];
+  const statuszok = [undefined, 0, 200, 404, 503, 600, 'x'];
+  const lepesek = ['C1', 'OX1', 'LA1', 'HS1', 'A3', undefined, 'c1', 'x y'];
+  let db = 0;
+  for (const kind of kindok) for (const code of kodok) for (const status of statuszok) for (const step of lepesek) {
+    const t = code === 'TIMEOUT' ? 'timeout' : code ? 'salonic_api' : 'client_error';
+    const tipus = hibaReszlet(t, step, { code, status, kind });
+    assert.equal(ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus })).ok, true, `${String(kind)} / ${String(code)} / ${String(status)} / ${String(step)} -> ${tipus}`); db++;
+  }
+  assert.ok(db > 3000);
+});
+
+test('PARSE-bontas visszagorgetes: a LEPES_MERES.md-ben dokumentalt DELETE (GLOB) minden uzletag / nap PARSE_* reszlet-sorait torli; a sima PARSE.0, a mas reszletek es az error sor erintetlen', async () => {
+  const doksi = fs.readFileSync(new URL('../docs/booking-engine/LEPES_MERES.md', import.meta.url), 'utf8');
+  const m = doksi.match(/`(DELETE FROM lepes_szamlalo WHERE lepes = 'error_reszlet' AND tipus GLOB '[^']*';)`/);
+  assert.ok(m, 'a rollback-SQL szerepel a dokumentumban');
+  const D = d1(); const env = { SZAMLALO_DB: D, SZAMLALO_OLVASO_HASH: HASH };
+  const sorok = [['oxygen', '2026-10-17', 'salonic_api.OX1.PARSE_SHORT.0'], ['oxygen', '2026-10-17', 'salonic_api.OX1.PARSE_EMPTY.0'], ['laser', '2026-10-17', 'salonic_api.LA1.PARSE_NOLIST.0'], ['oxygen', '2026-10-16', 'salonic_api.OX1.PARSE_JSON.0'],
+    ['oxygen', '2026-10-17', 'salonic_api.OX1.PARSE.0'], ['oxygen', '2026-10-17', 'salonic_api.C1.HTTP.503'], ['oxygen', '2026-10-17', 'timeout.C1.TIMEOUT.0']];
+  for (const [uzletag, nap, tipus] of sorok) await kezel(post({ lepes: 'error_reszlet', uzletag, tipus }), env, ido(nap + 'T10:00:00Z'));
+  await kezel(post({ lepes: 'error', uzletag: 'oxygen', tipus: 'salonic_api' }), env, ido('2026-10-17T10:00:00Z'));
+  const elotte = D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE lepes='error_reszlet'").get().n;
+  assert.equal(elotte, sorok.length);
+  D.db.exec(m[1]);
+  const maradt = D.db.prepare("SELECT tipus FROM lepes_szamlalo WHERE lepes='error_reszlet' ORDER BY tipus").all().map((r) => r.tipus);
+  assert.deepEqual(maradt, ['salonic_api.C1.HTTP.503', 'salonic_api.OX1.PARSE.0', 'timeout.C1.TIMEOUT.0'], 'csak a PARSE_* sorok tunnek el');
+  assert.equal(D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE lepes='error'").get().n, 1, 'az error sor erintetlen');
+});
+
+test('POST + GET: a PARSE-bontas D1-be kerul, a hiba_reszlet kimenetben es a CSV-ben latszik; a regi PARSE kulcs mellette valtozatlan', async () => {
+  const D = d1(); const env = { SZAMLALO_DB: D, SZAMLALO_OLVASO_HASH: HASH }; const t = ido('2026-10-17T10:00:00Z');
+  for (const tipus of ['salonic_api.OX1.PARSE_SHORT.0', 'salonic_api.OX1.PARSE_SHORT.0', 'salonic_api.OX1.PARSE_NOLIST.0', 'salonic_api.OX1.PARSE.0']) {
+    assert.equal((await kezel(post({ lepes: 'error', uzletag: 'oxygen', tipus: 'salonic_api' }), env, t)).status, 204);
+    assert.equal((await kezel(post({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus }), env, t)).status, 204);
+  }
+  const j = await (await kezel(get('kulcs=' + TOKEN + '&nap=2026-10-17'), env, t)).json();
+  const ox = j.napok['2026-10-17'].oxygen;
+  assert.deepEqual(ox.hibak, { salonic_api: 4 }); assert.deepEqual(ox.hiba_reszlet, { 'salonic_api.OX1.PARSE.0': 1, 'salonic_api.OX1.PARSE_NOLIST.0': 1, 'salonic_api.OX1.PARSE_SHORT.0': 2 });
+  assert.deepEqual(ox.lepesek, { error: 4 }, 'a reszlet nem lepes: a tolcser nem valtozik');
+  const csv = await (await kezel(get('kulcs=' + TOKEN + '&nap=2026-10-17&formatum=csv'), env, t)).text();
+  assert.match(csv, /2026-10-17;oxygen;error_reszlet;salonic_api\.OX1\.PARSE_SHORT\.0;2\n/);
+});
+

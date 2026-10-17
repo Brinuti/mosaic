@@ -14,6 +14,8 @@ Alapja: [PMU_LIVE_ADAPTER_FINDINGS.md](PMU_LIVE_ADAPTER_FINDINGS.md) és [SALONI
 | `verifyConfirmation(redirectUrl, expected)` | működik, **kliensoldali** | a Salonic sikeres foglalás utáni átirányításának paramétereit veti össze a várttal |
 | `createBooking`, `getBooking`, `updateBooking` | **nem támogatott** (`SalonicError NOT_SUPPORTED`) | a Salonicnak nincs nyilvános foglalás-API-ja (lásd a leleteket, 6. pont) |
 
+**Hibák (`SalonicError`):** `code` = `NOT_SUPPORTED` | `UNKNOWN_BUSINESS` | `SERVICE_NOT_FOUND` | `HTTP` | `PARSE` | `NO_CALENDAR` | `API_STATUS` | `TIMEOUT`. A `PARSE` hibán **opcionális `kind`** lehet (`EMPTY` | `NOTHTML` | `SHORT` | `NOLIST` | `JSON`; csak a `getServices` üres eredményénél és a naptár-API nem JSON válaszánál; a mezőt a `parseKind` számolja a válasz tartalom-típusából és vágott hosszából, tartalom nem tárolódik – [LEPES_MERES.md](LEPES_MERES.md) 5c). A `kind` hiánya (`undefined`, a mező sincs jelen) nem hiba: a hívó ilyenkor sima `PARSE`-ként kezeli.
+
 `adapter.capabilities` ezt géppel olvashatóan mondja: `bookingId: 'synthetic'` (a Salonic saját azonosítót nem ad az átirányításban), `ownBookingIdCarrier: 'back'` (a saját azonosító hordozó paramétere az adatlap címén), `priceReadback: 'redirect-attested'`.
 
 ## `verifyConfirmation` – mit bizonyít
