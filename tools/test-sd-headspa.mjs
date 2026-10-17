@@ -153,6 +153,7 @@ test('HS-06 (F1 javitva, DECISION #192) a kuponos level "E-mail cim:" mezoje az 
     ['nagybetuvel, tobb szokozzel', `  ${TISZTA.toUpperCase()}   KUPON KÓD:  KUPXYZ9 `],
     ['ekezet nelkul, kettospont utan szokoz nelkul', `${TISZTA} Kupon kod:KUPXYZ9`],
     ['angol cimke', `${TISZTA} Coupon code: KUPXYZ9`],
+    ['rovid cimke, osszeerve', `${TISZTA}Kupon:KUPXYZ9`],
   ];
   for (const [nev, email] of alakok) {
     assert.equal(emailNormal(email), TISZTA, `${nev}: az emailNormal a tiszta e-mailt adja`);
@@ -163,6 +164,7 @@ test('HS-06 (F1 javitva, DECISION #192) a kuponos level "E-mail cim:" mezoje az 
     assert.deepEqual(kulcsok(v), ['em', 'ph', 'external_id'], `${nev}: user_data kulcsok (mint a normal levelnel)`);
     assert.ok(ud(v, 'em').includes(emH), `${nev}: em = sha256(tiszta e-mail)`);
     assert.ok(ud(v, 'external_id').includes(emH), `${nev}: external_id = sha256(tiszta e-mail) -> a vendeg a kuponos es a normal foglalasa kozott azonosithato`);
+    { const tt = JSON.stringify(tiktokTestek(v)[0].user); assert.ok(tt.includes(emH), `${nev}: TikTok user.email / external_id = sha256(tiszta e-mail)`); assert.equal(tt.split(emH).length - 1, 2, `${nev}: a TikTok-on mind az email, mind az external_id a tiszta e-mail hash-e`); }
     assert.deepEqual(v.sql('SELECT email_h FROM foglalas_vendeg').map((x) => x.email_h), [indexH], `${nev}: a vendeg-index HMAC azonos a normal levelevel`);
     const mind = JSON.stringify(v.net.hivasok) + JSON.stringify(v.sql('SELECT * FROM meres_kuldes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_egyeztetes')) + JSON.stringify(v.sql('SELECT * FROM foglalas_vendeg'));
     assert.ok(!/kupxyz9/i.test(mind), `${nev}: a kuponkod nyersen nem kerul ki / a naploba / az indexbe`);
