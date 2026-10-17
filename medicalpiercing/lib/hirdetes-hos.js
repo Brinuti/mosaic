@@ -42,9 +42,21 @@ const NEV_SZABALYOK = [
   [/KOLL[ÁA]ZS\s+[ÚU]J\s+10-17\s*-\s*0([123678])\b/i, (m) => 'koll-0' + m[1]],
 ];
 
-export function hosValasztas(url) {
-  const ad = (url.searchParams.get('mp_ad') || '').trim();
-  if (/^\d{6,25}$/.test(ad) && HIRDETESEK[ad]) return HIRDETESEK[ad];
+// A tulajdonos dontese (2026-10-17): a 04/05 kollazs soha nem kerul a lapra (az automatikus tarolobol sem).
+export const KIZART = new Set(['120254773739360022', '120254773741100022']);
+
+// Automatikus tarolo (2026-10-17): a mosaic-szerver oranként menti az MP2 aktiv hirdeteseinek kepet a riport-D1
+// hirdetes_hos tablajaba (ad.id kulccsal). Elsobbsege van; ha nincs talalat, jon a fix HIRDETESEK es a nev-szabaly.
+export async function hosValasztas(url, db) {
+  // Egyseges parameter minden vallalkozasnal: ad_id={{ad.id}} (2026-10-17); a regi mp_ad atmenetileg is mukodik.
+  const ad = (url.searchParams.get('ad_id') || url.searchParams.get('mp_ad') || '').trim();
+  if (/^\d{6,25}$/.test(ad) && !KIZART.has(ad) && db) {
+    try {
+      const sor = await db.prepare('SELECT forras FROM hirdetes_hos WHERE hirdetes_id = ?1 AND aktiv = 1').bind(ad).first();
+      if (sor) return { ad, v: verzio(sor.forras) };
+    } catch (e) { console.error('hirdetes-hos: D1 hiba', e && e.message); } // tablahiba eseten a fix lista marad
+  }
+  if (/^\d{6,25}$/.test(ad) && !KIZART.has(ad) && HIRDETESEK[ad]) return HIRDETESEK[ad];
   const nev = url.searchParams.get('utm_content') || '';
   if (nev && nev.length <= 200) {
     for (const [re, kulcs] of NEV_SZABALYOK) {
@@ -60,29 +72,54 @@ export function hosValasztas(url) {
 const NEGYZET = '<style id="hirdetes-hos-negyzet">.hos-kep:has(>img[data-hirdetes-hos]){aspect-ratio:auto!important;min-height:0!important;height:auto!important;align-self:start}'
   + 'img[data-hirdetes-hos]{position:static!important;display:block;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:1/1!important;object-fit:cover}</style>';
 
+function verzio(forras) { let h = 0; for (const c of String(forras)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h.toString(36); }
+
+// GET /hirdetes-hos-kep/<ad.id>: a tarolt kep (csak aktiv, nem kizart). Hosszu cache: a ?v= a kep verziojat jeloli.
+export async function hosKepValasz(request, db) {
+  const m = new URL(request.url).pathname.match(/^\/hirdetes-hos-kep\/(\d{6,25})$/);
+  if (!m || KIZART.has(m[1]) || !db) return new Response('Not found', { status: 404 });
+  let sor = null;
+  try { sor = await db.prepare('SELECT tipus, kep, forras FROM hirdetes_hos WHERE hirdetes_id = ?1 AND aktiv = 1').bind(m[1]).first(); }
+  catch (e) { console.error('hirdetes-hos: D1 hiba', e && e.message); }
+  if (!sor) return new Response('Not found', { status: 404 });
+  const etag = `"${verzio(sor.forras)}"`;
+  const fej = { 'content-type': sor.tipus, 'cache-control': 'public, max-age=86400', etag, 'x-content-type-options': 'nosniff' };
+  if (request.headers.get('if-none-match') === etag) return new Response(null, { status: 304, headers: fej });
+  return new Response(request.method === 'HEAD' ? null : new Uint8Array(sor.kep), { headers: fej });
+}
+
 export function hosCsere(valasz, kulcs) {
+  if (typeof kulcs === 'object') { // automatikus tarolobol: egy meret, negyzetes keret (CSS vagja)
+    const src = `/hirdetes-hos-kep/${kulcs.ad}?v=${kulcs.v}`;
+    return csereKozos(valasz, { src, srcset: null, w: 1080, h: 1080, alt: 'Medical Piercing – a hirdetésünk képe', jel: 'auto' });
+  }
   const [alt, valt] = KEPEK[kulcs];
   const nagy = valt[valt.length - 1];
   const srcset = valt.map(([f, w]) => `${D}${f} ${w}w`).join(', ');
-  const ka = +(nagy[1] / nagy[2]).toFixed(4);
+  return csereKozos(valasz, { src: D + nagy[0], srcset, w: nagy[1], h: nagy[2], alt, jel: kulcs });
+}
+
+function csereKozos(valasz, { src, srcset, w, h: mag, alt, jel }) {
+  const ka = +(w / mag).toFixed(4);
+  const meretek = '(max-width: 820px) 100vw, 640px';
   let kesz = false;
   const ujValasz = new HTMLRewriter()
     .on('link[rel="preload"][as="image"]', { element(el) { el.remove(); } })
     .on('head', { element(el) {
-      el.append(`<link rel="preload" as="image" href="${D}${nagy[0]}" imagesrcset="${srcset}" imagesizes="(max-width: 820px) 100vw, 640px" fetchpriority="high">` + NEGYZET, { html: true });
+      el.append(`<link rel="preload" as="image" href="${src}"` + (srcset ? ` imagesrcset="${srcset}" imagesizes="${meretek}"` : '') + ' fetchpriority="high">' + NEGYZET, { html: true });
     } })
     .on('img[fetchpriority="high"]', { element(el) {
       if (kesz) return;
       kesz = true;
-      el.setAttribute('src', D + nagy[0]);
-      el.setAttribute('srcset', srcset);
-      if (!el.getAttribute('sizes')) el.setAttribute('sizes', '(max-width: 820px) 100vw, 640px');
-      el.setAttribute('width', String(nagy[1]));
-      el.setAttribute('height', String(nagy[2]));
+      el.setAttribute('src', src);
+      if (srcset) { el.setAttribute('srcset', srcset); if (!el.getAttribute('sizes')) el.setAttribute('sizes', meretek); }
+      else { el.removeAttribute('srcset'); el.removeAttribute('sizes'); }
+      el.setAttribute('width', String(w));
+      el.setAttribute('height', String(mag));
       el.setAttribute('alt', alt);
-      el.setAttribute('data-hirdetes-hos', kulcs);
+      el.setAttribute('data-hirdetes-hos', jel);
       const st = (el.getAttribute('style') || '').replace(/--kw:[^;]*;?/g, '').replace(/--ka:[^;]*;?/g, '').replace(/object-position:[^;]*;?/g, '');
-      el.setAttribute('style', `--kw:${nagy[1]}px;--ka:${ka};object-position:50% 30%;${st}`.replace(/;$/, '')); // az eredeti kep fokusza nem ervenyes az uj kepre
+      el.setAttribute('style', `--kw:${w}px;--ka:${ka};object-position:50% 30%;${st}`.replace(/;$/, '')); // az eredeti kep fokusza nem ervenyes az uj kepre
     } })
     .transform(valasz);
   const h = new Headers(ujValasz.headers);
