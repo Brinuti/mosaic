@@ -28,9 +28,8 @@ export const B_ALAP = new Map([
   ['/slim-etvagycsokkento-piercing', '/slim-piercing-b'],
   // Gabi tortenete ("Igy szabadultam meg a migrentol"): a sajat tartalmabol, a B oldalak dizajnjaval (a tulajdonos kerese, 2026-10-16)
   ['/igy-szabadultam-meg-a-migrentol', '/igy-szabadultam-meg-a-migrentol'],
-  // Rolunk es az oszi akcio oldala: ugyanigy (a tulajdonos kerese, 2026-10-16)
+  // Rolunk: ugyanigy (a tulajdonos kerese, 2026-10-16)
   ['/rolunk', '/rolunk'],
-  ['/3-piercing-2-araert-regi', '/3-piercing-2-araert-regi'],
   // a piercereink bemutatkozo oldalai: ugyanigy (a tulajdonos kerese, 2026-10-16)
   ['/piercer-kovacs-gabriella', '/piercer-kovacs-gabriella'],
   ['/piercer-kovacs-richard', '/piercer-kovacs-richard'],
@@ -41,9 +40,10 @@ export const B_ALAP = new Map([
   ['/a-szuras-folyamata', '/a-szuras-folyamata'],
   ['/a-migren-es-shenmen-piercing-utoapolasa', '/a-migren-es-shenmen-piercing-utoapolasa'],
   ['/igy-mukodnek-a-kozerzetjavito-piercingek', '/igy-mukodnek-a-kozerzetjavito-piercingek'],
-  // a hirdetesek ket, meg formazatlan celoldala (a tulajdonos kerese, 2026-10-16): a TikTok-landolo (soft akcio) es a "Paros kedvezmeny" (Poszt anyukaddal)
+  // a TikTok-landolo (soft akcio) a sajat tartalmabol (a tulajdonos kerese, 2026-10-16)
   ['/kozerzetjavito-piercing-soft-akcio', '/kozerzetjavito-piercing-soft-akcio'],
-  ['/3-piercing-2-araert', '/3-piercing-2-araert'],
+  // (az oszi akcio oldala, /3-piercing-2-araert: kezzel irt, uj-oldalak/sajat/3-piercing-2-araert.html – a Wix-es /3-piercing-2-araert-regi szovegevel es
+  // szakasz-sorrendjevel, a tulajdonos kerese, 2026-10-17; a -regi cim 301-gyel oda visz, lib/utvonal.js)
 ]);
 export const KATEGORIA_B_UTAK = new Set(B_ALAP.values());
 // A piercing-oldalak hos-galeriaja (a tulajdonos kerese, 2026-10-16): mind a 9 kategoria-oldalon (a divat fulpiercing kivetelevel) galeria a hosben;
@@ -63,7 +63,6 @@ export function hosGaleriaKepek(ROOT, ut) {
 // a B oldal sajat hos-cime (ahol az eredeti cim egy hosszu mondat): az eredeti mondat a bevezetobe kerul
 const HOS_CIM = new Map([
   ['/rolunk', { cim: '11 év migrén után <em>végre szabad vagyok</em>' }],
-  ['/3-piercing-2-araert-regi', { cim: 'Most megéri 2 vagy 3 <em>piercinget szúratni!</em>', negyzet: true }],   // a plakat szovege ne logjon le: negyzetes kep
   ['/igy-szabadultam-meg-a-migrentol', { cimBevezetobe: true, cim: 'Így szabadultam meg <em>a migréntől</em>', kep: { src: '/assets/img/f18724_54b61499c5b84a13a36273a398325981.webp', nw: 1000, nh: 963, alt: 'Kovács Gabriella, a Medical Piercing alapítója, munka közben' } }],
   // a piercer-oldalak: a nev a cim, a portre a hos kepe; a bevezeto: "Mikorra irhatlak be?" + az eredeti bevezeto (kerdesBev)
   ['/piercer-kovacs-gabriella', { cimBevezetobe: true, kerdesBev: true, cim: 'Kovács Gabriella, <em>a Medical Piercing alapítója</em>', kep: { src: '/assets/img/f18724_54b61499c5b84a13a36273a398325981.webp', nw: 1000, nh: 963, alt: 'Kovács Gabriella, a Medical Piercing alapítója, munka közben' } }],
@@ -72,7 +71,6 @@ const HOS_CIM = new Map([
   ['/piercer-fanni', { cimBevezetobe: true, kerdesBev: true, cim: 'Nagy-Markó Fanni, <em>a Medical Piercing szakértője</em>', kep: { src: '/assets/img/f18724_f9c0a8fd686f422482c6a443ea951b6d.webp', nw: 1000, nh: 1000, alt: 'Nagy-Markó Fanni piercer a budapesti szalonban' } }],
   ['/piercer-mester-brigitta', { cimBevezetobe: true, kerdesBev: true, cim: 'Mester Brigitta, <em>soproni szakértőnk</em>', kep: { src: '/assets/img/f18724_ceb9d9dee26d47738ddde803fd53e4a4.webp', nw: 1000, nh: 1000, alt: 'Mester Brigitta, a Medical Piercing soproni szakértője' } }],
   ['/kozerzetjavito-piercing-soft-akcio', { cim: 'Működő közérzetjavító piercingek akciósan, <em>profi szakemberektől!</em>', bev: `Steril, biztonságos, és <span data-ti-darab>${GOOGLE_DB}</span> vélemény alapján „kiváló”. Nálunk a piercing szúrást képzett szakemberek végzik, speciális gépi bemérést követően. Most mindehhez <strong>akciósan</strong> juthatsz hozzá!` }],
-  ['/3-piercing-2-araert', { cim: 'Páros kedvezmény: <em>gyertek együtt, és spóroljatok!</em>' }],
 ]);
 
 // A hosszu szoveg fo-cimeinek helye (csomopont-indexek): h (1-2. szint), a szamozott cimek ("10. ...": a Wixen neha csak bekezdes, vagy 3. szintu cim) akkor,
