@@ -13,6 +13,7 @@
     const elozo = $('.kar-elozo', kar), kov = $('.kar-kov', kar), szam = $('[data-kar-akt]', kar);
     if (!sav || !dias.length) return;
     const lepes = () => (dias[1] ? dias[1].offsetLeft - dias[0].offsetLeft : sav.clientWidth);
+    const igazit = kar.hasAttribute('data-kar-igazit');
     // a kovetkezo kepek elore toltese csak akkor, ha a galeria a kepernyo kozeleben van es a lap mar betoltott, vagy a latogato lapoz (gyorsitas, 2026-10-17:
     // kulonben minden galeria - a lap aljan levo szalon-galeria is - a lap betoltesekor 9 nagy kepet toltott, a hosben pedig a tobbi kep az elsotol vette el a savszelesseget)
     let elore = false;
@@ -25,6 +26,14 @@
       if (kov) kov.disabled = sav.scrollLeft + sav.clientWidth >= sav.scrollWidth - 2;
       // a kovetkezo kepek elore toltodnek
       if (elore) dias.slice(i, i + 9).forEach((d) => { const im = $('img', d); if (im && im.loading === 'lazy') im.loading = 'eager'; });
+      // data-kar-igazit: ahol a kartyak a sajat magassagukban allnak (a CSS align-items:flex-start-ot ad, pl. a "9 ok" lapozo mobilon), a sav a latszo kartya
+      // magassagat veszi fel – kulonben a rovid szovegu kartya alatt a leghosszabb kartya magassagaig ures sav maradna (2026-10-17)
+      if (igazit) {
+        if (getComputedStyle(sav).alignItems === 'flex-start') {
+          const cs = getComputedStyle(sav), d = dias[Math.min(dias.length - 1, i)];
+          sav.style.height = `${d.offsetHeight + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)}px`;
+        } else sav.style.height = '';
+      }
     };
     const indul = () => { elore = true; frissit(); };
     const betoltve = () => (document.readyState === 'complete' ? indul() : window.addEventListener('load', indul, { once: true }));

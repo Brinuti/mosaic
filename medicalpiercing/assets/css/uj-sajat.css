@@ -324,7 +324,9 @@
   .piercingek-bev{margin:-6px 0 14px;font-size:.95rem}
   .ok-doboz{padding:22px 0 16px;text-align:center}
   .ok-doboz .kat-fej{margin-bottom:14px;padding-inline:16px}
-  .ok-kar .kar-sav{gap:12px;padding:4px 16px 14px;scroll-padding-inline:16px}
+  /* mobilon egyszerre egy kartya latszik: mindegyik a sajat szovegenek magassagaban, a sav a latszo kartya magassagat veszi fel (data-kar-igazit,
+     uj-oldalak.js 1.; kulonben a rovid szovegu kartyak aljan nagy ures sav maradt) */
+  .ok-kar .kar-sav{gap:12px;padding:4px 16px 14px;scroll-padding-inline:16px;align-items:flex-start;overflow-y:hidden;transition:height .25s ease}
   .ok-kar .kar-dia{flex-basis:84%}
   .ok-szam{left:14px;bottom:-20px;width:42px;height:42px;font-size:1.1rem}
   .ok-szoveg{padding:30px 18px 20px}
