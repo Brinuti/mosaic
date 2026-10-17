@@ -1620,17 +1620,17 @@ test('S0-62 HeadSpa: a 8 valodi szolgaltatasnev 4 kanonikus kulcsra kepzodik (a 
   assert.equal(szolgKanon(HS_PAROS + '(kupon)'), base, 'szokoz nelkul is');
 });
 
-test('S0-63 HeadSpa csere (reschedule): DECISION #194 / N1: a kuponos <-> normal PAROS NEM csere-jelolt (HOLD, 0 kuldes) - igy a normal foglalas konverzioja kuponos miatt sosem veszhet el; normal <-> normal es kuponos <-> kuponos (angol idopont-szoveg, "(kupon)" jelzes, regi index-kulcs) igen; masik szolgaltatas (EGYENI) -> HOLD', async () => {
+test('S0-63 HeadSpa csere (reschedule): DECISION #194 / N1: a NORMAL uj foglalas kuponos parja NEM csere-jelolt (HOLD, 0 kuldes); a KUPONOS uj foglalasnal a csere-felismeres nem fut (F-4: nincs HOLD, nincs riasztas, nincs reschedule audit-sor) - igy a normal foglalas konverzioja kuponos miatt sosem veszhet el; normal <-> normal es kuponos <-> kuponos (angol idopont-szoveg, "(kupon)" jelzes, regi index-kulcs) igen; masik szolgaltatas (EGYENI) -> HOLD', async () => {
   const MEGJ = 'A korábbi 16 órás foglalásomat cserélném erre.';
   const regiKupon = (v, regi) => v.sql("UPDATE foglalas_vendeg SET szolg_kulcs = szolg_kulcs || ' kupon' WHERE uuid = ?1", regi); // az F2 elotti index-sor: a kuponos foglalas kulcsa `<kulcs> kupon` volt
   const esetek = [
     // [nev, regi foglalas, uj foglalas, elokeszites, varhato csere-allapot]
     ['normal -> normal, angol idopont-szoveg ld nelkul a regi foglalason', { szolgaltatas: HS_PAROS, ld: null, idopont_szoveg: 'October 16. (Friday) 16:00 - 17:20' }, { szolgaltatas: HS_PAROS }, null, 'confirmed'],
-    ['kuponos "(kupon)" jelzessel -> kuponos "(kupon)" jelzessel', { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, null, 'confirmed'],
-    ['a regi kuponos index-sor az F2 elotti `<kulcs> kupon` kulccsal -> kuponos', { szolgaltatas: HS_PAROS }, { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, regiKupon, 'confirmed'],
-    ['normal -> kuponos "(kupon)" jelzessel: NEM par', { szolgaltatas: HS_PAROS }, { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, null, 'suspected'],
-    ['kuponos "(kupon)" jelzessel -> normal: NEM par', { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, { szolgaltatas: HS_PAROS }, null, 'suspected'],
-    ['normal -> "KUPONKODDAL -" elotagos kuponos: NEM par', { szolgaltatas: HS_PAROS }, { szolgaltatas: HS_KUPON_PAROS }, null, 'suspected'],
+    ['kuponos "(kupon)" jelzessel -> kuponos "(kupon)" jelzessel: kuponos uj foglalas, a csere-felismeres nem fut', { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, null, 'kuponos'],
+    ['a regi kuponos index-sor az F2 elotti `<kulcs> kupon` kulccsal -> kuponos: kuponos uj foglalas', { szolgaltatas: HS_PAROS }, { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, regiKupon, 'kuponos'],
+    ['normal -> kuponos "(kupon)" jelzessel: a kuponos uj foglalas nem konverzio, nincs mit visszatartani (nincs HOLD)', { szolgaltatas: HS_PAROS }, { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, null, 'kuponos'],
+    ['kuponos "(kupon)" jelzessel -> NORMAL uj foglalas: NEM par (HOLD)', { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, { szolgaltatas: HS_PAROS }, null, 'suspected'],
+    ['normal -> "KUPONKODDAL -" elotagos kuponos: kuponos uj foglalas (nincs HOLD)', { szolgaltatas: HS_PAROS }, { szolgaltatas: HS_KUPON_PAROS }, null, 'kuponos'],
     ['a regi kuponos index-sor `<kulcs> kupon` kulccsal -> normal: NEM par (az F2 tolerancia megszunt)', { szolgaltatas: HS_ELO_KUPON(HS_KUPON_PAROS) }, { szolgaltatas: HS_PAROS }, (v, regi) => { regiKupon(v, regi); v.sql("UPDATE foglalas_vendeg SET szolg_kulcs = ?2 WHERE uuid = ?1", regi, `${szolgKanon(HS_PAROS)} kupon`); }, 'suspected'],
   ];
   for (const [nev, regiMod, ujMod, elokeszit, varhato] of esetek) {
@@ -1643,8 +1643,12 @@ test('S0-63 HeadSpa csere (reschedule): DECISION #194 / N1: a kuponos <-> normal
     await lezar(v, b); v.t.set(SD_ELOTT);
     const r = await v.sd(b);
     assert.equal(r.uzletag, 'headspa', nev);
-    assert.equal(r.csere && r.csere.allapot, varhato, nev);
-    if (varhato === 'confirmed') {
+    if (varhato !== 'kuponos') assert.equal(r.csere && r.csere.allapot, varhato, nev);
+    if (varhato === 'kuponos') { // F-4: kuponos uj foglalas -> a csere-felismeres nem fut: nincs csere-allapot, nincs HOLD / riasztas / reschedule audit-sor, az sd 'kesz'
+      assert.equal(r.csere, null, nev); assert.equal(r.allapot, 'kesz', nev); assert.ok(!r.riasztas, nev + ': nincs riasztas');
+      assert.equal(r.esemeny_kuldes.kupon_nem_konverzio, true, nev);
+      assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_reschedule WHERE uuid = ?1', u)[0].n, 0, nev + ': nincs reschedule audit-sor');
+    } else if (varhato === 'confirmed') {
       assert.equal(r.allapot, 'reschedule_confirmed', nev);
       assert.deepEqual([r.csere.reschedule_from, r.csere.reschedule_to, r.csere.regi_uuid_elo8], ['2026-10-16T14:00:00.000Z', '2026-10-20T14:00:00.000Z', regi.slice(0, 8)], nev);
     } else { // N1: nem par -> HOLD (halasztva, riasztas), a jelolt nincs: a normal foglalas konverzioja nem veszhet el csendben

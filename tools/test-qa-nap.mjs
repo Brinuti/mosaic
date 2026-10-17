@@ -783,6 +783,37 @@ test('N33b (DECISION #194) a KUPONOS foglalas esemeny nelkul SZABALYOS (nem tech
   assert.equal(j.osszes.lefedettseg.szabalyos_esemeny_nelkul, 2);
 });
 
+test('N33c (DECISION #194, review F-3) a Meta / TikTok lampa nevezojebol a KUPONOS (nem konverzio, esemeny nelkuli) parositott foglalasok kimaradnak: 18 kuponos + 21 normal (a mert HeadSpa arany) nem billenti sargara; a NEM kuponos hiany tovabbra is sarga; a kupon = 0 jelleg-sor nem von ki', async () => {
+  const JELLEG = 'CREATE TABLE IF NOT EXISTS meres_jelleg (source_id TEXT PRIMARY KEY, jelleg TEXT NOT NULL, kupon INTEGER NOT NULL, forras TEXT NOT NULL, ido INTEGER NOT NULL) WITHOUT ROWID';
+  const feltolt = async ({ kuponos = 18, normal = 21, kuponJel = 1, hianyzo = 0 } = {}) => {
+    const w = await vilag(); w.futtat(JELLEG);
+    for (let i = 0; i < normal; i++) { // normal, parositott foglalas + a Meta / TikTok alapesemeny (a hianyzo darabszamnak nincs esemenye)
+      w.egyeztetes({ uuid: w.uuid('n0'), kulcs: HEADSPA(), t: FROM + 10 + i, booking_id: 'mb_n' + i });
+      if (i >= hianyzo) { w.kuldes({ esemeny_id: 'nm' + i, platform: 'meta', uzletag: 'headspa', t: FROM + 100 + i }); w.kuldes({ esemeny_id: 'nt' + i, platform: 'tiktok', uzletag: 'headspa', t: FROM + 100 + i }); }
+    }
+    for (let i = 0; i < kuponos; i++) { // kuponos, parositott foglalas: nincs esemeny, a jelleg-sor kupon-jelzessel
+      w.egyeztetes({ uuid: w.uuid('k0'), kulcs: HEADSPA(), t: FROM + 300 + i, booking_id: 'mb_k' + i });
+      w.futtat("INSERT INTO meres_jelleg (source_id, jelleg, kupon, forras, ido) VALUES (?, 'elso', ?, 'elso_level', ?)", 'mb_k' + i, kuponJel, FROM + 300 + i);
+    }
+    return (await w.jelentes()).uzletagak.headspa;
+  };
+  // 1) 18 kuponos + 21 normal, minden normalhoz van esemeny: a lampa zold (a nevezo 21), nem 21 / 39 = 0,54
+  let h = await feltolt();
+  assert.deepEqual([h.valos.parositott, h.arnyek.meta.nevezo_parositott, h.arnyek.meta.alap_elkuldve], [39, 21, 21]);
+  assert.deepEqual([h.arnyek.meta.lampa, h.arnyek.tiktok.lampa, h.lampa], ['zold', 'zold', 'zold']);
+  assert.equal(h.arnyek.meta.arany_parositott, 1);
+  assert.equal(h.lefedettseg.szabalyos_esemeny_nelkul, 18);
+  // 2) a NEM kuponos hiany tovabbra is sarga: a 21 normalbol 3-nak nincs esemenye (18 < 0,9 x 21 = 18,9)
+  h = await feltolt({ hianyzo: 3 });
+  assert.deepEqual([h.arnyek.meta.alap_elkuldve, h.arnyek.meta.nevezo_parositott, h.arnyek.meta.lampa, h.arnyek.tiktok.lampa, h.lampa], [18, 21, 'sarga', 'sarga', 'sarga']);
+  // 3) ellenpelda: ha a jelleg-sor kupon = 0 (normal foglalas esemeny nelkul), nem von ki -> sarga (21 < 0,9 x 39)
+  h = await feltolt({ kuponJel: 0 });
+  assert.deepEqual([h.arnyek.meta.nevezo_parositott, h.arnyek.meta.lampa, h.lampa], [39, 'sarga', 'sarga']);
+  // 4) csak kuponos paired foglalas van: nincs mihez merni -> n/a (nem sarga, nem zold)
+  h = await feltolt({ normal: 0 });
+  assert.deepEqual([h.arnyek.meta.nevezo_parositott, h.arnyek.meta.lampa, h.arnyek.meta.arany_parositott], [0, 'n/a', null]);
+});
+
 test('N34 az adatbazisbol jovo szoveg nem lehet objektum-kulcs veszely: forras / sd_allapot "__proto__" / "constructor" nem torik el a jelentest', async () => {
   const w = await vilag();
   w.egyeztetes({ uuid: w.uuid('g1'), kulcs: HEADSPA(), t: FROM + 10, allapot: 'parositatlan', sd_id: 'sd_x', sd_allapot: 'constructor', sd_ido: FROM + 10 });

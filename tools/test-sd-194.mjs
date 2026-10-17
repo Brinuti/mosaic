@@ -2,16 +2,19 @@
 //   node --test tools/test-sd-194.mjs
 // Valodi SQLite (node:sqlite) D1-hej, hamis halozat, hamis ora (tools/lib-sd-teszt.mjs); SEMMI nem megy ki a halozatra, nincs titok.
 //   K*  : kupon -> nincs esemeny (modell, elosztas, jelentesek); az ajandekkartya VASARLASA es a normal foglalas valtozatlan
+//   F6  : a kupon-felismero egyetlen helyen (kuponJelzes): ekezet-, kisbetu-, zero-width-fuggetlen, "coupon" is
 //   P*  : PMU "Korrekcio" (ar nelkuli lista-tetel) = 0 Ft exact; PMU nevtabla celzott frissitese (hamis frissito), throttle, fail-closed
+//   F*  : a review javitasai: F-1 (szaraz terv irasmentes), F-4 (kuponos uj foglalasnal nincs csere-felismeres), F-5 (Korrekcio csak a pontos nev), F-6 (kuponJelzes)
 //   (N1: a kuponos <-> normal par nem csere-jelolt - az S0-63 / HS-02 teszt fedi, lasd lent)
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { esemenyek, foglalasJelleg } from '../netlify/lib/meres/esemeny-modell.js';
+import { esemenyek, foglalasJelleg, kuponJelzes } from '../netlify/lib/meres/esemeny-modell.js';
 import { elosztas } from '../netlify/lib/meres/elosztas.js';
 import { sorEpit } from '../netlify/lib/meres/egyeztetes-sor.js';
-import { NEVTABLA_AR_FRISSIT_MP, arFeloldas, arFrissitesNullaz } from '../netlify/lib/meres/salonic-direct.js';
+import { NEVTABLA_AR_FRISSIT_MP, arFeloldas, arFrissitesNullaz, szolgIndexKulcs } from '../netlify/lib/meres/salonic-direct.js';
+import { ertekel, smokeSql } from './sd-smoke-ellenorzes.mjs';
 import { HOSTOK, nevtablaBetolt, nevtablaMent } from '../netlify/lib/foglalas-kulcs.js';
-import { ENV_ALAP, T0, d1, level, lezar, ujUuid, vilag } from './lib-sd-teszt.mjs';
+import { ENV_ALAP, T0, d1, iso, level, lezar, ujUuid, vilag } from './lib-sd-teszt.mjs';
 
 const UZLETAGOK = ['headspa', 'fodrasz', 'oxigen', 'szor', 'pmu'];
 const BID = 'mb_aaaaaaaaaaaaaaaaaa';
@@ -70,6 +73,35 @@ test('K4 az egyeztetosor (sorEpit): a kuponos, esemeny nelkuli foglalas NEM kap 
   assert.equal(regiKuponosVanEsemeny.kupon_nem_konverzio, false, 'ha van esemeny, nem "esemeny nelkuli"');
 });
 
+test('F6 a kupon-felismero EGYETLEN helyen (kuponJelzes): "kupon" / "coupon", ekezet-, kisbetu- es zero-width-fuggetlen (NFD is); az "AJANDEKKARTYAVAL - ..." nem jelzes-azonosito szo; minden fogyasztoja ezt hasznalja', async () => {
+  const KUPONOS = ['KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces Head Spa', 'Head Spa kezelés (kupon)', 'COUPON - Head Spa kezelés', 'Coupon code - Head Spa', 'KÚPONKÓDDAL - Head Spa', 'KU\u0301PONKÓDDAL - Head Spa' /* NFD: U + kombinalo ekezet */,
+    'ku\u200Bpon - Head Spa', 'KU\u200DPON Head Spa', 'ku\u2060pon', 'ku\u00ADpon', '\uFEFFkupon', 'cou\u200Bpon', 'Kupon'];
+  for (const nev of KUPONOS) {
+    assert.equal(kuponJelzes(nev), true, JSON.stringify(nev));
+    assert.equal(foglalasJelleg({ szolgaltatasNev: nev, ujVendeg: true, kategoria: '' }).kupon, true, `foglalasJelleg: ${JSON.stringify(nev)}`);
+    assert.deepEqual(esemenyek(fk({ kupon: foglalasJelleg({ szolgaltatasNev: nev, ujVendeg: true }).kupon })), [], `esemenyek: ${JSON.stringify(nev)}`);
+    assert.ok(/ kupon$/.test(szolgIndexKulcs(nev)), `index-kulcs: ${JSON.stringify(nev)}`);
+  }
+  // kategoria is jelzes
+  assert.equal(foglalasJelleg({ szolgaltatasNev: 'Head Spa', ujVendeg: true, kategoria: 'KUPONOS' }).kupon, true);
+  // nem kuponos: valos nevek, az "AJANDEKKARTYAVAL" (kulon DECISION kerdese), ures / hianyzo bemenet
+  for (const nev of ['💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés', 'AJÁNDÉKKÁRTYÁVAL - Head Spa kezelés', 'Ajándékkártya beváltás', 'Korrekció', 'Soft powder', '', null, undefined]) {
+    assert.equal(kuponJelzes(nev), false, JSON.stringify(nev));
+  }
+  // az ar-feloldas kedvezmeny-gyanuja is ugyanezt a felismerot hasznalja: ismert lista-ar mellett is unknown_discount (a lista-ar nem tenyleges ar)
+  { const w = vilag({ kapcsolo: null }); await w.kesz;
+    await nevtablaMent(w.db, { helyek: [{ placeId: 10427, nev: 'Mosaic Headspa' }], munkatarsak: [], szolgaltatasok: [{ placeId: 10427, serviceId: '900100', nev: 'COUPON - Head Spa kezelés' }, { placeId: 10427, serviceId: '900101', nev: 'Head Spa kezelés' }], arak: [{ placeId: 10427, serviceId: '900100', ar: 26900 }, { placeId: 10427, serviceId: '900101', ar: 26900 }] }, T0);
+    const ar = (nev) => arFeloldas(w.db, { jelleg: 'elso', mezok: { host: 'mosaicheadspa.salonic.hu', szolgaltatas: nev, munkatarsak: [] }, bejovo: {} });
+    assert.deepEqual([(await ar('COUPON - Head Spa kezelés')).minoseg, (await ar('Head Spa kezelés')).minoseg], ['unknown_discount', 'exact']); }
+  // veg-vegig: a "COUPON - ..." HeadSpa foglalas az sd-uton sem kuld esemenyt
+  const v = vilag({ kapcsolo: 'headspa' }); await v.kesz;
+  const u = ujUuid(); const b = level(u, { host: 'mosaicheadspa.salonic.hu', felado: 'Mosaic Headspa', szolgaltatas: 'COUPON - 💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés', munkatarsak: ['Teszt Terapeuta'], uj_vendeg: true });
+  await lezar(v, b); v.t.set(SD_ELOTT);
+  const r = await v.sd(b);
+  assert.deepEqual([r.allapot, r.kupon, r.esemeny_kuldes.kupon_nem_konverzio], ['kesz', true, true]);
+  assert.equal(v.sql('SELECT COUNT(*) AS n FROM meres_kuldes')[0].n, 0); assert.equal(v.net.hivasok.length, 0);
+});
+
 // ---------- P: PMU sd Visszajaro ertek ----------
 const pmuMezok = (szolgaltatas, host = PMU_HOST) => ({ host, szolgaltatas, munkatarsak: ['Teszt Mester'] });
 const nevtablaPmu = (db, szolgaltatasok = [], arak = [], now = T0, munkatarsak = []) => nevtablaMent(db, { helyek: [{ placeId: PMU_PLACE, nev: 'Mosaic PMU' }], munkatarsak: munkatarsak.map(([employeeId, nev]) => ({ placeId: PMU_PLACE, employeeId, nev })), szolgaltatasok: szolgaltatasok.map(([serviceId, nev]) => ({ placeId: PMU_PLACE, serviceId, nev })), arak: arak.map(([serviceId, ar]) => ({ placeId: PMU_PLACE, serviceId, ar })) }, now);
@@ -87,6 +119,18 @@ test('P1 PMU "Korrekcio" (ar nelkuli lista-tetel, az eredeti kezeles arban benne
   }
   // a Zap ar mezoje (ha van) elsobbseget elvez: a Korrekcio-szabaly csak ar nelkul lep be
   assert.deepEqual(await arFeloldas(v.db, { jelleg: 'visszajaro', mezok: pmuMezok('Korrekció'), bejovo: { ar: 5000 } }), { ertek: 5000, minoseg: 'exact', forras: 'zap_ar' });
+});
+
+test('P1b (review F-5) a "Korrekcio" szabaly CSAK a PONTOS nevre: a dekoralt valtozatok (ar, akcio-elotag, emoji, "helyett" szoveg) NEM kapnak 0 Ft exact erteket (unknown_price)', async () => {
+  arFrissitesNullaz();
+  const v = vilag({ kapcsolo: null }); await v.kesz;
+  for (const nev of ['Korrekció (15 000 Ft)', 'AKCIÓ - Korrekció', '💉 Korrekció', 'Korrekció - 5.000 Ft helyett most 0 Ft', 'Korrekció és szemöldök', 'Korrekcio 2', 'KORREKCIÓ!', 'Kor rekció', 'Korrekció\u200B', 'korrekció (kupon)']) {
+    const r = await arFeloldas(v.db, { jelleg: 'visszajaro', mezok: pmuMezok(nev), bejovo: {} });
+    assert.notEqual(r.forras, 'korrekcio_az_arban', JSON.stringify(nev));
+    assert.deepEqual([r.ertek, r.minoseg === 'exact'], [0, false], JSON.stringify(nev));
+  }
+  // a pontos nev (ekezet-, kisbetu-, szelso szokoz-fuggetlen) tovabbra is 0 Ft exact
+  for (const nev of ['Korrekció', 'korrekcio', ' KORREKCIÓ ', 'Korrekció\t']) assert.equal((await arFeloldas(v.db, { jelleg: 'visszajaro', mezok: pmuMezok(nev), bejovo: {} })).forras, 'korrekcio_az_arban', JSON.stringify(nev));
 });
 
 test('P2 PMU sd veg-vegig: a "Korrekcio" Visszajaro Meta / TikTok esemenye value=0 HUF, ertek_minoseg=exact (korabban unknown_price, ertek nelkul)', async () => {
@@ -174,3 +218,82 @@ test('P6 a PMU-nevtabla frissites a teljes sd-uton: a worker `fuggosegek.nevtabl
 
 // ---------- N: N1 szukites (kuponos <-> normal par nem csere-jelolt) ----------
 // A teljes sd-uton az S0-63 (tools/test-salonic-direct.mjs: 7 eset + PMU + masik szolgaltatas) es a HS-02 (tools/test-sd-headspa.mjs: index-kulcs, szigoru egyezes) fedi.
+
+// ---------- F-1: a SZARAZ terv irasmentes es halozatmentes ----------
+const dumpMind = (v) => Object.fromEntries(v.sql("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name").map((t) => [t.name, JSON.stringify(v.sql(`SELECT * FROM ${t.name}`))]));
+test('F1 (review F-1) a `szaraz:true` sd_atvetel PMU-ra: 0 nevtabla-frissito hivas, 0 halozati hivas, a salonic_nevtabla* tablak (es minden mas tabla) azonosak elotte / utana; az eles ut ugyanerre frissit (kontroll)', async () => {
+  const frissitoGyar = (hivasok) => async (uzletag) => { hivasok.push(uzletag); return { helyek: [{ placeId: PMU_PLACE, nev: 'Mosaic PMU' }], munkatarsak: [{ placeId: PMU_PLACE, employeeId: 777, nev: 'Teszt Mester' }], szolgaltatasok: [{ placeId: PMU_PLACE, serviceId: '900001', nev: 'Szemöldök tetoválás Soft powder' }], arak: [{ placeId: PMU_PLACE, serviceId: '900001', ar: 99000 }] }; };
+  const vilagPmu = async () => {
+    arFrissitesNullaz();
+    const v = vilag({ kapcsolo: 'pmu' }); await v.kesz;
+    await nevtablaPmu(v.db, [], [], T0, [[777, 'Teszt Mester']]); // hely + munkatars, szolgaltatas nincs: a frissites ar-feloldasbol kerulne sorra
+    const b = level(ujUuid(), { host: PMU_HOST, felado: 'Mosaic PMU', szolgaltatas: 'Szemöldök tetoválás Soft powder', uj_vendeg: false });
+    await lezar(v, b); v.t.set(SD_ELOTT);
+    return { v, b };
+  };
+  // szaraz
+  { const { v, b } = await vilagPmu(); const hivasok = []; const elotte = dumpMind(v); const netElotte = v.net.hivasok.length, salonicElotte = v.net.salonic.length;
+    const r = await v.post({ ...b, muvelet: 'sd_atvetel', szaraz: true }, { nevtablaFrissito: frissitoGyar(hivasok) });
+    assert.equal(r.allapot, 'szaraz_terv', JSON.stringify(r).slice(0, 300));
+    assert.equal(hivasok.length, 0, 'a szaraz terv nem hivja a nevtabla-frissitot');
+    assert.deepEqual([v.net.hivasok.length, v.net.salonic.length], [netElotte, salonicElotte], 'nincs uj halozati hivas');
+    assert.deepEqual(dumpMind(v), elotte, 'minden tabla (koztuk a salonic_nevtabla*) azonos');
+    assert.equal((await nevtablaBetolt(v.db)).szolgaltatasok.filter((x) => x.placeId === PMU_PLACE).length, 0, 'a nevtabla nem kapott szolgaltatas-sort');
+    assert.equal(r.terv.ertek_minoseg, 'unknown_price', 'a szaraz terv ar nelkul fail-closed'); }
+  // kontroll: ugyanez szaraz nelkul frissit (a teszt erzekeny a szaraz-kapura)
+  { const { v, b } = await vilagPmu(); const hivasok = [];
+    const r = await v.post({ ...b, muvelet: 'sd_atvetel' }, { nevtablaFrissito: frissitoGyar(hivasok) });
+    assert.equal(r.allapot, 'kesz'); assert.equal(hivasok.length, 1, 'az eles ut egyszer frissit'); assert.equal(r.ertek_minoseg, 'exact'); }
+});
+
+// ---------- F-4: kuponos uj foglalasnal nincs csere-felismeres ----------
+const HS_HOST = 'mosaicheadspa.salonic.hu';
+const HS_PAROS = '💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)';
+const HS_KUPON_PAROS = `KUPONKÓDDAL - ${HS_PAROS}`;
+const hsLevel = (uuid, o = {}) => level(uuid, { host: HS_HOST, felado: 'Mosaic Headspa', szolgaltatas: HS_PAROS, munkatarsak: ['Páros kezelés'], idopont_szoveg: 'October 20. (Tuesday) 16:00 - 17:20', ld: { startDate: '2026-10-20T16:00:00+02:00' }, uj_vendeg: false, megjegyzes: '', ...o });
+let szam194 = 0; const u8uuid = (u8) => `${u8}-0000-4000-8000-${String(++szam194).padStart(12, '0')}`;
+const smoke = (v, uuid) => { const u8 = uuid.slice(0, 8); const eredmenyek = Object.fromEntries(smokeSql(u8).map((q) => [q.nev, v.sql(q.sql, ...q.params)])); return ertekel(u8, eredmenyek, { mostSec: Math.floor(v.t() / 1000) + 5, env: { GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' } }); };
+const MEGJ = 'A korábbi 16 órás foglalásomat cserélném erre.';
+test('F4 (review F-4) KUPONOS uj foglalas csere-szoval: nincs csere-felismeres (nincs halasztva / HOLD, nincs riasztas, nincs reschedule audit-sor), az sd smoke PASS; a NORMAL uj foglalas vizsgalata valtozatlan (kuponos par -> HOLD, normal par -> confirmed)', async () => {
+  const esetek = [
+    // [nev, regi foglalas modositasa (null = nincs regi), uj foglalas szolgaltatasa, varhato]
+    ['kuponos -> kuponos', { szolgaltatas: `${HS_KUPON_PAROS} (kupon)` }, `${HS_KUPON_PAROS} (kupon)`, 'kuponos'],
+    ['normal -> kuponos', { szolgaltatas: HS_PAROS }, `${HS_KUPON_PAROS} (kupon)`, 'kuponos'],
+    ['kuponos uj foglalas csere-szoval, nincs regi foglalas', null, `${HS_KUPON_PAROS} (kupon)`, 'kuponos'],
+    ['kuponos uj foglalas, "COUPON -" elotaggal', { szolgaltatas: HS_PAROS }, `COUPON - ${HS_PAROS}`, 'kuponos'],
+    ['kontroll: kuponos regi -> NORMAL uj foglalas (a par-vedelem marad: HOLD, 0 kuldes)', { szolgaltatas: `${HS_KUPON_PAROS} (kupon)` }, HS_PAROS, 'suspected'],
+    ['kontroll: normal -> normal (a csere-felismeres valtozatlan)', { szolgaltatas: HS_PAROS, ld: null, idopont_szoveg: 'October 16. (Friday) 16:00 - 17:20' }, HS_PAROS, 'confirmed'],
+  ];
+  for (const [nev, regiMod, ujSzolg, varhato] of esetek) {
+    const v = vilag({ kapcsolo: 'headspa' }); await v.kesz;
+    if (regiMod) assert.ok((await v.post(hsLevel(u8uuid('c0ffee0a'), { ld: { startDate: '2026-10-16T16:00:00+02:00' }, idopont_szoveg: 'October 16. (Friday) 16:00 - 17:20', level_datuma: iso(T0 - 3 * 86400_000), ...regiMod }))).ok, nev);
+    const u = u8uuid('c0ffee0b'); const b = hsLevel(u, { megjegyzes: MEGJ, szolgaltatas: ujSzolg });
+    await lezar(v, b); v.t.set(SD_ELOTT);
+    const r = await v.sd(b);
+    const resch = v.sql('SELECT allapot FROM foglalas_reschedule WHERE uuid = ?1', u);
+    if (varhato === 'kuponos') {
+      assert.equal(r.allapot, 'kesz', nev); assert.equal(r.csere, null, nev); assert.ok(!r.riasztas, nev + ': nincs riasztas');
+      assert.equal(resch.length, 0, nev + ': nincs reschedule audit-sor');
+      assert.equal(r.esemeny_kuldes.kupon_nem_konverzio, true, nev); assert.equal(v.net.hivasok.length, 0, nev + ': 0 kuldes');
+      const e = smoke(v, u);
+      assert.equal(e.verdikt, 'PASS', `${nev}: ${JSON.stringify(e.kriteriumok.filter((x) => x.allapot !== 'PASS'))}`);
+      assert.equal(e.kriteriumok.find((x) => x.id === 'C3').allapot, 'PASS', nev + ': smoke C3');
+      assert.equal(e.kriteriumok.find((x) => x.id === 'C11').allapot, 'PASS', nev + ': smoke C11 (nincs reschedule)');
+      assert.deepEqual(v.sql("SELECT COUNT(*) AS n FROM foglalas_egyeztetes WHERE sd_allapot IN ('halasztva', 'reschedule_confirmed')")[0], { n: 0 }, nev);
+    } else {
+      assert.equal(r.csere && r.csere.allapot, varhato, nev);
+      if (varhato === 'suspected') { assert.equal(r.allapot, 'halasztva', nev); assert.equal(r.riasztas, true, nev); assert.equal(v.net.hivasok.length, 0, nev); }
+      else assert.equal(r.allapot, 'reschedule_confirmed', nev);
+    }
+  }
+});
+
+test('F4b a megjegyzes-kulcs HIANYA (elfelejtett Zap-lekepezes): kuponos foglalasnal nem HOLD (nincs mit visszatartani), NORMAL foglalasnal tovabbra is hianyzo_mezo HOLD', async () => {
+  for (const [szolg, varhato] of [[`${HS_KUPON_PAROS} (kupon)`, 'kesz'], [HS_PAROS, 'halasztva']]) {
+    const v = vilag({ kapcsolo: 'headspa' }); await v.kesz;
+    const b = hsLevel(u8uuid('c0ffee0c'), { szolgaltatas: szolg }); delete b.megjegyzes;
+    await lezar(v, b); v.t.set(SD_ELOTT);
+    const r = await v.sd(b);
+    assert.equal(r.allapot, varhato, szolg);
+  }
+});

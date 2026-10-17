@@ -30,14 +30,21 @@ export function konzultacioTabla(env = {}) {
   for (const u of UZLETAGAK) if (u !== 'headspa' && u in ext && (ext[u] === null || (Number.isFinite(Number(ext[u])) && Number(ext[u]) >= 0))) t[u] = ext[u] === null ? null : Math.round(Number(ext[u]));
   return t;
 }
-const KUPON = /kupon/i;                    // pl. "KUPONKODDAL - ... HeadSpa kezeles"
+const KUPON = /kupon|coupon/;               // pl. "KUPONKODDAL - ... HeadSpa kezeles"; a bemenet a kuponJelzes()-ben normalizalt (ekezetmentes, kisbetus, lathatatlan karakterek nelkuli)
+const LATHATATLAN = /[\u00AD\u180E\u200B-\u200F\u2060-\u2064\uFEFF]/g; // soft hyphen, zero-width space / joiner / non-joiner, bal-jobb jelek, word joiner, BOM
+/**
+ * A kupon-jelzes EGYETLEN felismeroje (DECISION #194; a motor, az sd, az ar-feloldas es az index-kulcs is ezt hasznalja): "kupon" vagy "coupon" a szovegben,
+ * ekezet-fuggetlenul (NFD, a "KUPONKODDAL" es a "KUPONKÓDDAL" / "KÚPONKÓDDAL" egyarant), kis-nagybetu-fuggetlenul, a lathatatlan (zero-width) karakterek nelkul ("ku\u200Bpon").
+ * Az "AJANDEKKARTYAVAL - ..." NEM jelzes-azonosito szo (kulon DECISION kerdese), ezt a fuggveny nem ismeri fel.
+ */
+export const kuponJelzes = (s) => KUPON.test(String(s ?? '').replace(LATHATATLAN, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
 
 /**
  * A foglalas jellege a Salonic-adatokbol. ujVendeg: a Salonic "Uj vendeg" jelzese (SZ-szabaly: a Salonic-level az igazsag; a bongeszos first_booking jelzes tartalek).
  * -> { jelleg: 'elso' | 'konzultacio' | 'visszajaro', kupon: bool }. A konzultacio csak uj vendegnel konzultacio (egyebkent visszajaro: nem szerzes).
  */
 export function foglalasJelleg({ szolgaltatasNev = '', ujVendeg = null, kategoria = '' }) {
-  const kupon = KUPON.test(String(szolgaltatasNev)) || KUPON.test(String(kategoria));
+  const kupon = kuponJelzes(szolgaltatasNev) || kuponJelzes(kategoria);
   const konzultacio = KONZULTACIO.test(String(szolgaltatasNev));
   if (ujVendeg === false) return { jelleg: 'visszajaro', kupon };
   if (konzultacio) return { jelleg: 'konzultacio', kupon };

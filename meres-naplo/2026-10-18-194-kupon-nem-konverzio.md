@@ -1,6 +1,6 @@
 # 2026-10-18 – DECISION #194: kuponos foglalás nem konverzió + N1 szűkítés + PMU `salonic_direct` `Visszajaro` érték – teszt-napló
 
-**MÉRÉST ÉRINT (az ÁRNYÉK-láncot: esemény-képzés, elosztás, jelentések, sd csere-felismerés, sd ár-feloldás); VÉDETT `netlify/lib/meres/{esemeny-modell,elosztas,salonic-direct,egyeztetes-sor,qa-nap}.js` módosul.** Élő konverziót nem kapcsol be és nem cserél, a foglalási folyamatot, a futó hirdetéseket, külső fiókot nem érint. **D1-et, kapcsolót (`meres_kapcsolo`) nem módosít; a `salonic_direct:headspa` sor NEM jön létre.** Vendégadat sehova nem kerül (a tesztek példa-adatokkal futnak).
+**MÉRÉST ÉRINT (az ÁRNYÉK-láncot: esemény-képzés, elosztás, jelentések, sd csere-felismerés, sd ár-feloldás, QA-lámpa nevező); VÉDETT `netlify/lib/meres/{esemeny-modell,elosztas,salonic-direct,egyeztetes-sor,qa-nap}.js` módosul.** Élő konverziót nem kapcsol be és nem cserél, a foglalási folyamatot, a futó hirdetéseket, külső fiókot nem érint. **D1-et, kapcsolót (`meres_kapcsolo`) nem módosít; a `salonic_direct:headspa` sor NEM jön létre.** Vendégadat sehova nem kerül (a tesztek példa-adatokkal futnak).
 
 ## 1. Engedély (CLAUDE.md, „Állandó felhatalmazás”)
 - **DECISION #194** (mérési oldal + ChatGPT): #167 megjegyzései 6240109548, 6240242371, 6240295578, 6240322795, 6240374155, 6240456665 (kuponos foglalás nem konverzió; `/success-ajandekkartya-stripe` foglaló-linkek le [ez külön PR-ban már élő: #397]; HeadSpa sd bekapcsolás feltételei; a PMU `Visszajaro` érték hiánya).
@@ -10,14 +10,14 @@
 ## 2. Mi van benne (`git diff origin/main..HEAD`, `main` = `97999a17`)
 | fájl | tartalom |
 |---|---|
-| `netlify/lib/meres/esemeny-modell.js` | `esemenyek()`: `fk.tipus === 'foglalas' && fk.kupon` → `[]` (minden üzletág / jelleg); az ajándékkártya-vásárlás (`tipus: 'ajandekkartya'`) változatlan |
+| `netlify/lib/meres/esemeny-modell.js` | `esemenyek()`: `fk.tipus === 'foglalas' && fk.kupon` → `[]` (minden üzletág / jelleg); az ajándékkártya-vásárlás (`tipus: 'ajandekkartya'`) változatlan; **F-6:** az EGYETLEN kupon-felismerő `kuponJelzes` (kupon / coupon, ékezet-, kisbetű-, zero-width-független), a `foglalasJelleg` ezt használja |
 | `netlify/lib/meres/elosztas.js` | üres esemény-lista + kupon → `{ allapot: 'nincs_esemeny', kupon_nem_konverzio: true, miert: 'DECISION #194 …' }`; nincs `meres_kuldes` sor, nincs hálózati hívás |
-| `netlify/lib/meres/salonic-direct.js` | `kuponosSzolg`, `szolgIndexKulcs` (kanonikus kulcs + `" kupon"` kuponosnál), szigorú `szolgKulcsEgyezik(tárolt, kulcs)`; az index-beszúrás és a `csereDontes` ezt használja (N1); `arFeloldas`: PMU „Korrekció” = 0 Ft `exact` (`korrekcio_az_arban`) + a fiók nevtábla-ának célzott frissítése (`fuggosegek.nevtablaFrissito`, `NEVTABLA_AR_FRISSIT_MP = 600`, workerenként, fail-closed); `arFrissitesNullaz` (csak teszthez) |
+| `netlify/lib/meres/salonic-direct.js` | `kuponosSzolg`, `szolgIndexKulcs` (kanonikus kulcs + `" kupon"` kuponosnál), szigorú `szolgKulcsEgyezik(tárolt, kulcs)`; az index-beszúrás és a `csereDontes` ezt használja (N1); `arFeloldas`: PMU „Korrekció” = 0 Ft `exact` (`korrekcio_az_arban`; **F-5:** csak a PONTOS név) + a fiók nevtáblájának célzott frissítése (`fuggosegek.nevtablaFrissito`, `NEVTABLA_AR_FRISSIT_MP = 600`, workerenként, fail-closed; **F-1:** a száraz ág nem kap `fuggosegek`-et → nincs frissítés, nincs írás); **F-4:** `csereDontes(…, { kuponos })` – kuponos új foglalásnál a csere-felismerés nem fut; **F-6:** a `kuponosSzolg` duplikáció megszűnt (`kuponJelzes` az `esemeny-modell.js`-ből, az index-kulcs és a kedvezmény-gyanú is ezt használja); `arFrissitesNullaz` (csak teszthez) |
 | `netlify/lib/meres/egyeztetes-sor.js` | kuponos, esemény nélküli sor: nincs `nincs_esemeny` / `parositatlan` jelzés, `kupon_nem_konverzio: true` |
-| `netlify/lib/meres/qa-nap.js` | `lefedettseg`: `meres_jelleg.kupon = 1` → `szabalyos_esemeny_nelkul` (nem `parositott_esemeny_nelkul` / `nincs_sor`) |
+| `netlify/lib/meres/qa-nap.js` | `lefedettseg`: `meres_jelleg.kupon = 1` → `szabalyos_esemeny_nelkul` (nem `parositott_esemeny_nelkul` / `nincs_sor`); **F-3:** a Meta / TikTok lámpa nevezője = `valos.parositott` − a kuponos PÁROSÍTOTT foglalások (`arnyek.<platform>.nevezo_parositott`; 0 → `n/a`) |
 | `tools/sd-smoke-ellenorzes.mjs` | a `level` lekérdezés `kupon` oszlopa; kuponos sd-foglalásnál C5 / C6 / C7 / C8 = `NA` (és `FAIL`, ha mégis van esemény-sor / kiment kérelem) |
 | `tools/fixtures/golden-motor-kerelem.json` | 468 → 300 kérés: a **168 kiesett kulcs mind `…|kupon|…`**, a 300 megmaradt **bájtra azonos** a régi fixture-rel, az `elosztasok` (6) azonos (python-bizonyíték: `origin/main` fixture vs új) |
-| tesztek | új `tools/test-sd-194.mjs` (10); átírva: `test-sd-headspa.mjs` HS-02/04/05/06, `test-sd-smoke.mjs` SM13 (+ `meres_jelleg` biztosítás a nem-sd esetekhez), `test-salonic-direct.mjs` S0-13 / S0-62..65, `test-meres.mjs` X1; új `test-qa-nap.mjs` N33b |
+| tesztek | új `tools/test-sd-194.mjs` (K1–K4, F6, P1–P6 + P1b, F1, F4, F4b); átírva: `test-sd-headspa.mjs` HS-02/04/05/06, `test-sd-smoke.mjs` SM13 (+ `meres_jelleg` biztosítás a nem-sd esetekhez), `test-salonic-direct.mjs` S0-13 / S0-62..65 (S0-63: kuponos új foglalás → nincs csere-felismerés), `test-meres.mjs` X1; új `test-qa-nap.mjs` N33b, N33c |
 | docs | `SALONIC_DIRECT_HEADSPA.md` (állapot, HS-táblázat, új 8. fejezet), `SALONIC_DIRECT.md` (§8, §16/1), `QA2_ARNYEK.md`, `QA_NAP.md`, `QA4_ELESITES.md`, `EGYEZTETES_HIVAS.md` |
 
 ## 3. Döntések (a megvalósításban)
@@ -30,9 +30,9 @@
 ## 4. Tesztek (helyben, Node, hamis hálózat, nincs titok)
 | parancs | eredmény |
 |---|---|
-| `node --test tools/test-sd-194.mjs` | 10/10 |
+| `node --test tools/test-sd-194.mjs` | 16/16 |
 | `node --test tools/test-sd-headspa.mjs tools/test-sd-smoke.mjs tools/test-salonic-direct.mjs tools/test-meres.mjs tools/test-qa-nap.mjs tools/test-egyeztetes-sor.mjs` | zöld (a golden-paritás S0-13: 300 kérés, a nem kuponos rész bájtra azonos) |
-| `node --test tools/test-*.mjs` (a `main` `97999a17` fölé rebase-elt végső fejen) | **485 teszt: 480 PASS, 2 FAIL, 3 SKIP.** A 2 hiba **a `main`-en is megvan**: `test-foglalo-atkotes` 19. eset (`oxigen-uj.js:134`) és `test-fuggetlenseg` 3. eset |
+| `node --test tools/test-*.mjs` (a `main` `97999a17` fölé rebase-elt végső fejen, a review-javítások után) | **491 teszt: 486 PASS, 2 FAIL, 3 SKIP** (az első kör: 485 / 480). A 2 hiba **a `main`-en is megvan**: `test-foglalo-atkotes` 19. eset (`oxigen-uj.js:134`) és `test-fuggetlenseg` 3. eset |
 
 (A sparse worktree-ben a `klon/` és a `gyogytorna/` kihagyva volt; a teljes futáshoz hozzáadva, különben a `test-foglalo-atkotes` / `test-halott-gombok` környezeti okból bukik.)
 
@@ -52,18 +52,19 @@ Minden mutációt egyenként alkalmaztam az éles fájlon, lefuttattam a 7 érin
 | M10 qa-nap: a kupon nem szabályos nulla | N33b |
 | M11 egyeztető sor: `kupon_nem_konverzio` mindig false | K4 |
 | M12 sd smoke: a kuponos ág kivétele | SM13 |
+M13–M24: a review-javítások (F-1, F-3, F-4, F-5, F-6) mutánsai – lásd a 9. szakaszt.
 (M7: az első változatban a P6 még átment, mert a teszt-világban a motor párosítási 2. ága is frissítette a táblát; a P6 azóta a valós D1-állapotot utánozza – hely + munkatárs sor, szolgáltatás nincs –, így az sd ár-feloldását izolálja.)
 
-## 6. Védett elemek (alap: `origin/main` `97999a17`; blob-hash, 10 karakter)
+## 6. Védett elemek (alap: `origin/main` `97999a17`; blob-hash, 10 karakter; a review-javítások utáni VÉGSŐ állapot – a végső commit a kód mellett csak ezt a naplót és a docs/ fájlokat érinti)
 | elem | `main` | ez a PR | |
 |---|---|---|---|
 | `netlify/lib/meres/hash.js` | 41cfe4f599 | 41cfe4f599 | változatlan |
 | `netlify/lib/meres/elosztas.js` | b8a48dc737 | ae57d630a9 | **VÁLTOZIK** (kupon → nincs_esemeny, 5 sor) |
-| `netlify/lib/meres/salonic-direct.js` | 18e8d6c971 | cb4b31c0d0 | **VÁLTOZIK** (N1, ár-feloldás) |
-| `netlify/lib/meres/esemeny-modell.js` | e1cf68dec0 | e69cf54082 | **VÁLTOZIK** (kupon-szűrő) |
+| `netlify/lib/meres/salonic-direct.js` | 18e8d6c971 | 885d5d777b | **VÁLTOZIK** (N1, ár-feloldás, F-1/F-4/F-5/F-6) |
+| `netlify/lib/meres/esemeny-modell.js` | e1cf68dec0 | 859ca0b7c4 | **VÁLTOZIK** (kupon-szűrő, `kuponJelzes`) |
 | `netlify/lib/meres/egyeztetes-sor.js` | 503a3eddcf | d967f83646 | **VÁLTOZIK** (jelzés) |
-| `netlify/lib/meres/qa-nap.js` | e1d8dca808 | 2dbb9f12f2 | **VÁLTOZIK** (lefedettség) |
-| fa `netlify` | 0435d58de0 | 6a47b88c75 | VÁLTOZIK (szándékos, a fenti 5 fájl) |
+| `netlify/lib/meres/qa-nap.js` | e1d8dca808 | 23a73e442d | **VÁLTOZIK** (lefedettség, lámpa-nevező) |
+| fa `netlify` | 0435d58de0 | 37788903d8 | VÁLTOZIK (szándékos, a fenti 5 fájl) |
 | `netlify/lib/foglalo-szamlalo.js` | 04fdf3a3fb | 04fdf3a3fb | változatlan |
 | `assets/js/suti.js` | ea41ffd20d | ea41ffd20d | változatlan |
 | `assets/js/attribucio.js` | 79c09c5937 | 79c09c5937 | változatlan |
@@ -76,7 +77,7 @@ Minden mutációt egyenként alkalmaztam az éles fájlon, lefuttattam a 7 érin
 | fa `functions` | ef6558e82a | ef6558e82a | változatlan |
 | `klon/oxigenterapia-ok.html` `157c141e5d`, `klon/fodrasz-ok.html` `1ef408bcbb`, `klon/m/oxigenterapia-ok.html` `88c2d866ae`, `klon/m/fodrasz-ok.html` `ae96e4ae97` | – | – | változatlan |
 | `wrangler.toml` | ce5e69f063 | ce5e69f063 | változatlan |
-A `functions/`, az `assets/` és a `wrangler.toml` változatlan: az éles kapcsolók, a titkok és a foglalási folyamat érintetlen.
+A `functions/`, az `assets/` és a `wrangler.toml` változatlan: az éles kapcsolók, a titkok és a foglalási folyamat érintetlen. (Az első kör fájl-hash-ei: `salonic-direct.js` `cb4b31c0d0`, `esemeny-modell.js` `e69cf54082`, `qa-nap.js` `2dbb9f12f2`, fa `netlify` `6a47b88c75`; az `elosztas.js`, `egyeztetes-sor.js` nem változott.)
 
 ## 7. Rollback
 - Kód: `git revert -m 1 <merge commit>` a `main`-en (merge-commit módszernél; squash esetén sima `git revert <sha>`), vagy a Cloudflare Pages `mosaic` projekt korábbi deploymentjének visszaállítása. D1-séma- és adatváltozás nincs, így a revert tiszta.
@@ -86,6 +87,20 @@ A `functions/`, az `assets/` és a `wrangler.toml` változatlan: az éles kapcso
 
 ## 8. Maradék ablak, észrevételek, nyitott pont
 - **Maradék ablak (N1):** az F2 élesedése (2026-10-17 19:53:54Z) és e változás élesedése között indexelt kuponos sorok kulcsa kupon-jelzés nélküli (a jelzés nem tárolódott), így azok normálnak látszanak. Hatás: a HeadSpa sd KI (nincs `salonic_direct:headspa` sor), tehát nincs csere-döntés; a sorok legfeljebb 180 napig élnek (`MEGORZES_NAP`). Ha az sd bekapcsolása a deploy előtt történne, ez az ablak megnyílna – ezért a sorrend: merge + deploy → bekapcsolás.
-- **Lámpa (nyitott észrevétel, NEM változtattam):** a `qa-nap` Meta / TikTok lámpájának viszonyítási alapja a `valos.parositott` (#167 134. komment). A kuponos foglalások innentől esemény nélküliek, de a lámpa nevezőjében benne maradnak → magas kuponos arány mellett az `alap_elkuldve / valos.parositott` hányados sárgára billenhet. Javaslat a mérési oldalnak: a nevezőből a `szabalyos_esemeny_nelkul` kivonása. A viszonyítási alap a mérési oldal döntése, ezért ebben a PR-ban nem érintem.
+- **Lámpa (review F-3, JAVÍTVA):** a Meta / TikTok lámpa nevezője `valos.parositott` mínusz a kuponos PÁROSÍTOTT foglalások. Csak a kuponos sorokat vonom ki (nem a teljes `szabalyos_esemeny_nelkul`-t): a HeadSpa-konzultáció (#101) nevezője így változatlan, és az sd által átvett (nem párosított) kuponos sorok sem rontják el a nevezőt. Ha a mérési oldal a konzultációt is ki akarja vonni, az egysoros bővítés.
 - **A sd smoke-eszköz** kuponos sd-foglalásnál C5–C8 `NA` (nem hiba); a már lefutott, F1 előtti (index nélküli) kuponos sor C2 `WARN`, a verdikt `PASS` marad.
 - Az első HeadSpa kuponos sd-foglalásnál (bekapcsolás után) a figyelés: 0 `meres_kuldes` sor, `sd_allapot = kesz`, a C-lista 12 sorából C5–C8 `NA`, a többi `PASS`.
+- **F-2 időablak (NEM kódszinten védett, a mérési oldal döntheti el):** az F2 élesedése (2026-10-17T19:53:54Z) és e PR élesedése között indexelt kuponos HeadSpa sorok kulcsa kupon-jelzés nélküli. Méret (D1, csak olvasás): **3 sor** (`meres_jelleg.kupon = 1`, `ido ≥ 1792266834`); a `salonic_direct:headspa` kapcsoló nincs bekapcsolva. Sorrend: merge + deploy → bekapcsolás.
+- **„AJÁNDÉKKÁRTYÁVAL – …”** nem jelzés-azonosító szó (a `kuponJelzes` nem ismeri fel); külön DECISION kérdése, ha az ilyen nevű szolgáltatás is kuponos foglalásnak számít.
+- **Döntés a mérési oldalnak:** ismeretlen PMU-ár esetén (nem „Korrekció”, nincs lista-ár) az esemény érték nélkül megy (`unknown_price`, D5) – így marad ebben a PR-ban; kell-e ilyenkor érték nélkül küldeni, vagy ne küldjünk.
+- A `szolgKanon` a „COUPON –” előtagot nem vágja le (csak a „KUPONKÓDDAL –” előtagot): a „COUPON – …” kanonikus kulcsa más, mint a normál névé – ez a kuponos jelzés mellett nem okoz hibát (a kupon-jelzett kulcs úgysem egyezik normállal), de ha ilyen nevű szolgáltatás valóban létezik, érdemes kérdezni.
+
+## 9. Review (PASS with notes) utáni javítások – F-1, F-3, F-4, F-5, F-6
+| # | javítás | teszt | mutáns (a teszt elkapja) |
+|---|---|---|---|
+| F-1 | a száraz (`szaraz:true`) terv irás- és hálózatmentes: `arFeloldas({ …, fuggosegek: szaraz ? null : fuggosegek })` – nincs frissítő-hívás, nincs `nevtablaMent` | `F1`: PMU száraz `sd_atvetel` + megadott `nevtablaFrissito` → 0 hívás, 0 új hálózati hívás, **minden tábla** azonos előtte / utána; kontroll: az éles út ugyanerre egyszer frissít | M13 (a száraz ág `fuggosegek`-et kap) → F1 |
+| F-3 | a lámpa nevezője = `valos.parositott` − kuponos PÁROSÍTOTT foglalások (frissességtől függetlenül); `arnyek.<platform>.nevezo_parositott`; 0 → `n/a` | `N33c`: 18 kuponos + 21 normál (a mért HeadSpa arány) → zöld; a normál hiány (3 hiányzó esemény) továbbra is sárga; `kupon = 0` sor nem von ki; csak kuponos → `n/a` | M16 (nevező kupon nélkül) → N33c; M17 (minden esemény nélküli párosított sor kivonva) → N31, N33c |
+| F-4 | `csereDontes(…, { kuponos })`: kuponos új foglalásnál nincs csere-felismerés (`nincs_gyanu`, nincs HOLD / riasztás / audit-sor); a normál új foglalás vizsgálata változatlan | `F4` (6 eset: kuponos↔kuponos, normál→kuponos, kuponos új + csere-szó regi foglalás nélkül, `COUPON –`, + kontroll: kuponos→NORMÁL = HOLD 0 küldés, normál↔normál = `confirmed`), smoke C3 / C11 PASS és verdikt PASS; `F4b` (hiányzó megjegyzés-kulcs: kuponos `kesz`, normál `halasztva`); S0-63 átírva | M14 (a kapu kiveve) → F4, F4b, S0-63; M15 (a kapu a normálra is) → F4, F4b + 37 S0 teszt |
+| F-5 | a „Korrekció” szabály a pontos névre: `fold(név).trim() === 'korrekcio'` (a `norm()` a „💉 Korrekció”-t is elfogadta volna) | `P1b`: „Korrekció (15 000 Ft)”, „AKCIÓ – Korrekció”, „💉 Korrekció”, „Korrekció – 5.000 Ft helyett most 0 Ft” és még 6 változat → `unknown_price`; a pontos nevek (ékezet / kisbetű / szélső szóköz) → 0 Ft `exact` | M18 (`norm`) → P1b; M19 (`szolgKanon`, a régi) → P1b |
+| F-6 | EGY kupon-felismerő: `kuponJelzes` (`esemeny-modell.js`): „kupon” / „coupon”, NFD-ékezetmentes, kisbetűs, zero-width / soft hyphen / BOM törölve; a `kuponosSzolg` duplikáció és a `fold`-os `/kupon/i` megszűnt | `F6`: `COUPON – …`, `KÚPONKÓDDAL – …` (előre komponált és NFD), `ku\u200Bpon`, `KU\u200DPON`, `ku\u2060pon`, `ku\u00ADpon`, `\uFEFFkupon` → kuponos (`foglalasJelleg`, `esemenyek` = [], index-kulcs `… kupon`, kedvezmény-gyanú `unknown_discount`, sd-úton 0 esemény); „AJÁNDÉKKÁRTYÁVAL – …”, valós nevek, üres / null → nem | M20 (a régi `/kupon/i`) → F4, F6; M21 (zero-width nincs törölve) → F6; M22 (nincs „coupon”) → F4, F6; M23 (az index-kulcs saját regex) → F6; M24 (a kedvezmény-gyanú saját regex) → F6 |
+A valós alakok viselkedése nem változott: a golden-paritás (S0-13) zöld, a 300 megmaradt kérés bájtra azonos a `main` fixture-jével.

@@ -11,8 +11,8 @@ import { cellaOsztaly } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { arnyekCel } from '../netlify/lib/meres/qa-nap.js';
 import { emailNormal, sha256hex } from '../netlify/lib/meres/hash.js';
-import { sdIdentitas, szolgIndexKulcs, szolgKanon, szolgKulcsEgyezik, kuponosSzolg } from '../netlify/lib/meres/salonic-direct.js';
-import { SALONIC_UZLETAG } from '../netlify/lib/meres/esemeny-modell.js';
+import { sdIdentitas, szolgIndexKulcs, szolgKanon, szolgKulcsEgyezik } from '../netlify/lib/meres/salonic-direct.js';
+import { SALONIC_UZLETAG, kuponJelzes } from '../netlify/lib/meres/esemeny-modell.js';
 import { T0, level, lezar, ujUuid, vilag } from './lib-sd-teszt.mjs';
 
 const HOST = 'mosaicheadspa.salonic.hu';
@@ -74,8 +74,8 @@ test('HS-02 (F2 + DECISION #194 / N1) a Zap kuponos levelnel " (kupon)" utotagot
   for (const s of SZOLG) {
     const zap = `${s.nev} (kupon)`;
     assert.equal(szolgKanon(zap), szolgKanon(s.nev), `${s.id}: a zaro utotag nem kerul a kanonikus kulcsba`);
-    assert.equal(kuponosSzolg(s.nev), s.kupon, `${s.id}: a kupon-jelzes a nevbol (KUPONKODDAL elotag)`);
-    assert.equal(kuponosSzolg(zap), true, `${s.id}: a Zap " (kupon)" utotagja kupon-jelzes`);
+    assert.equal(kuponJelzes(s.nev), s.kupon, `${s.id}: a kupon-jelzes a nevbol (KUPONKODDAL elotag)`);
+    assert.equal(kuponJelzes(zap), true, `${s.id}: a Zap " (kupon)" utotagja kupon-jelzes`);
   }
   for (const csalad of new Set(SZOLG.map((x) => x.csalad))) {
     const [n, k] = [NORMAL, KUPONOS].map((l) => l.find((x) => x.csalad === csalad));
