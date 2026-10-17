@@ -44,3 +44,5 @@ Nem érinti (a mérőkód fájljai nem változtak; a csomag-gomb a meglévő `da
 - **véleményszám mindenhol a mostani** (5 033, a lap betöltéskor frissíti): az új lapokon minden régi szám („Több mint 3.400 értékelés”, „1.745 értékelés”,
   „2.436 vélemény”, „4 900+ Google-vélemény”, „4.600+ vendégünk leírta” …) a Google mostani száma; a nem /regi/ alatti Wix-lapokon (pl. egy blogcikk) a build írja át
   (5.033); a /regi/ archívum változatlan. Ellenőrzés: az összes új lap látható szövegében csak 5033 / 5.033 maradt.
+- tesztek (3. kör): `uj-oldalak-teszt` 174 oldal, 5769 ellenőrzés, 0 hiba; `uj-b-teszt` 1042 / rendben; `uj-fooldal-teszt` rendben; `meres-teszt` rendben;
+  `csuszas-teszt`: az első futásban 1 lap jelzett (a párhuzamos tesztek terhelése alatt), az újrafuttatásban 206 + 206 lap, nincs csúszás
