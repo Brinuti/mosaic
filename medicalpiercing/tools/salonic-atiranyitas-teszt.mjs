@@ -6,7 +6,7 @@
 // 1. a celCim() szabalyai (Node, a dist-beli fajlbol);
 // 2. a VALODI medicalpiercing.salonic.hu oldalakon, a GTM-cimke (docs/salonic-atiranyitas-gtm.html) bejuttatasaval (a bongeszo minden
 //    Salonic-dokumentumban lefuttatja, mint a GTM; a Salonicon semmi nem valtozik, GTM-et nem publikalunk): a foglalooldalak a www.medicalpiercing.hu
-//    /idopontfoglalas cimre visznek (a helyszin / szakember / kezeles es az fbclid / gclid / ttclid / utm_* megmarad), a motor megnyilik;
+//    fooldalra visznek (Feri, 2026-10-17; az fbclid / gclid / ttclid / utm_* megmarad, helyszint / kezelest nem viszunk at), a motor NEM nyilik meg magatol;
 //    az adatlap (/guestData/), a foglalas-kezelo, a fiok, az ajandekkartya, az ismeretlen parameteres cim, a kikerulo parameter, a kapcsolo
 //    0 allasa NEM iranyit at; a motor keretjeben (iframe) a Salonic-oldal NEM iranyit at; a motor kikapcsolt allapotaban nincs hurok.
 // A www.medicalpiercing.hu kereseit a helyi kiszolgalo szolgalja ki (a helyi dist), a meroeszkozok kereset eldobjuk, a Salonic fele csak
@@ -36,20 +36,20 @@ ok('a dist-ben a kapcsolo beirva (nincs __ATIRANYITAS_BE__)', !forras.includes('
   const q = (h) => { const c = cel(h); return c ? Object.fromEntries(new URL(c).searchParams) : null; };
   const eset = (nev, h, vart) => {
     const v = q(h);
-    const jo = vart === null ? v === null : !!v && Object.entries(vart).every(([k, x]) => v[k] === x) && Object.keys(v).length === Object.keys(vart).length && new URL(cel(h)).origin + new URL(cel(h)).pathname === MP + '/idopontfoglalas';
+    const jo = vart === null ? v === null : !!v && Object.entries(vart).every(([k, x]) => v[k] === x) && Object.keys(v).length === Object.keys(vart).length && new URL(cel(h)).origin + new URL(cel(h)).pathname === MP + '/';
     ok(`celCim: ${nev}`, jo, JSON.stringify(v));
   };
   const S = { mp_honnan: 'salonic' };
   eset('/selectLocation', SAL + '/selectLocation', S);
   eset('/ (a Salonic fooldala)', SAL + '/', S);
   eset('nagybetus /SelectLocation', SAL + '/SelectLocation', S);
-  eset('/selectSpecialization/?placeId', SAL + '/selectSpecialization/?placeId=10357', { ...S, placeId: '10357' });
-  eset('/showServices/ szakemberrel + fbclid + utm', SAL + '/showServices/?placeId=6029&employeeId=123&fbclid=FB.1&utm_source=facebook&utm_campaign=x', { ...S, placeId: '6029', employeeId: '123', fbclid: 'FB.1', utm_source: 'facebook', utm_campaign: 'x' });
-  eset('/showServices/ kezelessel', SAL + '/showServices/?employeeId=7&placeId=12169&serviceId=555', { ...S, placeId: '12169', employeeId: '7', serviceId: '555' });
-  eset('/showServices/?specId', SAL + '/showServices/?placeId=6029&specId=9', { ...S, placeId: '6029', specId: '9' });
-  eset('/employees/<id>/', SAL + '/employees/321/?placeId=6029', { ...S, placeId: '6029', employeeId: '321' });
-  eset('/selectEmployee/ (Barki = -1 nem megy)', SAL + '/selectEmployee/?placeId=6029&serviceId=44&employeeId=-1', { ...S, placeId: '6029', serviceId: '44' });
-  eset('/selectDate/ back-kel', SAL + '/selectDate/?employeeId=-1&placeId=6029&serviceId=44&startDate=1792200000&back=%2FselectEmployee%2F%3FplaceId%3D6029', { ...S, placeId: '6029', serviceId: '44' });
+  eset('/selectSpecialization/?placeId', SAL + '/selectSpecialization/?placeId=10357', { ...S });
+  eset('/showServices/ szakemberrel + fbclid + utm', SAL + '/showServices/?placeId=6029&employeeId=123&fbclid=FB.1&utm_source=facebook&utm_campaign=x', { ...S, fbclid: 'FB.1', utm_source: 'facebook', utm_campaign: 'x' });
+  eset('/showServices/ kezelessel', SAL + '/showServices/?employeeId=7&placeId=12169&serviceId=555', { ...S });
+  eset('/showServices/?specId', SAL + '/showServices/?placeId=6029&specId=9', { ...S });
+  eset('/employees/<id>/', SAL + '/employees/321/?placeId=6029', { ...S });
+  eset('/selectEmployee/ (Barki = -1 nem megy)', SAL + '/selectEmployee/?placeId=6029&serviceId=44&employeeId=-1', { ...S });
+  eset('/selectDate/ back-kel', SAL + '/selectDate/?employeeId=-1&placeId=6029&serviceId=44&startDate=1792200000&back=%2FselectEmployee%2F%3FplaceId%3D6029', { ...S });
   eset('gclid + ttclid + _gl', SAL + '/selectLocation?gclid=G1&ttclid=T1&_gl=abc', { ...S, gclid: 'G1', ttclid: 'T1' });
   for (const [nev, h] of [['/guestData/ (adatlap)', '/guestData/?placeId=6029&serviceId=1&employeeId=-1&startDate=1&lang=hu'], ['/booking/cancelBooking/', '/booking/cancelBooking/?id=1'],
     ['/booking/deleteSuccess/', '/booking/deleteSuccess/'], ['/user/login/', '/user/login/?back=%2FselectLocation'], ['/giftcards', '/giftcards'], ['/contact', '/contact'], ['/privacy', '/privacy'],
@@ -100,21 +100,25 @@ const motorKattint = (p, sel) => p.evaluate((sel) => { const el = document.query
 const varUrl = (p, re, ms = 15000) => p.waitForURL(re, { timeout: ms }).then(() => true, () => false);
 const marad = async (p, url, ms = 4000) => { await p.goto(url, { waitUntil: 'load' }); await p.waitForTimeout(ms); return new URL(p.url()).hostname === 'medicalpiercing.salonic.hu'; };
 
-// 2a. kozvetlen erkezes a Salonic szakember-oldalara (regi hirdetes): atiranyitas, parameterek, motor a helyszinnel
+// 2a. kozvetlen erkezes a Salonic szakember-oldalara (regi hirdetes): atiranyitas a fooldalra, parameterek, a motor NEM nyilik meg magatol
 {
   const { ctx, nyom } = await kornyezet();
   const p = await ctx.newPage();
   const t0 = Date.now();
   await p.goto(`${SAL}/showServices/?placeId=6029&employeeId=0&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium=paid&utm_campaign=regi`, { waitUntil: 'commit' });
-  const at = await varUrl(p, /^https:\/\/www\.medicalpiercing\.hu\/idopontfoglalas/);
+  const at = await varUrl(p, /^https:\/\/www\.medicalpiercing\.hu\/(\?|$)/);
   const ido = Date.now() - t0;
   const u = new URL(p.url());
-  ok('Salonic /showServices/ -> www.medicalpiercing.hu/idopontfoglalas', at, `${p.url().slice(0, 160)} (${ido} ms)`);
-  ok('a parameterek megmaradnak (placeId, fbclid, utm_*, mp_honnan)', u.searchParams.get('placeId') === '6029' && u.searchParams.get('fbclid') === 'TESZTFBCLID' && u.searchParams.get('utm_campaign') === 'regi' && u.searchParams.get('mp_honnan') === 'salonic');
+  ok('Salonic /showServices/ -> www.medicalpiercing.hu/ (fooldal)', at, `${p.url().slice(0, 160)} (${ido} ms)`);
+  ok('a parameterek megmaradnak (fbclid, utm_*, mp_honnan), helyszin nem', !u.searchParams.has('placeId') && u.searchParams.get('fbclid') === 'TESZTFBCLID' && u.searchParams.get('utm_campaign') === 'regi' && u.searchParams.get('mp_honnan') === 'salonic');
   ok('location.replace: a Vissza gomb nem a Salonic-oldalra visz (elozmeny 1 elem)', (await p.evaluate(() => history.length)) <= 2, String(await p.evaluate(() => history.length)));
-  ok('a motor magatol megnyilik (tipus-valaszto)', await motorVan(p, '[data-tipus="uj"]'));
+  ok('a motor NEM nyilik meg magatol', !(await motorVan(p, '[data-tipus="uj"]', 5000)));
+  // a vendeg maga inditja a foglalast a fooldal egy foglalasi linkjevel
+  await p.evaluate(() => { const a = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu"]')].find((x) => x.offsetParent); if (a) a.click(); });
+  ok('foglalasi gombra a motor megnyilik', await motorVan(p, '[data-tipus="uj"]'));
   await motorKattint(p, '[data-tipus="uj"]');
-  ok('"Uj piercing" utan a helyszin (Budapest) mar kivalasztva: egybol a kezelesek', await motorVan(p, '[data-szolg]', 25000));
+  if (await motorVan(p, '[data-hely]', 8000)) await motorKattint(p, '[data-hely]');
+  ok('a kezelesek listaja', await motorVan(p, '[data-szolg]', 25000));
   await motorKattint(p, '[data-szolg]');
   ok('naptar: van szabad idopont', await motorVan(p, '[data-slot]', 25000));
   await motorKattint(p, '[data-slot]');
@@ -125,7 +129,7 @@ const marad = async (p, url, ms = 4000) => { await p.goto(url, { waitUntil: 'loa
   const keret = p.frames().find((f) => /medicalpiercing\.salonic\.hu\/guestData/.test(f.url()));
   ok('az adatlap cime: guestData + fbclid + utm (a gclid nem)', /\/guestData\/\?/.test(src) && /fbclid=TESZTFBCLID/.test(src) && /utm_campaign=regi/.test(src), src.slice(0, 200));
   ok('a keretben levo Salonic-adatlap NEM iranyit at (5 mp utan is guestData)', !!keret && /\/guestData\//.test(keret.url()), keret ? keret.url().slice(0, 90) : 'nincs keret');
-  ok('a fo ablak a motoron marad', /^https:\/\/www\.medicalpiercing\.hu\/idopontfoglalas/.test(p.url()));
+  ok('a fo ablak a fooldalon marad', /^https:\/\/www\.medicalpiercing\.hu\//.test(p.url()));
   ok('a keretben az atiranyito szkript le sem toltodik (a GTM-cimke kilep)', !nyom.atirFajl.includes('keret'), nyom.atirFajl.join(','));
   // a keret egy foglalooldalt nyit (pl. a Salonic "Vissza" linkje): keretben az sem iranyit at
   await p.evaluate((u) => { const f = document.createElement('iframe'); f.id = 'probakeret'; f.src = u; f.style.cssText = 'width:300px;height:200px'; document.body.appendChild(f); }, `${SAL}/selectLocation`);
@@ -137,23 +141,16 @@ const marad = async (p, url, ms = 4000) => { await p.goto(url, { waitUntil: 'loa
   await ctx.close();
 }
 
-// 2b. a Salonic helyszin-valasztoja es fooldala
+// 2b. a Salonic helyszin-valasztoja es egy helyszines oldala
 {
   const { ctx } = await kornyezet();
   const p = await ctx.newPage();
   await p.goto(`${SAL}/selectLocation?gclid=TESZTGCLID`, { waitUntil: 'commit' });
-  ok('Salonic /selectLocation -> /idopontfoglalas (gclid a sajat oldalra megy)', await varUrl(p, /^https:\/\/www\.medicalpiercing\.hu\/idopontfoglalas\?.*gclid=TESZTGCLID/), p.url().slice(0, 120));
-  ok('a motor a tipus-valasztoval nyilik', await motorVan(p, '[data-tipus="uj"]'));
-  await motorKattint(p, '[data-tipus="uj"]');
-  ok('helyszin nelkul: a 15 helyszin', await motorVan(p, '[data-hely]'));
-  // bezaras: a cim a fooldal, a Salonic-jelolok nelkul
-  await p.evaluate(() => { const r = document.querySelector('[data-mp-motor]').shadowRoot; const x = r.querySelector('[data-bezar], .bezar, button[aria-label="Bezárás"]'); if (x) x.click(); });
-  await p.waitForTimeout(800);
-  const zart = new URL(p.url());
-  ok('bezaras utan a cim "/" (mp_honnan nelkul, a gclid marad)', zart.pathname === '/' && !zart.searchParams.has('mp_honnan') && zart.searchParams.get('gclid') === 'TESZTGCLID', p.url().slice(0, 120));
+  ok('Salonic /selectLocation -> fooldal (gclid a sajat oldalra megy)', await varUrl(p, /^https:\/\/www\.medicalpiercing\.hu\/\?.*gclid=TESZTGCLID/), p.url().slice(0, 120));
+  ok('a motor itt sem nyilik meg magatol', !(await motorVan(p, '[data-tipus="uj"]', 5000)));
   await p.goto(`${SAL}/selectSpecialization/?placeId=10357`, { waitUntil: 'commit' });
-  const at2 = await varUrl(p, /^https:\/\/www\.medicalpiercing\.hu\/idopontfoglalas\?placeId=10357/);
-  ok('Salonic /selectSpecialization/?placeId=10357 -> placeId=10357', at2, p.url().slice(0, 120) + (at2 ? '' : ' ' + await p.evaluate(() => JSON.stringify({ r: document.referrer, s: { ...sessionStorage }, mp: typeof window.mpSalonicAtiranyitas, gtm: !!document.querySelector('script[src*="atiranyitas.js"]'), cel: window.mpSalonicAtiranyitas && window.mpSalonicAtiranyitas.celCim(location.href) }))));
+  const at2 = await varUrl(p, /^https:\/\/www\.medicalpiercing\.hu\/\?mp_honnan=salonic$/);
+  ok('Salonic /selectSpecialization/?placeId=10357 -> fooldal (helyszin nelkul)', at2, p.url().slice(0, 120));
   await ctx.close();
 }
 
@@ -196,7 +193,7 @@ const marad = async (p, url, ms = 4000) => { await p.goto(url, { waitUntil: 'loa
   await ctx.close();
 }
 
-// 2e. a motor kikapcsolva (?motor=0) / a regi ut: nincs hurok, a vendeg a Salonicon foglal
+// 2e. a motor kikapcsolva (?motor=0): nincs hurok, a vendeg a fooldalon marad
 {
   const { ctx } = await kornyezet();
   const p = await ctx.newPage();
@@ -204,7 +201,7 @@ const marad = async (p, url, ms = 4000) => { await p.goto(url, { waitUntil: 'loa
   await p.goto(`${SAL}/showServices/?placeId=6029&employeeId=0&fbclid=F2`, { waitUntil: 'commit' });
   await p.waitForTimeout(8000);
   const u = new URL(p.url());
-  ok('motor kikapcsolva: a Salonicrol jott vendeg visszakerul a Salonicra es ott marad (hurok nincs)', u.hostname === 'medicalpiercing.salonic.hu', p.url().slice(0, 140));
+  ok('motor kikapcsolva: a Salonicrol jott vendeg a fooldalon marad (hurok nincs)', u.hostname === 'www.medicalpiercing.hu' && u.pathname === '/', p.url().slice(0, 140));
   // a sajat oldal Salonic-linkje kikapcsolt motornal: kikerulo parameterrel megy a Salonicra
   await p.goto(`${MP}/migren-piercing`, { waitUntil: 'load' });
   const href = await p.evaluate((sal) => {
