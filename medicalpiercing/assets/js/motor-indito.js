@@ -41,6 +41,16 @@
     return u.origin === location.origin && BELSO.test(u.pathname) ? u : null;
   };
   var szam = function (v) { return v && /^-?\d+$/.test(v) ? +v : null; };
+  // A Salonic foglalooldalai a legfelso ablakban a motorra iranyitanak at (assets/salonic/atiranyitas.js, docs/SALONIC_ATIRANYITAS.md).
+  // Ahol a vendeg szandekosan a Salonicra megy (a motor ki van kapcsolva / nem toltheto be / modositas-lemondas), a link ezt a
+  // kikerulo parametert kapja, kulonben a Salonic visszakuldene ide (hurok).
+  var KIKERULO = 'mp_nincs_atiranyitas';
+  var kikerul = function (href) {
+    try { var k = new URL(href); if (k.hostname !== 'medicalpiercing.salonic.hu') return href; k.searchParams.set(KIKERULO, '1'); return k.href; } catch (e) { return href; }
+  };
+  var kikerulLink = function (a) { var h = a.getAttribute('href'); if (h && /^https?:\/\/medicalpiercing\.salonic\.hu(\/|$)/i.test(a.href)) a.setAttribute('href', kikerul(a.href)); };
+  // a lap cimenek kattintas-azonositoi a Salonic-adatlapnak (mint a klon.js a linkeken; a Google-azonositok nem)
+  var TOVABB = /^(fbclid|ttclid|utm_[a-z_]+)$/i;
   // A link szovege dont: ha kontrollt, ekszercserét vagy garanciat emlit, egybol az ures-urlap nyilik; minden mas foglalasi gomb a tipus-valasztot nyitja.
   var szoveg = function (a) { return ((a.textContent || '') + ' ' + (a.getAttribute('aria-label') || '') + ' ' + (a.getAttribute('title') || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' '); };
   var urlapTipus = function (a, u) {
@@ -73,7 +83,7 @@
       return;
     }
     var u = foglalasiLink(a);
-    if (!u || !bekapcsolva() || NEM_FOGLALAS.test(szoveg(a))) return;
+    if (!u || !bekapcsolva() || NEM_FOGLALAS.test(szoveg(a))) { kikerulLink(a); return; }
     e.preventDefault();
     var p = u.searchParams;
     var ctx = {
@@ -83,7 +93,7 @@
     motor().then(function (m) { m.nyit(ctx); }, function () {
       // a motor nem toltheto be: a vendeg a regi utat kapja (ugyanabban a lapban, a felugro-tilto nem allitja meg)
       gtagHiba('betoltes');
-      location.href = u.href;
+      location.href = kikerul(u.href);
     });
   }, false);
 
@@ -96,12 +106,36 @@
     motor().then(function (m) { var pid = szam(u.searchParams.get('placeId')); if (pid) m.melegit(pid); }, function () {});
   };
   // az (egykori) koztes oldalak cimen betolteskor magatol megnyilik a foglalo; bezarva a fooldal marad (a cim "/" lesz)
+  // A Salonicrol atiranyitott vendeg (?mp_honnan=salonic; placeId / serviceId / employeeId a Salonic-cimbol) a /idopontfoglalas cimre jon.
   if (BELSO.test(location.pathname)) {
-    if (!bekapcsolva()) { location.replace(regiOldal()); return; }
+    var sp = new URLSearchParams(location.search);
+    var salonicrol = sp.get('mp_honnan') === 'salonic';
+    var hely = szam(sp.get('placeId')), szolg = szam(sp.get('serviceId')), szak = szam(sp.get('employeeId'));
+    // a Salonic-link, amelyet a motor kapott volna: ebbol veszi az adatlap a kattintas-azonositokat, es ez a tartalek-ut
+    var salonicLink = function () {
+      var l = new URL('https://medicalpiercing.salonic.hu/' + (hely ? (szolg || szak ? 'showServices/' : 'selectSpecialization/') : 'selectLocation'));
+      if (hely) l.searchParams.set('placeId', hely);
+      if (szolg && szolg > 0) l.searchParams.set('serviceId', szolg);
+      if (szak && szak > 0) l.searchParams.set('employeeId', szak);
+      sp.forEach(function (v, k) { if (v && TOVABB.test(k) && !l.searchParams.has(k)) l.searchParams.set(k, v); });
+      return l.href;
+    };
+    var vissza = function () { location.replace(salonicrol ? kikerul(salonicLink()) : regiOldal()); };
+    if (!bekapcsolva()) { vissza(); return; }
     var auto = function () {
       var kontroll = /^\/kontroll\/?$/i.test(location.pathname);
-      var bezarasUtan = function () { try { history.replaceState(null, '', '/' + location.search + location.hash); } catch (e) { /* */ } };
-      motor().then(function (m) { m.nyit({ tipus: kontroll ? 'kontroll' : null, merjen: !kontroll, link: 'https://medicalpiercing.salonic.hu/selectLocation', forras: location.pathname, bezarasUtan: bezarasUtan }); }, function () { gtagHiba('betoltes'); location.replace(regiOldal()); });
+      var bezarasUtan = function () {
+        try {
+          var m = new URLSearchParams(location.search);
+          ['mp_honnan', 'placeId', 'serviceId', 'employeeId', 'specId'].forEach(function (k) { m.delete(k); });
+          var q = m.toString();
+          history.replaceState(null, '', '/' + (q ? '?' + q : '') + location.hash);
+        } catch (e) { /* */ }
+      };
+      motor().then(function (m) {
+        m.nyit({ tipus: kontroll ? 'kontroll' : null, merjen: !kontroll, placeId: kontroll ? null : hely, serviceId: kontroll || !(szolg > 0) ? null : String(szolg), employeeId: kontroll || !(szak > 0) ? null : szak,
+          link: salonicLink(), forras: salonicrol ? '/salonic-atiranyitas' : location.pathname, bezarasUtan: bezarasUtan });
+      }, function () { gtagHiba('betoltes'); vissza(); });
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', auto); else auto();
   }

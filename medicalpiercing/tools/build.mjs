@@ -93,6 +93,10 @@ if (UJ_ELES) koztes();
   const kapcsolo = JSON.parse(fs.readFileSync(path.join(ROOT, 'motor-kapcsolo.json'), 'utf8')).arany === 100 ? 100 : 0;
   const indito = path.join(DIST, 'assets/js/motor-indito.js');
   fs.writeFileSync(indito, fs.readFileSync(indito, 'utf8').replace('__MOTOR_KAPCSOLO__', String(kapcsolo)).replace('__MOTOR_VERZIO__', mv));
+  // a Salonic-oldalak atiranyitasa a motorra (assets/salonic/atiranyitas.js, docs/SALONIC_ATIRANYITAS.md): csak ha a kapcsoloja be ES a motor 100%-on
+  const atir = JSON.parse(fs.readFileSync(path.join(ROOT, 'salonic-atiranyitas.json'), 'utf8')).be === true && kapcsolo === 100 ? 1 : 0;
+  const atirFajl = path.join(DIST, 'assets/salonic/atiranyitas.js');
+  fs.writeFileSync(atirFajl, fs.readFileSync(atirFajl, 'utf8').replace('__ATIRANYITAS_BE__', String(atir)));
   let n = 0;
   for (const ki of ['_a', '_m']) for (const f of fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html'))) {
     const fajl = path.join(DIST, ki, f);

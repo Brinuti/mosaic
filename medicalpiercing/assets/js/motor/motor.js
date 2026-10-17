@@ -15,6 +15,8 @@ import { tipusKod, oldalTipus } from './tipus.js';
 import { TERKEP_SVG, TERKEP_PINEK } from './terkep.js';
 
 const TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|utm_[a-z_]+)$/i;
+// a tartalek-link a Salonicra visz: a kikerulo parameter nelkul a Salonic visszairanyitana a motorra (assets/salonic/atiranyitas.js)
+const kikerulo = (href) => { try { const k = new URL(href); k.searchParams.set('mp_nincs_atiranyitas', '1'); return k.href; } catch (e) { return href; } };
 const KOSZONO_ORIGIN = /^https:\/\/(www\.)?medicalpiercing\.hu$/;
 const NAPOK = 100; // a Salonic ~65-80 napra elore ad idopontot (2026-10-11: legtavolabbi 80 nap); 100 nap bortonosen mindet lefedi
 const HONAP = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
@@ -551,7 +553,7 @@ export function nyit(ctx) {
 
   const tartalek = () => {
     // a Salonic eredeti foglaloja, ugyanazzal a cimmel, amire a vendeg kattintott
-    return `<p class="uzenet">Most nem sikerült betölteni a foglalót. A foglalást a Salonic oldalán is el tudod végezni:</p><p><a class="gomb" href="${esc(link.href)}" target="_blank" rel="noopener">Tovább a foglaláshoz</a></p>`;
+    return `<p class="uzenet">Most nem sikerült betölteni a foglalót. A foglalást a Salonic oldalán is el tudod végezni:</p><p><a class="gomb" href="${esc(kikerulo(link.href))}" target="_blank" rel="noopener">Tovább a foglaláshoz</a></p>`;
   };
   const hiba = (ok, e) => {
     gtagEsemeny('motor_hiba', { hiba_tipus: ok });
