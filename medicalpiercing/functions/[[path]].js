@@ -28,7 +28,7 @@ import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 import { TRUSTINDEX_TARTALOM, ertekelesAdat } from '../lib/ertekeles.js';
 import { SALONIC_ELOTAG, salonicFajl } from '../lib/salonic-css.js';
 import { UJ_ELES } from '../lib/uj-eles.js';
-import { hosValasztas, hosCsere } from '../lib/hirdetes-hos.js';
+import { hosValasztas, hosCsere, hosKepValasz } from '../lib/hirdetes-hos.js';
 import { foglalasom, foglalasMuvelet } from '../lib/foglalasom.js';
 import { kimenoFeldolgoz } from '../lib/lifecycle-kimeno.js';
 
@@ -55,6 +55,7 @@ export async function onRequest(context) {
     if (v) return v;
   }
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
+  if (url.pathname.startsWith('/hirdetes-hos-kep/')) return hosKepValasz(request, context.env.HOS_DB); // automatikus hos-kep (lib/hirdetes-hos.js)
   if (/^\/[fm]\//.test(url.pathname) && url.hostname !== 'medicalpiercing.hu') { // "A foglalasod" (a statikus oldalak elott; a gyoker domain lent www-re iranyit)
     const v = await foglalasom(request, context.env);
     if (v) return v;
@@ -89,7 +90,7 @@ export async function onRequest(context) {
   // ugyanaz a cim mobilon es asztalin mast ad - a gyorsitotar ezt tudja
   h.set('vary', 'User-Agent');
   if (!eles || REJTETT_LAPOK.has(ut) || REJTETT_ELOTAG.test(ut) || B_ELOTAG.test(ut)) h.set('x-robots-tag', 'noindex, nofollow');
-  const hosKulcs = status === 200 && request.method === 'GET' && /text\/html/.test(h.get('content-type') || '') ? hosValasztas(url) : null;
+  const hosKulcs = status === 200 && request.method === 'GET' && /text\/html/.test(h.get('content-type') || '') ? await hosValasztas(url, context.env.HOS_DB) : null;
   const kesz = new Response(valasz.body, { status, headers: h });
   return hosKulcs ? hosCsere(kesz, hosKulcs) : kesz; // hirdeteshez illo hos-kep (lib/hirdetes-hos.js)
 }
