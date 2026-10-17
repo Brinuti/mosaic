@@ -19,6 +19,8 @@ import { gyorsit } from './gyorsitas.mjs';
 import { ujFooldal, ujOldalak, ujKitelepules } from './uj-fooldal.mjs';
 import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
 import { kulcsbol } from '../lib/utvonal.js';
+import { valaszadoKepek, teljesKepek, videoElotoltes } from './valaszado-kepek.mjs';
+import { tomorit } from './tomorites.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -220,6 +222,12 @@ else if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.
   }
   console.log(`verziojel: +${[...jelek.values()].filter(Boolean).length} Wix-stilus sajat jellel`);
 }
+
+// gyorsitas (2026-10-17): valaszado kepek az uj lapokon (tools/valaszado-kepek.mjs), a sajat stilusok / szkriptek tomoritve (tools/tomorites.mjs)
+console.log(`feliratos kepek: ${teljesKepek(ROOT, DIST)}`);
+console.log(`videok: ${videoElotoltes(DIST)}`);
+console.log(`valaszado kepek: ${valaszadoKepek(ROOT, DIST)}`);
+console.log(`tomorites: ${await tomorit(DIST)}`);
 
 // sitemap: a Wix sitemapjeiben szereplo oldalak (a rejtett, bejarassal talalt oldalak nem)
 const sitemapben = new Set(fs.readFileSync(path.join(ROOT, 'tools/sitemap-oldalak.txt'), 'utf8').split('\n').filter(Boolean));

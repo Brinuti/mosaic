@@ -13,6 +13,9 @@
     const elozo = $('.kar-elozo', kar), kov = $('.kar-kov', kar), szam = $('[data-kar-akt]', kar);
     if (!sav || !dias.length) return;
     const lepes = () => (dias[1] ? dias[1].offsetLeft - dias[0].offsetLeft : sav.clientWidth);
+    // a kovetkezo kepek elore toltese csak akkor, ha a galeria a kepernyo kozeleben van es a lap mar betoltott, vagy a latogato lapoz (gyorsitas, 2026-10-17:
+    // kulonben minden galeria - a lap aljan levo szalon-galeria is - a lap betoltesekor 9 nagy kepet toltott, a hosben pedig a tobbi kep az elsotol vette el a savszelesseget)
+    let elore = false;
     const frissit = () => {
       const i = Math.round(sav.scrollLeft / Math.max(1, lepes()));
       if (szam) szam.textContent = String(Math.min(dias.length, i + 1));
@@ -21,8 +24,15 @@
       if (elozo) elozo.disabled = sav.scrollLeft <= 2;
       if (kov) kov.disabled = sav.scrollLeft + sav.clientWidth >= sav.scrollWidth - 2;
       // a kovetkezo kepek elore toltodnek
-      dias.slice(i, i + 9).forEach((d) => { const im = $('img', d); if (im && im.loading === 'lazy') im.loading = 'eager'; });
+      if (elore) dias.slice(i, i + 9).forEach((d) => { const im = $('img', d); if (im && im.loading === 'lazy') im.loading = 'eager'; });
     };
+    const indul = () => { elore = true; frissit(); };
+    const betoltve = () => (document.readyState === 'complete' ? indul() : window.addEventListener('load', indul, { once: true }));
+    if ('IntersectionObserver' in window) {
+      const figyel = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { figyel.disconnect(); betoltve(); } }, { rootMargin: '600px 0px' });
+      figyel.observe(kar);
+    } else betoltve();
+    sav.addEventListener('scroll', () => { elore = true; }, { passive: true, once: true });
     const lapoz = (d) => {
       const n = Math.max(1, Math.floor(sav.clientWidth / Math.max(1, lepes())));
       sav.scrollTo({ left: sav.scrollLeft + d * n * lepes(), behavior: csendes ? 'auto' : 'smooth' });
@@ -44,10 +54,10 @@
     const mutat = (i) => {
       idx = (i + csoport.length) % csoport.length;
       const im = csoport[idx];
-      kep.src = im.currentSrc || im.src;
+      kep.src = im.src || im.currentSrc;   // (az eredeti, nagy kep: a lapon a srcset kisebb valtozatot tolthet, tools/valaszado-kepek.mjs)
       kep.alt = im.alt || '';
       szam.textContent = String(idx + 1);
-      const k = csoport[(idx + 1) % csoport.length]; if (k && csoport.length > 1) new Image().src = k.currentSrc || k.src;
+      const k = csoport[(idx + 1) % csoport.length]; if (k && csoport.length > 1) new Image().src = k.src || k.currentSrc;
     };
     document.addEventListener('click', (e) => {
       const im = e.target.closest && e.target.closest('img[data-nagyit]');

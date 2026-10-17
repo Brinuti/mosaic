@@ -30,6 +30,29 @@ Ezen felül:
   (`kat-fej`), a hős a megszokott hős. Ugyanez érvényes, ha egy régi oldal szövegét kell új oldalba tenni (a szerkezet a forrásból, a kinézet a mostani oldalból).
   **Asztalon nem maradhat üres doboz** (a tulajdonos szabálya, 2026-10-16): ha a szöveg rövid a kép mellett (nagy üres sáv a szöveg alatt / fölött), csökkentsd a kép méretét és vele
   a doboz méretét (pl. az akció-oldal „Mi jár az árért?” doboza, a TikTok-landoló ékszer-doboza); ellenőrzéskor 1440 px-en minden kéthasábos dobozt nézz meg.
+- **Gyorsítás – minden oldalon** (a tulajdonos kérése, 2026-10-17: „nézd meg az összes oldalt … futtass le egy Google … Speed Testet”): a mérés a PageSpeed Insights motorjával
+  (Lighthouse, ugyanazokkal az alapbeállításokkal: mobil = lassú 4G + középkategóriás telefon szimulációja, asztali preset) minden oldalon, **nem az éles domainen**, hanem a
+  `medicalpiercing.pages.dev` (élessel azonos tartalom) / előnézeti címen – ott a mérőkódok nem töltődnek be, a statisztikát nem szennyezi (a Google PageSpeed szolgáltatás kulcs nélküli
+  kerete gyakran elfogy). Ami a gyorsítás része, és új oldalnál / új képnél is tartsd:
+  - **Google-vélemények (Trustindex)**: a `loader.js` nem a lapban áll, hanem `data-ti-src`-ben (`reszek/velemenyek.html`), és a `uj-fooldal.js` 4. pontja csak akkor teszi a lapra,
+    ha a doboz a megnyitáskor látszik, különben az első görgetés / érintés után, amikor 800 px-re a képernyő közelébe ér (előtte a lap betöltésekor ~0,8 mp-re lefoglalta
+    a telefon processzorát és ~650 KB-ot töltött; a főoldalon a doboz közvetlenül az első képernyő alatt van).
+  - **Galériák** (`uj-oldalak.js` 1., `uj-fooldal.js` 2b.): a következő képek előtöltése csak a képernyő közelében és a lap betöltése után (korábban minden galéria 9 nagy képet töltött
+    azonnal, a lap alján levő szalon-galéria is; a hősben a többi kép az elsőtől vette el a sávszélességet).
+  - **Válaszadó képek**: `python3 tools/kep-valtozatok.py` (a 400 px-nél szélesebb `<img>` képek 320 / 400 / 480 / 640 / 800 / 1200 / 1600 px-es WebP-változatai, JPG/PNG esetén az eredeti méretben is:
+    `assets/img/valtozat/` + `jegyzek.json`), `node tools/kep-meretek.mjs` (a képek megjelenési szélessége lapanként: asztali 1440 és 820 px, mobil 390 px → `uj-oldalak/kep-meretek.json`),
+    a build (`tools/valaszado-kepek.mjs`) ebből írja a `srcset` + `sizes` attribútumot (a lap `<link rel="preload" as="image">` sora `imagesrcset`-et kap, hogy ne az eredetit töltse). **Új kép vagy elrendezés-változás után futtasd a kettőt (build → kep-valtozatok → kep-meretek →
+    build)**; a nem mért kép változatlan, eredeti méretben marad (nem romlik el, csak nem gyorsul). A `src` mindig az eredeti, a képnagyító is azt nyitja.
+  - **Tömörített stílusok és szkriptek** (`tools/tomorites.mjs`, esbuild): csak a saját `uj-*.css`, `uj-fooldal.js`, `uj-oldalak.js`, `motor/motor.js`, `terkep.js`, `tipus.js`; a mérőkód
+    fájljai (`suti.js`, `mp-meres.js`, `motor-indito.js`, `salonic-adapter.js`, `booking-id.js`) **változatlanul** mennek ki. Az esbuild nélkül a lépés kimarad (a lap ugyanúgy működik).
+  - Betűk: a `plus-jakarta-sans-latin-ext.woff2` is előtöltve (a magyar ő / ű ebben van, a hős szövegében is); borítós videó `preload="none"` (a `sablon.mjs` `video()`-ja, és a build `videoElotoltes` lépése minden új lapon: a poszteres, nem automatikusan induló `<video preload="metadata">` → `none`, a hős álló videója mobilon különben ~650 KB-ot töltött); a blog első három kártyaképe nem lusta.
+  - Nem változott (mérést érintene, külön döntés kell): a `suti.js` a `<head>`-ben szinkron töltődik (a hozzájárulás-alapértékek miatt), ez a „megjelenítést blokkoló” tétel egy része.
+- **Feliratos ábrák és szöveges képek soha nem vágódnak le** (a tulajdonos kérése, 2026-10-17: „ezek a képek látszódjanak teljesen … le van vágva” – a pajzsmirigy-ábra): a lista
+  `uj-oldalak/teljes-kepek.json` (a pont helye a testen: allergia / máj / pajzsmirigy / lép / vastagbél; a fülpontos ábrák; a „Tragus / Shenmen / Klimax pont”, „Vagus ideg” címkés fotók;
+  a „Migrén piercing helye”; a 93%-os blokk képe; a 15 városnév-csempe). A build (`teljesKepek`, `tools/valaszado-kepek.mjs`) `data-teljes` jelet tesz rájuk: egészben látszanak, a
+  kéthasábos dobozban és a cikkben a kép saját arányában, fix keretben (blog-kártya, csempe) középen, a maradék sávban a kép szélének színe (`tools/teljes-kepek.py` számolja). A „pont helye”
+  ábra-hely (`.kat-video-img`) és a 93%-kép (`.stat-kep`) mindig a saját arányában (`uj-egyseges.css` vége). **Új feliratos képnél** a fájlnevet írd a listába, és futtasd a `tools/teljes-kepek.py`-t.
+  Ellenőrzés: minden lapon, asztalon és mobilon, a listás képek 100%-a látszik (a fotók vágása szándékos).
 - **Rejtett B-változatok a konverziós képernyőtervek szerint** (a tulajdonos kérése, 2026-10-16: „az összes oldalból építs egy B verziót … kirakhatod élesbe, de nem fog rá
   link mutatni”; PDF: „MP_kepernyotervek_mobil_v2”): `/b/<név>` – `/b/fooldal`, a 9 piercing-típus (`/b/migren-piercing` … `/b/vastagbel-piercing`), `/b/kozerzetjavito-piercing-soft-akcio`,
   `/b/3-piercing-2-araert` (páros akció), `/b/arlista-garancia`, `/b/migren-shenmen-piercing-velemenyek`, `/b/migren-es-shenmen-piercing-garancia`, `/b/ful-piercing-beloves-budapest`,
