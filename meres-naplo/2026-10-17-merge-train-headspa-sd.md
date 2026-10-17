@@ -47,12 +47,14 @@ Az összefésülés ütközésmentes (`git merge-tree`), még a `SALONIC_DIRECT.
 - **A train végső SHA-ja** (összefésülés + HS-02 igazítás + `main` beolvasztás): lásd a PR-t (review kérve).
 
 ## 6. Rollback
-- Kód: `git revert -m 1 <merge commit>` (egy commit) a `main`-en, vagy a Cloudflare Pages `mosaic` projekt korábbi deploymentjének visszaállítása. D1-séma, kapcsolók, Zap, külső fiók nem változik.
+- Kód: `git revert -m 1 <merge commit>` a `main`-en (**csak** a „Merge pull request” / merge-commit módszernél; squash merge esetén sima `git revert <sha>`), vagy a Cloudflare Pages `mosaic` projekt korábbi deploymentjének visszaállítása. D1-séma, kapcsolók, Zap, külső fiók nem változik.
+- **Mit ír a deploy után a futó rendszer (nem „a merge ír”):** az éles `[vars]`-ban `MERES_SALONIC_DIRECT="1"`, ezért a deploy után az új kuponos HeadSpa levelek a már meglévő hook miatt **vendég-index sort** kapnak (F1 hatása, szándékos, `ON CONFLICT DO NOTHING`), és a motoros árnyék-események kuponosnál `em`-et kapnak. A merge maga sémát, kapcsolósort, D1-sort nem ír.
 - A `salonic_direct:headspa` sor a merge-dzsel NEM keletkezik: a merge utáni (még be nem kapcsolt) állapotban a HeadSpa sd KI, a revert élő hatás nélkül visszaállítja az előző állapotot.
 - Ha a bekapcsolás (külön lépés) után kell visszalépni: **előbb** `POST /api/meres-admin {muvelet:"sd_kapcsolo", uzletag:"headspa", be:false, ok:…}` (a `be` pontosan boolean), utána a kód-revert.
 - A F2 miatt a régi „<kulcs> kupon” index-kulcs (ma 1 HeadSpa-sor) egyirányúan egyezik; D1 adat nem módosul. Az F1 alatt beírt index-sorok és HMAC-ek érvényesek maradnak.
 
-## 7. Merge utáni lépések (DECISION #192)
+## 7. Merge utáni lépések (DECISION #192) — és a bekapcsolás kapuja
 1. Cloudflare Pages deploy ellenőrzése (`https://www.mosaicheadspa.hu/`, `Server: cloudflare`; a `functions/` + `netlify/lib` a Pages-en fut), tesztek / sd smoke zöld.
-2. `salonic_direct:headspa=1` (csak árnyék-cél, `uzletag` kötelező; a globális sor TILOS), `meres_kapcsolo` és `GET /api/meres-admin?kapcsolok=1` ellenőrzése.
-3. 30–60 perc figyelés: élő-ID 0, dupla 0, az első HeadSpa sd-sor smoke; az első **kuponos** HeadSpa sd-foglalásnál: a Meta `user_data`-ban van-e `em`, a C2 PASS-e.
+2. **Bekapcsolási kapu (a train független review-ja, N1):** az F1 × F2 együtt egy ritka esetben **téves, nem feloldható `reschedule_confirmed`**-et ad (új kuponos PÁROS + él egy normál PÁROS foglalása + a megjegyzés csere-szót és óra-említést tartalmaz → a valódi új konverzió elmarad; `sd_feloldas` ezt nem oldja fel; hatás: csak árnyék-mérési hiány). A `SALONIC_DIRECT.md` §16/1 nyitott pontja ezt eddig is a **bekapcsolást** blokkolónak nevezte; a #192 szövege ezt a pontot nem nevesíti. Ezért a bekapcsolás előtt a mérési oldal kifejezett jelzése kell arra, hogy ezt a gyengeséget vállalja (vagy hogy előbb szűkítsük: a kuponos ↔ normál pár kivétele / kötelező dátum-említés).
+3. `salonic_direct:headspa=1` (csak árnyék-cél, `uzletag` kötelező; a globális sor TILOS), `meres_kapcsolo` és `GET /api/meres-admin?kapcsolok=1` ellenőrzése.
+4. 30–60 perc figyelés: élő-ID 0, dupla 0, az első HeadSpa sd-sor smoke; az első **kuponos** HeadSpa sd-foglalásnál: a Meta `user_data`-ban van-e `em`, a C2 PASS-e.
