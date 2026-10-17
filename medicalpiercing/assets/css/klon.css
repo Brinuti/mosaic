@@ -124,3 +124,6 @@ html.mp-pg-nyitva { overflow: hidden; }
 .mp-naptar-mobil { position: fixed; top: 50%; left: 50%; width: calc(100% - 20px); max-width: 300px; transform: translate(-50%, -50%); padding-bottom: 8px; }
 .mp-naptar-mobil .mp-naptar-het, .mp-naptar-mobil .mp-naptar-napok { grid-template-columns: repeat(7, 1fr); }
 .mp-naptar-bezar { display: block; margin: 6px 0 0 auto !important; padding: 4px 0 !important; color: rgb(179, 156, 143) !important; }
+
+/* a feliratos kepek (data-teljes, tools/valaszado-kepek.mjs teljesKepek) a regi lapokon is egeszben (a tulajdonos kerese, 2026-10-17) */
+img[data-teljes]{object-fit:contain!important;object-position:50% 50%!important}

@@ -46,6 +46,12 @@ Ezen felül:
     fájljai (`suti.js`, `mp-meres.js`, `motor-indito.js`, `salonic-adapter.js`, `booking-id.js`) **változatlanul** mennek ki. Az esbuild nélkül a lépés kimarad (a lap ugyanúgy működik).
   - Betűk: a `plus-jakarta-sans-latin-ext.woff2` is előtöltve (a magyar ő / ű ebben van, a hős szövegében is); borítós videó `preload="none"`; a blog első három kártyaképe nem lusta.
   - Nem változott (mérést érintene, külön döntés kell): a `suti.js` a `<head>`-ben szinkron töltődik (a hozzájárulás-alapértékek miatt), ez a „megjelenítést blokkoló” tétel egy része.
+- **Feliratos ábrák és szöveges képek soha nem vágódnak le** (a tulajdonos kérése, 2026-10-17: „ezek a képek látszódjanak teljesen … le van vágva” – a pajzsmirigy-ábra): a lista
+  `uj-oldalak/teljes-kepek.json` (a pont helye a testen: allergia / máj / pajzsmirigy / lép / vastagbél; a fülpontos ábrák; a „Tragus / Shenmen / Klimax pont”, „Vagus ideg” címkés fotók;
+  a „Migrén piercing helye”; a 93%-os blokk képe; a 15 városnév-csempe). A build (`teljesKepek`, `tools/valaszado-kepek.mjs`) `data-teljes` jelet tesz rájuk: egészben látszanak, a
+  kéthasábos dobozban és a cikkben a kép saját arányában, fix keretben (blog-kártya, csempe) középen, a maradék sávban a kép szélének színe (`tools/teljes-kepek.py` számolja). A „pont helye”
+  ábra-hely (`.kat-video-img`) és a 93%-kép (`.stat-kep`) mindig a saját arányában (`uj-egyseges.css` vége). **Új feliratos képnél** a fájlnevet írd a listába, és futtasd a `tools/teljes-kepek.py`-t.
+  Ellenőrzés: minden lapon, asztalon és mobilon, a listás képek 100%-a látszik (a fotók vágása szándékos).
 - **Rejtett B-változatok a konverziós képernyőtervek szerint** (a tulajdonos kérése, 2026-10-16: „az összes oldalból építs egy B verziót … kirakhatod élesbe, de nem fog rá
   link mutatni”; PDF: „MP_kepernyotervek_mobil_v2”): `/b/<név>` – `/b/fooldal`, a 9 piercing-típus (`/b/migren-piercing` … `/b/vastagbel-piercing`), `/b/kozerzetjavito-piercing-soft-akcio`,
   `/b/3-piercing-2-araert` (páros akció), `/b/arlista-garancia`, `/b/migren-shenmen-piercing-velemenyek`, `/b/migren-es-shenmen-piercing-garancia`, `/b/ful-piercing-beloves-budapest`,

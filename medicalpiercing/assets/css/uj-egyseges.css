@@ -549,6 +549,6 @@
 img[data-teljes]{object-fit:contain!important;object-position:50% 50%!important}
 .kat-doboz>img[data-teljes],.cikk-kep img[data-teljes]{height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;align-self:center}
 @media (max-width:760px){
-  .kat-video-kep>.kat-video-img{max-height:none}
+  .kat-video-kep>.kat-video-img{max-height:440px}   /* (a 2:3-as csontvaz-abra se legyen kepernyonyi magas; egeszben, kozepen) */
   .stat-kep{width:100%;max-width:340px;max-height:none;aspect-ratio:auto}
 }
