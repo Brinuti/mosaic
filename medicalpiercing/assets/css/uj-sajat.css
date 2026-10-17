@@ -288,3 +288,23 @@
   .tt-ar-racs .pipak li{display:flex;text-align:left}
 }
 @media (max-width:360px){.fejlec-landolo .logo img{height:26px}}
+
+/* Az oszi akcio oldala (/3-piercing-2-araert; a tulajdonos kerese, 2026-10-17: a Wix-es eredeti szakaszai es szovege, a mostani dobozokkal):
+   a "9 ok" kartya-racsa, a 10 piercing-kartya (mind latszik, asztalon 2 x 5), a piercing-bevezeto mondat */
+.ok-racs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.ok-racs .kartya{padding:18px 18px 20px}
+.ok-racs h3{margin:0 0 8px;font-size:1.05rem;line-height:1.3;color:var(--navy)}
+.ok-racs p{margin:0;color:var(--mut);font-size:.94rem;line-height:1.55}
+.ok-szam{color:var(--rose-i);font-weight:800}
+.piercingek-bev{margin:-8px 0 18px;color:var(--mut)}
+@media (min-width:1001px){
+  .piercing-racs-mind{grid-template-columns:repeat(5,minmax(0,1fr))}
+  /* a hos feliratos plakatja asztalon is egeszben: negyzetes keret (a galerias hos szabalya a szoveghasab magassagara vagta) */
+  .belso .hos-racs>.hos-kep.hos-kep-negyzet{aspect-ratio:1/1;min-height:0;height:auto;width:100%;max-width:520px;justify-self:end;align-self:center}
+}
+@media (max-width:1000px){.ok-racs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .ok-racs{grid-template-columns:minmax(0,1fr);gap:10px}
+  .ok-racs .kartya{padding:14px 14px 16px}
+  .piercingek-bev{margin:-6px 0 14px;font-size:.95rem}
+}

@@ -36,6 +36,12 @@ export const WIX_ATIRANYITASOK = {
   '/garancia-ok': '/garancia-xyz',
 };
 
+// A sajat 301-ek (a parametereket megtartja): az oszi akcio ket oldalabol egy lett (a tulajdonos kerese, 2026-10-17: "a ket araert maradjon meg,
+// a regi link 301-gyel iranyitson at"); a Wix-es eredeti a /regi/3-piercing-2-araert-regi cimen marad.
+export const SAJAT_ATIRANYITASOK = {
+  '/3-piercing-2-araert-regi': '/3-piercing-2-araert',
+};
+
 export function utvonal(ut, ua) {
   // fajlok (assets, sitemap, robots stb.), az API es a lapfajlok mappai: valtozatlanul
   if (/^\/(assets|_a|_m|api)\//.test(ut)) return null;
@@ -53,6 +59,7 @@ export function utvonal(ut, ua) {
   }
   // a Wix atiranyitas-kezelojenek szabalyai (301, a parametereket megtartja)
   if (WIX_ATIRANYITASOK[tiszta]) return { atiranyit: WIX_ATIRANYITASOK[tiszta] };
+  if (UJ_ELES && SAJAT_ATIRANYITASOK[tiszta]) return { atiranyit: SAJAT_ATIRANYITASOK[tiszta] };
   // a blogbejegyzest a Wix a /post/ elotaggal is kiszolgalja
   const k = kulcsbol(tiszta.replace(/^\/post\//, '/'));
   return { atir: (TELEFON.test(ua || '') ? '/_m/' : '/_a/') + fajlnev(k) };

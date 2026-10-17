@@ -138,21 +138,18 @@ Ezen felül:
   a felirat nélküli, a felirat fölött kivágott kockák: `tools/kep-forras/allo/`; az egy, a 37 között nem szereplő vendégvideó adatai a repón kívül). A hősben az álló videó mellett nincs
   üres fehér sáv: a képhasáb a borító hátterét kapja (`assets/img/uj-allo-hatter.webp`), a videó keretezve középen. Az „Így néz ki egy … behelyezés” dobozokban a videó mellett
   a behelyezés 4 lépése + link a szúrás folyamatához (`BEVIDEO_LEPESEK`, `tools/uj-oldalak/kozos.mjs`; a tükör-oldalakon `behelyezesLepesek`).
-- **Az őszi akció oldala** (`/3-piercing-2-araert-regi`, a menü „Akció” pontja; a tulajdonos kérése, 2026-10-16: „csak az akció oldalt tervezd újra” a konverziós
-  képernyőtervek PDF-jének 03-as terve szerint, az oldal stílusában – „az összes szekció ugyanarról szól, csak az árat boncolgatjuk négyszer”): kézzel írt oldal
-  (`uj-oldalak/sajat/3-piercing-2-araert-regi.html`, a B-építő helyett). Sorrend: hős (az ár szövegként, ★, 3 árdoboz – a 3-ason „Legkedvezőbb darabár” –, „Ezt foglalom”,
-  mikroszöveg, zöld garancia-doboz) → „Nem tudod, melyik 2–3 piercinget válaszd?” (középre igazított `kat-fej`, párosítási ajánlás nélkül, a típusoldalak linkjeivel) → „Mi jár az
-  árért?” (kéthasábos `kat-doboz kat-par`: 5 csekk + a steril eszközök fotója) → vendégeink videós beszámolói (a közös, lapozható sáv mind a 37 videóval, nagyobb kártyákkal;
-  a tulajdonos kérése: „nagyon picik … legyen lapozható”) → „Hol és mikor?” (Budapest + a két legközelebbi kitelepülési nap a táblázatból, `uj-fooldal.js` 4f.; ez a helyszín
-  valódi napja, nem kitalált „szabad időpont”; adat nélkül csak Budapest; alatta a megszokott helyszín-doboz, végig látható) → GYIK (a garancia-oldal teljes szélességű kérdés-rácsa:
-  Fáj? Kinek nem ajánljuk? – a szúrás folyamata oldal listája –, Mikor fizetek?, Mi van, ha nem érzek javulást?) → mobilon ragadós alsó sáv („3 piercing 44 900 Ft · fizetés
-  a helyszínen” + telefon + „Időpontot foglalok”). Az **„Ezt foglalom”** gombok (`data-csomag="1|2|3"`; a tulajdonos kérése, 2026-10-16: „a 2–3 akciónak külön boxa van, és nem arra
-  visznek … vigyenek arra”) a foglalót a csomaggal nyitják: a típusválasztó („Új piercing”) kimarad, rögtön a helyszín jön, a Piercing-lépésben a választott csomag áll
-  elöl – **csukva**, mint a többi kártya („a kártyák ugyanúgy legyenek csukva”); a foglalásindítás mérése (`meres()`, egyszer nyitásonként) ilyenkor a helyszín-lépés
-  megnyílásakor fut (`window.__mpCsomag` → `motor.js` `nyit` / `szolgRajzol`; a `motor-indito.js` nem változott). A régi lapcím régi árral („41.900”) helyett a mostani
-  (`FRISS_CIM`, `tools/uj-fooldal.mjs`). A PDF „Képen még” szövegei és a makett-időpontok nem kerültek ki. A globális akciósáv szövege („a 2. piercing féláron…”) nem
-  változott (a PDF nyitott kérdése a tulajdonosnak). A foglaló szűrősora: ha a két kapcsoló két sorba törik (a foglaló-ablak szélessége szerint, `szuroSorok`), a „Magamnak /
-  2 személynek” feljebb, a jelölés a két sor között; a „Hogy néz ki egy szúrás?” sima link (a tulajdonos kérése: „ne vegye el a fókuszt”).
+- **Az őszi akció oldala** (`/3-piercing-2-araert`, a menü „Akció” pontja; a tulajdonos kérése, 2026-10-17: „a három piercing két áráért maradjon meg, a … régi link
+  301-gyel irányítson át …, a régi oldalt klónozd le az új élesre, az új dizájnnal … csak a szekciók sorrendje és a szöveges tartalom, és ez a fontos”): a két akció-oldalból egy lett.
+  A `/3-piercing-2-araert-regi` **301-gyel** ide visz, a paraméterekkel (`SAJAT_ATIRANYITASOK`, `lib/utvonal.js`); a menü, az akciós sávok és a régi „3 piercing 2 áráért! - AKCIÓ!”
+  linkek közvetlenül ide mutatnak. A Wix-es eredeti a `/regi/3-piercing-2-araert-regi` címen marad (noindex). Kézzel írt oldal (`uj-oldalak/sajat/3-piercing-2-araert.html`): a
+  szakaszok sorrendje és a szöveg **1:1 a Wix-es `-regi` oldalról** – hős („Most megéri 2 vagy 3 piercinget szúratni!”, a plakát egészben, négyzetes kerettel) → „Több piercing =
+  Erősebb hatás” (+ az ékszer-lapozó) → „9 ok, amiért a piercingeink működnek!” (mind a 9 pont; az eredetin görgethető szövegdobozban) → „Legnépszerűbb piercingeink 👇”
+  (mind a 10 típus az eredeti listáival) → „Tudtad, hogy...?” → 93% → „Olvasd el a visszajelzéseket!” → helyszínek → „Ismerd meg csapatunkat!” –, a dobozok a mostani oldalé
+  (a TikTok-landoló mintájára). Szándékos eltérés (a `tools/uj-oldalak-teszt.mjs` `SZANDEKOS_LAP` sora; minden más eredeti sort számon kér): a vélemény-szám a Google mostani
+  száma, „Már 15 városban várunk!” (az eredetin 12, a lista 15 város), a város-csempe maga a foglaló-link, a „higiánia” elírás javítva; a kitelepülési napok a táblázatból.
+  A lapcím a mostani árral (`FRISS_CIM`, `tools/uj-fooldal.mjs`; a Wix üres leírása helyett a lap sajátja). Korábban itt a „Páros kedvezmény” (B-építő) volt, a `-regi` címen pedig
+  a PDF 03-as terve szerinti kézzel írt oldal (2026-10-16; a git-előzményben: `uj-oldalak/sajat/3-piercing-2-araert-regi.html`) – a tulajdonos döntésével (2026-10-17) mindkettő
+  helyett ez. A páros akció rejtett B-változata (`/b/3-piercing-2-araert`) marad.
 - **A TikTok-landoló** (`/kozerzetjavito-piercing-soft-akcio`, a TikTok-hirdetések céloldala; a tulajdonos kérése, 2026-10-16): a szöveg **1:1 az eredeti landolóról**
   (`/regi/kozerzetjavito-piercing-soft-akcio`), de **sehol nem állhat panasz- vagy orvosi szó** („nem lehet sehol sem, se migrén, se klimax, semmi ilyesmi, nem lehet a
   thumbnail-es videók thumbnail-en se … semmi olyasmi kifejezés, ami orvosi” – a TikTok letiltja): a szövegben, a képeken és feliratukban, a videók borítóin, az alt / title /
@@ -188,7 +185,7 @@ Ezen felül:
   a 2 véleményes (783989…), az üres és az ismeretlen widget helyett a főoldali (daf9c4…, 35 vélemény). A tükör-oldalak Trustindex-beágyazása (assets/embed) is a főoldali doboz lett.
 - **Helyszíneink hősképe**: Magyarország térképe a 15 helyszínnel (`tools/uj-helyszin-terkep.mjs` → `reszek/helyszin-terkep.html`, beágyazott SVG a lap betűjével).
 - **A hirdetések céloldalai** (Meta, TikTok; 2026-10-16-i lista) mind formázottak az `/uj` alatt; a két utolsó: `/kozerzetjavito-piercing-soft-akcio` (a TikTok-landoló; 2026-10-16 óta kézzel írt,
-  lásd fent) és `/3-piercing-2-araert` („Páros kedvezmény”, a B-építővel). A közös dobozok (akció, árak, ékszerek, helyszínek, piercingek, média, csapat) egy oldalon csak egyszer jelennek meg.
+  lásd fent) és `/3-piercing-2-araert` (2026-10-17 óta az őszi akció oldala, a Wix-es `-regi` oldal szövegével, lásd fent). A közös dobozok (akció, árak, ékszerek, helyszínek, piercingek, média, csapat) egy oldalon csak egyszer jelennek meg.
 - **A foglalómotor Piercing-lépése** (a tulajdonos látványterve és kérései, 2026-10-16; `assets/js/motor/motor.js`, `szolgRajzol` / `pkKartya` / `pkAdat` / `arakBol`): nincs fejléc-doboz;
   kicsi szűrősor (Magamnak / Két személynek; 1 piercing / 2–3 piercing / Fülbevaló – asztalon egy sor, mobilon kettő), a „★ 4,8 · 5000+ értékelés” mellett egy sorban a „Hogy néz ki egy szúrás?”
   (felugró, bezárható videó: X, háttér, Esc), kicsi „Az ár tartalmazza”, alatta MINDEN lehetőség kártyája (nincs rejtett „+ többi”). Minden kártyán két gomb: „Részletek” (lenyitja: a pont helye

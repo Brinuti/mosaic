@@ -211,11 +211,12 @@ function regiFej(ROOT, ut) {
 }
 // ahol a regi lapcim mar mast mond, mint az oldal (pl. az oszi akcio regi cime regi arral: "3 piercing 2 áráért 41.900 forintért"), ott a cim
 // (es az og- / twitter-cim) a mostani; minden mas regi SEO-cimke marad (2026-10-16, 5. kor)
-const FRISS_CIM = { '/3-piercing-2-araert-regi': 'Őszi akció: 3 piercing 44 900 Ft | Medical Piercing' };
+const FRISS_CIM = { '/3-piercing-2-araert': 'Őszi akció: 3 piercing 44 900 Ft | Medical Piercing' };
 function elesFej(ROOT, ut, html) {
   const bValtozat = /^\/b\//.test(ut);   // a B-valtozatok (/b/<ut>) rejtettek: noindex, canonical nelkul
   let r = ut === '/404' || bValtozat ? null : regiFej(ROOT, ut);   // a Wix 404-es lapjanak fejlece ("Post | Medical Piercing", canonical) nem kell
-  if (r && FRISS_CIM[ut]) r = { ...r, cim: FRISS_CIM[ut], cimkek: r.cimkek.map((c) => c.replace(/((?:property="og:title"|name="twitter:title") content=")[^"]*"/, `$1${FRISS_CIM[ut]}"`)) };
+  // (a frissitett cimu lapokon a Wix ures leirasa helyett a lap sajat leirasa marad)
+  if (r && FRISS_CIM[ut]) r = { ...r, cim: FRISS_CIM[ut], cimkek: r.cimkek.filter((c) => !/name="description" content=""/.test(c)).map((c) => c.replace(/((?:property="og:title"|name="twitter:title") content=")[^"]*"/, `$1${FRISS_CIM[ut]}"`)) };
   const ki = html.replace(/<!-- Rejtett próbaoldal[^>]*-->\n?/, '').replace(/<meta name="robots" content="noindex,nofollow">\n?/, '');
   if (r) {
     const leirasVan = r.cimkek.some((c) => /name="description"/i.test(c));

@@ -417,7 +417,7 @@ const REGI_OLDALAK = /^\/(?:migren|fejfajas)$/;
 function regiLinkLe(html) {
   return html
     .replace(/<a\b[^>]*\shref="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g, (m, h, t) => (REGI_OLDALAK.test(h.split(/[?#]/)[0]) ? t : m))
-    .replace(/<a\b[^>]*\shref="\/3-piercing-2-araert(?:-2)?"[^>]*>3 piercing 2 áráért! - AKCIÓ!<\/a>/g, '<a href="/3-piercing-2-araert-regi">Őszi akció »</a>');
+    .replace(/<a\b[^>]*\shref="\/3-piercing-2-araert(?:-2)?"[^>]*>3 piercing 2 áráért! - AKCIÓ!<\/a>/g, '<a href="/3-piercing-2-araert">Őszi akció »</a>');
 }
 
 // az uj oldalakon nem szereplo regi oldalak (a tulajdonos kerese, 2026-10-16: aranyrol nincs szoveg): nincs /uj valtozatuk, a blogban sincs kartyajuk
