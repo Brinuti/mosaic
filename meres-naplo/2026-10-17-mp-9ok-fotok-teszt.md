@@ -21,3 +21,9 @@ Nem érinti (a mérőkód fájljai nem változtak, csak a lap tartalma és stíl
 - `csuszas-teszt` (206 + 206 lap, késleltetett képekkel): nincs csúszás; `meres-teszt`, `uj-fooldal-teszt`: rendben
 - szemrevételezés: 1440 px (3 kártya, lapozás), 820 px (2 kártya), iPhone 13 (1 kártya + a következő széle, ujjal húzás); vízszintes túlcsordulás nincs;
   a kártyák egyforma magasak, a fotó minden szélességen 3:2, nem vágódik tovább
+
+## 2. kör (élesítés után, 2026-10-17)
+Az éles mobil nézetben a rövid szövegű kártyák alján nagy üres fehér sáv maradt (minden kártya a leghosszabb, a 4. magasságában; 360 px-en akár 240 px).
+Javítás: mobilon minden kártya a saját magasságában, a lapozó sávja a látszó kártya magasságát veszi fel (`data-kar-igazit`, `uj-oldalak.js` 1., 0,25 mp-es áttűnéssel);
+asztalon és tableten (több kártya egyszerre) a kártyák egyforma magasak maradnak. Tesztek: `uj-oldalak-teszt` (az akció-oldal, a `-regi`, a főoldal) 0 hiba,
+`csuszas-teszt` nincs csúszás, `meres-teszt` rendben; szemrevételezés iPhone 13-on (1. és 2. kártya).
