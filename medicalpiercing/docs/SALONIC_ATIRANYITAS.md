@@ -4,8 +4,7 @@ Feri kérése (2026-10-17): aki közvetlenül (legfelső ablakban) a `medicalpie
 hirdetések `.../showServices/...` linkjei –, automatikusan a saját foglalómotorunkba kerüljön, úgy, hogy a motor által keretben (iframe)
 használt Salonic-adatlap ne sérüljön. Élesítés előtt a Meta Schedule-párosítást le kellett ellenőrizni.
 
-**Állapot: előkészítve, NEM él.** Élesíteni a Salonic-fiókban kell (lásd „Élesítés”). A repóban a kapcsoló be van kapcsolva (`salonic-atiranyitas.json`),
-de amíg a Salonic oldalain nincs betöltve a GTM-címke, a szkript sehol nem fut.
+**Állapot: ÉL (2026-10-17).** GTM-KMNT72W6 (Mosaic Headspa GTM-fiók – az MP-fiókban nincs jog konténert létrehozni), a Salonic MP-fiók „<head> részbe illeszthető kód” mezőjében; éles próba: `meres-naplo/2026-10-17-mp-salonic-atiranyitas-eles.txt`.
 
 ## 1. Mi fut most a Salonic-oldalakon (2026-10-17, a `/selectLocation`, `/showServices/`, `/guestData/` HTML-je)
 
