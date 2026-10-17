@@ -4,7 +4,20 @@ export async function sha256hex(szoveg) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(szoveg)));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
-export const emailNormal = (e) => { const s = String(e || '').trim().toLowerCase(); return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : null; };
+const EMAIL_TOKEN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// A kuponos Salonic-levelben az "E-mail cim:" mezo az e-mail cim utan a "Kupon kod: <KOD>" sort is tartalmazza (elvalaszto nelkul is osszeerhet: "...@pelda.huKupon kod: ABC123"). DECISION #192 / F1.
+const KUPON_CIMKE = /(?:kupon\s*k[oó]d|coupon\s*code)\s*:/i;
+/** A mezo a kuponkod-cimkeig (a cimkevel kezdodo szoveg: ures). Az external_id tartalek-agahoz: a kuponkod szovege semmilyen hash-be nem kerulhet. */
+export const kuponNelkul = (e) => { const t = String(e || ''); const vag = t.search(KUPON_CIMKE); return vag >= 0 ? t.slice(0, vag) : t; };
+/** E-mail normalizalas (kisbetus, trim-elt cim). Ha a mezo pontosan egy e-mail token: valtozatlan (a regi viselkedes). Egyebkent (DECISION #192, F1) az ELSO e-mail-szeru token; ha a kuponkod-cimke is a mezoben van, a cimke ELOTTI reszbol (a kuponkod sosem kerul a hash-be); ha nincs ilyen token: null. */
+export const emailNormal = (e) => {
+  const teljes = String(e || '').trim().toLowerCase();
+  const vag = teljes.search(KUPON_CIMKE);
+  const s = vag > 0 ? teljes.slice(0, vag).trim() : teljes; // a cimke ELOTTI resz (osszeerve is: "...@pelda.huKupon kod:")
+  if (EMAIL_TOKEN.test(s)) return s;
+  const elso = (t) => t.split(/\s+/).find((x) => EMAIL_TOKEN.test(x));
+  return elso(s) || (vag >= 0 ? elso(teljes) : null) || null; // a masodik: ha a cimke az e-mail elott all
+};
 /** Magyar telefonszam -> orszagkoddal egyutt, csak szamjegyek (pl. "709420090", "06 70 942 0090", "+36 70 942 0090" -> "36709420090"); null, ha nem ertelmezheto. */
 export function telefonSzamjegy(nyers, orszag = '36') {
   let s = String(nyers || '').replace(/[^\d+]/g, '');

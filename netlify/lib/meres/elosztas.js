@@ -6,7 +6,7 @@
 //   - esemeny kuldese ELOTT elo allapot-ellenorzes (deps.eloEllenorzes): torolt foglalasra nem megy pozitiv konverzio; nem ellenorizheto -> halasztva
 // Csak ARNYEKMODBAN fut (MERES_ELOSZTO=1 es a platformok.js vedelmei); elo pixelre / property-re / akciora nem kuldhet.
 import { esemenyek, konzultacioTabla, SOURCE_ID_MINTA, UZLETAGAK } from './esemeny-modell.js';
-import { hashEmail, hashTelefon, hashAzonosito } from './hash.js';
+import { emailNormal, hashEmail, hashTelefon, hashAzonosito, kuponNelkul } from './hash.js';
 import { erkezesTisztit } from './erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from './hozzajarulas.js';
 import { KEREM_EPITO, kuldes, PLATFORMOK } from './platformok.js';
@@ -121,7 +121,7 @@ export async function elosztas(db, fk, deps = {}) {
   const kapcsolok = await kapcsolokOlvas(db);
   const ctxAlap = { fk: { ...fk, ido: fk.ido || (erkRow ? erkRow.ido : t) }, erk, ua: erkRow ? erkRow.ua : null, ip: erkRow ? erkRow.ip : null, oldal: fk.oldal || (erkRow ? erkRow.oldal : null), hozz: { meta: platformSzabaly('meta', hozz), tiktok: platformSzabaly('tiktok', hozz), google: platformSzabaly('google', hozz), ga4: platformSzabaly('ga4', hozz) } };
   const v = fk.vendeg || {};
-  ctxAlap.hash = { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await hashAzonosito(v.g || v.email) };
+  ctxAlap.hash = { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await hashAzonosito(v.g || emailNormal(v.email) || kuponNelkul(v.email)) };
   const osszefoglalo = { allapot: 'kesz', source_id: fk.source_entity_id, erkezesi_adat: !!erkRow, esemenyek: [] };
 
   // minden (esemeny, platform) cella mar VEGLEGES (elkuldve / modell szerint kihagyva / lemondva): nincs teendo, elo lekeres sem kell (az ismetelt hivas olcso es nem kuld)

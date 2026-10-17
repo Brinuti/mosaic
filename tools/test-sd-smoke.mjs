@@ -210,8 +210,11 @@ test('SM12 TERMESZETES HeadSpa sd-foglalas (a motor lezart, az sd atvette): mind
   assert.equal(allapotok(ertekel(u8, csakPmu, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C12, 'WARN');
 });
 
-test('SM13 HeadSpa kuponos sd-foglalas (az e-mail nem hashelheto: a mai eles kuponos levelek alakja): a hash-index hianya C2 WARN, de a verdikt PASS marad; a nem-HeadSpa/pmu/oxigen uzletag tovabbra is C1 FAIL', async () => {
+test('SM13 HeadSpa kuponos sd-foglalas: F1 utan az e-mail mezobol (e-mail + kuponkod-sor) az e-mail kinyerheto -> van index-sor, C2 PASS; az F1 elotti (index nelkuli) kuponos sor tovabbra is C2 WARN, de a verdikt PASS marad; a nem-HeadSpa/pmu/oxigen uzletag tovabbra is C1 FAIL', async () => {
   const { v, u8 } = await termeszetes({ host: HS_LEVEL.host, uzletag: 'headspa', u8: 'c0ffee41', lev: { ...HS_LEVEL, szolgaltatas: 'KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás (kupon)', vendeg: { email: 'teszt.claude@example.com Kuponkód: ABC123', telefon: VENDEG.telefon } } });
+  const e0 = ertekel(u8, lefuttat(v, u8), { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
+  assert.equal(allapotok(e0).C1, 'PASS'); assert.equal(allapotok(e0).C2, 'PASS', 'F1 utan a kuponos levelnek is van vendeg-index sora'); assert.equal(e0.verdikt, 'PASS', JSON.stringify(e0.kriteriumok.filter((x) => x.allapot !== 'PASS')));
+  v.D.db.prepare('DELETE FROM foglalas_vendeg').run(); // az F1 elotti kuponos sorok alakja: nincs index-sor
   const e = ertekel(u8, lefuttat(v, u8), { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
   assert.equal(allapotok(e).C1, 'PASS'); assert.equal(allapotok(e).C2, 'WARN'); assert.equal(e.verdikt, 'PASS', JSON.stringify(e.kriteriumok.filter((x) => x.allapot !== 'PASS')));
   const jo = lefuttat(v, u8); const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '10823|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'fodrasz' }));
