@@ -10,6 +10,29 @@ import crypto from 'node:crypto';
 
 const TARTALEK = 1.15;   // a mert szelesseg folott ennyivel nagyobb helyre szamolunk (kis elrendezes-valtozas ne tegye homalyossa a kepet)
 
+// A feliratos abrak / szoveges kepek (uj-oldalak/teljes-kepek.json, tools/teljes-kepek.py) soha nem vagodnak le (a tulajdonos kerese, 2026-10-17):
+// az uj lapokon data-teljes jelet kapnak (uj-egyseges.css: egeszben, a doboz a kep aranyat koveti; fix keretben a maradek savot a kep szelenek szine tolti ki).
+const ujLapok = (DIST) => ['_a', '_m'].flatMap((ki) => fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html') && !/^regi[\\/]/.test(x)).map((x) => path.join(DIST, ki, x)));
+export function teljesKepek(ROOT, DIST) {
+  const jp = path.join(ROOT, 'uj-oldalak/teljes-kepek.json');
+  if (!fs.existsSync(jp)) return 'nincs lista: kihagyva';
+  const lista = JSON.parse(fs.readFileSync(jp, 'utf8'));
+  let lapDb = 0, kepDb = 0;
+  for (const fajl of ujLapok(DIST)) {
+    const h = fs.readFileSync(fajl, 'utf8');
+    const u = h.replace(/<img\b[^>]*>/g, (tag) => {
+      const m = tag.match(/\ssrc="\/assets\/img\/([^"?#]+)/);
+      if (!m || !(m[1] in lista) || /\sdata-teljes\b/.test(tag)) return tag;
+      kepDb++;
+      const szin = /^#[0-9a-f]{6}$/i.test(lista[m[1]]) ? lista[m[1]] : '#ffffff';
+      const t = /\sstyle="/.test(tag) ? tag.replace(/\sstyle="([^"]*)"/, (x, s) => ` style="${s.replace(/;?\s*$/, ';')}background-color:${szin}"`) : tag.replace(/^<img\b/, `<img style="background-color:${szin}"`);
+      return t.replace(/^<img\b/, '<img data-teljes');
+    });
+    if (u !== h) { fs.writeFileSync(fajl, u); lapDb++; }
+  }
+  return `${lapDb} lapon ${kepDb} feliratos kep egeszben`;
+}
+
 export function valaszadoKepek(ROOT, DIST) {
   const jp = path.join(ROOT, 'assets/img/valtozat/jegyzek.json'), mp = path.join(ROOT, 'uj-oldalak/kep-meretek.json');
   if (!fs.existsSync(jp) || !fs.existsSync(mp)) return 'nincs valtozat-jegyzek vagy mert meret: kihagyva';

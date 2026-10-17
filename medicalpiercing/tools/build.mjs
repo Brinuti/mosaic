@@ -19,7 +19,7 @@ import { gyorsit } from './gyorsitas.mjs';
 import { ujFooldal, ujOldalak, ujKitelepules } from './uj-fooldal.mjs';
 import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
 import { kulcsbol } from '../lib/utvonal.js';
-import { valaszadoKepek } from './valaszado-kepek.mjs';
+import { valaszadoKepek, teljesKepek } from './valaszado-kepek.mjs';
 import { tomorit } from './tomorites.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -224,6 +224,7 @@ else if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.
 }
 
 // gyorsitas (2026-10-17): valaszado kepek az uj lapokon (tools/valaszado-kepek.mjs), a sajat stilusok / szkriptek tomoritve (tools/tomorites.mjs)
+console.log(`feliratos kepek: ${teljesKepek(ROOT, DIST)}`);
 console.log(`valaszado kepek: ${valaszadoKepek(ROOT, DIST)}`);
 console.log(`tomorites: ${await tomorit(DIST)}`);
 
