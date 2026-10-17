@@ -290,21 +290,40 @@
 @media (max-width:360px){.fejlec-landolo .logo img{height:26px}}
 
 /* Az oszi akcio oldala (/3-piercing-2-araert; a tulajdonos kerese, 2026-10-17: a Wix-es eredeti szakaszai es szovege, a mostani dobozokkal):
-   a "9 ok" kartya-racsa, a 10 piercing-kartya (mind latszik, asztalon 2 x 5), a piercing-bevezeto mondat */
-.ok-racs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
-.ok-racs .kartya{padding:18px 18px 20px}
-.ok-racs h3{margin:0 0 8px;font-size:1.05rem;line-height:1.3;color:var(--navy)}
-.ok-racs p{margin:0;color:var(--mut);font-size:.94rem;line-height:1.55}
-.ok-szam{color:var(--rose-i);font-weight:800}
+   a "9 ok" lapozoja, a 10 piercing-kartya (mind latszik, asztalon 2 x 5), a piercing-bevezeto mondat */
+/* a "9 ok" lapozo (a .kar sav, uj-oldalak.js 1.): feher kartyak a fooldali szakerto-blokk ikonos koreivel, nagy sorszammal; asztalon 3, tableten 2 latszik,
+   mobilon egy (a kovetkezo szele kilog, ujjal huzhato), a nyilak helyett a szamlalo */
+.ok-doboz{display:block;padding:34px 30px 26px}
+.ok-doboz .kat-fej{margin-bottom:22px}
+.ok-kar{position:relative}
+.ok-kar .kar-sav{gap:18px;padding:4px 2px 16px}
+.ok-kar .kar-dia{position:relative;flex:0 0 calc((100% - 36px) / 3);display:flex;flex-direction:column;gap:10px;padding:22px 22px 24px;overflow:visible;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh-s);text-align:left}
+.ok-fej{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px}
+.ok-fej .kor{flex:none}
+.ok-szam{font-size:2.6rem;font-weight:800;line-height:1;color:var(--rose);opacity:.55;letter-spacing:-.02em}
+.ok-dia h3{margin:0;font-size:1.08rem;line-height:1.3;color:var(--navy)}
+.ok-dia p{margin:0;color:var(--mut);font-size:.93rem;line-height:1.6}
+.ok-kar .kar-gomb{top:calc(50% - 10px);width:46px;height:46px;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+.ok-kar .kar-gomb:hover:not(:disabled){background:var(--rose);color:#fff}
+.ok-kar .kar-gomb .ik{width:22px;height:22px}
+.ok-kar .kar-elozo{left:-14px}
+.ok-kar .kar-kov{right:-14px}
+.ok-kar .kar-szam{display:none}
+.rejtett{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .piercingek-bev{margin:-8px 0 18px;color:var(--mut)}
 @media (min-width:1001px){
   .piercing-racs-mind{grid-template-columns:repeat(5,minmax(0,1fr))}
   /* a hos feliratos plakatja asztalon is egeszben: negyzetes keret (a galerias hos szabalya a szoveghasab magassagara vagta) */
   .belso .hos-racs>.hos-kep.hos-kep-negyzet{aspect-ratio:1/1;min-height:0;height:auto;width:100%;max-width:520px;justify-self:end;align-self:center}
 }
-@media (max-width:1000px){.ok-racs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1000px){.ok-kar .kar-dia{flex-basis:calc((100% - 18px) / 2)}}
 @media (max-width:760px){
-  .ok-racs{grid-template-columns:minmax(0,1fr);gap:10px}
-  .ok-racs .kartya{padding:14px 14px 16px}
   .piercingek-bev{margin:-6px 0 14px;font-size:.95rem}
+  .ok-doboz{padding:22px 0 16px;text-align:center}
+  .ok-doboz .kat-fej{margin-bottom:14px;padding-inline:16px}
+  .ok-kar .kar-sav{gap:12px;padding:4px 16px 14px;scroll-padding-inline:16px}
+  .ok-kar .kar-dia{flex-basis:84%;padding:18px 18px 20px}
+  .ok-szam{font-size:2.2rem}
+  .ok-kar .kar-gomb{display:none}
+  .ok-kar .kar-szam{display:block;margin:0 auto;width:fit-content;padding:3px 14px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.82rem;font-weight:700}
 }
