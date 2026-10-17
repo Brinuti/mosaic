@@ -49,15 +49,15 @@ test('S0-01 PMU visszatero vendeg (sd): Meta + TikTok kimegy, Google / GA4 jogos
   assert.equal(r.sd_id, await sdId(v, u));
   assert.deepEqual(hivasNev(v), ['meta:PMU_Visszajaro', 'tiktok:PMU_Visszajaro']);
   assert.deepEqual(cellak(v).map((c) => `${c.esemeny_nev}/${c.platform}/${c.allapot}`), ['Visszajaro/meta/elkuldve', 'Visszajaro/tiktok/elkuldve', 'Visszajaro/google/kihagyva', 'Visszajaro/ga4/kihagyva']);
-  assert.ok(cellak(v).every((c) => c.forras === 'salonic_direct' && c.attr_minoseg === 'C_salonic_direct' && c.ertek_minoseg === 'unknown_price'));
+  assert.ok(cellak(v).every((c) => c.forras === 'salonic_direct' && c.attr_minoseg === 'C_salonic_direct' && c.ertek_minoseg === 'exact')); // DECISION #195 / 3: a PMU alap-foglalas ismert arral fut (Zap `ar`); az ismeretlen PMU-ar HOLD (tools/test-sd-195.mjs)
   for (const p of ['google', 'ga4']) assert.equal(cellaOsztaly(v.sql('SELECT allapot, indok FROM meres_kuldes WHERE platform = ?1', p)[0]).osztaly, 'jogos_0', `${p}: jogos 0 (nem hiany)`);
   assert.match(cella(v, 'Visszajaro', 'ga4').indok, /^salonic_direct: nincs GA4 client_id/);
   const meta = v.net.hivasok[0].body.data[0];
   assert.equal(meta.action_source, 'other'); // D2
   for (const k of ['event_source_url']) assert.ok(!(k in meta), `nincs kitalalt ${k}`);
   for (const k of ['client_ip_address', 'client_user_agent', 'fbp', 'fbc']) assert.ok(!(k in meta.user_data), `nincs kitalalt ${k}`);
-  assert.deepEqual([meta.custom_data.forras, meta.custom_data.attr_minoseg, meta.custom_data.ertek_minoseg], ['salonic_direct', 'C_salonic_direct', 'unknown_price']);
-  assert.ok(!('value' in meta.custom_data) && !('currency' in meta.custom_data), 'ismeretlen ar: ertek nelkul (D5)');
+  assert.deepEqual([meta.custom_data.forras, meta.custom_data.attr_minoseg, meta.custom_data.ertek_minoseg], ['salonic_direct', 'C_salonic_direct', 'exact']);
+  assert.deepEqual([meta.custom_data.value, meta.custom_data.currency], [25000, 'HUF'], 'ismert ar: az ertek a Zap `ar` mezojebol megy'); // az ertek nelkuli (D5) kuldes ismeretlen ar / kedvezmeny mellett: S0-04, tools/test-sd-195.mjs (masik uzletag)
   assert.ok(meta.user_data.em && meta.user_data.ph && meta.user_data.external_id, 'hash-elt azonositok mennek');
   assert.ok(v.net.hivasok.every((h) => !('page' in h.body.data[0]) || h.body.data[0].page.url), 'TikTok: nincs kitalalt oldal-URL');
   assert.deepEqual(v.sql("SELECT sd_id, sd_allapot, kuldve, booking_id FROM foglalas_egyeztetes WHERE uuid = ?1", u).map((x) => [x.sd_id === r.sd_id, x.sd_allapot, x.kuldve, x.booking_id]), [[true, 'kesz', null, null]]);
@@ -500,7 +500,7 @@ test('S0-26 szaraz (irasmentes) terv: a D1 nem valtozik, nem kuld, a terv megmut
   { const { v, b } = await jelolt({}, { uj_vendeg: true });
     const elotte = dump(v, tablak);
     const r = await v.sd({ ...b, szaraz: true });
-    assert.equal(r.allapot, 'szaraz_terv'); assert.equal(r.terv.mod, 'normal'); assert.equal(r.terv.motor_allapot, 'parositatlan'); assert.equal(r.terv.ertek_minoseg, 'unknown_price');
+    assert.equal(r.allapot, 'szaraz_terv'); assert.equal(r.terv.mod, 'normal'); assert.equal(r.terv.motor_allapot, 'parositatlan'); assert.equal(r.terv.ertek_minoseg, 'exact');
     assert.deepEqual(r.terv.terv_esemenyek.map((e) => e.nev), ['FoglalasElso', 'Schedule']);
     assert.equal(dump(v, tablak), elotte); assert.equal(v.net.hivasok.length, 0);
     assert.equal((await v.sd(b)).allapot, 'kesz', 'a szaraz hivas utan az eles atvetel meg szabad'); }
@@ -652,7 +652,7 @@ test('S0-32 QA-5 retegezett riport (D6): motor / salonic_direct / osszes + attr_
   const m = sor(BID), s1 = sor(await sdId(v, n1)), s2 = sor(await sdId(v, n2)), s3 = sor(await sdId(v, n3));
   assert.ok(m && s1 && s2 && s3);
   assert.deepEqual([m.forras, m.attr_minoseg, m.qa_kategoria, m.no_new_conversion_expected], ['motor', 'A_teljes', 'motor', false]);
-  assert.deepEqual([s1.forras, s1.attr_minoseg, s1.qa_kategoria, s1.sd_allapot, s1.ertek_minoseg, s1.csere, s1.salonic_uuid], ['salonic_direct', 'C_salonic_direct', 'post_t2_booking_object', 'kesz', 'unknown_price', null, n1]);
+  assert.deepEqual([s1.forras, s1.attr_minoseg, s1.qa_kategoria, s1.sd_allapot, s1.ertek_minoseg, s1.csere, s1.salonic_uuid], ['salonic_direct', 'C_salonic_direct', 'post_t2_booking_object', 'kesz', 'exact', null, n1]);
   assert.deepEqual([s2.qa_kategoria, s2.no_new_conversion_expected, s2.csere.allapot, s2.csere.old_booking_still_active, s2.csere.pre_t2_original_conversion, s2.csere.regi_uuid_elo8], ['reschedule_confirmed', true, 'confirmed', true, 'not_observed', regi.slice(0, 8)]);
   assert.deepEqual([s3.qa_kategoria, s3.sd_allapot, s3.no_new_conversion_expected], ['reschedule_suspected_hold', 'halasztva', false]);
   assert.ok(s2.jelzesek.includes('old_booking_still_active') && s3.jelzesek.includes('reschedule_suspected_hold'));
@@ -677,7 +677,7 @@ test('S0-32 QA-5 retegezett riport (D6): motor / salonic_direct / osszes + attr_
   assert.deepEqual(csakSd.sorok.map((x) => x.forras), ['salonic_direct', 'salonic_direct', 'salonic_direct']);
   const csv = egyeztetoCsv(r.sorok).trim().split('\n');
   assert.match(csv[0], /;forras;attr_minoseg;ertek_minoseg;qa_kategoria;no_new_conversion_expected$/);
-  assert.ok(csv.some((l) => l.includes(';salonic_direct;C_salonic_direct;unknown_price;post_t2_booking_object;false')) && csv.some((l) => /;reschedule_confirmed;true$/.test(l)));
+  assert.ok(csv.some((l) => l.includes(';salonic_direct;C_salonic_direct;exact;post_t2_booking_object;false')) && csv.some((l) => /;reschedule_confirmed;true$/.test(l)));
   const adm = await (await kezelAdmin(new Request(`https://x.pages.dev/api/meres-admin?kulcs=${KULCS_SZOVEG}&egyeztetes=1&tol=${tol}&ig=${ig}&forras=motor`), v.e, { now: v.t })).json();
   assert.deepEqual(adm.sorok.map((x) => x.forras), ['motor']);
   // a riport szemelyes adatot nem tartalmaz

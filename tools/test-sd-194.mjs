@@ -136,7 +136,7 @@ test('P1b (review F-5) a "Korrekcio" szabaly CSAK a PONTOS nevre: a dekoralt val
 test('P2 PMU sd veg-vegig: a "Korrekcio" Visszajaro Meta / TikTok esemenye value=0 HUF, ertek_minoseg=exact (korabban unknown_price, ertek nelkul)', async () => {
   arFrissitesNullaz();
   const v = vilag({ kapcsolo: 'pmu' }); await v.kesz;
-  const u = ujUuid(); const b = level(u, { host: PMU_HOST, felado: 'Mosaic PMU', szolgaltatas: 'Korrekció', uj_vendeg: false });
+  const u = ujUuid(); const b = level(u, { host: PMU_HOST, felado: 'Mosaic PMU', szolgaltatas: 'Korrekció', uj_vendeg: false, ar: undefined });
   await lezar(v, b); v.t.set(SD_ELOTT);
   const r = await v.sd(b);
   assert.deepEqual([r.allapot, r.uzletag, r.jelleg, r.ertek_minoseg, r.ertek_forras], ['kesz', 'pmu', 'visszajaro', 'exact', 'korrekcio_az_arban']);
@@ -206,7 +206,7 @@ test('P6 a PMU-nevtabla frissites a teljes sd-uton: a worker `fuggosegek.nevtabl
   await nevtablaPmu(v.db, [], [], T0, [[777, 'Teszt Mester']]); // a D1 valos allapota: hely + munkatars sor, SZOLGALTATAS nincs (a parositas ezert nem kerul a celzott frissites ele: a hiba oka)
   const hivasok = [];
   const frissito = async (uzletag) => { hivasok.push(uzletag); return { helyek: [{ placeId: PMU_PLACE, nev: 'Mosaic PMU' }], munkatarsak: [], szolgaltatasok: [{ placeId: PMU_PLACE, serviceId: '900001', nev: 'Szemöldök tetoválás Soft powder' }], arak: [{ placeId: PMU_PLACE, serviceId: '900001', ar: 99000 }] }; };
-  const u = ujUuid(); const b = level(u, { host: PMU_HOST, felado: 'Mosaic PMU', szolgaltatas: 'Szemöldök tetoválás Soft powder', uj_vendeg: false });
+  const u = ujUuid(); const b = level(u, { host: PMU_HOST, felado: 'Mosaic PMU', szolgaltatas: 'Szemöldök tetoválás Soft powder', uj_vendeg: false, ar: undefined });
   await lezar(v, b); // a motoros 4 proba frissito NELKUL (a valodi PMU-nal a parositas 1. aga sikeres, a PMU-tabla ezert sosem frissul: ez a hiba oka)
   assert.equal(hivasok.length, 0); const elotte = hivasok.length;
   v.t.set(SD_ELOTT);
@@ -227,7 +227,7 @@ test('F1 (review F-1) a `szaraz:true` sd_atvetel PMU-ra: 0 nevtabla-frissito hiv
     arFrissitesNullaz();
     const v = vilag({ kapcsolo: 'pmu' }); await v.kesz;
     await nevtablaPmu(v.db, [], [], T0, [[777, 'Teszt Mester']]); // hely + munkatars, szolgaltatas nincs: a frissites ar-feloldasbol kerulne sorra
-    const b = level(ujUuid(), { host: PMU_HOST, felado: 'Mosaic PMU', szolgaltatas: 'Szemöldök tetoválás Soft powder', uj_vendeg: false });
+    const b = level(ujUuid(), { host: PMU_HOST, felado: 'Mosaic PMU', szolgaltatas: 'Szemöldök tetoválás Soft powder', uj_vendeg: false, ar: undefined });
     await lezar(v, b); v.t.set(SD_ELOTT);
     return { v, b };
   };
