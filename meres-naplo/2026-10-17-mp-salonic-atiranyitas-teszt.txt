@@ -1,0 +1,236 @@
+OK   chromium/asztali: a dist-ben a kapcsolo beirva (nincs __ATIRANYITAS_BE__)  1
+OK   chromium/asztali: celCim: /selectLocation  {"mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: / (a Salonic fooldala)  {"mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: nagybetus /SelectLocation  {"mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /selectSpecialization/?placeId  {"placeId":"10357","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /showServices/ szakemberrel + fbclid + utm  {"placeId":"6029","employeeId":"123","fbclid":"FB.1","utm_source":"facebook","utm_campaign":"x","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /showServices/ kezelessel  {"placeId":"12169","serviceId":"555","employeeId":"7","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /showServices/?specId  {"placeId":"6029","specId":"9","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /employees/<id>/  {"placeId":"6029","employeeId":"321","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /selectEmployee/ (Barki = -1 nem megy)  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /selectDate/ back-kel  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: gclid + ttclid + _gl  {"gclid":"G1","ttclid":"T1","mp_honnan":"salonic"}
+OK   chromium/asztali: celCim: /guestData/ (adatlap): marad  null
+OK   chromium/asztali: celCim: /booking/cancelBooking/: marad  null
+OK   chromium/asztali: celCim: /booking/deleteSuccess/: marad  null
+OK   chromium/asztali: celCim: /user/login/: marad  null
+OK   chromium/asztali: celCim: /giftcards: marad  null
+OK   chromium/asztali: celCim: /contact: marad  null
+OK   chromium/asztali: celCim: /privacy: marad  null
+OK   chromium/asztali: celCim: /policy: marad  null
+OK   chromium/asztali: celCim: /language/set/hu: marad  null
+OK   chromium/asztali: celCim: ismeretlen parameter (token): marad  null
+OK   chromium/asztali: celCim: ismeretlen parameter (bookingId): marad  null
+OK   chromium/asztali: celCim: kikerulo parameter: marad  null
+OK   chromium/asztali: celCim: /booking/start (nem tolcser): marad  null
+OK   chromium/asztali: celCim: ismeretlen oldal: marad  null
+OK   chromium/asztali: celCim: mas tartomany: marad  null
+OK   chromium/asztali: Salonic /showServices/ -> www.medicalpiercing.hu/idopontfoglalas  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium=paid&utm_campaign=regi&mp_honnan=salonic (2444 ms)
+OK   chromium/asztali: a parameterek megmaradnak (placeId, fbclid, utm_*, mp_honnan)
+OK   chromium/asztali: location.replace: a Vissza gomb nem a Salonic-oldalra visz (elozmeny 1 elem)  2
+OK   chromium/asztali: a motor magatol megnyilik (tipus-valaszto)
+OK   chromium/asztali: "Uj piercing" utan a helyszin (Budapest) mar kivalasztva: egybol a kezelesek
+OK   chromium/asztali: naptar: van szabad idopont
+OK   chromium/asztali: adatlap: a Salonic keret betoltodik
+OK   chromium/asztali: az adatlap cime: guestData + fbclid + utm (a gclid nem)  https://medicalpiercing.salonic.hu/guestData/?placeId=6029&serviceId=220503&employeeId=-1&startDate=1792244400&lang=hu&back=mb_0mvca31nayh2ks3ol6jqgwq&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium
+OK   chromium/asztali: a keretben levo Salonic-adatlap NEM iranyit at (5 mp utan is guestData)  https://medicalpiercing.salonic.hu/guestData/?anyone=true&employeeId=19566&placeId=6029&se
+OK   chromium/asztali: a fo ablak a motoron marad
+OK   chromium/asztali: a keretben az atiranyito szkript le sem toltodik (a GTM-cimke kilep)  fo
+OK   chromium/asztali: keretben a Salonic /selectLocation sem iranyit at  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029& |  | https://medicalpiercing.salonic.hu/guestData/?anyone=true&em | https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LdctooU | about:blank | about:blank | https://medicalpiercing.salonic.hu/selectLocation
+OK   chromium/asztali: a Salonic fele csak GET ment (nincs bekuldes)
+OK   chromium/asztali: meroeszkoz-keres mind eldobva  5 db eldobva
+OK   chromium/asztali: Salonic /selectLocation -> /idopontfoglalas (gclid a sajat oldalra megy)  https://www.medicalpiercing.hu/idopontfoglalas?gclid=TESZTGCLID&mp_honnan=salonic
+OK   chromium/asztali: a motor a tipus-valasztoval nyilik
+OK   chromium/asztali: helyszin nelkul: a 15 helyszin
+OK   chromium/asztali: bezaras utan a cim "/" (mp_honnan nelkul, a gclid marad)  https://www.medicalpiercing.hu/?gclid=TESZTGCLID
+OK   chromium/asztali: Salonic /selectSpecialization/?placeId=10357 -> placeId=10357  https://www.medicalpiercing.hu/idopontfoglalas?placeId=10357&specId=20060&mp_honnan=salonic
+OK   chromium/asztali: /guestData/ (kozvetlen adatlap, valodi cim): az adatlaprol nem iranyitunk at (csak a Salonic sajat tovabbkuldese utani tolcser-oldalrol)  https://medicalpiercing.salonic.hu/ -> https://www.medicalpiercing.hu/idopontfoglalas?mp_honnan=salonic
+OK   chromium/asztali: /booking/cancelBooking/ (lemondas): marad
+OK   chromium/asztali: /user/login/ (fiok, "A foglalasaim"): marad
+OK   chromium/asztali: /giftcards: marad
+OK   chromium/asztali: ismeretlen parameter (pl. SMS-link azonosito): marad
+OK   chromium/asztali: ?mp_nincs_atiranyitas=1: marad
+OK   chromium/asztali: utana ugyanebben a lapban a /selectSpecialization/ is marad
+OK   chromium/asztali: kapcsolo 0 (vesz-kikapcsolas): marad
+OK   chromium/asztali: motor kikapcsolva: a Salonicrol jott vendeg visszakerul a Salonicra es ott marad (hurok nincs)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+OK   chromium/asztali: kikapcsolt motornal a sajat oldal Salonic-linkje kikerulo parameterrel megy  https://medicalpiercing.salonic.hu/selectLocation?fbclid=F2&mp_nincs_atiranyitas=1
+OK   chromium/asztali: hivatkozo a sajat oldal: a Salonic-tolcser marad (pl. /selectSpecialization/ -> /showServices/)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+
+chromium/asztali: 57/57 OK, 0 HIBA
+OK   chromium/mobil: a dist-ben a kapcsolo beirva (nincs __ATIRANYITAS_BE__)  1
+OK   chromium/mobil: celCim: /selectLocation  {"mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: / (a Salonic fooldala)  {"mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: nagybetus /SelectLocation  {"mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /selectSpecialization/?placeId  {"placeId":"10357","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /showServices/ szakemberrel + fbclid + utm  {"placeId":"6029","employeeId":"123","fbclid":"FB.1","utm_source":"facebook","utm_campaign":"x","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /showServices/ kezelessel  {"placeId":"12169","serviceId":"555","employeeId":"7","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /showServices/?specId  {"placeId":"6029","specId":"9","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /employees/<id>/  {"placeId":"6029","employeeId":"321","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /selectEmployee/ (Barki = -1 nem megy)  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /selectDate/ back-kel  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: gclid + ttclid + _gl  {"gclid":"G1","ttclid":"T1","mp_honnan":"salonic"}
+OK   chromium/mobil: celCim: /guestData/ (adatlap): marad  null
+OK   chromium/mobil: celCim: /booking/cancelBooking/: marad  null
+OK   chromium/mobil: celCim: /booking/deleteSuccess/: marad  null
+OK   chromium/mobil: celCim: /user/login/: marad  null
+OK   chromium/mobil: celCim: /giftcards: marad  null
+OK   chromium/mobil: celCim: /contact: marad  null
+OK   chromium/mobil: celCim: /privacy: marad  null
+OK   chromium/mobil: celCim: /policy: marad  null
+OK   chromium/mobil: celCim: /language/set/hu: marad  null
+OK   chromium/mobil: celCim: ismeretlen parameter (token): marad  null
+OK   chromium/mobil: celCim: ismeretlen parameter (bookingId): marad  null
+OK   chromium/mobil: celCim: kikerulo parameter: marad  null
+OK   chromium/mobil: celCim: /booking/start (nem tolcser): marad  null
+OK   chromium/mobil: celCim: ismeretlen oldal: marad  null
+OK   chromium/mobil: celCim: mas tartomany: marad  null
+OK   chromium/mobil: Salonic /showServices/ -> www.medicalpiercing.hu/idopontfoglalas  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium=paid&utm_campaign=regi&mp_honnan=salonic (1770 ms)
+OK   chromium/mobil: a parameterek megmaradnak (placeId, fbclid, utm_*, mp_honnan)
+OK   chromium/mobil: location.replace: a Vissza gomb nem a Salonic-oldalra visz (elozmeny 1 elem)  2
+OK   chromium/mobil: a motor magatol megnyilik (tipus-valaszto)
+OK   chromium/mobil: "Uj piercing" utan a helyszin (Budapest) mar kivalasztva: egybol a kezelesek
+OK   chromium/mobil: naptar: van szabad idopont
+OK   chromium/mobil: adatlap: a Salonic keret betoltodik
+OK   chromium/mobil: az adatlap cime: guestData + fbclid + utm (a gclid nem)  https://medicalpiercing.salonic.hu/guestData/?placeId=6029&serviceId=220503&employeeId=-1&startDate=1792246200&lang=hu&back=mb_0mvca51y3cvxydha2z9xnj7&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium
+OK   chromium/mobil: a keretben levo Salonic-adatlap NEM iranyit at (5 mp utan is guestData)  https://medicalpiercing.salonic.hu/guestData/?anyone=true&employeeId=19566&placeId=6029&se
+OK   chromium/mobil: a fo ablak a motoron marad
+OK   chromium/mobil: a keretben az atiranyito szkript le sem toltodik (a GTM-cimke kilep)  fo
+OK   chromium/mobil: keretben a Salonic /selectLocation sem iranyit at  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029& |  | https://medicalpiercing.salonic.hu/guestData/?anyone=true&em | https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LdctooU | about:blank | about:blank | https://medicalpiercing.salonic.hu/selectLocation
+OK   chromium/mobil: a Salonic fele csak GET ment (nincs bekuldes)
+OK   chromium/mobil: meroeszkoz-keres mind eldobva  5 db eldobva
+OK   chromium/mobil: Salonic /selectLocation -> /idopontfoglalas (gclid a sajat oldalra megy)  https://www.medicalpiercing.hu/idopontfoglalas?gclid=TESZTGCLID&mp_honnan=salonic
+OK   chromium/mobil: a motor a tipus-valasztoval nyilik
+OK   chromium/mobil: helyszin nelkul: a 15 helyszin
+OK   chromium/mobil: bezaras utan a cim "/" (mp_honnan nelkul, a gclid marad)  https://www.medicalpiercing.hu/?gclid=TESZTGCLID
+OK   chromium/mobil: Salonic /selectSpecialization/?placeId=10357 -> placeId=10357  https://www.medicalpiercing.hu/idopontfoglalas?placeId=10357&specId=20060&mp_honnan=salonic
+OK   chromium/mobil: /guestData/ (kozvetlen adatlap, valodi cim): az adatlaprol nem iranyitunk at (csak a Salonic sajat tovabbkuldese utani tolcser-oldalrol)  https://medicalpiercing.salonic.hu/ -> https://www.medicalpiercing.hu/idopontfoglalas?mp_honnan=salonic
+OK   chromium/mobil: /booking/cancelBooking/ (lemondas): marad
+OK   chromium/mobil: /user/login/ (fiok, "A foglalasaim"): marad
+OK   chromium/mobil: /giftcards: marad
+OK   chromium/mobil: ismeretlen parameter (pl. SMS-link azonosito): marad
+OK   chromium/mobil: ?mp_nincs_atiranyitas=1: marad
+OK   chromium/mobil: utana ugyanebben a lapban a /selectSpecialization/ is marad
+OK   chromium/mobil: kapcsolo 0 (vesz-kikapcsolas): marad
+OK   chromium/mobil: motor kikapcsolva: a Salonicrol jott vendeg visszakerul a Salonicra es ott marad (hurok nincs)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+OK   chromium/mobil: kikapcsolt motornal a sajat oldal Salonic-linkje kikerulo parameterrel megy  https://medicalpiercing.salonic.hu/selectLocation?fbclid=F2&mp_nincs_atiranyitas=1
+OK   chromium/mobil: hivatkozo a sajat oldal: a Salonic-tolcser marad (pl. /selectSpecialization/ -> /showServices/)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+
+chromium/mobil: 57/57 OK, 0 HIBA
+OK   webkit/asztali: a dist-ben a kapcsolo beirva (nincs __ATIRANYITAS_BE__)  1
+OK   webkit/asztali: celCim: /selectLocation  {"mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: / (a Salonic fooldala)  {"mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: nagybetus /SelectLocation  {"mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /selectSpecialization/?placeId  {"placeId":"10357","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /showServices/ szakemberrel + fbclid + utm  {"placeId":"6029","employeeId":"123","fbclid":"FB.1","utm_source":"facebook","utm_campaign":"x","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /showServices/ kezelessel  {"placeId":"12169","serviceId":"555","employeeId":"7","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /showServices/?specId  {"placeId":"6029","specId":"9","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /employees/<id>/  {"placeId":"6029","employeeId":"321","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /selectEmployee/ (Barki = -1 nem megy)  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /selectDate/ back-kel  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: gclid + ttclid + _gl  {"gclid":"G1","ttclid":"T1","mp_honnan":"salonic"}
+OK   webkit/asztali: celCim: /guestData/ (adatlap): marad  null
+OK   webkit/asztali: celCim: /booking/cancelBooking/: marad  null
+OK   webkit/asztali: celCim: /booking/deleteSuccess/: marad  null
+OK   webkit/asztali: celCim: /user/login/: marad  null
+OK   webkit/asztali: celCim: /giftcards: marad  null
+OK   webkit/asztali: celCim: /contact: marad  null
+OK   webkit/asztali: celCim: /privacy: marad  null
+OK   webkit/asztali: celCim: /policy: marad  null
+OK   webkit/asztali: celCim: /language/set/hu: marad  null
+OK   webkit/asztali: celCim: ismeretlen parameter (token): marad  null
+OK   webkit/asztali: celCim: ismeretlen parameter (bookingId): marad  null
+OK   webkit/asztali: celCim: kikerulo parameter: marad  null
+OK   webkit/asztali: celCim: /booking/start (nem tolcser): marad  null
+OK   webkit/asztali: celCim: ismeretlen oldal: marad  null
+OK   webkit/asztali: celCim: mas tartomany: marad  null
+OK   webkit/asztali: Salonic /showServices/ -> www.medicalpiercing.hu/idopontfoglalas  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium=paid&utm_campaign=regi&mp_honnan=salonic (2350 ms)
+OK   webkit/asztali: a parameterek megmaradnak (placeId, fbclid, utm_*, mp_honnan)
+OK   webkit/asztali: location.replace: a Vissza gomb nem a Salonic-oldalra visz (elozmeny 1 elem)  2
+OK   webkit/asztali: a motor magatol megnyilik (tipus-valaszto)
+OK   webkit/asztali: "Uj piercing" utan a helyszin (Budapest) mar kivalasztva: egybol a kezelesek
+OK   webkit/asztali: naptar: van szabad idopont
+OK   webkit/asztali: adatlap: a Salonic keret betoltodik
+OK   webkit/asztali: az adatlap cime: guestData + fbclid + utm (a gclid nem)  https://medicalpiercing.salonic.hu/guestData/?placeId=6029&serviceId=220503&employeeId=-1&startDate=1792251300&lang=hu&back=mb_0mvca718ypt24bqpqtmjtq7&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium
+OK   webkit/asztali: a keretben levo Salonic-adatlap NEM iranyit at (5 mp utan is guestData)  https://medicalpiercing.salonic.hu/guestData/?anyone=true&employeeId=19566&placeId=6029&se
+OK   webkit/asztali: a fo ablak a motoron marad
+OK   webkit/asztali: a keretben az atiranyito szkript le sem toltodik (a GTM-cimke kilep)  fo
+OK   webkit/asztali: keretben a Salonic /selectLocation sem iranyit at  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029& |  | https://medicalpiercing.salonic.hu/guestData/?anyone=true&em | https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LdctooU | about:blank | about:blank | https://medicalpiercing.salonic.hu/selectLocation
+OK   webkit/asztali: a Salonic fele csak GET ment (nincs bekuldes)
+OK   webkit/asztali: meroeszkoz-keres mind eldobva  5 db eldobva
+OK   webkit/asztali: Salonic /selectLocation -> /idopontfoglalas (gclid a sajat oldalra megy)  https://www.medicalpiercing.hu/idopontfoglalas?gclid=TESZTGCLID&mp_honnan=salonic
+OK   webkit/asztali: a motor a tipus-valasztoval nyilik
+OK   webkit/asztali: helyszin nelkul: a 15 helyszin
+OK   webkit/asztali: bezaras utan a cim "/" (mp_honnan nelkul, a gclid marad)  https://www.medicalpiercing.hu/?gclid=TESZTGCLID
+OK   webkit/asztali: Salonic /selectSpecialization/?placeId=10357 -> placeId=10357  https://www.medicalpiercing.hu/idopontfoglalas?placeId=10357&specId=20060&mp_honnan=salonic
+OK   webkit/asztali: /guestData/ (kozvetlen adatlap, valodi cim): az adatlaprol nem iranyitunk at (csak a Salonic sajat tovabbkuldese utani tolcser-oldalrol)  https://medicalpiercing.salonic.hu/ -> https://www.medicalpiercing.hu/idopontfoglalas?mp_honnan=salonic
+OK   webkit/asztali: /booking/cancelBooking/ (lemondas): marad
+OK   webkit/asztali: /user/login/ (fiok, "A foglalasaim"): marad
+OK   webkit/asztali: /giftcards: marad
+OK   webkit/asztali: ismeretlen parameter (pl. SMS-link azonosito): marad
+OK   webkit/asztali: ?mp_nincs_atiranyitas=1: marad
+OK   webkit/asztali: utana ugyanebben a lapban a /selectSpecialization/ is marad
+OK   webkit/asztali: kapcsolo 0 (vesz-kikapcsolas): marad
+OK   webkit/asztali: motor kikapcsolva: a Salonicrol jott vendeg visszakerul a Salonicra es ott marad (hurok nincs)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+OK   webkit/asztali: kikapcsolt motornal a sajat oldal Salonic-linkje kikerulo parameterrel megy  https://medicalpiercing.salonic.hu/selectLocation?fbclid=F2&mp_nincs_atiranyitas=1
+OK   webkit/asztali: hivatkozo a sajat oldal: a Salonic-tolcser marad (pl. /selectSpecialization/ -> /showServices/)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+
+webkit/asztali: 57/57 OK, 0 HIBA
+OK   webkit/mobil: a dist-ben a kapcsolo beirva (nincs __ATIRANYITAS_BE__)  1
+OK   webkit/mobil: celCim: /selectLocation  {"mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: / (a Salonic fooldala)  {"mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: nagybetus /SelectLocation  {"mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /selectSpecialization/?placeId  {"placeId":"10357","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /showServices/ szakemberrel + fbclid + utm  {"placeId":"6029","employeeId":"123","fbclid":"FB.1","utm_source":"facebook","utm_campaign":"x","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /showServices/ kezelessel  {"placeId":"12169","serviceId":"555","employeeId":"7","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /showServices/?specId  {"placeId":"6029","specId":"9","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /employees/<id>/  {"placeId":"6029","employeeId":"321","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /selectEmployee/ (Barki = -1 nem megy)  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /selectDate/ back-kel  {"placeId":"6029","serviceId":"44","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: gclid + ttclid + _gl  {"gclid":"G1","ttclid":"T1","mp_honnan":"salonic"}
+OK   webkit/mobil: celCim: /guestData/ (adatlap): marad  null
+OK   webkit/mobil: celCim: /booking/cancelBooking/: marad  null
+OK   webkit/mobil: celCim: /booking/deleteSuccess/: marad  null
+OK   webkit/mobil: celCim: /user/login/: marad  null
+OK   webkit/mobil: celCim: /giftcards: marad  null
+OK   webkit/mobil: celCim: /contact: marad  null
+OK   webkit/mobil: celCim: /privacy: marad  null
+OK   webkit/mobil: celCim: /policy: marad  null
+OK   webkit/mobil: celCim: /language/set/hu: marad  null
+OK   webkit/mobil: celCim: ismeretlen parameter (token): marad  null
+OK   webkit/mobil: celCim: ismeretlen parameter (bookingId): marad  null
+OK   webkit/mobil: celCim: kikerulo parameter: marad  null
+OK   webkit/mobil: celCim: /booking/start (nem tolcser): marad  null
+OK   webkit/mobil: celCim: ismeretlen oldal: marad  null
+OK   webkit/mobil: celCim: mas tartomany: marad  null
+OK   webkit/mobil: Salonic /showServices/ -> www.medicalpiercing.hu/idopontfoglalas  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium=paid&utm_campaign=regi&mp_honnan=salonic (2379 ms)
+OK   webkit/mobil: a parameterek megmaradnak (placeId, fbclid, utm_*, mp_honnan)
+OK   webkit/mobil: location.replace: a Vissza gomb nem a Salonic-oldalra visz (elozmeny 1 elem)  2
+OK   webkit/mobil: a motor magatol megnyilik (tipus-valaszto)
+OK   webkit/mobil: "Uj piercing" utan a helyszin (Budapest) mar kivalasztva: egybol a kezelesek
+OK   webkit/mobil: naptar: van szabad idopont
+OK   webkit/mobil: adatlap: a Salonic keret betoltodik
+OK   webkit/mobil: az adatlap cime: guestData + fbclid + utm (a gclid nem)  https://medicalpiercing.salonic.hu/guestData/?placeId=6029&serviceId=220503&employeeId=-1&startDate=1792247100&lang=hu&back=mb_0mvca95if2tuoq1l7duklbn&fbclid=TESZTFBCLID&utm_source=facebook&utm_medium
+OK   webkit/mobil: a keretben levo Salonic-adatlap NEM iranyit at (5 mp utan is guestData)  https://medicalpiercing.salonic.hu/guestData/?anyone=true&employeeId=19566&placeId=6029&se
+OK   webkit/mobil: a fo ablak a motoron marad
+OK   webkit/mobil: a keretben az atiranyito szkript le sem toltodik (a GTM-cimke kilep)  fo
+OK   webkit/mobil: keretben a Salonic /selectLocation sem iranyit at  https://www.medicalpiercing.hu/idopontfoglalas?placeId=6029& |  | https://medicalpiercing.salonic.hu/guestData/?anyone=true&em | https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LdctooU | about:blank | about:blank | https://medicalpiercing.salonic.hu/selectLocation
+OK   webkit/mobil: a Salonic fele csak GET ment (nincs bekuldes)
+OK   webkit/mobil: meroeszkoz-keres mind eldobva  5 db eldobva
+OK   webkit/mobil: Salonic /selectLocation -> /idopontfoglalas (gclid a sajat oldalra megy)  https://www.medicalpiercing.hu/idopontfoglalas?gclid=TESZTGCLID&mp_honnan=salonic
+OK   webkit/mobil: a motor a tipus-valasztoval nyilik
+OK   webkit/mobil: helyszin nelkul: a 15 helyszin
+OK   webkit/mobil: bezaras utan a cim "/" (mp_honnan nelkul, a gclid marad)  https://www.medicalpiercing.hu/?gclid=TESZTGCLID
+OK   webkit/mobil: Salonic /selectSpecialization/?placeId=10357 -> placeId=10357  https://www.medicalpiercing.hu/idopontfoglalas?placeId=10357&specId=20060&mp_honnan=salonic
+OK   webkit/mobil: /guestData/ (kozvetlen adatlap, valodi cim): az adatlaprol nem iranyitunk at (csak a Salonic sajat tovabbkuldese utani tolcser-oldalrol)  https://medicalpiercing.salonic.hu/ -> https://www.medicalpiercing.hu/idopontfoglalas?mp_honnan=salonic
+OK   webkit/mobil: /booking/cancelBooking/ (lemondas): marad
+OK   webkit/mobil: /user/login/ (fiok, "A foglalasaim"): marad
+OK   webkit/mobil: /giftcards: marad
+OK   webkit/mobil: ismeretlen parameter (pl. SMS-link azonosito): marad
+OK   webkit/mobil: ?mp_nincs_atiranyitas=1: marad
+OK   webkit/mobil: utana ugyanebben a lapban a /selectSpecialization/ is marad
+OK   webkit/mobil: kapcsolo 0 (vesz-kikapcsolas): marad
+OK   webkit/mobil: motor kikapcsolva: a Salonicrol jott vendeg visszakerul a Salonicra es ott marad (hurok nincs)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+OK   webkit/mobil: kikapcsolt motornal a sajat oldal Salonic-linkje kikerulo parameterrel megy  https://medicalpiercing.salonic.hu/selectLocation?fbclid=F2&mp_nincs_atiranyitas=1
+OK   webkit/mobil: hivatkozo a sajat oldal: a Salonic-tolcser marad (pl. /selectSpecialization/ -> /showServices/)  https://medicalpiercing.salonic.hu/showServices/?placeId=6029&specId=20060
+
+webkit/mobil: 57/57 OK, 0 HIBA
