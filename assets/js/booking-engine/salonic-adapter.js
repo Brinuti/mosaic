@@ -49,6 +49,19 @@ export class SalonicError extends Error {
   }
 }
 
+// PARSE-bontas (#178, DECISION #188 folytatasa): a "nem talaltam szolgaltatast" hiba MIT kapott a Salonicbol - csak olvaso metaadat (tartalom-tipus, hossz), a kerest es az elemzest nem erinti.
+// Zart ertekek: EMPTY (ures torzs), NOTHTML (a tartalom-tipus nem html), SHORT (html, de < PARSE_KIND_MIN_HOSSZ karakter: tipikus hiba- / karbantartasi sablon), NOLIST (normal meretu html, de nincs benne elem:
+// szabalyos ures lista vagy jelolesvaltozas); JSON: a naptar-API valasza nem JSON. Nincs URL, torzs, fejlec-ertek. A tobbi PARSE (argumentum-ellenorzes) kind nelkul marad.
+export const PARSE_KIND_MIN_HOSSZ = 5000;
+export function parseKind(metak) {
+  const l = (Array.isArray(metak) ? metak : []).filter((m) => m && typeof m === 'object');
+  if (!l.length) return null; // nincs metaadat: nem talalunk ki erteket
+  if (l.some((m) => m.len === 0)) return 'EMPTY';
+  if (l.some((m) => m.ct && !/html/i.test(String(m.ct)))) return 'NOTHTML';
+  if (l.some((m) => Number.isFinite(m.len) && m.len < PARSE_KIND_MIN_HOSSZ)) return 'SHORT';
+  return 'NOLIST';
+}
+
 // --- tiszta segedek (egyseg-tesztelhetok) ------------------------------------------------------------------------------
 const ENTITIES = { '&amp;': '&', '&quot;': '"', '&#039;': "'", '&#39;': "'", '&lt;': '<', '&gt;': '>' };
 export const decodeEntities = (s) => String(s ?? '').replace(/&(?:amp|quot|#0?39|lt|gt);/g, (m) => ENTITIES[m]);
@@ -225,6 +238,14 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     return c;
   };
 
+  // Az utolso lekeresek tartalom-tipusa / (vagott) hossza a PARSE-bontashoz; tartalom NEM tarolodik, a Map korlatos
+  const valaszMeta = new Map();
+  const metaIr = (url, r, t) => {
+    try {
+      valaszMeta.set(url, { ct: r && r.headers && typeof r.headers.get === 'function' ? String(r.headers.get('content-type') || '').slice(0, 80) : '', len: String(t).trim().length });
+      if (valaszMeta.size > 40) valaszMeta.delete(valaszMeta.keys().next().value);
+    } catch (e) { /* a metaadat sosem akadalyozhatja a lekerest */ }
+  };
   // csak GET: idokorlat + egy ujraprobalas halozati/5xx hibara (a foglalas nem megy rajta, nincs mellekhatas)
   async function getText(url) {
     let last;
@@ -235,7 +256,9 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
         const r = await fetchImpl(url, { credentials: 'omit', signal: ab.signal });
         if (r.status >= 500 && i < retries) { last = new SalonicError('HTTP', 'HTTP ' + r.status, { url, status: r.status }); continue; }
         if (!r.ok) throw new SalonicError('HTTP', 'HTTP ' + r.status, { url, status: r.status });
-        return await r.text();
+        const t = await r.text();
+        metaIr(url, r, t);
+        return t;
       } catch (e) {
         if (e instanceof SalonicError && e.code === 'HTTP' && e.status < 500) throw e;
         last = e instanceof SalonicError ? e : new SalonicError(e && e.name === 'AbortError' ? 'TIMEOUT' : 'HTTP', 'Lekeres sikertelen: ' + (e && e.message), { url });
@@ -249,14 +272,15 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     const cfg = cfgOf(business);
     const found = [];
     let customCss = null;
-    const page = async (url) => { const t = await getText(url); customCss = customCss || parseCustomCss(t); return t; }; // az egyeni CSS jelet a mar letoltott oldalakbol olvassuk
+    const lekert = []; // a PARSE-bontashoz: mely oldalakat toltottuk le
+    const page = async (url) => { const t = await getText(url); lekert.push(url); customCss = customCss || parseCustomCss(t); return t; }; // az egyeni CSS jelet a mar letoltott oldalakbol olvassuk
     const add = (list, spec) => { for (const s of list) if (!found.some((x) => x.serviceId === s.serviceId)) found.push({ ...s, specId: spec ? spec.specId : null, category: spec ? spec.name : null }); };
     if (cfg.employeeId) add(parseServices(await page(`${cfg.host}/employees/${cfg.employeeId}/?placeId=${cfg.placeId}`)), null);
     let specs = (cfg.specIds || []).map((id) => ({ specId: String(id), name: null }));
     if (!specs.length && !cfg.employeeId) specs = parseSpecs(await page(`${cfg.host}/selectSpecialization/?placeId=${cfg.placeId}`));
     const oldalak = await Promise.all(specs.map((spec) => page(`${cfg.host}/showServices/?placeId=${cfg.placeId}&specId=${spec.specId}`)));
     specs.forEach((spec, i) => add(parseServices(oldalak[i]), spec));
-    if (!found.length) throw new SalonicError('PARSE', `Nem talaltam szolgaltatast: ${business}`, { business });
+    if (!found.length) throw new SalonicError('PARSE', `Nem talaltam szolgaltatast: ${business}`, { business, kind: parseKind(lekert.map((u) => valaszMeta.get(u))) || undefined });
     return { found, customCss };
   }, { persist: true });
 
@@ -290,7 +314,7 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     const run = async (calId) => {
       const p = new URLSearchParams({ startDate, offset: 0, days, placeId: cfg.placeId, serviceId: service.serviceId, employeeId: staffId, calendarId: calId, pref: '', apiVersion: 1, language: 'hu', excludeNonAcceptingEmployees: 0 });
       let json;
-      try { json = JSON.parse(await getText(API_URL + '?' + p)); } catch (e) { if (e instanceof SalonicError) throw e; throw new SalonicError('PARSE', 'A naptar-API valasza nem JSON', { business }); }
+      try { json = JSON.parse(await getText(API_URL + '?' + p)); } catch (e) { if (e instanceof SalonicError) throw e; throw new SalonicError('PARSE', 'A naptar-API valasza nem JSON', { business, kind: 'JSON' }); }
       return json;
     };
     let json = await run(await calendarId(business, service.serviceId));

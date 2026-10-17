@@ -77,6 +77,27 @@ A `salonic_api` hibatípus eddig nem árulta el, **melyik nézetben** és **mily
 - **Visszagörgetés:** a kód revertje után a már beírt `error_reszlet` sorokat a **régi** kód a `lepesek.error_reszlet` kulcsban és a CSV-ben mutatná (a tölcsér 10 lépésének száma nem torzul, de a `lepesek` objektum 11. kulcsot kap). Ezért a revert után: `DELETE FROM lepes_szamlalo WHERE lepes = 'error_reszlet';` az éles (`mosaic-foglalo-szamlalo`) és az előnézeti (`mosaic-foglalo-szamlalo-elonezet`) D1-en is.
 - Teszt: `node --test tools/test-lepes-meres.mjs` (29/29; 9 új eset), `node tools/meres-proba/lepes-proba.mjs --overlay dist` (asztali és mobil: 25/25, a 4b eset a valódi böngészőben ellenőrzi az `error_reszlet` beaconját), napló: `meres-naplo/2026-10-15-hiba-reszlet-teszt.md`.
 
+## 5c. PARSE-bontás (2026-10-17, #178, a #334 első adata) – MÉRÉS ÉRINTŐ
+
+A #334 első valós adata (10-16 oxigén 3× `salonic_api.OX1.PARSE.0`, 10-17 lézer 1× `salonic_api.LA1.PARSE.0`) azt mutatta, hogy az `OX1` / `LA1` nézet betöltésénél a **szolgáltatáslista** (`servicesRaw`) üres: a Salonic **2xx** választ adott (minden nem-2xx `HTTP.<státusz>`, az időtúllépés `TIMEOUT`, a hálózati / CORS-hiba `HTTP.0`), de a törzsben nem volt kategória-link / szolgáltatás-sor. A tartalom-típust és a hosszt az adapter nem nézte, ezért az üres törzs, a nem-Salonic oldal, a karbantartási sablon és a szabályos üres lista ugyanaz a `PARSE.0` volt.
+
+A kiegészítés a `PARSE` kódot **zárt, PII-mentes** részletekre bontja (ugyanabban az `error_reszlet` sorban, a hibakód helyén):
+
+| kód | jelentés |
+|---|---|
+| `PARSE_EMPTY` | üres (vagy csak szóközt tartalmazó) törzs |
+| `PARSE_NOTHTML` | a `content-type` nem `html` (pl. `text/plain`, `application/json`) |
+| `PARSE_SHORT` | html, de a vágott törzs < 5000 karakter (tipikus hiba- / karbantartási sablon) |
+| `PARSE_NOLIST` | normál méretű (≥ 5000) html, de nincs benne elem (szabályos üres lista vagy jelölésváltozás) |
+| `PARSE_JSON` | a naptár-API (`getAvailableTimes`) válasza nem JSON |
+| `PARSE` | bármi más (pl. argumentum-ellenőrzés; vagy nincs metaadat) |
+
+- **Mit jegyez fel az adapter:** a `getText` csak a `content-type` fejlécet (80 karakterre vágva) és a **vágott törzs hosszát** jegyzi fel egy korlátos (40 bejegyzés) `Map`-be; a törzs, az URL és a fejléc értéke nem tárolódik és nem kerül ki. A kérés, az újrapróbálás, az elemzés és a visszatérési érték **változatlan**; a jegyzés saját `try`-ban fut, hibája nem akadályozza a lekérést. A `servicesRaw` az üres (`found`) ágon osztályoz (`parseKind`: ha több oldalt töltött le, a legerősebb jel dönt: üres > nem html > rövid > nincs elem); a `kind`-ot a már dobott `SalonicError`-ra teszi.
+- **Mi változik még:** `lepes-meres.js` (`HIBA_KODOK` + `hibaReszlet`: `PARSE` + ismert `kind` → `PARSE_<KIND>`, ismeretlen kind marad `PARSE`), `engine.js` (egy sor: a `kind`-ot átadja), `netlify/lib/foglalo-szamlalo.js` (a zárt hibakód-lista és a `salonic_api` megengedett kódjai). A `PARSE_*` kód csak `salonic_api` mellett és HTTP-státusz nélkül (`.0`) fogadható el.
+- **Nem változik:** a GA4 / dataLayer (a `booking_error` `reason` továbbra is `PARSE`), a `LEPESEK`, a tölcsér-számok, az `error` sor, a D1-séma, a foglalási logika, a Salonic-hívások, a konverziók, a kiküldés.
+- **Teszt:** `tools/test-salonic-adapter.mjs` (5 új eset), `tools/test-lepes-meres.mjs` (4 új eset, köztük a „kliens ⊆ szerver” tulajdonság a PARSE-kindekre), `node tools/meres-proba/lepes-proba.mjs --overlay dist` (asztali és mobil: 33/33; a 4c eset a valódi böngészőben, mockolt Salonic-oldallal ellenőrzi a négy `OX1.PARSE_*.0` beaconját). Napló: `meres-naplo/2026-10-17-parse-bontas-teszt.md`.
+- **Visszagörgetés:** a kód revertje (egy commit) elég; a már beírt `PARSE_*` sorokat a **régi** szerver `400`-zal utasítaná el, de a D1-ben megmaradnának, és a GET kimenetében `hiba_reszlet` alatt látszanának: ha zavar, `DELETE FROM lepes_szamlalo WHERE lepes = 'error_reszlet' AND tipus LIKE '%.PARSE\_%' ESCAPE '\';` az éles (`mosaic-foglalo-szamlalo`) és az előnézeti D1-en.
+
 ## 6. Kikapcsolás
 
 - Számláló: a `wrangler.toml`-ból a `[[d1_databases]]` kötés törlése → a végpont `204`-et ad és semmit nem tárol (a foglaló ettől nem akad el).

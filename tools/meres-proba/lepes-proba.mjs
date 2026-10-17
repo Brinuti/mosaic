@@ -38,12 +38,13 @@ const mockAlap = (idok) => (startDate, days) => {
 };
 
 // egy uj, tiszta bongeszo-kontextus: mockolt naptar, elfogott szamlalo, tiltott kimeno meres; hozzajarulas / robot-jelzes kapcsolhato
-async function ujLap({ hozzajarul, idok = [idopont(1), idopont(2), idopont(3)], apiHiba = false, robot = false }) {
+async function ujLap({ hozzajarul, idok = [idopont(1), idopont(2), idopont(3)], apiHiba = false, robot = false, salonicMock = null }) {
   // (a bongeszo az AutomationControlled jelzes nelkul indul, mint a tobbi proba: a navigator.webdriver ilyenkor false; a "robot" forgatokonyv kenyszeriti)
   const ctx = await browser.newContext({ userAgent: ua, viewport: MOBIL ? { width: 390, height: 844 } : { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block', isMobile: MOBIL, hasTouch: MOBIL });
   const naplo = { szamlalo: [], mer: [], kuldve: [] }; // szamlalo: az elfogott POST-ok; mer: a FO ablak kimeno meresi kerelmei
   await ctx.route('**/*', async (route) => {
     const req = route.request(), url = req.url(); let u; try { u = new URL(url); } catch (e) { return route.continue(); }
+    if (salonicMock && salonicMock.re.test(url)) return route.fulfill({ status: 200, headers: { 'content-type': salonicMock.ct || 'text/html; charset=UTF-8', 'access-control-allow-origin': '*' }, body: salonicMock.body }); // #178: a Salonic HTML-oldala (a mockolt valasz tartalom-tipusa / hossza dont a PARSE-bontasrol)
     if (/api\.salonic\.hu\/calendar\/getAvailableTimes/.test(url)) {
       if (apiHiba) return route.fulfill({ status: 500, headers: { 'access-control-allow-origin': '*' }, body: 'hiba' });
       return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' }, body: JSON.stringify(mockAlap(idok)(+u.searchParams.get('startDate'), +u.searchParams.get('days'))) });
@@ -212,6 +213,24 @@ async function atiranyit(p) {
   ok('4b. a Salonic-API hibaja: pontosan egy booking_error, error_type=salonic_api (nem client_error), booking_close step=A3', h.length === 1 && h[0].error_type === 'salonic_api' && e.at(-1).event === 'booking_close' && e.at(-1).step === 'A3', nevek(e).join(' > ') + ' | ' + JSON.stringify(h[0]));
   const r4b = sz4b.filter((x) => x.lepes === 'error_reszlet');
   ok('4b. hiba-reszlet (DECISION #188): a szamlalo pontosan egy error_reszlet-et kap: salonic_api.<nezet-kod>.HTTP.500 (a mockolt API-hiba), a dataLayer-be nem kerul', r4b.length === 1 && /^salonic_api\.[A-Z][A-Z0-9_]{0,11}\.HTTP\.500$/.test(r4b[0].tipus) && !JSON.stringify(uj(await dl(u.page))).includes('HTTP.500'), JSON.stringify(r4b));
+  await u.ctx.close();
+}
+
+// ---- 4c. #178 PARSE-bontas: a Salonic oldala 200-zal, de szolgaltatas-lista nelkul -> a szamlalo az error_reszlet-ben megkapja, MIT kaptunk (a dataLayer-be nem kerul) -------
+for (const [nev, body, ct, vart] of [
+  ['rovid HTML (hiba- / karbantartasi sablon)', '<html><body>Karbantartas</body></html>', 'text/html; charset=UTF-8', 'PARSE_SHORT'],
+  ['normal meretu HTML szolgaltatas-lista nelkul', '<html><body>' + 'x'.repeat(8000) + '</body></html>', 'text/html; charset=UTF-8', 'PARSE_NOLIST'],
+  ['nem HTML tartalom-tipus', 'x'.repeat(8000), 'text/plain', 'PARSE_NOTHTML'],
+  ['ures torzs', '', 'text/html; charset=UTF-8', 'PARSE_EMPTY'],
+]) {
+  const u = await ujLap({ hozzajarul: true, salonicMock: { re: /mosaic-oxigen\.salonic\.hu\/selectSpecialization/, body, ct } });
+  await u.page.evaluate(() => window.openBooking({ business: 'oxygen' }));
+  await reteg(u.page).locator('.be-title', { hasText: 'Most nem sikerült betölteni' }).waitFor({ timeout: 60000 }).catch(() => {});
+  await zar(u.page);
+  const e = uj(await dl(u.page)); const h = e.filter((x) => x.event === 'booking_error'); const sz = szamlaloLepesek(u.naplo);
+  ok(`4c. ${nev}: pontosan egy booking_error (error_type=salonic_api), booking_close step=A3`, h.length === 1 && h[0].error_type === 'salonic_api' && e.at(-1).event === 'booking_close' && e.at(-1).step === 'A3', nevek(e).join(' > ') + ' | ' + JSON.stringify(h[0]));
+  const rr = sz.filter((x) => x.lepes === 'error_reszlet');
+  ok(`4c. ${nev}: a szamlalo pontosan egy error_reszlet-et kap: salonic_api.OX1.${vart}.0 (uzletag=oxygen); a dataLayer-be nem kerul`, rr.length === 1 && rr[0].tipus === `salonic_api.OX1.${vart}.0` && rr[0].uzletag === 'oxygen' && !JSON.stringify(uj(await dl(u.page))).includes('PARSE_'), JSON.stringify(rr));
   await u.ctx.close();
 }
 
