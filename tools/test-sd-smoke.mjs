@@ -189,3 +189,50 @@ test('SM10 a REVIEW javitasai: hianyzo eredmeny-halmaz = FAIL (nem hallgatolagos
   const es = ertekel(u8, sdHozta, ido); assert.equal(allapotok(es).C4, 'WARN'); assert.equal(es.verdikt, 'PASS');
 });
 
+
+// ---- DECISION #191: HeadSpa (a salonic_direct:headspa kapcsolo bekapcsolasa kulon dontes; az eszkoz addig is kesz a HeadSpa-ra) ----
+const HS_LEVEL = { host: 'mosaicheadspa.salonic.hu', felado: 'Mosaic Headspa', szolgaltatas: '💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', uj_vendeg: true };
+const GA4_ENV = { GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' };
+
+test('SM12 TERMESZETES HeadSpa sd-foglalas (a motor lezart, az sd atvette): minden kriterium PASS, uzletag = headspa; a C12 a salonic_direct:headspa sort nezi', async () => {
+  const { v, r, u8 } = await termeszetes({ host: HS_LEVEL.host, uzletag: 'headspa', u8: 'c0ffee40', lev: HS_LEVEL });
+  assert.equal(r.allapot, 'kesz'); assert.equal(r.uzletag, 'headspa');
+  const lista = smokeSql(u8);
+  assert.match(lista.find((q) => q.nev === 'kapcsolok').sql, /salonic_direct:headspa/);
+  const jo = lefuttat(v, u8);
+  const e = ertekel(u8, jo, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
+  assert.equal(e.verdikt, 'PASS', JSON.stringify(e.kriteriumok.filter((x) => x.allapot !== 'PASS')));
+  assert.deepEqual(allapotok(e), { C1: 'PASS', C2: 'PASS', C3: 'PASS', C4: 'PASS', C5: 'PASS', C6: 'PASS', C7: 'PASS', C8: 'PASS', C9: 'PASS', C10: 'PASS', C11: 'PASS', C12: 'PASS' });
+  assert.match(e.kriteriumok.find((x) => x.id === 'C1').reszlet, /^headspa/);
+  assert.match(e.kriteriumok.find((x) => x.id === 'C12').reszlet, /salonic_direct:headspa=1/);
+  // a HeadSpa-kapcsolo hianyaban (pl. csak a pmu sor) a C12 nem PASS (az sd alapbol KI)
+  const csakPmu = { ...jo, kapcsolok: [{ kulcs: 'mind', be: 1 }, { kulcs: 'salonic_direct:pmu', be: 1 }] };
+  assert.equal(allapotok(ertekel(u8, csakPmu, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C12, 'WARN');
+});
+
+test('SM13 HeadSpa kuponos sd-foglalas (az e-mail nem hashelheto: a mai eles kuponos levelek alakja): a hash-index hianya C2 WARN, de a verdikt PASS marad; a nem-HeadSpa/pmu/oxigen uzletag tovabbra is C1 FAIL', async () => {
+  const { v, u8 } = await termeszetes({ host: HS_LEVEL.host, uzletag: 'headspa', u8: 'c0ffee41', lev: { ...HS_LEVEL, szolgaltatas: 'KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás (kupon)', vendeg: { email: 'teszt.claude@example.com Kuponkód: ABC123', telefon: VENDEG.telefon } } });
+  const e = ertekel(u8, lefuttat(v, u8), { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
+  assert.equal(allapotok(e).C1, 'PASS'); assert.equal(allapotok(e).C2, 'WARN'); assert.equal(e.verdikt, 'PASS', JSON.stringify(e.kriteriumok.filter((x) => x.allapot !== 'PASS')));
+  const jo = lefuttat(v, u8); const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '10823|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'fodrasz' }));
+  assert.equal(allapotok(ertekel(u8, hair, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C1, 'FAIL');
+});
+
+test('SM14 a jeloltek-lekerdezes a HeadSpa-nal CSAK a motoron kivuli sorokat adja (sd-atvett / parositatlan / ellentmondo); a motor altal parositott HeadSpa-foglalas nem jelolt', async () => {
+  const v = vilag(); await v.kesz; await v.kapcsol('headspa', true);
+  const sd = uuid('c0ffee50'), parositatlan = uuid('c0ffee51'), motoros = uuid('c0ffee52');
+  for (const u of [sd, parositatlan, motoros]) { v.t.tick(60); await v.post(level(u, HS_LEVEL)); }
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = '10427|1|1792000000' WHERE uuid LIKE 'c0ffee5%'").run();
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositott', booking_id = 'mb_x2', kuldve = 1 WHERE uuid LIKE 'c0ffee52%'").run();
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositatlan' WHERE uuid LIKE 'c0ffee51%'").run();
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositatlan', sd_id = 'sd_x', sd_allapot = 'kesz' WHERE uuid LIKE 'c0ffee50%'").run();
+  v.D.db.prepare("DELETE FROM foglalas_vendeg").run(); // a kuponos levelek valodi alakja: nincs index-sor, a jelolt a kulcsbol (place) kerul be
+  const q = jeloltekSql(Math.floor(T0 / 1000) - 10);
+  const sorok = v.D.db.prepare(q.sql).all(...q.params).map((r) => ({ ...r }));
+  assert.deepEqual(sorok.map((r) => r.u8).sort(), ['c0ffee50', 'c0ffee51'], 'az sd-atvett es a parositatlan igen, a motoros parositott nem');
+  // kulcs es index nelkuli sd-sor: a headspa sd-cellakbol talaljuk meg
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = NULL WHERE uuid LIKE 'c0ffee50%'").run();
+  v.D.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, letrehozva, frissitve, forras, salonic_uuid) VALUES ('e1','FoglalasElso','alap','meta','headspa','sd_x','elkuldve',1,1,'salonic_direct', ?1)").run(sd);
+  const sorok2 = v.D.db.prepare(q.sql).all(...q.params).map((r) => ({ ...r }));
+  assert.ok(sorok2.map((r) => r.u8).includes('c0ffee50'), 'a kulcs es index nelkuli HeadSpa sd-sor is jelolt');
+});

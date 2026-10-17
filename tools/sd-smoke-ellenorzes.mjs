@@ -1,7 +1,7 @@
 // SALONIC-DIRECT (sd) SMOKE ELLENORZOLISTA (a meresi oldal / GPT DECISION #166 6.): CSAK OLVASO SQL-ek + tiszta ertekelo, EGY foglalasra (uuid 8 karakteres elotagja).
 // Ugyanaz fut a TERMESZETES kozvetlen pmu / oxigen foglalasra es az (ha 10-15 12:30 UTC-ig nincs ilyen) 1 kontrollalt TESZTFOGLALASRA; a tesztfoglalas utana lemondando, es NEM szamit a T2-mintaba (a napi QA-hivasban ?proba=<u8>).
 //
-//   node tools/sd-smoke-ellenorzes.mjs jeloltek [--tol <unix>]         a jeloltek lekerdezese (pmu / oxigen letrehozo levelek) -> SQL (JSON)
+//   node tools/sd-smoke-ellenorzes.mjs jeloltek [--tol <unix>]         a jeloltek lekerdezese (pmu / oxigen letrehozo levelek; HeadSpa: csak a motoron kivuliek) -> SQL (JSON)
 //   node tools/sd-smoke-ellenorzes.mjs sql <u8>                         a lista SQL-jei (JSON: [{ nev, sql, params }]) - a D1-en (csak olvasas) futtatando
 //   node tools/sd-smoke-ellenorzes.mjs ertekel <u8> <eredmenyek.json>   az eredmenyek ({ nev: [sorok] }) ertekelese -> PASS / FAIL / FOLYAMATBAN tabla
 //
@@ -17,15 +17,16 @@ export const C4_TURES_MP = 60;
 export const C4_MIN_MP = SD_MIN_KOR_MP - C4_TURES_MP;
 
 const U8 = /^[0-9a-f]{8}$/;
-const PMU_OXIGEN = Object.freeze({ 14585: 'pmu', 14409: 'oxigen' });
+const SD_UZLETAGOK = Object.freeze({ 14585: 'pmu', 14409: 'oxigen', 10427: 'headspa' }); // placeId -> uzletag; a HeadSpa a DECISION #191 elokeszitese (a salonic_direct:headspa kapcsolo bekapcsolasa kulon dontes)
+const SD_UZLET_LISTA = Object.values(SD_UZLETAGOK);
 const ELO_ID_LISTA = Object.freeze([...ELO_CELOK.meta, ...ELO_CELOK.tiktok, ...ELO_CELOK.ga4, ...ELO_CELOK.google_primary]);
 const ELO_LIKE = ELO_ID_LISTA.map((id) => `kerelem LIKE '%${id}%'`).join(' OR ');
 const UUID_SOR = "FROM foglalas_egyeztetes WHERE uuid LIKE ?1 || '%'";
 
-/** A jeloltek (pmu / oxigen letrehozo levelek) lekerdezese: params = [tolUnix]. */
+/** A jeloltek (pmu / oxigen letrehozo levelek + a HeadSpa-nal csak a motoron kivuli: sd-atvett / parositatlan / ellentmondo) lekerdezese: params = [tolUnix]. */
 export const jeloltekSql = (tolUnix) => ({
   nev: 'jeloltek',
-  sql: "SELECT substr(e.uuid, 1, 8) AS u8, substr(e.kulcs, 1, instr(e.kulcs, '|') - 1) AS place, v.uzletag AS index_uzletag, e.allapot, e.letrehozva, e.sd_allapot, e.sd_ido FROM foglalas_egyeztetes e LEFT JOIN foglalas_vendeg v ON v.uuid = e.uuid WHERE e.letrehozva >= ?1 AND (e.kulcs LIKE '14585|%' OR e.kulcs LIKE '14409|%' OR v.uzletag IN ('pmu', 'oxigen')) ORDER BY e.letrehozva DESC LIMIT 20",
+  sql: "SELECT substr(e.uuid, 1, 8) AS u8, substr(e.kulcs, 1, instr(e.kulcs, '|') - 1) AS place, v.uzletag AS index_uzletag, e.allapot, e.letrehozva, e.sd_allapot, e.sd_ido FROM foglalas_egyeztetes e LEFT JOIN foglalas_vendeg v ON v.uuid = e.uuid WHERE e.letrehozva >= ?1 AND (e.kulcs LIKE '14585|%' OR e.kulcs LIKE '14409|%' OR v.uzletag IN ('pmu', 'oxigen') OR ((e.kulcs LIKE '10427|%' OR v.uzletag = 'headspa') AND (e.sd_id IS NOT NULL OR e.allapot IN ('parositatlan', 'ellentmondas'))) OR EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.salonic_uuid = e.uuid AND k.uzletag = 'headspa' AND k.forras = 'salonic_direct')) ORDER BY e.letrehozva DESC LIMIT 20",
   params: [String(tolUnix)],
 });
 
@@ -42,7 +43,7 @@ export function smokeSql(u8) {
     { nev: 'dupla', sql: "SELECT esemeny_nev, platform, COUNT(*) AS db FROM meres_kuldes WHERE salonic_uuid LIKE ?1 || '%' AND allapot = 'elkuldve' GROUP BY esemeny_nev, platform HAVING COUNT(*) > 1", params: p },
     { nev: 'elo_id', sql: `SELECT COUNT(*) AS db FROM meres_kuldes WHERE (source_id = ${sdId} OR source_id = ${bookingId}) AND (${ELO_LIKE})`, params: p },
     { nev: 'reschedule', sql: "SELECT allapot, regi_aktiv, substr(ok, 1, 80) AS ok FROM foglalas_reschedule WHERE uuid LIKE ?1 || '%'", params: p },
-    { nev: 'kapcsolok', sql: "SELECT kulcs, be FROM meres_kapcsolo WHERE kulcs IN ('mind', 'salonic_direct', 'salonic_direct:oxigen', 'salonic_direct:pmu')", params: [] },
+    { nev: 'kapcsolok', sql: "SELECT kulcs, be FROM meres_kapcsolo WHERE kulcs IN ('mind', 'salonic_direct', 'salonic_direct:oxigen', 'salonic_direct:pmu', 'salonic_direct:headspa')", params: [] },
   ];
 }
 
@@ -68,8 +69,8 @@ export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = 
   if ((r.level || []).length > 1) return { u8, verdikt: 'FAIL', kriteriumok: [K('C1', 'level_latva', 'FAIL', `az elotag nem egyertelmu (${r.level.length} talalat)`)] };
   const place = Number(String(level.kulcs || '').split('|')[0]);
   const idx0 = (r.index || [])[0], cella0 = (r.cellak || [])[0];
-  const uzletag = PMU_OXIGEN[place] || (idx0 && ['pmu', 'oxigen'].includes(idx0.uzletag) ? idx0.uzletag : null) || (cella0 && ['pmu', 'oxigen'].includes(cella0.uzletag) ? cella0.uzletag : null); // a kulcs (place) -> a hash-index uzletag -> az sd cellak uzletag
-  k.push(K('C1', 'level_latva', uzletag ? 'PASS' : (r.level[0].van_sd ? 'FAIL' : 'WARN'), uzletag ? `${uzletag}, allapot=${level.allapot}` : `nem pmu / oxigen (place=${Number.isFinite(place) && place ? place : '?'}) vagy kulcs / index nelkuli level: az sd csak pmu / oxigen`));
+  const uzletag = SD_UZLETAGOK[place] || (idx0 && SD_UZLET_LISTA.includes(idx0.uzletag) ? idx0.uzletag : null) || (cella0 && SD_UZLET_LISTA.includes(cella0.uzletag) ? cella0.uzletag : null); // a kulcs (place) -> a hash-index uzletag -> az sd cellak uzletag
+  k.push(K('C1', 'level_latva', uzletag ? 'PASS' : (r.level[0].van_sd ? 'FAIL' : 'WARN'), uzletag ? `${uzletag}, allapot=${level.allapot}` : `nem pmu / oxigen / headspa (place=${Number.isFinite(place) && place ? place : '?'}) vagy kulcs / index nelkuli level: az sd smoke csak pmu / oxigen / headspa`));
 
   const idx = (r.index || [])[0];
   k.push(!idx ? K('C2', 'hash_index', 'WARN', 'nincs foglalas_vendeg sor (valodi kimaradas, vagy a jelolo-ag elott az e-mail nelkuli level)')
