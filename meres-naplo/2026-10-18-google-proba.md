@@ -2,7 +2,7 @@
 
 Ag: `claude/meres-google-proba` (a main 1673fd0a-ra epitve). Draft PR (#409); merge/deploy NEM tortent, elo hivas NEM tortent, D1-iras NEM tortent (a teszteket fake D1/fake halozat futtatja).
 Forras: a meresi oldal #167 6246096267 / 6246123744 keresei; DECISION #196 (Drive DECISION-LOG + #167). Ez a valtoztatas **nem** valt be elo konverziot, nem valtoztat a foglalasi folyamaton, nem nyul futo hirdeteshez.
-Allapot: 1. korben `e1c1a8b8`; a fuggetlen review (PASS with notes, blokkolo nincs) nem blokkolo megjegyzeseit a 2. kor javitja (lasd H. szakasz).
+Allapot: 1. korben `e1c1a8b8`; a fuggetlen review (PASS with notes, blokkolo nincs) megjegyzeseit a 2. kor (`d8c9657a`, `7afd4920`), a delta-review (PASS with notes) megjegyzeseit a 3., utolso kor javitja (lasd H. szakasz).
 
 ## Mi keszult
 | Fajl | Valtozas |
@@ -11,7 +11,7 @@ Allapot: 1. korben `e1c1a8b8`; a fuggetlen review (PASS with notes, blokkolo nin
 | `netlify/lib/meres/vegpontok.js` | a `kezelAdmin` POST-agban a ket muvelet routolasa (a kulcs-ellenorzes UTAN), a kulcs **csak fejlecben** (query-kulcs → 404) |
 | `netlify/lib/meres/qa-nap.js` | `forras='google_proba'` sorok KIZARASA a T2/QA-szamlalokbol + `google_proba_db` a `t2start`-ban |
 | `tools/meres-proba/meres-proba.mjs`, `uj-utak-proba.mjs` | opcionalis `MERES_GCLID` (szintetikus gclid, >= 10 karakter [A-Za-z0-9_-]); alap tovabbra `TESZT123` |
-| `tools/test-google-proba.mjs` (UJ) | 24 teszt |
+| `tools/test-google-proba.mjs` (UJ) | 25 teszt |
 | `docs/booking-engine/MERES_GOOGLE_E2E_FUTTATOKONYV.md` (UJ), `QA_NAP.md` (+1 szakasz) | futtatokonyv + QA-jegyzet |
 
 ## A. A `google_proba` felulete
@@ -40,10 +40,10 @@ Allapot: 1. korben `e1c1a8b8`; a fuggetlen review (PASS with notes, blokkolo nin
 - Az egyeztetosor a `gp_*` source_id-t nem latja (nincs `mb_` / `sd_` elotag). A proba-sorok `GET ?source_id=gp_<futas>`-sal olvashatok.
 
 ## D. Tesztek + mutansok
-- `tools/test-google-proba.mjs`: **24/24** (A1–A9 akcio-lista, szaraz/kuldes, kapuk, ujrafuttatas, veszkapcsolo, vedelmek, vegpont; **A10** query-kulcs 404; **A11** egyideju hivasok (3×) → 8 POST / 8 sor, ujraprobalas-verseny, visszavonas-verseny; **A12** `ON CONFLICT DO NOTHING` (elavult SELECT); **A13** 3 probalkozas-korlat (a 4. nem POST-ol); **A14** 120 s ablak (60 s / 200 s); **A15** 24 oras plafon (dontes, hat eset); **A16** kulonbozo generalt `futas_id`; **A17** Zap-valasz tarolasa (12 visszhang-variacio + HTTP-hiba + halozati hiba); T1–T3 T2-kizaras; V1–V4 visszavonas). Fake D1 + fake Zapier; semmi nem hagyja el a gepet. Az egyideju teszteket kozvetlen belepesi-pont hivassal futtatjuk (a Request-feldolgozas elcsuszatna az await-melyseget, a verseny nem jelenne meg).
-- **38 mutans, 38 elkapva** (a mutans-szkript nem resze a PR-nak; M11-et – a source_id MINDEN elofordulasat `mb_`-re cserelve – az A5/T3/V2 fogja). Az uj mutansok: query-kulcs elfogadva (A10), CAS eredmeny figyelmen kivul (A11), `ON CONFLICT` nelkul (A11, A12), probalkozas-korlat 30 (A13), folyamatban-ablak 12 s / 1200 s (A14), plafon minden allapotot szamol / tervezett 8-at szamol / dry-run is szamit (A15), allando `futas_id` (A16), nyers Zap-valasz tarolasa (feltoltes: A5, A17; visszavonas: V3), visszhang-szuro / karakter-szuro / hossz-korlat kikapcsolva, a szuro csak a nyers alakot nezi (A17), dry-run visszavonas POST-ol (V2, V3).
+- `tools/test-google-proba.mjs`: **25/25** (A1–A9 akcio-lista, szaraz/kuldes, kapuk, ujrafuttatas, veszkapcsolo, vedelmek, vegpont; **A10** query-kulcs 404; **A11** egyideju hivasok (3×) → 8 POST / 8 sor, ujraprobalas-verseny, visszavonas-verseny; **A12** `ON CONFLICT DO NOTHING` (elavult SELECT); **A13** 3 probalkozas-korlat (a 4. nem POST-ol); **A14** 120 s ablak (60 s / 200 s); **A15** 24 oras plafon (dontes, hat eset); **A16** kulonbozo generalt `futas_id`; **A17** Zap-valasz tarolasa (12 visszhang-variacio + HTTP-hiba + halozati hiba); **A18** BARRIER-verseny (lasd lent); T1–T3 T2-kizaras; V1–V4 visszavonas). Fake D1 + fake Zapier; semmi nem hagyja el a gepet. Az egyideju teszteket kozvetlen belepesi-pont hivassal futtatjuk (a Request-feldolgozas elcsuszatna az await-melyseget, a verseny nem jelenne meg). **A18 (barrier):** a `meglevo` sor olvasasa (SELECT) addig var, mig mind a 3 egyideju hivas beolvasott — az olvasas az ELOTT tortenik, tehat mind a harom ELAVULT sort lat —, utana engedi az irasokat; igy az INSERT (`ON CONFLICT`) es az ujraprobalt sor atvetele (compare-and-swap) versenye minden futasban ugyanugy jelenik meg. Negy eset, mindegyiknel pontosan 8 POST: az elso kuldes INSERT-versenye, a feltoltes-ujraprobalas CAS-versenye, a visszavonas INSERT-versenye, a visszavonas-ujraprobalas CAS-versenye. (Az A11 egyszeru `Promise.all` formaja a feltoltes-CAS mutansat nem mutatta ki; az A18 igen.)
+- **42 mutans, 42 elkapva** (a mutans-szkript nem resze a PR-nak; M11-et – a source_id MINDEN elofordulasat `mb_`-re cserelve – az A5/T3/V2 fogja). Az uj mutansok: query-kulcs elfogadva (A10), CAS eredmeny figyelmen kivul (A11), `ON CONFLICT` nelkul (A11, A12), probalkozas-korlat 30 (A13), folyamatban-ablak 12 s / 1200 s (A14), plafon minden allapotot szamol / tervezett 8-at szamol / dry-run is szamit (A15), allando `futas_id` (A16), nyers Zap-valasz tarolasa (feltoltes: A5, A17; visszavonas: V3), visszhang-szuro / karakter-szuro / hossz-korlat kikapcsolva, a szuro csak a nyers alakot nezi (A17), dry-run visszavonas POST-ol (V2, V3). A 3. korben: a feltoltes-/visszavonas-ujraprobalas CAS-eredmenye figyelmen kivul (A18; az elobbit CSAK az A18 fogja), a feltoltes-/visszavonas INSERT-eredmenye (`changes`) figyelmen kivul (A12, A18).
   Az 1. kori ket tuleli mutans (CAS-eredmeny figyelmen kivul, a gclid-visszhang szuro csak a nyers alakra) a 2. korben elkapva: az elobbit a kozvetlen-hivasos verseny-teszt, az utobbit a base64-csonka `id` visszhang.
-- **Teljes suite a teljes checkouton** (`git archive HEAD` → nem sparse; `node --test tools/test-*.mjs`): **519 teszt, 514 PASS, 2 FAIL, 3 SKIP**. A 2 hiba a main 1673fd0a-n IS azonos: `test-foglalo-atkotes` 19. (`kliens-kod: nincs kozvetlen Salonic-link …`) es `test-fuggetlenseg` 3. (`nincs kozos adatbazis …`) – ellenorizve: a valtoztatott fajlok main-beli valtozatával (es a `google-proba.js` / `test-google-proba.mjs` nelkul) ugyanez a ket teszt bukik. A `test-halott-gombok` csak sparse checkouton bukik (a `klon/` hianya miatt), a teljes checkouton nem. (1. korben tevesen „8 fail” szerepelt: az a sparse checkout szama volt.)
+- **Teljes suite a teljes checkouton** (`git archive HEAD` → nem sparse; `node --test tools/test-*.mjs`): **520 teszt, 515 PASS, 2 FAIL, 3 SKIP**. A 2 hiba a main 1673fd0a-n IS azonos: `test-foglalo-atkotes` 19. (`kliens-kod: nincs kozvetlen Salonic-link …`) es `test-fuggetlenseg` 3. (`nincs kozos adatbazis …`) – ellenorizve: a valtoztatott fajlok main-beli valtozatával (es a `google-proba.js` / `test-google-proba.mjs` nelkul) ugyanez a ket teszt bukik. A `test-halott-gombok` csak sparse checkouton bukik (a `klon/` hianya miatt), a teljes checkouton nem. (1. korben tevesen „8 fail” szerepelt: az a sparse checkout szama volt.)
 
 ## E. Vedett elemek (blob/tree hash, main 1673fd0a vs ez a PR)
 | Ut | main | PR | |
@@ -63,16 +63,16 @@ Allapot: 1. korben `e1c1a8b8`; a fuggetlen review (PASS with notes, blokkolo nin
 | `netlify/lib/meres/egyeztetes-sor.js` | d967f83646 | d967f83646 | valtozatlan |
 | `netlify/lib/meres/iras-kapcsolo.js` | 51d93a058b | 51d93a058b | valtozatlan |
 | `netlify/lib/meres/vegpontok.js` | 60f01af506 | b5e3881fc7 | **VALTOZOTT** (routolas + a kulcs csak fejlecben) |
-| `netlify/lib/meres/qa-nap.js` | 23a73e442d | 2334390be3 | **VALTOZOTT** (T2-kizaras; a 2. korben nem valtozott) |
-| `netlify/lib/meres/google-proba.js` | – | bd7f9b4bea | **UJ fajl** |
-| `netlify/lib/meres/` (tree) | 6d7dab9aef | e3f20c1b97 | VALTOZOTT (a fenti 3 fajl) |
-| `netlify/` (tree) | 4c9e859f92 | e495d49103 | VALTOZOTT (a fenti 3 fajl) |
+| `netlify/lib/meres/qa-nap.js` | 23a73e442d | 2334390be3 | **VALTOZOTT** (T2-kizaras; a 2. es 3. korben nem valtozott) |
+| `netlify/lib/meres/google-proba.js` | – | f6e5bf9d13 | **UJ fajl** (a 3. korben csak komment valtozott) |
+| `netlify/lib/meres/` (tree) | 6d7dab9aef | 488d8f699c | VALTOZOTT (a fenti 3 fajl) |
+| `netlify/` (tree) | 4c9e859f92 | db2a3f4b91 | VALTOZOTT (a fenti 3 fajl) |
 | `tools/meres-proba/` (tree) | e5c26dcd00 | c49d88af20 | VALTOZOTT (`MERES_GCLID`, alap valtozatlan) |
 
-A `netlify/**` vedett fa valtozasa **dokumentalt**: kizarolag a fenti harom fajl (DECISION #196). Az `elosztas.js` / `platformok.js` / `salonic-direct.js` / `esemeny-modell.js` / `egyeztetes-sor.js` bitre azonos – a foglalasi mereslanc, a konverziok, az elosztas es a Salonic-direct nem valtozott. (A hash-ek a 2. kori vegso allapotra szamitottak: `git rev-parse origin/main:<ut>` vs `HEAD:<ut>`.)
+A `netlify/**` vedett fa valtozasa **dokumentalt**: kizarolag a fenti harom fajl (DECISION #196). Az `elosztas.js` / `platformok.js` / `salonic-direct.js` / `esemeny-modell.js` / `egyeztetes-sor.js` bitre azonos – a foglalasi mereslanc, a konverziok, az elosztas es a Salonic-direct nem valtozott. (A hash-ek a 3. kori vegso allapotra szamitottak: `git rev-parse origin/main:<ut>` vs `HEAD:<ut>`.)
 
 ## F. Rollback
-1. A PR revertje: a `google_proba*` muvelet eltunik (400 „ismeretlen muvelet”). Nincs sema-valtozas, nincs uj tabla/oszlop. **Figyelem – a maradó sorok:** a revert UTAN a `forras='google_proba'` sorokat (feltoltes: `esemeny_tipus='alap'`, visszavonas: `'korrekcio'`) a REGI QA-kod mar nem zarja ki: az adott napok Google `elkuldve` / `alap_elkuldve` es forras-bontas (`forras.google_proba`) szamlaloiban megjelennek, a T2 arnyek/valos osszevetes **tul sok** arnyek-feltoltest mutathat. Teendo: a revert elott/utan a lenti SELECT-tel listazni a sorokat, es az egyeztetesnel levonni (a sorok auditnyomok, **torlest NEM javaslunk**).
+1. A PR revertje: a `google_proba*` muvelet eltunik (400 „ismeretlen muvelet”). Nincs sema-valtozas, nincs uj tabla/oszlop. **Figyelem – a maradó sorok:** a revert UTAN a `forras='google_proba'` sorokat (feltoltes: `esemeny_tipus='alap'`, visszavonas: `'korrekcio'`) a REGI QA-kod mar nem zarja ki. Pontos viselkedes (a regi `qaNap` ugyanazon a D1-en): a proba-sorok az adott Google ARNYEK-cella nyers allapot-szamlalojat (`arnyek.google.elkuldve` / `kihagyva` / `hiba`; a `folyamatban` a `mas`-t) es a `forras.google_proba.<allapot>` szamlalot noveljek, a biztonsagi ellenorzesek (elo ID, dupla, nem-ARNYEK cel) rajuk is futnak. Az **`alap_elkuldve` NEM no** (azt csak a `motor` / `salonic_direct` forrasu `alap` sorok noveljek), es a jogosultsag / lampa-szamlalok sem valtoznak. Teendo az egyeztetesnel: a nyers `elkuldve` es a forras-bontas `google_proba` agat levonni. a revert elott/utan a lenti SELECT-tel listazni a sorokat, es az egyeztetesnel levonni (a sorok auditnyomok, **torlest NEM javaslunk**).
 ```sql
 -- 1) a proba-sorok listaja (csak olvas)
 SELECT id, esemeny_id, esemeny_tipus, uzletag, source_id, allapot, indok, http_status, probalkozas,
@@ -104,4 +104,13 @@ SELECT id, esemeny_id, platform_nev, allapot, indok, http_status, platform_valas
 | 5 | `gclid_sorszam` sorrend dokumentacio, „2 ismert alap-hiba” | javitva a futtatokonyvben, a kodkommentben, ebben a naplóban (D) es a PR-leirasban |
 | 6 | rollback-megjegyzes | F. szakasz + SELECT-ek |
 
-A fuggetlen delta-review-t es a merge-et a fo munkamenet intezi.
+### 3. kor: a delta-review (7afd4920, PASS with notes) megjegyzesei
+| # | Megjegyzes | Javitas |
+|---|---|---|
+| 1 | a feltoltes-ujraprobalas CAS-versenyt az A11 nem mutatja ki (a CAS-eredmenyt figyelmen kivul hagyo mutans atment) | A18 BARRIER-teszt: elso kuldes INSERT-verseny, feltoltes-/visszavonas-ujraprobalas CAS-verseny, visszavonas INSERT-verseny; 4 uj mutans (CAS-eredmeny, INSERT-eredmeny, feltoltes + visszavonas) |
+| 2 | teli plafonnal a kozvetlen eles visszavonas 429 (8 uj sor) | CSAK dokumentacio (nincs plafon-mentesites): a futtatokonyv C. szakasza kimondja, hogy az eles ELOTT a dry-run lepes kotelezo, es 429 eseten a teendot; az A15 teszt a sorrendet (dry-run → eles = 8 POST) rogziti |
+| 3 | naplo F. szakasz: a regi QA-kod viselkedese pontatlan | javitva (F/1): `elkuldve` / `kihagyva` / `hiba` nyers + `forras.google_proba` no, `alap_elkuldve` marad |
+| 4 | a `visszavonasKerelem` doc-kommentje elavult (validateOnly) | javitva (csak komment; mukodes valtozatlan) |
+| 5 | teszt-/mutans-szamok, hash-tabla, teljes suite | frissitve: 25 teszt, 42 mutans, 520 teszt / 515 PASS / 2 FAIL (a main-nel azonos) / 3 SKIP |
+
+A fuggetlen utolso delta-review-t es a merge-et a fo munkamenet intezi.
