@@ -114,7 +114,7 @@ export async function foglalasAllapot(db, uuid, allapot, most, mezok = {}) {
 
 /** A Salonic-igazolas jeloltjei: meg nem igazolt, meg nem parositott foglalasok ugyanarra a hely + idopontra (HMAC). */
 export async function igazolasJeloltek(db, parositoHely) {
-  return (await db.prepare("SELECT uuid, allapot, teszt FROM gy_foglalas WHERE parosito_hely = ?1 AND salonic_id IS NULL AND allapot IN ('fuggo','aktiv','bizonytalan')").bind(parositoHely).all()).results || [];
+  return (await db.prepare("SELECT uuid, allapot, teszt, parosito FROM gy_foglalas WHERE parosito_hely = ?1 AND salonic_id IS NULL AND allapot IN ('fuggo','aktiv','bizonytalan')").bind(parositoHely).all()).results || [];
 }
 export async function foglalasSalonicIdAlapjan(db, salonicId) {
   return db.prepare('SELECT uuid, allapot, igazolt FROM gy_foglalas WHERE salonic_id = ?').bind(salonicId).first();
