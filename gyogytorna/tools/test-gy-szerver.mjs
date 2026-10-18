@@ -619,3 +619,122 @@ test('GY: a suti-stat kornyezet az Origin / Referer alapjan jon (a proxy a pages
   const sorok = (await env.GY_DB.prepare("SELECT kornyezet, SUM(db) AS n FROM gy_suti_teszt GROUP BY kornyezet").all()).results.map((x) => [x.kornyezet, x.n]).sort();
   assert.deepEqual(sorok, [['eles', 2], ['elonezet', 2]]);
 });
+
+// --- GY-22: 7 napos last paid click erintesi naplo (ARNYEK) ---------------------------------------------------------------------------------------------
+const NAPMP = 86400 * 1000;
+const dAt = (ms) => ({ most: () => MOST + ms, fetch: salonicHamis({ szabad: { '8439:24666:31525': [START + 3600] } }) });
+async function lpcKornyezet() {
+  const env = await ujKornyezet();
+  await kampanyokVegpont({ request: kerelem('/api/gy-kampanyok', { kampanyok: [{ id: BRAND, allapot: 'ENABLED' }, { id: DSA, allapot: 'ENABLED' }] }, { fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() });
+  return env;
+}
+const ping = (env, ms, search, cookie = HJ_IGEN, referrer = '') => forrasVegpont({ request: kerelem('/api/gy-forras', { search, referrer, path: '/cikk/' }, { cookie }), env, deps: dAt(ms) });
+const foglal = async (env, ms, cookie, uuid) => { const r = await foglalasVegpont({ request: kerelem('/api/gy-foglalas', { ...foglalasBody(), uuid }, { cookie }), env, deps: dAt(ms) }); return r.json(); };
+const lpcSor = (env, uuid) => env.GY_DB.prepare('SELECT cimke, lpc_cimke, lpc_bizonyitek, lpc_kampany, lpc_hirdetescsoport, lpc_hirdetes, lpc_kora_nap, kesoi_fizetett, lpc_verzio FROM gy_foglalas WHERE uuid = ?').bind(uuid).first();
+
+test('GY-22 (a): gclid-es erkezes -> 3 nappal kesobbi direkt visszateres -> foglalas = google_nem_markas (a naplo kampany / hirdetescsoport / hirdetes ID-t es a kattintas korat is adja)', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&utm_content=987654321&gyt_ag=123456789&gclid=ABCDEFGH12345`);
+  const lpt = sutikBol(r); // gy_lpt (30 nap) + gy_s
+  const harom = 3 * NAPMP;
+  await ping(env, harom, '', `${lpt}; ${HJ_IGEN}`, ''); // direkt visszateres: nem ir felul, nem naploz
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 1);
+  const j = await foglal(env, harom + 3600 * 1000, lpt.split('; ').filter((c) => c.startsWith('gy_lpt=')).join('; ') + '; ' + HJ_IGEN, 'mb_lpca0000000000001');
+  assert.equal(j.ok, true);
+  const sor = await lpcSor(env, 'mb_lpca0000000000001');
+  assert.deepEqual({ ...sor }, { cimke: 'google_nem_brand', lpc_cimke: 'google_nem_markas', lpc_bizonyitek: 'kampany_es_katt', lpc_kampany: DSA, lpc_hirdetescsoport: '123456789', lpc_hirdetes: '987654321', lpc_kora_nap: 3, kesoi_fizetett: null, lpc_verzio: 'lpc1' });
+});
+
+test('GY-22 (b): BRAND kattintas -> google_markas; ujabb fizetett felulirja a regebbit; organikus / direkt nem ir felul', async () => {
+  const env = await lpcKornyezet();
+  let r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345`);
+  const lpt = sutikBol(r).split('; ').find((c) => c.startsWith('gy_lpt='));
+  await ping(env, 2 * NAPMP, `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ZZZZZZZZ99999`, `${lpt}; ${HJ_IGEN}`);
+  await ping(env, 3 * NAPMP, '', `${lpt}; ${HJ_IGEN}`, 'https://www.google.com/'); // organikus visszateres
+  const j = await foglal(env, 3 * NAPMP + 600000, `${lpt}; ${HJ_IGEN}`, 'mb_lpcb0000000000001');
+  assert.equal(j.ok, true);
+  const sor = await lpcSor(env, 'mb_lpcb0000000000001');
+  assert.deepEqual([sor.lpc_cimke, sor.lpc_kampany, sor.lpc_kora_nap], ['google_markas', BRAND, 1]);
+});
+
+test('GY-22 (c): 8+ napos kattintas -> organikus_direkt + kesoi_fizetett kitoltve; 30 napnal regebbi nem szamit', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ABCDEFGH12345`);
+  const lpt = sutikBol(r).split('; ').find((c) => c.startsWith('gy_lpt='));
+  const j = await foglal(env, 8 * NAPMP + 3600000, `${lpt}; ${HJ_IGEN}`, 'mb_lpcc0000000000001');
+  assert.equal(j.ok, true);
+  const sor = await lpcSor(env, 'mb_lpcc0000000000001');
+  assert.deepEqual([sor.lpc_cimke, sor.lpc_bizonyitek, sor.kesoi_fizetett, sor.lpc_kampany], ['organikus_direkt', 'nincs_fizetett_7_napon_belul', 'google_markas', null]);
+  const j2 = await foglal(env, 31 * NAPMP, `${lpt}; ${HJ_IGEN}`, 'mb_lpcc0000000000002');
+  assert.equal(j2.ok, true);
+  assert.equal((await lpcSor(env, 'mb_lpcc0000000000002')).kesoi_fizetett, null);
+  // azonosito nelkul (nincs suti) -> ismeretlen
+  const j3 = await foglal(env, 0, HJ_IGEN, 'mb_lpcc0000000000003');
+  assert.equal(j3.ok, true);
+  const s3 = await lpcSor(env, 'mb_lpcc0000000000003');
+  assert.deepEqual([s3.lpc_cimke, s3.lpc_bizonyitek], ['ismeretlen', 'nincs_azonosito']);
+});
+
+test('GY-22: ismeretlen kampany-ID google_bizonytalan, a kampanylista kesobbi frissitese utolag feloldja; ujratoltes nem naplozik ketszer', async () => {
+  const env = await lpcKornyezet();
+  const UJ = '99887766554';
+  const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${UJ}&gclid=ABCDEFGH12345`);
+  const lpt = sutikBol(r).split('; ').find((c) => c.startsWith('gy_lpt='));
+  await ping(env, 60000, `?utm_source=google&utm_medium=cpc&utm_campaign=${UJ}&gclid=ABCDEFGH12345`, `${lpt}; ${HJ_IGEN}`); // ugyanaz 1 perc mulva: ujratoltes
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 1);
+  assert.equal((await env.GY_DB.prepare('SELECT cimke FROM gy_erintes').first()).cimke, 'google_bizonytalan');
+  const j = await foglal(env, 3600000, `${lpt}; ${HJ_IGEN}`, 'mb_lpcd0000000000001');
+  assert.equal((await lpcSor(env, 'mb_lpcd0000000000001')).lpc_cimke, 'google_bizonytalan');
+  await kampanyokVegpont({ request: kerelem('/api/gy-kampanyok', { kampanyok: [{ id: BRAND }, { id: DSA }, { id: UJ }] }, { fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() });
+  await foglal(env, 3700000, `${lpt}; ${HJ_IGEN}`, 'mb_lpcd0000000000002');
+  assert.deepEqual([(await lpcSor(env, 'mb_lpcd0000000000002')).lpc_cimke, (await lpcSor(env, 'mb_lpcd0000000000002')).lpc_bizonyitek], ['google_nem_markas', 'kampany_es_katt_utolag']);
+});
+
+test('GY-22 (d): elutasitas (visszavont hozzajarulas) utan nincs iras, a meglevo naplo torlodik; adatminimum: nyers click-ID / URL / UA nincs a naploban', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ABCDEFGH12345&email=a@b.hu`);
+  const lpt = sutikBol(r).split('; ').find((c) => c.startsWith('gy_lpt='));
+  const sor = JSON.stringify(await env.GY_DB.prepare('SELECT * FROM gy_erintes').first());
+  for (const tilos of ['ABCDEFGH12345', 'gclid', 'a@b.hu', 'utm_', 'Mozilla']) assert.equal(sor.includes(tilos), false, tilos);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 1);
+  const NEM = `gy_suti=v1-s0-m0-t${ts()}`; // lábléci elutasítás: nincs marketing-hozzajarulas
+  await ping(env, 1000, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ZZZZZZZZ99999`, `${lpt}; ${NEM}`);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 0); // torolve, uj nem keletkezett
+  const j = await foglal(env, 5000, `${lpt}; ${NEM}`, 'mb_lpce0000000000001');
+  assert.equal(j.ok, true);
+  assert.equal((await lpcSor(env, 'mb_lpce0000000000001')).lpc_bizonyitek, 'nincs_hozzajarulas');
+});
+
+test('GY-22 (e): naplohiba szimulalva -> a foglalas sikeres (fail-open), hibaszamlalo + riasztas', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ABCDEFGH12345`);
+  const lpt = sutikBol(r).split('; ').find((c) => c.startsWith('gy_lpt='));
+  await env.GY_DB.prepare('DROP TABLE gy_erintes').run(); // a naplo "elromlik"
+  const r2 = await ping(env, 1000, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ZZZZZZZZ99999`, `${lpt}; ${HJ_IGEN}`);
+  assert.equal(r2.status, 200); // a forras-ping sem akad el
+  const j = await foglal(env, 5000, `${lpt}; ${HJ_IGEN}`, 'mb_lpcf0000000000001');
+  assert.equal(j.ok, true);
+  assert.equal(j.allapot, 'aktiv');
+  assert.match(j.token, /^[A-Za-z0-9_-]{43}$/);
+  const sor = await lpcSor(env, 'mb_lpcf0000000000001');
+  assert.equal(sor.lpc_cimke, null);
+  assert.ok(Number((await env.GY_DB.prepare("SELECT ertek FROM gy_meta WHERE kulcs = 'lpc_hiba'").first()).ertek) >= 2);
+  assert.ok((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_riasztas WHERE tipus = 'lpc_hiba'").first()).n >= 2);
+});
+
+test('GY-22: a foglalas-valasz, a cimke es a koszono-esemeny VALTOZATLAN (arnyek); admin ?lpc= riport csak aggregalt szamokat ad; 37 napnal regebbi naplosor torlodik', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ABCDEFGH12345`);
+  const cook = `${sutikBol(r)}; ${HJ_IGEN}`;
+  const j = await foglal(env, 600000, cook, 'mb_lpcg0000000000001');
+  assert.deepEqual(Object.keys(j).sort(), ['allapot', 'koszono', 'ok', 'token']);
+  assert.equal((await env.GY_DB.prepare('SELECT cimke FROM gy_foglalas WHERE uuid = ?').bind('mb_lpcg0000000000001').first()).cimke, 'google_brand'); // a regi besorolas valtozatlan
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?lpc=2026-10', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.equal(rap.ok, true);
+  assert.deepEqual([rap.szabaly_verzio, rap.nevezo, rap.lpc_azonositott, rap.munkamenet_azonositott, rap.erintesi_naplo_sorok], ['lpc1', 1, 1, 1, 1]);
+  assert.equal(JSON.stringify(rap).includes('mb_lpc'), false);
+  // megorzes: 37 nap utan a sor torlodik (takaritas)
+  await takaritTeszt(env, MOST / 1000 + 38 * 86400);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 0);
+});
+async function takaritTeszt(env, most) { const { takarit } = await import('../lib/db.js'); await takarit(env.GY_DB, Math.floor(most)); }

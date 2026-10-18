@@ -164,3 +164,35 @@ export function cimkez(b, t = {}) {
 export function kattTorol(b) {
   return b ? { ...b, kattintas_ertek: null } : b;
 }
+
+// --- GY-22: 7 napos last paid click (ARNYEK) -----------------------------------------------------------------------------------
+export const LPC_VERZIO = 'lpc1';
+export const LPC_NAP = 7, KESOI_NAP = 30;
+/** Fizetett erintes-e (naplozando): Google kattintas-azonosito (gclid / gbraid / wbraid) VAGY utm_medium=cpc (fizetett medium). Mas platform click-ID-ja nem. */
+export const lpcFizetett = (b) => !!b && (googleKattintas(b) || FIZETETT_MEDIUM.includes(kis(b.utm_medium)));
+/** A cimkez() kimenetenek normalizalasa a GY-22 cimkekre. */
+export const lpcCimke = (c) => ({ google_brand: 'google_markas', google_nem_brand: 'google_nem_markas', google_bizonytalan: 'google_bizonytalan' }[c] || 'ismeretlen');
+/**
+ * A foglalas pillanataban a latogato erintesei alapjan (legujabb elol): a legutolso, LPC_NAP napon beluli fizetett nyer; organikus / direkt visszateres NEM ir felul (nem is naplozzuk);
+ * nincs fizetett -> organikus_direkt (ha van azonosito), kulonben ismeretlen. kesoi_fizetett: a 8-30 napos legutolso fizetett erintes cimkeje (kulon mezo).
+ * Ismeretlen kampany-ID-val naplozott erintest a kampanylista kesobbi frissitese utolag feloldja.
+ */
+export function lpcHozzarendel({ erintesek = [], most, lista, azonositoVan = false }) {
+  const l = lista instanceof Map ? lista : new Map(Object.entries(lista || {}));
+  const kor = (e) => most - e.ido;
+  const felold = (e) => {
+    if (e.cimke === 'google_bizonytalan' && e.bizonyitek === 'ismeretlen_kampany' && e.kampany && l.has(String(e.kampany))) {
+      return { cimke: l.get(String(e.kampany)).brand ? 'google_markas' : 'google_nem_markas', bizonyitek: 'kampany_es_katt_utolag' };
+    }
+    return { cimke: e.cimke, bizonyitek: e.bizonyitek };
+  };
+  const rendezett = [...erintesek].sort((a, b) => b.ido - a.ido);
+  const nyertes = rendezett.find((e) => kor(e) >= 0 && kor(e) <= LPC_NAP * 86400);
+  const kesoi = rendezett.find((e) => kor(e) > LPC_NAP * 86400 && kor(e) <= KESOI_NAP * 86400);
+  const kesoiCimke = kesoi ? felold(kesoi).cimke : null;
+  if (nyertes) {
+    const f = felold(nyertes);
+    return { cimke: f.cimke, bizonyitek: f.bizonyitek, kampany: nyertes.kampany || null, hirdetescsoport: nyertes.hirdetescsoport || null, hirdetes: nyertes.hirdetes || null, kora_nap: Math.floor(kor(nyertes) / 86400), kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
+  }
+  return { cimke: azonositoVan ? 'organikus_direkt' : 'ismeretlen', bizonyitek: azonositoVan ? 'nincs_fizetett_7_napon_belul' : 'nincs_azonosito', kampany: null, hirdetescsoport: null, hirdetes: null, kora_nap: null, kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
+}
