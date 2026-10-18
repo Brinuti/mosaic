@@ -273,7 +273,7 @@ export function parseContext(search, referrer = '', origin = '', { defaultBusine
   let sourcePage = q.get('source_page') || '';
   if (!sourcePage && referrer) { try { const r = new URL(referrer); if (!origin || r.origin === origin) sourcePage = r.pathname; } catch (e) { /* hibas referrer */ } }
   const attribution = {};
-  for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'gclid', 'fbclid', 'ttclid']) if (q.get(k)) attribution[k] = q.get(k);
+  for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid']) if (q.get(k)) attribution[k] = q.get(k); // R2 (DECISION #196/1): a gbraid / wbraid is
   return {
     business: q.get('business') || defaultBusiness,
     serviceKey: q.get('service') || q.get('service_id') || null,
@@ -311,6 +311,32 @@ export function withAttribution(href, search = '') {
   const hash = href.indexOf('#');
   const base = hash >= 0 ? href.slice(0, hash) : href, frag = hash >= 0 ? href.slice(hash) : '';
   return base + (base.includes('?') ? (/[?&]$/.test(base) ? '' : '&') : '?') + add.join('&') + frag;
+}
+
+// --- R1 (DECISION #196/1): a Google kattintasazonositok azonosito NELKULI oldalrol nyitott foglaloban is ---------------------------------------------------
+// Ha a foglalot olyan oldalrol nyitjak, amelynek URL-jeben nincs gclid / gbraid / wbraid (a latogato a gclid-es landing utan masik oldalra lepett / ujratoltott), a motor kontextusa
+// (a tracker-esemenyek) es a koszonooldalra fuzott kereses sem tartalmazta az azonositot. Az oldal MENTETT allapotabol (window.mhAttribucio.googleAzonositok(): a hozzajarulassal
+// tarolt mh_attr + a Google-cimke _gcl_aw / _gcl_gb sutije; marketing-hozzajarulas nelkul ures) a hianyzo azonositok potlodnak. Az URL-ben megadott azonosito mindig elsobbseget elvez.
+export const GOOGLE_KEYS = Object.freeze(['gclid', 'gbraid', 'wbraid']);
+const GOOGLE_ID_RE = /^[A-Za-z0-9_-]{10,200}$/; // = assets/js/attribucio.js MINTA (gclid / gbraid / wbraid)
+
+/** A kontextus attribution-jat kiegesziti a mentett Google-azonositokkal (csak a HIANYZO, ervenyes mintaju kulcsokat); visszaadja ugyanazt az objektumot. */
+export function fillGoogleIds(attribution, saved) {
+  if (!attribution || !saved || typeof saved !== 'object') return attribution;
+  for (const k of GOOGLE_KEYS) {
+    const v = saved[k];
+    if (!attribution[k] && typeof v === 'string' && GOOGLE_ID_RE.test(v)) attribution[k] = v;
+  }
+  return attribution;
+}
+
+/** A koszonooldalra fuzendo kereses (withAttribution bemenete): a motor URL-jenek keresese + a kontextus Google-azonositoi, ha az URL-ben nincsenek. Ha nincs mit hozzaadni: valtozatlan. */
+export function handoffSearch(search = '', attribution = {}) {
+  const q = new URLSearchParams(search);
+  const add = GOOGLE_KEYS.filter((k) => !q.get(k) && attribution && typeof attribution[k] === 'string' && GOOGLE_ID_RE.test(attribution[k]));
+  if (!add.length) return search;
+  for (const k of add) q.set(k, attribution[k]);
+  return '?' + q.toString();
 }
 
 export function shouldHandoff(hostname, search = '', liveHosts = ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) {
