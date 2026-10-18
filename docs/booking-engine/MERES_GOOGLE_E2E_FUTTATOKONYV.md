@@ -75,11 +75,13 @@ Ujrafuttatas ugyanazzal a `futas_id`-vel nem duplaz (az elkuldott sor nem megy k
 ```
 # 1) SZARAZ terv: halozat es D1-iras nelkul
 curl -sS -X POST "$BASE" -H "x-egyeztetes-kulcs: $KULCS" -H 'content-type: application/json' -d '{"muvelet":"google_proba_visszavon","futas_id":"<futas>"}'
-# 2) kuld:true + megerosit, DE eles nelkul (vagy GOOGLE_KORREKCIO_ELES nelkul): 0 POST, csak a dry-run SOR kerul a D1-be (allapot "kihagyva", indok "dry_run: ..."), mod: "dry_run_sor"
+# 2) KOTELEZO az eles ELOTT: kuld:true + megerosit, DE eles nelkul (vagy GOOGLE_KORREKCIO_ELES nelkul): 0 POST, csak a dry-run SOR kerul a D1-be (allapot "kihagyva", indok "dry_run: ..."), mod: "dry_run_sor"
 … -d '{"muvelet":"google_proba_visszavon","futas_id":"<futas>","kuld":true,"megerosit":"ARNYEK-6088874770-PROBA"}'
-# 3) ELES visszavonas (POST a korrekcio-Zapra, dryRun:false): ket kulon feltetel egyutt – GOOGLE_KORREKCIO_ELES=1 a kornyezetben ES eles:true a kerelemben (+ megerosit + GOOGLE_KORREKCIO_WEBHOOK_URL)
+# 3) ELES visszavonas, a 2. lepes UTAN (POST a korrekcio-Zapra, dryRun:false): ket kulon feltetel egyutt – GOOGLE_KORREKCIO_ELES=1 a kornyezetben ES eles:true a kerelemben (+ megerosit + GOOGLE_KORREKCIO_WEBHOOK_URL)
 … -d '{"muvelet":"google_proba_visszavon","futas_id":"<futas>","kuld":true,"megerosit":"ARNYEK-6088874770-PROBA","eles":true}'
 ```
+**Sorrend a 24 oras plafon miatt (KOTELEZO):** az eles visszavonas ELOTT a 2. lepes (dry-run sorok) ki kell fusson. A plafon (40 kimeno sor: `elkuldve` / `hiba` / `folyamatban` 24 oran belul) a meg nem letezo visszavonas-sorokat **8 uj sorkent** szamolja: teli plafonnal (pl. 5 feltoltesi futas utan) a KOZVETLEN eles hivas **429**-et kap. A dry-run sorok `kihagyva` allapotuak (nem szamitanak a plafonba), az eles kor ezeket UPDATE-eli (nem uj sor), ezert atmegy; dry-run sorok utan a 429 nem fordulhat elo.
+**429 eseten teendo:** (1) futtasd a 2. lepest (dry-run), majd ismeteld az eles hivast; (2) a plafont NEM keruljuk meg (nincs mentesites): ha a dry-run lepes nem oldja meg (ez a kodbol nem varhato), varj, amig a 24 oras ablak csuszik, vagy hajtsd vegre a visszavonast a Google Ads API-n at a meresi oldalon.
 A terv az **elkuldott** proba-feltoltesek tukorkepe (ugyanazok az `order_id`-k es akciok; a visszavonas ideje nem a jovoben). Csak a `Proba:<futas>:<akcio>` order_id-k vonhatok vissza; elo akcio / idegen order_id → 409. A valasz `posztolt_db` mezoje megmutatja, hany keres ment a Zapra (dry-run: 0).
 Az adjustment a feltoltes utan LEHET, hogy csak a Google feldolgozasa utan fogadhato el (a RETRACTION-hoz a konverzionak mar be kell fogadva lennie). A dry-run sor utan az eles kor ugyanazokat a sorokat veszi at; az elkuldott visszavonas ketszer nem megy.
 

@@ -69,7 +69,17 @@ async function vilag({ env = {}, valos = true } = {}) {
   return { D, db, e, sql, futtat, beszur, post, probaSorok, osszSor, googleKerelem };
 }
 // KOZVETLEN hivas a muvelet-belepesi pontra (a Request-feldolgozas nelkul: az egyideju hivasok igy ugyanazon az await-melysegen lepnek, a verseny determinisztikusan megjelenik)
-const direkt = (w, body, { net, envFelul = {} } = {}) => googleProbaMuvelet(w.db, { ...w.e, ...envFelul }, body, { now: MOST, fetchImpl: (net || halozat()).fetchImpl });
+const direkt = (w, body, { net, envFelul = {}, db } = {}) => googleProbaMuvelet(db || w.db, { ...w.e, ...envFelul }, body, { now: MOST, fetchImpl: (net || halozat()).fetchImpl });
+// BARRIER: a `meglevo` sor olvasasa (SELECT id, allapot, probalkozas, frissitve ...) addig var, mig mind az `n` egyideju hivas beolvasott; az olvasas AZ ELOTT tortenik (elavult erteket kapnak), utana engedi az irasokat -
+// igy az INSERT (ON CONFLICT) es az ujraprobalt sor atvetele (compare-and-swap) versenye minden futasban pontosan ugyanugy jelenik meg
+const korlat = (w, n, ms = 4000) => {
+  const var_ = new Map();
+  const vegre = (kulcs) => new Promise((ok, nem) => {
+    const e = var_.get(kulcs) || { n: 0, felold: [] }; var_.set(kulcs, e); e.n++; e.felold.push(ok);
+    if (e.n >= n) e.felold.forEach((f) => f()); else setTimeout(() => nem(new Error('barrier idotullepes: nem erkezett meg mind a ' + n + ' hivas')), ms).unref();
+  });
+  return { prepare: (sql) => { const valos = w.db.prepare(sql); if (!/SELECT id, allapot, probalkozas, frissitve/.test(sql)) return valos; return { bind: (...a) => { const k = valos.bind(...a); return { first: async () => { const ertek = await k.first(); await vegre(sql + JSON.stringify(a)); return ertek; } }; } }; }, batch: w.db.batch };
+};
 const kuld = (extra = {}) => ({ muvelet: 'google_proba', kuld: true, megerosit: MEGEROSITES, ...extra });
 
 test('A1 a 8 probalhato akcio PONTOSAN a vart (a kodbol, nem talgatva): nincs HeadSpa, nincs elo akcio, az ID-k az ARNYEK-tablabol', () => {
@@ -324,6 +334,9 @@ test('A15 24 oras plafon (DONTES): a KIMENO kiserleteket szamolja (elkuldve / hi
   const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' }; const vis = { muvelet: 'google_proba_visszavon', futas_id: 'c0ffee12', kuld: true, megerosit: MEGEROSITES };
   assert.equal((await w7.post({ ...vis, eles: true }, { envFelul: env })).status, 429, 'eles: 40 + 8 uj > 40');
   assert.equal((await w7.post(vis, { envFelul: env })).status, 200, 'dry-run: kihagyva sorok, nem szamit');
+  // a futtatokonyv sorrendje teli plafonnal: ELOSZOR a dry-run sorok (fent), UTANA az eles visszavonas - a dry-run sorok UPDATE-je nem uj sor, igy atmegy (8 POST)
+  const nEles = halozat(); const rEles = await w7.post({ ...vis, eles: true }, { net: nEles, envFelul: env });
+  assert.equal(rEles.status, 200, JSON.stringify(rEles.body)); assert.equal(nEles.hivasok.length, 8); assert.equal(rEles.body.visszavonva, 8);
 });
 
 test('A16 futas_id nelkul ket hivas KULONBOZO azonositot kap (8 hexa); a megadott futas_id valtozatlan', async () => {
@@ -366,6 +379,34 @@ test('A17 a Zap NYERS valasz-torzse SOHA nem tarolodik / nem kerul a valaszba: k
   const r3 = await w3.post(kuld({ futas_id: '5e5e5e60' }), { net: dob });
   assert.ok(w3.probaSorok().every((s) => s.allapot === 'hiba' && s.platform_valasz === '{"http":null}' && s.http_status === null));
   assert.ok(!JSON.stringify(r3.body).includes('hooks.zapier.com') && !JSON.stringify(w3.probaSorok()).includes('hooks.zapier.com') && !JSON.stringify(r3.body).includes(GCL_FOGL) && !JSON.stringify(w3.probaSorok()).includes(GCL_FOGL));
+});
+
+test('A18 BARRIER-VERSENY (3 egyideju hivas ugyanazt az ELAVULT sort latja, utana mindhárom ir): az elso kuldes INSERT-versenye, a feltoltes-ujraprobalas es a visszavonas-ujraprobalas CAS-versenye es a visszavonas INSERT-versenye - mindegyiknel pontosan 8 POST', async () => {
+  const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' };
+  const harom = (w, body, net, envFelul = {}) => { const db = korlat(w, 3); return Promise.all([1, 2, 3].map(() => direkt(w, body, { net, envFelul, db }))); };
+  // 1) az elso kuldes INSERT-versenye: mind a harom null-t olvas, mind insertel -> az ON CONFLICT utan csak a nyertes POST-ol
+  const w1 = await vilag(); const n1 = halozat(); const r1 = await harom(w1, kuld({ futas_id: 'baaaaa01' }), n1);
+  assert.ok(r1.every((r) => r.status === 200), JSON.stringify(r1.map((r) => [r.status, r.body.miert])));
+  assert.equal(n1.hivasok.length, 8, 'INSERT-verseny: osszesen 8 POST'); assert.equal(r1.reduce((n, r) => n + r.body.kuldve, 0), 8);
+  assert.equal(new Set(n1.hivasok.map((h) => h.body.order_id)).size, 8); assert.equal(w1.probaSorok().length, 8); assert.ok(w1.probaSorok().every((s) => s.allapot === 'elkuldve' && s.probalkozas === 1));
+  // 2) feltoltes-ujraprobalas: 8 hiba sor -> harom hivas mind az elavult 'hiba' sort latja, a CAS-nal csak az egyik nyer
+  const w2 = await vilag(); await w2.post(kuld({ futas_id: 'baaaaa02' }), { net: halozat({ hiba: new Set(ELVART_8) }) });
+  assert.ok(w2.probaSorok().every((s) => s.allapot === 'hiba' && s.probalkozas === 1));
+  const n2 = halozat(); const r2 = await harom(w2, kuld({ futas_id: 'baaaaa02' }), n2);
+  assert.ok(r2.every((r) => r.status === 200)); assert.equal(n2.hivasok.length, 8, 'feltoltes-ujraprobalas CAS-verseny: osszesen 8 POST'); assert.equal(r2.reduce((n, r) => n + r.body.kuldve, 0), 8);
+  assert.ok(w2.probaSorok().every((s) => s.allapot === 'elkuldve' && s.probalkozas === 2));
+  // 3) visszavonas INSERT-versenye (nincs meg visszavonas-sor)
+  const w3 = await vilag(); await w3.post(kuld({ futas_id: 'baaaaa03' })); const vis3 = { muvelet: 'google_proba_visszavon', futas_id: 'baaaaa03', kuld: true, megerosit: MEGEROSITES, eles: true };
+  const n3 = halozat(); const r3 = await harom(w3, vis3, n3, env);
+  assert.ok(r3.every((r) => r.status === 200), JSON.stringify(r3.map((r) => [r.status, r.body.miert]))); assert.equal(n3.hivasok.length, 8, 'visszavonas INSERT-verseny: osszesen 8 POST');
+  const v3 = w3.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')); assert.equal(v3.length, 8); assert.ok(v3.every((s) => s.allapot === 'elkuldve' && s.probalkozas === 1));
+  // 4) visszavonas-ujraprobalas: 8 hiba visszavonas-sor -> a CAS-nal csak az egyik nyer
+  const w4 = await vilag(); await w4.post(kuld({ futas_id: 'baaaaa04' })); const vis4 = { ...vis3, futas_id: 'baaaaa04' };
+  await direkt(w4, vis4, { net: halozat({ hiba: new Set(ELVART_8) }), envFelul: env });
+  assert.ok(w4.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')).every((s) => s.allapot === 'hiba' && s.probalkozas === 1));
+  const n4 = halozat(); const r4 = await harom(w4, vis4, n4, env);
+  assert.ok(r4.every((r) => r.status === 200)); assert.equal(n4.hivasok.length, 8, 'visszavonas-ujraprobalas CAS-verseny: osszesen 8 POST');
+  assert.ok(w4.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')).every((s) => s.allapot === 'elkuldve' && s.probalkozas === 2));
 });
 
 // ---------- T2 / QA-nap / lampa / egyeztetosor KIZARAS ----------

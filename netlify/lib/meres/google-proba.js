@@ -185,7 +185,8 @@ export async function googleProba(db, env, o, { now = Date.now(), fetchImpl = fe
 /**
  * Egy Google-korrekcio (RETRACTION) kerese a Zapier-webhookra (az eletut-ag googleKorrekcioKerelem torzsenek formaja):
  *   POST GOOGLE_KORREKCIO_WEBHOOK_URL { adjustments: [{ type: 'RETRACTION', orderId, conversionActionId, adjustmentDateTime ('yyyy-mm-dd hh:mm:ss+02:00', nem a jovoben), note }], dryRun }
- * dryRun = true, kiveve ha eles === true ES GOOGLE_KORREKCIO_ELES=1 (a Zap dryRun mellett validateOnly-t hiv: semmit nem ir).
+ * dryRun = true, kiveve ha eles === true ES GOOGLE_KORREKCIO_ELES=1. A dryRun a kerelem allapota: dryRun mellett a korrekcio-Zapot a hivo (googleProbaVisszavon) NEM hivja - csak a dry-run D1-sor
+ * (kihagyva / dry_run) keszul, mert a korrekcio-Zap mukodese ismeretlen. A Zapra KIZAROLAG az eles (dryRun:false) kerelem megy (eles:true + GOOGLE_KORREKCIO_ELES=1 + megerosit).
  */
 export function visszavonasKerelem({ orderId, akcioId, nowSec, eles }, env = {}) {
   if (!PROBA_AKCIO_ID.has(String(akcioId)) || ELO_CELOK.google_primary.includes(String(akcioId))) return { tiltva: 'a visszavonas csak a 8 probalhato ARNYEK akciora mehet' };
