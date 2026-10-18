@@ -407,7 +407,9 @@ test('igazolas: ismeretlen / nem egyezo / nem aktiv a Salonicban -> nincs igazol
   assert.equal((await igazolasVegpont({ request: zapKerelem(be), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START + 900 } } }) } })).status, 409);
   // a hely/idopont-parhoz nincs foglalas
   const masik = { ...be, start_unix: START + 1800 };
-  assert.equal((await igazolasVegpont({ request: zapKerelem(masik), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START + 1800 } } }) } })).status, 404);
+  assert.equal((await igazolasVegpont({ request: zapKerelem(masik), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START + 1800 } } }) } })).status, 200); // VEGLEGES kimenet: 2xx + nincs_par (a Zap nem probalja ujra)
+  const np = await (await igazolasVegpont({ request: zapKerelem(masik), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START + 1800 } } }) } })).json();
+  assert.deepEqual([np.ok, np.nincs_par, np.okkod], [true, true, 'nincs_motoros_jelolt']);
   assert.ok((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_riasztas WHERE tipus = 'igazolas_nincs_par'").first()).n >= 1);
   assert.equal((await env.GY_DB.prepare('SELECT igazolt FROM gy_foglalas').first()).igazolt, 0);
   // ervenytelen torzs
@@ -573,4 +575,47 @@ test('sav-teszt: konfig (alapertek, kulcsos csere, ellenorzes), A/B statisztika 
   assert.deepEqual([v2.megjelent, v2.elfogad, v2.elfogadasi_arany], [4, 3, 75]);
   assert.equal(v1.eszkoz, 'mobil');
   assert.equal(JSON.stringify(rap).includes('cookie'), false);
+});
+
+test('GY: tobb utm_campaign (regi hirdetesszintu template + fiokszintu suffix): a szamszeru ID nyer, alias csak ellenorzott, konfliktusnal nincs valasztas, okkodok', () => {
+  const SZ = 'gyogytornaszomhu-brand';
+  const q = (s) => belepes({ search: s });
+  // a BRAND landing: szoveges + szamszeru utm_campaign -> a szamszeru ID, brand
+  const a = q(`?utm_source=google&utm_medium=cpc&utm_campaign=${SZ}&utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&utm_term=111222333&utm_content=987654321&gclid=ABCDEFGH12345`);
+  assert.equal(a.utm_campaign, BRAND);
+  assert.equal(cimkez(a, { lista: LISTA }).cimke, 'google_brand');
+  assert.equal(cimkez(a, { lista: LISTA }).bizonyitek, 'kampany_es_katt');
+  // fordított sorrend is ugyanaz
+  assert.equal(q(`?utm_campaign=${BRAND}&utm_campaign=${SZ}&gclid=ABCDEFGH12345`).utm_campaign, BRAND);
+  // csak a szoveges alias: ellenorzott megfeleltetes -> BRAND, kulon okkoddal
+  const b = q(`?utm_campaign=${SZ}&gclid=ABCDEFGH12345`);
+  assert.deepEqual([b.utm_campaign, cimkez(b, { lista: LISTA }).cimke, cimkez(b, { lista: LISTA }).bizonyitek], [BRAND, 'google_brand', 'kampany_alias_es_katt']);
+  // ismeretlen szoveges kampany: marad bizonytalan, okkoddal (nincs kitalalt ID)
+  const c = q('?utm_campaign=valami-mas&gclid=ABCDEFGH12345');
+  assert.deepEqual([c.utm_campaign, cimkez(c, { lista: LISTA }).cimke, cimkez(c, { lista: LISTA }).bizonyitek], ['valami-mas', 'google_bizonytalan', 'utm_campaign_szoveges']);
+  // ket KULONBOZO ervenyes ID: nem valasztunk
+  const d = q(`?utm_campaign=${BRAND}&utm_campaign=${DSA}&gclid=ABCDEFGH12345`);
+  assert.deepEqual([d.utm_campaign, cimkez(d, { lista: LISTA }).cimke, cimkez(d, { lista: LISTA }).bizonyitek], [null, 'google_bizonytalan', 'kampany_konfliktus']);
+  // click-ID van, utm_campaign nincs
+  assert.equal(cimkez(q('?gclid=ABCDEFGH12345'), { lista: LISTA }).bizonyitek, 'utm_campaign_hianyzik');
+  // ugyanaz az ID ketszer: nem konfliktus
+  assert.equal(q(`?utm_campaign=${BRAND}&utm_campaign=${BRAND}&gclid=ABCDEFGH12345`).utm_campaign, BRAND);
+});
+
+test('GY: a hirdetescsoport gyt_ag hianyaban az utm_term-bol jon (csak szamjegy)', async () => {
+  const { hirdetesAzonositok } = await import('../lib/forras.js');
+  assert.equal(hirdetesAzonositok(belepes({ search: `?utm_campaign=${DSA}&utm_term=123456789&gclid=ABCDEFGH12345` })).hirdetescsoport, '123456789');
+  assert.equal(hirdetesAzonositok(belepes({ search: `?utm_campaign=${DSA}&utm_term=kulcsszo&gclid=ABCDEFGH12345` })).hirdetescsoport, null);
+  assert.equal(hirdetesAzonositok(belepes({ search: `?utm_campaign=${DSA}&utm_term=123456789&gyt_ag=555666777&gclid=ABCDEFGH12345` })).hirdetescsoport, '555666777');
+});
+
+test('GY: a suti-stat kornyezet az Origin / Referer alapjan jon (a proxy a pages.dev hostot mutatja)', async () => {
+  const { env } = await teljesFolyamat({ search: '?x=1' });
+  const kuld = (fejlec) => sutiStatVegpont({ request: new Request('https://gyogytorna.pages.dev/api/gy-suti-stat', { method: 'POST', headers: fejlec, body: JSON.stringify({ e: 'megjelent', n: 'nagy', m: 1, v: 'v1', p: '/valami/' }) }), env });
+  assert.equal((await kuld({ origin: 'https://www.gyogytornaszom.hu' })).status, 204);
+  assert.equal((await kuld({ referer: 'https://www.gyogytornaszom.hu/valami/' })).status, 204);
+  assert.equal((await kuld({ origin: 'https://claude-x.gyogytorna.pages.dev' })).status, 204);
+  assert.equal((await kuld({})).status, 204);
+  const sorok = (await env.GY_DB.prepare("SELECT kornyezet, SUM(db) AS n FROM gy_suti_teszt GROUP BY kornyezet").all()).results.map((x) => [x.kornyezet, x.n]).sort();
+  assert.deepEqual(sorok, [['eles', 2], ['elonezet', 2]]);
 });

@@ -191,7 +191,10 @@
     } catch (e) { /* */ }
   };
   // a sav latszott, de a latogato dontes nelkul elhagyta az oldalt (tovabblepes / bezaras): egyszer jelezzuk
-  window.addEventListener('pagehide', function () { if (teszt && mutatva && !dontes && dontesNelkul) { dontesNelkul = false; statKuld('dontes_nelkul', 'nagy'); } });
+  var elhagy = function () { if (teszt && mutatva && !dontes && dontesNelkul) { dontesNelkul = false; statKuld('dontes_nelkul', 'nagy'); } };
+  window.addEventListener('pagehide', elhagy);
+  // iOS Safari / Facebook-Instagram in-app bongeszo: a pagehide nem megbizhato (app-valtas, bezaras), ezert a lathatosag-valtas is jelez (egyszer: a dontesNelkul jelzo)
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') elhagy(); });
   var felepit = function () {
     if (sav || keretben || !document.body) return;
     var st = document.createElement('style'); st.textContent = STILUS; document.head.appendChild(st);

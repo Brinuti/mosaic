@@ -278,10 +278,19 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   if (tudott) return valasz(200, { ok: true, ismetles: true, allapot: tudott.allapot, igazolt: !!tudott.igazolt }); // Zap-ujrakuldes: nincs duplikacio
   const start = egesz(be.start_unix, 1e9, 4e9), hely = egesz(be.place_id, 1, 999999);
   if (start === null || !HELYSZINEK[hely]) return nincsKerelem('ervenytelen_idopont_vagy_hely');
-  if (elo.allapot !== 'aktiv' || (elo.startUnix && elo.startUnix !== start)) { await riaszt(db, 'igazolas_nem_aktiv', { adat: elo.miert || elo.allapot, most }); return valasz(409, { ok: false, hiba: 'nem_aktiv_vagy_idopont_nem_egyezik' }); }
+  if (elo.allapot !== 'aktiv' || (elo.startUnix && elo.startUnix !== start)) { await riaszt(db, 'igazolas_nem_aktiv', { adat: elo.miert || elo.allapot, most }); return valasz(409, { ok: false, hiba: 'nem_aktiv_vagy_idopont_nem_egyezik', okkod: elo.allapot !== 'aktiv' ? 'salonic_nem_aktiv' : 'idopont_elteres' }); }
   const jeloltek = await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`));
-  if (jeloltek.length === 0) { await riaszt(db, 'igazolas_nincs_par', { most }); return valasz(404, { ok: false, hiba: 'nincs_par' }); }
-  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length}`, most }); return valasz(409, { ok: false, hiba: 'tobb_par' }); }
+  if (jeloltek.length === 0) {
+    // VEGLEGES, uzletileg elfogadott kimenet (nem motoros foglalas VAGY illesztesi hiba): 2xx + nincs_par, a Zap NE probalja ujra. Az okkod szetvalasztja a ketto: ha MASIK helyszinen van
+    // jelolt ugyanarra az idopontra -> hely_elteres (illesztesi hiba gyanu), kulonben nincs_motoros_jelolt (valoszinuleg a Salonicban kozvetlenul letrejott foglalas).
+    let okkod = 'nincs_motoros_jelolt';
+    for (const masik of Object.keys(HELYSZINEK).map(Number).filter((h) => h !== hely)) {
+      if ((await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${masik}`))).length) { okkod = 'hely_elteres'; break; }
+    }
+    await riaszt(db, 'igazolas_nincs_par', { adat: okkod, most });
+    return valasz(200, { ok: true, nincs_par: true, okkod });
+  }
+  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length}`, most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: 'tobb_azonos_idopont_es_hely' }); }
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
   return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
 }
