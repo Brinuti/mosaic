@@ -26,6 +26,7 @@ Hozzajarulas: megtagadas / visszavonas -> `gy_lpt` torlodik a kovetkezo hivasnal
 | `gy_token` | 15 perc, egyszer hasznalhato; felhasznalaskor azonnal torlodik | automatikus |
 | `gy_riasztas` | 90 nap (csak technikai adat) | automatikus |
 | `gy_visszahivas` | 60 nap (nev + telefon) | automatikus: a `takarit()` a visszahivas-vegpont hivasainak ~5%-an fut; kezi torles: `DELETE FROM gy_visszahivas WHERE id = ?` |
+| `gy_erintes` (GY-22) | 37 nap (7 nap hozzarendeles + 30 nap `kesoi_fizetett` + tartalek) | automatikus: a `takarit()` a forras-vegpont hivasainak ~1%-an is fut; visszavont hozzajarulasnal a latogato sorai azonnal torlodnek |
 | `gy_suti_stat` | 13 honap (csak darabszam) | automatikus (a vegpont hivasainak ~2%-an) |
 | `gy_kampany`, `gy_meta` | a Google Ads kampanylista (azonositok, nevek); szemelyes adat nincs | a napi szinkron felulirja |
 
@@ -33,3 +34,12 @@ Hozzajarulas: megtagadas / visszavonas -> `gy_lpt` torlodik a kovetkezo hivasnal
 - Tulajdonos: a Cloudflare-fiok `560b06e0a3fe45c72f7e9c4421841659` (a Mosaic / Medical Piercing fiok, Feri). A fiok D1-kerete (10) betelt, ezert a `gy_` tablak atmenetileg az `mp-meres` adatbazisban vannak (a Medical Piercing `mp_` tablai mellett). A kod csak `gy_` tablakat ir / olvas; az `mp_` tablakhoz nem nyul.
 - Hozzaferes: a `gyogytorna` Pages-projekt `GY_DB` kotese (Functions) es a fiok Cloudflare-hozzaferesei. A riport-/admin-vegpontok kulccsal vedettek (`x-gy-kulcs`, a kulcs SHA-256 hash-e a Cloudflare-titokban).
 - Elkulonites: a torles es a mentes tablankent kezelheto (a fenti tablazat); egy `DROP TABLE gy_*` az `mp_` tablakat nem erinti. Ha az adat mas ceg hozzaferesi korebe kerul, vagy a D1-keret felszabadul, a `gy_` tablak kulon adatbazisba koltoztetendok (Feri kulon jovahagyasa kell mas ceg eseten).
+
+
+## GY-22: 7 napos last paid click erintesi naplo (ARNYEK, 2026-10-18)
+- **Mit tarol (`gy_erintes`):** projekt, pszeudonim latogato-hash (a meglevo, szerver altal beallitott HttpOnly `gy_lpt` suti SHA-256 hash-e), idobelyeg, normalizalt cimke (`google_markas` / `google_nem_markas` / `google_bizonytalan` / `ismeretlen`), bizonyitek-okkod, kampany / hirdetescsoport / hirdetes ID (csak szamok), a celoldal UTVONALA (query nelkul), hozzajarulas-allapot, szabalyverzio (`lpc1`).
+- **Mit NEM tarol:** nyers click-ID (gclid / gbraid / wbraid), nev, e-mail, telefon, IP, user-agent, teljes URL, szabad szoveg, szolgaltatas-reszlet. Platform fele semmi nem megy a naplobol.
+- **Mikor ir:** minden fizetett erkezes (Google click-ID VAGY `utm_medium=cpc`), hirdetesi hozzajarulassal (SAV_KI mellett alapertek: megadott); ugyanaz az erkezes 30 percen belul nem naplozodik ketszer (ujratoltes). Organikus / direkt visszateres nem ir.
+- **Hozzarendeles foglalaskor (`gy_foglalas.lpc_*`, `kesoi_fizetett`):** a legutolso, 7 napon beluli fizetett erintes nyer (`lpc_kora_nap` = a kattintas kora napban); nincs fizetett -> `organikus_direkt` (ha van azonosito-suti), kulonben `ismeretlen`; a 8-30 napos legutolso fizetett cimkeje a `kesoi_fizetett`. Ismeretlen kampany-ID-t a kampanylista kesobbi frissitese utolag felold (`kampany_es_katt_utolag`).
+- **ARNYEK:** csak a D1-be ir; a foglalas regi `cimke`, a dataLayer, a GTM es a `foglalas_kesz` esemeny NEM valtozik. Fail-open: naplohiba eseten a foglalas valtozatlanul megy tovabb (`gy_meta.lpc_hiba` szamlalo + `gy_riasztas` `lpc_hiba`).
+- **Ellenorzes:** `GET /api/gy-admin?lpc=YYYY-MM` (kulcsos, csak aggregalt): nevezo, lpc- es munkamenet-alapu azonositott szam, mennyivel tobbet ad a naplo, `kesoi_fizetett`, hibaszamlalo.

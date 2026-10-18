@@ -26,6 +26,13 @@ export const SEMA = [
     id INTEGER PRIMARY KEY AUTOINCREMENT, letrehozva INTEGER NOT NULL, nev TEXT NOT NULL, email TEXT, tel TEXT NOT NULL, rendelo TEXT NOT NULL DEFAULT 'Oktogon',
     surgosseg TEXT, hivhato TEXT, oldal TEXT, ertesitve INTEGER NOT NULL DEFAULT 0, allapot TEXT NOT NULL DEFAULT 'uj')`,
   `CREATE INDEX IF NOT EXISTS gy_visszahivas_ido ON gy_visszahivas (letrehozva)`,
+  // GY-22: fizetett erintesek naploja (7 napos last paid click, ARNYEK: csak ide ir). Adatminimum: pszeudonim latogato-hash, idobelyeg, normalizalt cimke, kampany / hirdetescsoport / hirdetes
+  // ID, a celoldal UTVONALA (query nelkul), hozzajarulas-allapot, szabalyverzio. NINCS: nyers click-ID, nev, e-mail, telefon, IP, user-agent, teljes URL. Megorzes 37 nap.
+  `CREATE TABLE IF NOT EXISTS gy_erintes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, projekt TEXT NOT NULL DEFAULT 'gyogytorna', latogato TEXT NOT NULL, ido INTEGER NOT NULL, cimke TEXT NOT NULL, bizonyitek TEXT,
+    kampany TEXT, hirdetescsoport TEXT, hirdetes TEXT, oldal TEXT, hozzajarulas TEXT, szabaly_verzio TEXT)`,
+  `CREATE INDEX IF NOT EXISTS gy_erintes_latogato ON gy_erintes (latogato, ido)`,
+  `CREATE INDEX IF NOT EXISTS gy_erintes_ido ON gy_erintes (ido)`,
 ];
 
 const kesz = new WeakSet();
@@ -35,6 +42,8 @@ export async function sema(db) {
   // migracio: a Salonic-igazolas parositasahoz (hely + idopont HMAC); a mar letezo tablara is felkerul, a duplikalt oszlop hibajat elnyeljuk
   try { await db.prepare('ALTER TABLE gy_foglalas ADD COLUMN parosito_hely TEXT').run(); } catch (e) { /* mar megvan */ }
   for (const oszlop of ['kampany', 'hirdetescsoport', 'hirdetes']) { try { await db.prepare(`ALTER TABLE gy_foglalas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
+  for (const oszlop of ['lpc_cimke', 'lpc_bizonyitek', 'lpc_kampany', 'lpc_hirdetescsoport', 'lpc_hirdetes', 'kesoi_fizetett', 'lpc_verzio']) { try { await db.prepare(`ALTER TABLE gy_foglalas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
+  try { await db.prepare('ALTER TABLE gy_foglalas ADD COLUMN lpc_kora_nap INTEGER').run(); } catch (e) { /* mar megvan */ }
   for (const oszlop of ['email', 'surgosseg', 'hivhato']) { try { await db.prepare(`ALTER TABLE gy_visszahivas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_parosito_hely ON gy_foglalas (parosito_hely)').run(); } catch (e) { /* */ }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_salonic ON gy_foglalas (salonic_id)').run(); } catch (e) { /* */ }
@@ -50,6 +59,7 @@ export const IDOK = Object.freeze({
   foglalas: 396 * NAP,           // 13 honap
   riasztas: 90 * NAP,
   visszahivas: 60 * NAP,         // visszahivas-kerelem (nev + telefon): 60 nap
+  erintes: 37 * NAP,             // GY-22: fizetett erintesek naploja (7 nap hozzarendeles + 30 nap kesoi_fizetett + tartalek)
   kampanyFriss: 36 * 3600,       // a kampanylista "friss", ha az utolso sikeres frissites ennel nem regebbi
 });
 
@@ -87,9 +97,11 @@ export async function foglalasOlvas(db, uuid) {
 /** Idempotens letrehozas: ugyanarra az UUID-ra masodszor nem hoz letre ujat. @returns {Promise<boolean>} true, ha most jott letre */
 export async function foglalasLetrehoz(db, f, most) {
   const r = await db.prepare(
-    `INSERT OR IGNORE INTO gy_foglalas (uuid, letrehozva, frissitve, tipus, uj_vendeg, cimke, bizonyitek, hozzajarulas, allapot, salonic_id, igazolt, esemeny_kiadva, teszt, parosito, parosito_hely, kampany, hirdetescsoport, hirdetes)
-     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10, ?11, ?12, ?13, ?14)`,
-  ).bind(f.uuid, most, f.tipus, f.uj_vendeg, f.cimke, f.bizonyitek, f.hozzajarulas, f.allapot, f.teszt ? 1 : 0, f.parosito || null, f.parosito_hely || null, f.kampany || null, f.hirdetescsoport || null, f.hirdetes || null).run();
+    `INSERT OR IGNORE INTO gy_foglalas (uuid, letrehozva, frissitve, tipus, uj_vendeg, cimke, bizonyitek, hozzajarulas, allapot, salonic_id, igazolt, esemeny_kiadva, teszt, parosito, parosito_hely, kampany, hirdetescsoport, hirdetes,
+       lpc_cimke, lpc_bizonyitek, lpc_kampany, lpc_hirdetescsoport, lpc_hirdetes, lpc_kora_nap, kesoi_fizetett, lpc_verzio)
+     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)`,
+  ).bind(f.uuid, most, f.tipus, f.uj_vendeg, f.cimke, f.bizonyitek, f.hozzajarulas, f.allapot, f.teszt ? 1 : 0, f.parosito || null, f.parosito_hely || null, f.kampany || null, f.hirdetescsoport || null, f.hirdetes || null,
+    f.lpc_cimke || null, f.lpc_bizonyitek || null, f.lpc_kampany || null, f.lpc_hirdetescsoport || null, f.lpc_hirdetes || null, Number.isInteger(f.lpc_kora_nap) ? f.lpc_kora_nap : null, f.kesoi_fizetett || null, f.lpc_verzio || null).run();
   return !!(r.meta && r.meta.changes);
 }
 
@@ -159,5 +171,28 @@ export async function takarit(db, most) {
     db.prepare('DELETE FROM gy_foglalas WHERE letrehozva < ?').bind(most - IDOK.foglalas),
     db.prepare('DELETE FROM gy_riasztas WHERE ido < ?').bind(most - IDOK.riasztas),
     db.prepare('DELETE FROM gy_visszahivas WHERE letrehozva < ?').bind(most - IDOK.visszahivas),
+    db.prepare('DELETE FROM gy_erintes WHERE ido < ?').bind(most - IDOK.erintes),
   ]);
+}
+
+// --- GY-22: fizetett erintesek naploja ------------------------------------------------------------------------------------------
+export async function erintesUtolso(db, latogato) {
+  return db.prepare('SELECT ido, kampany, hirdetescsoport, hirdetes, oldal FROM gy_erintes WHERE latogato = ? ORDER BY ido DESC, id DESC LIMIT 1').bind(latogato).first();
+}
+export async function erintesIr(db, e) {
+  await db.prepare(
+    `INSERT INTO gy_erintes (projekt, latogato, ido, cimke, bizonyitek, kampany, hirdetescsoport, hirdetes, oldal, hozzajarulas, szabaly_verzio) VALUES ('gyogytorna', ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`,
+  ).bind(e.latogato, e.ido, e.cimke, e.bizonyitek || null, e.kampany || null, e.hirdetescsoport || null, e.hirdetes || null, e.oldal || null, e.hozzajarulas || null, e.szabaly_verzio || null).run();
+}
+/** A latogato fizetett erintesei az adott idopont (tol) utan, legujabb elol. */
+export async function erintesek(db, latogato, tol) {
+  return (await db.prepare('SELECT ido, cimke, bizonyitek, kampany, hirdetescsoport, hirdetes FROM gy_erintes WHERE latogato = ?1 AND ido >= ?2 ORDER BY ido DESC, id DESC').bind(latogato, tol).all()).results || [];
+}
+export const erintesTorol = (db, latogato) => db.prepare('DELETE FROM gy_erintes WHERE latogato = ?').bind(latogato).run();
+/** Hibaszamlalo (fail-open): a naplo hibaja nem allithatja meg a foglalast; a szamlalo + riasztas jelzi. */
+export async function lpcHiba(db, most, kod) {
+  try {
+    await db.prepare("INSERT INTO gy_meta (kulcs, ertek) VALUES ('lpc_hiba', '1') ON CONFLICT(kulcs) DO UPDATE SET ertek = CAST(ertek AS INTEGER) + 1").run();
+    await riaszt(db, 'lpc_hiba', { adat: kod, most });
+  } catch (e) { /* semmi */ }
 }
