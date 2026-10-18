@@ -24,7 +24,11 @@ if (MOD === 'valodi' && !MEGALL) for (const [n, mit] of [['MERES_TELEFON', 'a tu
 const BASE = 'https://www.mosaicheadspa.hu';
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
-const CLICK_QS = 'gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc';
+// MERES_GCLID (opcionalis): szintetikus gclid, ketto kotelezo tulajdonsaggal - >= 10 karakter [A-Za-z0-9_-] (kulonben az attribucio.js nem menti az mh_attr-ba: a szerveroldali erkezesi adat gclid nelkul marad, hamis negativ); a Google E2E-kapu futtatokonyve (docs/booking-engine/MERES_GOOGLE_E2E_FUTTATOKONYV.md) ezt kri.
+// Alapertek: a regi 'TESZT123' (8 karakter: a kornyezeti GTM-es _gcl_aw-t letrehozza, az mh_attr-ba viszont NEM kerul be).
+const GCLID_TESZT = process.env.MERES_GCLID || 'TESZT123';
+if (process.env.MERES_GCLID && !/^[A-Za-z0-9_-]{10,200}$/.test(process.env.MERES_GCLID)) throw new Error('MERES_GCLID: legalabb 10, legfeljebb 200 karakter [A-Za-z0-9_-]');
+const CLICK_QS = `gclid=${GCLID_TESZT}&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc`;
 
 // landing: a "hirdetes -> landing -> motor" utvonalhoz (--landing 1): az oldal, es a motorra vezeto gomb szelektora (csak a link-atkotessel epitett dist-ben van)
 const SZENARIOK = {
