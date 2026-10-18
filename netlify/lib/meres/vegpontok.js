@@ -5,6 +5,7 @@ import { erkezesMent, fuggoKuldesek, kapcsoloBeallit, kapcsolokOlvas, kuldesMege
 import { irasKi, irasKapcsolo, IRAS_KI_VALASZ } from './iras-kapcsolo.js';
 import { sdKapcsoloBeallit } from './salonic-direct.js';
 import { kezelQaNap } from './qa-nap.js';
+import { googleProbaMuvelet } from './google-proba.js';
 
 /** POST /api/meres-erkezes (azonos eredet; a bongeszo nem ker valaszt a foglalas folyamataban: a hiba nem akaszthat meg semmit). A "ip" / "ua" a keresbol jon, nem a torzsbol. */
 export async function kezelErkezes(request, env, deps = {}) {
@@ -56,6 +57,8 @@ export async function kezelAdmin(request, env, deps = {}) {
       if (!/^pi_[A-Za-z0-9]{8,80}$/.test(String(o.pi || ''))) return valasz(400, { ok: false, miert: 'ervenytelen pi' });
       return valasz(200, { ok: true, allapot: await deps.ajandekUjra(env, o.pi, o.mod === 'atutalas' ? 'atutalas' : 'kartya', new Date(most)) });
     }
+    // Google ARNYEK backend proba-feltoltes + visszavonas (DECISION #196; google-proba.js): alapbol SZARAZ; kuldeshez kuld:true + megerosit + a webhook-env + MERES_ELOSZTO=1 kell
+    if (o.muvelet === 'google_proba' || o.muvelet === 'google_proba_visszavon') { const r = await googleProbaMuvelet(env.KULCS_DB, env, o, { now: most, fetchImpl: deps.fetchImpl || fetch, kuldo: deps.kuldo }); return valasz(r.status, r.body); }
     if (o.muvelet === 'megerosit') return valasz(200, await kuldesMegerosit(env.KULCS_DB, { id: Number(o.id), allapot: o.allapot, http_status: o.http_status, valasz: o.valasz, kuldo: o.kuldo }, most));
     return valasz(400, { ok: false, miert: 'ismeretlen muvelet' });
   }

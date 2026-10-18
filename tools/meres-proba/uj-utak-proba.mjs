@@ -30,7 +30,9 @@ const MOD = arg('mod', 'valodi'); // valodi | szim | nativ
 const VISSZA = arg('vissza', '0') === '1';
 const telefon = () => (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })()); // lusta: csak a foglalo modok igenylik
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const CLICK = { gclid: 'TESZT123', fbclid: 'TESZT456', ttclid: 'TESZT789' };
+// MERES_GCLID (opcionalis): szintetikus gclid, >= 10 karakter [A-Za-z0-9_-] (kulonben az attribucio.js nem menti az mh_attr-ba); lasd docs/booking-engine/MERES_GOOGLE_E2E_FUTTATOKONYV.md. Alapertek: a regi 'TESZT123'.
+if (process.env.MERES_GCLID && !/^[A-Za-z0-9_-]{10,200}$/.test(process.env.MERES_GCLID)) throw new Error('MERES_GCLID: legalabb 10, legfeljebb 200 karakter [A-Za-z0-9_-]');
+const CLICK = { gclid: process.env.MERES_GCLID || 'TESZT123', fbclid: 'TESZT456', ttclid: 'TESZT789' };
 const CLICK_QS = `gclid=${CLICK.gclid}&fbclid=${CLICK.fbclid}&ttclid=${CLICK.ttclid}&utm_source=teszt&utm_medium=cpc`;
 const RUTIN_GA = /^(page_view|user_engagement|scroll|visit|session_start|first_visit|gtm\.[a-z]+|consent_update)$/i;
 const RUTIN_TT = /^(Pageview|LandingPageView|EngagedSession|EnrichIpv6|InitiateCheckout|EnrichAM|ViewContent)$/;

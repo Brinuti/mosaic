@@ -154,7 +154,10 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     for (const s of sorok) {
       const u = bizt(s.uzletag);
       const p = Object.hasOwn(u.arnyek, s.platform) ? u.arnyek[s.platform] : null; // az adatbazisbol jovo platform-nev nem kerulhet prototipus-keresesre
-      if (p) {
+      // DECISION #196 (google-proba.js): a backend proba-feltoltes / -visszavonas sorai (forras = 'google_proba') a T2 szamlalokbol, a lampabol, a lefedettsegbol KI vannak zarva; a biztonsagi ellenorzesek (elo ID, dupla, nem-arnyek cel) RAJUK IS futnak
+      const probaSor = s.forras === 'google_proba';
+      if (p && probaSor) p.proba_sor_kizarva = (p.proba_sor_kizarva || 0) + 1;
+      if (p && !probaSor) {
         if (ALLAPOTOK.includes(s.allapot)) p[s.allapot]++; else p.mas++;
         const fk = kulcsBiztos(s.forras);
         const f = (p.forras[fk] = Object.hasOwn(p.forras, fk) ? p.forras[fk] : Object.fromEntries([...ALLAPOTOK, 'mas'].map((a) => [a, 0])));
@@ -361,6 +364,10 @@ export async function t2Start(db, env, mostMs, { sha = null, zapRev = null } = {
     await vedett(`sorok_${t}`, async () => {
       const r = (await mind(db, `SELECT COUNT(*) AS db${t === 'meres_kuldes' ? ', MAX(id) AS max_id' : ''} FROM ${t}`))[0] || {};
       sorok[t] = t === 'meres_kuldes' ? { db: r.db, max_id: r.max_id } : { db: r.db };
+      if (t === 'meres_kuldes' && (await oszlopok(db, 'meres_kuldes')).has('forras')) { // DECISION #196: a backend proba-sorok (forras = 'google_proba') kulon szamlalo, csak ha vannak (a T2-osszevetesbol levonando)
+        const pr = (await mind(db, "SELECT COUNT(*) AS db FROM meres_kuldes WHERE forras = 'google_proba'"))[0] || {};
+        if (pr.db > 0) sorok[t].google_proba_db = pr.db;
+      }
     }, hibak);
   }
   let kapcsolok = null;
