@@ -117,5 +117,26 @@
         }).catch(function (e) { w.mhAttribucioEredmeny = { source_id: o.source_id, allapot: 'hiba', hiba: String(e && e.message || e).slice(0, 80) }; return w.mhAttribucioEredmeny; });
     } catch (e) { return Promise.resolve({ allapot: 'hiba' }); }
   }
-  w.mhAttribucio = { pillanatkep: pillanatkep, hozzajarulas: hozzajarulas, kuld: kuld };
+  /**
+   * A Google kattintasazonositok a foglalo kontextusaba / a koszonooldal URL-jebe (DECISION #196 / 1., R1-R3): az oldal MENTETT allapotabol (a memoriabeli pillanatkep = az aktualis URL +
+   * a hozzajarulassal tarolt mh_attr) es a Google-cimke sajat sutijebol (_gcl_aw: gclid, _gcl_gb: gbraid; a GTM a hozzajarulas szerint allitja), ha az aktualis URL-ben nincs azonosito.
+   * HOZZAJARULAS: marketing-engedely (engedely(), ugyanaz mint a tarolasnal) nelkul / elutasitva UTAN ures objektumot ad: a mentett allapotbol semmi nem szivarog at. Csak olvas (nem ir
+   * localStorage-ot, nem allit sutit, nem hiv semmit); a mintat (10-200 karakter) ugyanaz a MINTA vedi. Visszaadja: { gclid?, gbraid?, wbraid? } (ertekek, nem objektumok).
+   */
+  function googleAzonositok() {
+    var o = {};
+    try {
+      if (!engedely()) return o;
+      var g = allapot.google || {};
+      var most = ma(); // a 90 napnal regebbi kattintas-azonosito nem hasznalhato (a Google-cimke sutije is addig el)
+      ['gclid', 'gbraid', 'wbraid'].forEach(function (k) { var e = g[k] && g[k].ertek; if (e && MINTA[k].test(e) && (!g[k].ts || most - g[k].ts <= TTL)) o[k] = e; });
+      [['gclid', '_gcl_aw'], ['gbraid', '_gcl_gb']].forEach(function (p) {
+        if (o[p[0]]) return;
+        var s = suti(p[1]), m = s && s.match(/^GCL\.\d{9,11}\.([A-Za-z0-9_-]{10,200})$/);
+        if (m && MINTA[p[0]].test(m[1])) o[p[0]] = m[1];
+      });
+    } catch (e) { /* nincs mentett azonosito */ }
+    return o;
+  }
+  w.mhAttribucio = { pillanatkep: pillanatkep, hozzajarulas: hozzajarulas, kuld: kuld, googleAzonositok: googleAzonositok };
 })();

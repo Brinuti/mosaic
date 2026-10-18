@@ -513,11 +513,27 @@
   //  - sikeres foglalas: a /pmu-ok oldalra iranyitott - a teljes ablakban nyitjuk meg (meres!),
   //    a mh_proba jelre a klon.js a meres utan visszahoz a koszonooldalra;
   //  - ha az idopont kozben elkelt, a Salonic "vissza" iranyit (a fooldalra vagy ide).
+  // R3 (DECISION #196/1): a siker utani teljes-ablakos atiranyitas (/pmu-ok) URL-je is hordozza a Google-azonositokat (gclid / gbraid / wbraid), mint a fo foglalo koszonooldal-atadasa
+  // (withAttribution). MINDEN forras a marketing-hozzajarulasi kapun megy: a szulo (landing / reteg gazdaoldala, azonos eredet) window.mhAttribucio.googleAzonositok()-a adja (az aktualis
+  // URL azonositoi, a hozzajarulassal mentett mh_attr, a Google-cimke sutije); hozzajarulas nelkul / kifejezett elutasitas utan / suti.js nelkul ures - ilyenkor a /pmu-ok URL-je azonosito
+  // nelkul marad, mint a main-en. A szulo URL-jet SOSEM olvassuk kozvetlenul. Csak a HIANYZO kulcsokat fuzi hozza; ervenytelen / idegen eredetu szulo eseten az URL valtozatlan.
+  function googleAzonositokHozzaad(u) {
+    try {
+      const fo = BEAGYAZVA ? window.top : window;
+      const kapus = fo.mhAttribucio && typeof fo.mhAttribucio.googleAzonositok === 'function' ? fo.mhAttribucio.googleAzonositok() : {};
+      for (const k of ['gclid', 'gbraid', 'wbraid']) {
+        if (u.searchParams.get(k)) continue;
+        const v = kapus[k];
+        if (v && /^[A-Za-z0-9_-]{10,200}$/.test(v)) u.searchParams.set(k, v);
+      }
+    } catch (e) { /* idegen eredetu szulo: az URL azonositok nelkul marad */ }
+  }
   window.mhKeretbenOldal = (href) => {
     const u = new URL(href);
     const ut = u.pathname.replace(/\/+$/, '');
     if (ut !== '' && ut !== '/foglalo-pmu') {
       u.searchParams.set('mh_proba', 'pmu');
+      googleAzonositokHozzaad(u);
       (BEAGYAZVA ? window.top : window).location.assign(u.href);
       return;
     }
