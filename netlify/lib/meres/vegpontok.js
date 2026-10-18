@@ -58,7 +58,10 @@ export async function kezelAdmin(request, env, deps = {}) {
       return valasz(200, { ok: true, allapot: await deps.ajandekUjra(env, o.pi, o.mod === 'atutalas' ? 'atutalas' : 'kartya', new Date(most)) });
     }
     // Google ARNYEK backend proba-feltoltes + visszavonas (DECISION #196; google-proba.js): alapbol SZARAZ; kuldeshez kuld:true + megerosit + a webhook-env + MERES_ELOSZTO=1 kell
-    if (o.muvelet === 'google_proba' || o.muvelet === 'google_proba_visszavon') { const r = await googleProbaMuvelet(env.KULCS_DB, env, o, { now: most, fetchImpl: deps.fetchImpl || fetch, kuldo: deps.kuldo }); return valasz(r.status, r.body); }
+    if (o.muvelet === 'google_proba' || o.muvelet === 'google_proba_visszavon') {
+      if (!request.headers.get('x-egyeztetes-kulcs')) return valasz(404, { ok: false }); // a kulcs CSAK fejlecben fogadhato el (a ?kulcs= query-kulcs a naplokba / elozmenyekbe kerulhet): mint a qa=nap agnal
+      const r = await googleProbaMuvelet(env.KULCS_DB, env, o, { now: most, fetchImpl: deps.fetchImpl || fetch, kuldo: deps.kuldo }); return valasz(r.status, r.body);
+    }
     if (o.muvelet === 'megerosit') return valasz(200, await kuldesMegerosit(env.KULCS_DB, { id: Number(o.id), allapot: o.allapot, http_status: o.http_status, valasz: o.valasz, kuldo: o.kuldo }, most));
     return valasz(400, { ok: false, miert: 'ismeretlen muvelet' });
   }

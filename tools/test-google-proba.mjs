@@ -12,7 +12,7 @@ import { kezelAdmin } from '../netlify/lib/meres/vegpontok.js';
 import { ARNYEK, ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { napIntervallum, qaKorlatNullaz, qaNap, t2Start } from '../netlify/lib/meres/qa-nap.js';
 import { egyeztetoSorok } from '../netlify/lib/meres/egyeztetes-sor.js';
-import { MEGEROSITES, PROBA_AKCIOK, PROBA_MAX_24H, akciokValasztas, probaEllenorzes, probaKerelem, visszavonasKerelem } from '../netlify/lib/meres/google-proba.js';
+import { MEGEROSITES, PROBA_AKCIOK, PROBA_MAX_24H, akciokValasztas, googleProbaMuvelet, probaEllenorzes, probaKerelem, visszavonasKerelem } from '../netlify/lib/meres/google-proba.js';
 import { ENV_ALAP, KULCS_SZOVEG, d1 } from './lib-sd-teszt.mjs';
 
 const MOST = Date.UTC(2026, 9, 18, 12, 0, 0); // 2026-10-18 14:00 Budapest
@@ -28,13 +28,14 @@ const sha8 = (s) => crypto.createHash('sha256').update(s).digest('hex').slice(0,
 const WEBHOOK = 'https://hooks.zapier.com/hooks/catch/1/teszt/';
 const KORREKCIO = 'https://hooks.zapier.com/hooks/catch/1/korrekcio/';
 
-function halozat({ tukroz = false, hiba = new Set() } = {}) {
+function halozat({ tukroz = false, hiba = new Set(), valasz = null } = {}) {
   const hivasok = [];
   const fetchImpl = async (url, opt) => {
     const body = JSON.parse(opt.body);
     hivasok.push({ url, body });
     const akcio = body.conversion_action_id || (body.adjustments && body.adjustments[0].conversionActionId);
     if (hiba.has(akcio)) return { status: 500, text: async () => '{"status":"error"}' };
+    if (valasz) return { status: 200, text: async () => valasz(body) };
     return { status: 200, text: async () => JSON.stringify({ status: 'success', id: 'z1', ...(tukroz ? { visszhang: body } : {}) }) };
   };
   return { fetchImpl, hivasok };
@@ -58,15 +59,17 @@ async function vilag({ env = {}, valos = true } = {}) {
     beszur({ esemeny_id: 'Ajandekkartya:pi_1', nev: 'Ajandekkartya', platform_nev: 'ARNYEK-7825199992', kerelem: googleKerelem('7825199992', GCL_KARTYA), t: NOW_SEC - 3600, forras: 'kartya' });
     beszur({ esemeny_id: 'FoglalasElso:mb_hiba', nev: 'FoglalasElso', platform_nev: 'ARNYEK-7825199989', allapot: 'hiba', kerelem: googleKerelem('7825199989', 'CjwKCAjwTESZThibas_' + 'd'.repeat(30)), t: NOW_SEC - 60 });
   }
-  const post = async (body, { kulcs = KULCS_SZOVEG, net, envFelul = {} } = {}) => {
+  const post = async (body, { kulcs = KULCS_SZOVEG, net, envFelul = {}, url = 'https://x.pages.dev/api/meres-admin' } = {}) => {
     const h = net || halozat();
-    const r = await kezelAdmin(new Request('https://x.pages.dev/api/meres-admin', { method: 'POST', headers: { 'content-type': 'application/json', ...(kulcs ? { 'x-egyeztetes-kulcs': kulcs } : {}) }, body: JSON.stringify(body) }), { ...e, ...envFelul }, { now: () => MOST, fetchImpl: h.fetchImpl });
+    const r = await kezelAdmin(new Request(url, { method: 'POST', headers: { 'content-type': 'application/json', ...(kulcs ? { 'x-egyeztetes-kulcs': kulcs } : {}) }, body: JSON.stringify(body) }), { ...e, ...envFelul }, { now: () => MOST, fetchImpl: h.fetchImpl });
     return { status: r.status, body: await r.json(), hivasok: h.hivasok };
   };
   const probaSorok = () => sql("SELECT * FROM meres_kuldes WHERE forras = 'google_proba' ORDER BY id");
   const osszSor = () => sql('SELECT COUNT(*) AS n FROM meres_kuldes')[0].n;
   return { D, db, e, sql, futtat, beszur, post, probaSorok, osszSor, googleKerelem };
 }
+// KOZVETLEN hivas a muvelet-belepesi pontra (a Request-feldolgozas nelkul: az egyideju hivasok igy ugyanazon az await-melysegen lepnek, a verseny determinisztikusan megjelenik)
+const direkt = (w, body, { net, envFelul = {} } = {}) => googleProbaMuvelet(w.db, { ...w.e, ...envFelul }, body, { now: MOST, fetchImpl: (net || halozat()).fetchImpl });
 const kuld = (extra = {}) => ({ muvelet: 'google_proba', kuld: true, megerosit: MEGEROSITES, ...extra });
 
 test('A1 a 8 probalhato akcio PONTOSAN a vart (a kodbol, nem talgatva): nincs HeadSpa, nincs elo akcio, az ID-k az ARNYEK-tablabol', () => {
@@ -105,7 +108,7 @@ test('A2 SZARAZ alapertelmezes: halozat es iras nelkul; a gclid szerveroldalon v
   assert.ok(Object.values(r.body.kuldes_feltetelei).every((x) => typeof x === 'boolean'));
 });
 
-test('A3 gclid_sorszam: a 2. valasztas az Ajandekkartya, a 3. a regi FoglalasElso; nincs hasznalhato gclid -> 409 (a hiba / mas forras / 80 napnal regebbi sor nem valaszthato)', async () => {
+test('A3 gclid_sorszam: ELOBB az osszes FoglalasElso (ujabb -> regebbi: 1., 2.), UTANA az Ajandekkartya (3.); nincs hasznalhato gclid -> 409 (a hiba / mas forras / 80 napnal regebbi sor nem valaszthato)', async () => {
   const w = await vilag();
   const h = async (n) => (await w.post({ muvelet: 'google_proba', gclid_sorszam: n })).body.gclid_hash8;
   assert.equal(await h(1), sha8(GCL_FOGL)); assert.equal(await h(2), sha8(GCL_REGI), 'a FoglalasElso sorok elobb: 2. = a regebbi FoglalasElso'); assert.equal(await h(3), sha8(GCL_KARTYA));
@@ -151,10 +154,10 @@ test('A5 KULDES: 8 POST a relay-Zapra, zart torzs, a D1-sorok forras=google_prob
     assert.equal(s.forras, 'google_proba'); assert.equal(s.source_id, 'gp_0a1b2c3d'); assert.equal(s.platform, 'google'); assert.equal(s.allapot, 'elkuldve'); assert.equal(s.http_status, 200);
     assert.equal(s.esemeny_tipus, 'alap'); assert.equal(s.ertek, 1); assert.equal(s.penznem, 'HUF'); assert.equal(s.salonic_uuid, null);
     assert.ok(!s.kerelem.includes(GCL_FOGL) && !String(s.platform_valasz).includes(GCL_FOGL) && !s.hozzajarulas.includes(GCL_FOGL), 'a gclid a D1-ben sincs');
-    assert.ok(s.kerelem.includes('gclid#1') && s.kerelem.includes(sha8(GCL_FOGL))); assert.ok(String(s.platform_valasz).includes('gclid#1'), 'a Zap visszhangzott gclid-je kitakarva');
+    assert.ok(s.kerelem.includes('gclid#1') && s.kerelem.includes(sha8(GCL_FOGL))); assert.equal(s.platform_valasz, '{"http":200,"status":"success","id":"z1"}', 'a Zap nyers valasz-torzse (visszhangja) NEM tarolodik: csak http + status + id');
     const k = JSON.parse(s.kerelem); assert.equal(k.cel.customer_id, '6088874770'); assert.equal(k.cel.proba, true);
   }
-  assert.ok(!JSON.stringify(r.body).includes(GCL_FOGL));
+  assert.ok(!JSON.stringify(r.body).includes(GCL_FOGL)); assert.ok(r.body.eredmenyek.every((e) => e.valasz_roviden === '{"http":200,"status":"success","id":"z1"}'));
   assert.equal(w.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE forras <> 'google_proba' AND esemeny_id LIKE 'Proba:%'")[0].n, 0);
 });
 
@@ -223,6 +226,148 @@ test('A9 vegpont: kulcs nelkul / rossz kulccsal 404 (nincs hatas), ismeretlen mu
   assert.equal(kap.status, 200); assert.equal((await kap.json()).ok, true);
 });
 
+// ---------- Review (PASS with notes) javitasai: kulcs csak fejlecben, verseny / ujraprobalas / plafon, Zap-valasz tarolasa ----------
+test('A10 a kulcs CSAK fejlecben fogadhato el a ket muvelet-nel: ?kulcs= query-kulcs -> 404 (0 halozat, 0 iras); a meglevo muveletek viselkedese valtozatlan', async () => {
+  const w = await vilag(); const net = halozat(); const elotte = w.osszSor();
+  const q = `https://x.pages.dev/api/meres-admin?kulcs=${encodeURIComponent(KULCS_SZOVEG)}`;
+  const env = { GOOGLE_KORREKCIO_ELES: '1', GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO };
+  for (const body of [{ muvelet: 'google_proba' }, kuld(), { muvelet: 'google_proba_visszavon', futas_id: '0a0a0a0a' }, { muvelet: 'google_proba_visszavon', futas_id: '0a0a0a0a', kuld: true, megerosit: MEGEROSITES, eles: true }]) {
+    const r = await w.post(body, { kulcs: '', url: q, net, envFelul: env });
+    assert.equal(r.status, 404, JSON.stringify(body)); assert.deepEqual(r.body, { ok: false });
+  }
+  assert.equal(net.hivasok.length, 0); assert.equal(w.osszSor(), elotte);
+  assert.equal((await w.post({ muvelet: 'google_proba' }, { kulcs: 'rossz', url: q, net })).status, 404, 'rossz fejlec + jo query-kulcs: 404');
+  assert.equal((await w.post({ muvelet: 'google_proba' }, { url: q, net })).status, 200, 'jo fejlec (query mellett is): rendben');
+  assert.equal((await w.post({ muvelet: 'kapcsolo', platform: 'meta', be: true }, { kulcs: '', url: q, net })).status, 200, 'a MEGLEVO admin-muveletek a query-kulcsot tovabbra is elfogadjak (nem ennek a PR-nak a hatóköre)');
+});
+
+test('A11 VERSENY: 3 egyideju azonos futas_id-s kuld:true -> osszesen 8 POST, 8 D1-sor; 3 egyideju ujraprobalas (hiba sorok) -> szinten 8 POST (compare-and-swap)', async () => {
+  const w = await vilag(); const net = halozat();
+  const rs = await Promise.all([1, 2, 3].map(() => direkt(w, kuld({ futas_id: 'c0ffee01' }), { net })));
+  assert.ok(rs.every((r) => r.status === 200), JSON.stringify(rs.map((r) => r.status)));
+  assert.equal(net.hivasok.length, 8, 'osszesen 8 POST'); assert.equal(rs.reduce((n, r) => n + r.body.kuldve, 0), 8);
+  assert.equal(new Set(net.hivasok.map((h) => h.body.order_id)).size, 8, 'minden order_id pontosan egyszer');
+  assert.equal(w.probaSorok().length, 8); assert.ok(w.probaSorok().every((s) => s.allapot === 'elkuldve' && s.probalkozas === 1));
+  const w2 = await vilag(); await w2.post(kuld({ futas_id: 'c0ffee02' }), { net: halozat({ hiba: new Set(ELVART_8) }) });
+  assert.ok(w2.probaSorok().every((s) => s.allapot === 'hiba' && s.probalkozas === 1));
+  const n2 = halozat(); const rs2 = await Promise.all([1, 2, 3].map(() => direkt(w2, kuld({ futas_id: 'c0ffee02' }), { net: n2 })));
+  assert.ok(rs2.every((r) => r.status === 200));
+  assert.equal(n2.hivasok.length, 8, 'az ujraprobalas-verseny sem POST-ol tobbet'); assert.ok(w2.probaSorok().every((s) => s.allapot === 'elkuldve' && s.probalkozas === 2));
+  // visszavonas: 3 egyideju ELES hivas -> 8 POST
+  const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' };
+  const w3 = await vilag(); await w3.post(kuld({ futas_id: 'c0ffee03' }));
+  const n3 = halozat(); const rs3 = await Promise.all([1, 2, 3].map(() => direkt(w3, { muvelet: 'google_proba_visszavon', futas_id: 'c0ffee03', kuld: true, megerosit: MEGEROSITES, eles: true }, { net: n3, envFelul: env })));
+  assert.ok(rs3.every((r) => r.status === 200)); assert.equal(n3.hivasok.length, 8); assert.equal(w3.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')).length, 8);
+  const w4 = await vilag(); await w4.post(kuld({ futas_id: 'c0ffee13' })); const vis4 = { muvelet: 'google_proba_visszavon', futas_id: 'c0ffee13', kuld: true, megerosit: MEGEROSITES, eles: true };
+  await direkt(w4, vis4, { net: halozat({ hiba: new Set(ELVART_8) }), envFelul: env });
+  const n4 = halozat(); await Promise.all([1, 2, 3].map(() => direkt(w4, vis4, { net: n4, envFelul: env })));
+  assert.equal(n4.hivasok.length, 8, 'a visszavonas ujraprobalas-versenye sem POST-ol tobbet'); assert.ok(w4.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')).every((s) => s.allapot === 'elkuldve' && s.probalkozas === 2));
+});
+
+test('A12 ON CONFLICT DO NOTHING: ha a SELECT elavult (a sor kozben megjelent), az INSERT nem dob kivetelt es nem POST-ol - feltoltes es visszavonas', async () => {
+  const w = await vilag(); await w.post(kuld({ futas_id: 'c0ffee04' }));
+  const elavult = { prepare: (sql) => (/SELECT id, allapot, probalkozas, frissitve/.test(sql) ? { bind: () => ({ first: async () => null }) } : w.db.prepare(sql)), batch: w.db.batch };
+  const n1 = halozat(); const r1 = await w.post(kuld({ futas_id: 'c0ffee04' }), { net: n1, envFelul: { KULCS_DB: elavult } });
+  assert.equal(r1.status, 200, JSON.stringify(r1.body)); assert.equal(n1.hivasok.length, 0); assert.ok(r1.body.eredmenyek.every((e) => e.duplikalt)); assert.equal(w.probaSorok().length, 8);
+  const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' }; const vis = { muvelet: 'google_proba_visszavon', futas_id: 'c0ffee04', kuld: true, megerosit: MEGEROSITES, eles: true };
+  await w.post(vis, { envFelul: env });
+  const n2 = halozat(); const r2 = await w.post(vis, { net: n2, envFelul: { ...env, KULCS_DB: elavult } });
+  assert.equal(r2.status, 200, JSON.stringify(r2.body)); assert.equal(n2.hivasok.length, 0); assert.ok(r2.body.eredmenyek.every((e) => e.duplikalt)); assert.equal(w.probaSorok().length, 16);
+});
+
+test('A13 soronkenti 3 probalkozas: a 4. kiserlet NEM POST-ol (feltoltes es visszavonas is)', async () => {
+  const hibas = () => halozat({ hiba: new Set(ELVART_8) });
+  const w = await vilag(); const hossz = [];
+  for (let i = 0; i < 4; i++) { const n = hibas(); await w.post(kuld({ futas_id: 'c0ffee05' }), { net: n }); hossz.push(n.hivasok.length); }
+  assert.deepEqual(hossz, [8, 8, 8, 0]); assert.ok(w.probaSorok().every((s) => s.allapot === 'hiba' && s.probalkozas === 3));
+  const w2 = await vilag(); await w2.post(kuld({ futas_id: 'c0ffee06' }));
+  const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' }; const hv = [];
+  for (let i = 0; i < 4; i++) { const n = hibas(); await w2.post({ muvelet: 'google_proba_visszavon', futas_id: 'c0ffee06', kuld: true, megerosit: MEGEROSITES, eles: true }, { net: n, envFelul: env }); hv.push(n.hivasok.length); }
+  assert.deepEqual(hv, [8, 8, 8, 0]); const vis = w2.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:'));
+  assert.equal(vis.length, 8); assert.ok(vis.every((s) => s.allapot === 'hiba' && s.probalkozas === 3));
+});
+
+test('A14 a 120 s "folyamatban" ablak: a friss (60 s) sor nem POST-ol, a regi (200 s) ujraprobalhato - feltoltes es visszavonas is', async () => {
+  const sor = (w, esemenyId, futas, kor, tipus) => w.beszur({ esemeny_id: esemenyId, nev: tipus === 'korrekcio' ? 'Visszavonas' : 'FoglalasElso', tipus, platform_nev: 'ARNYEK-x', uzletag: 'fodrasz', source_id: 'gp_' + futas, allapot: 'folyamatban', kerelem: null, t: NOW_SEC - kor, forras: 'google_proba' });
+  const w = await vilag(); const futas = 'c0ffee07';
+  sor(w, `Proba:${futas}:${ELVART_8[0]}`, futas, 60, 'alap'); sor(w, `Proba:${futas}:${ELVART_8[1]}`, futas, 200, 'alap');
+  const net = halozat(); const r = await w.post(kuld({ futas_id: futas }), { net });
+  assert.equal(r.status, 200); assert.equal(net.hivasok.length, 7, '6 uj + a 200 s-es ujraprobalt; a 60 s-es NEM');
+  assert.ok(!net.hivasok.some((h) => h.body.conversion_action_id === ELVART_8[0])); assert.ok(net.hivasok.some((h) => h.body.conversion_action_id === ELVART_8[1]));
+  assert.equal(r.body.eredmenyek.find((e) => e.conversion_action_id === ELVART_8[0]).duplikalt, true);
+  const w2 = await vilag(); const f2 = 'c0ffee08'; await w2.post(kuld({ futas_id: f2 }));
+  sor(w2, `Visszavon:Proba:${f2}:${ELVART_8[0]}`, f2, 60, 'korrekcio'); sor(w2, `Visszavon:Proba:${f2}:${ELVART_8[1]}`, f2, 200, 'korrekcio');
+  const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' }; const n2 = halozat();
+  const r2 = await w2.post({ muvelet: 'google_proba_visszavon', futas_id: f2, kuld: true, megerosit: MEGEROSITES, eles: true }, { net: n2, envFelul: env });
+  assert.equal(r2.status, 200, JSON.stringify(r2.body)); assert.equal(n2.hivasok.length, 7);
+  assert.ok(!n2.hivasok.some((h) => h.body.adjustments[0].conversionActionId === ELVART_8[0])); assert.ok(n2.hivasok.some((h) => h.body.adjustments[0].conversionActionId === ELVART_8[1]));
+});
+
+let SZAM = 0;
+const tolt = (w, n, allapot, kor = 100) => { for (let i = 0; i < n; i++) w.beszur({ esemeny_id: `Proba:aaaaaaaa:${String(2000000000 + SZAM++)}`, forras: 'google_proba', source_id: 'gp_aaaaaaaa', t: NOW_SEC - kor, uzletag: 'pmu', allapot }); };
+test('A15 24 oras plafon (DONTES): a KIMENO kiserleteket szamolja (elkuldve / hiba / folyamatban); a kihagyva (dry-run, veszkapcsolo) es a 24 oranal regebbi sorokat NEM; az idempotens ujrafuttatas / ujraprobalas nem uj sor -> nem 429-ezik', async () => {
+  const w1 = await vilag(); tolt(w1, 38, 'kihagyva'); tolt(w1, 2, 'elkuldve');
+  assert.equal((await w1.post(kuld())).status, 200, 'a 38 kihagyva sor nem szamit: 2 + 8 <= 40');
+  const w2 = await vilag(); tolt(w2, 33, 'hiba'); assert.equal((await w2.post(kuld())).status, 429, '33 hiba + 8 uj = 41 > 40');
+  const w3 = await vilag(); tolt(w3, 33, 'folyamatban', 90000); assert.equal((await w3.post(kuld())).status, 200, 'a 24 oranal regebbi sorok nem szamitanak');
+  const w4 = await vilag(); tolt(w4, 32, 'folyamatban'); assert.equal((await w4.post(kuld())).status, 200, 'pontosan 40 (32 + 8): meg rendben');
+  // a plafonnal egyenlo allapot: az idempotens ujrafuttatas (0 uj sor) NEM 429, az uj futas igen
+  const w5 = await vilag(); await w5.post(kuld({ futas_id: 'c0ffee09' })); tolt(w5, 32, 'elkuldve');
+  const n5 = halozat(); const r5 = await w5.post(kuld({ futas_id: 'c0ffee09' }), { net: n5 });
+  assert.equal(r5.status, 200, JSON.stringify(r5.body)); assert.equal(n5.hivasok.length, 0); assert.ok(r5.body.eredmenyek.every((e) => e.duplikalt));
+  assert.equal((await w5.post(kuld({ futas_id: 'c0ffee10' }))).status, 429, 'uj futas: 40 + 8 > 40');
+  // az ujraprobalas (hiba sorok UPDATE-je) sem uj sor
+  const w6 = await vilag(); await w6.post(kuld({ futas_id: 'c0ffee11' }), { net: halozat({ hiba: new Set(ELVART_8) }) }); tolt(w6, 32, 'elkuldve');
+  const n6 = halozat(); const r6 = await w6.post(kuld({ futas_id: 'c0ffee11' }), { net: n6 }); assert.equal(r6.status, 200); assert.equal(n6.hivasok.length, 8);
+  // visszavonas: az eles uj sorok szamitanak (429), a dry-run (kuld:true, eles nelkul) nem
+  const w7 = await vilag(); await w7.post(kuld({ futas_id: 'c0ffee12' })); tolt(w7, 32, 'elkuldve');
+  const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' }; const vis = { muvelet: 'google_proba_visszavon', futas_id: 'c0ffee12', kuld: true, megerosit: MEGEROSITES };
+  assert.equal((await w7.post({ ...vis, eles: true }, { envFelul: env })).status, 429, 'eles: 40 + 8 uj > 40');
+  assert.equal((await w7.post(vis, { envFelul: env })).status, 200, 'dry-run: kihagyva sorok, nem szamit');
+});
+
+test('A16 futas_id nelkul ket hivas KULONBOZO azonositot kap (8 hexa); a megadott futas_id valtozatlan', async () => {
+  const w = await vilag(); const a = await w.post({ muvelet: 'google_proba' }); const b = await w.post({ muvelet: 'google_proba' });
+  assert.match(a.body.futas_id, /^[0-9a-f]{8}$/); assert.match(b.body.futas_id, /^[0-9a-f]{8}$/); assert.notEqual(a.body.futas_id, b.body.futas_id);
+  assert.notDeepEqual(a.body.terv.map((t) => t.order_id), b.body.terv.map((t) => t.order_id)); assert.equal(a.body.source_id, `gp_${a.body.futas_id}`);
+  const net = halozat(); await w.post(kuld(), { net }); await w.post(kuld(), { net });
+  assert.equal(net.hivasok.length, 16); assert.equal(new Set(w.probaSorok().map((s) => s.source_id)).size, 2);
+  assert.equal((await w.post({ muvelet: 'google_proba', futas_id: '0123abcd' })).body.futas_id, '0123abcd');
+});
+
+test('A17 a Zap NYERS valasz-torzse SOHA nem tarolodik / nem kerul a valaszba: kisbetus, base64, csonkolt visszhang es gclid-visszhangzo status / id sem; csak http + biztonsagos status / id', async () => {
+  const b64 = (x) => Buffer.from(x).toString('base64');
+  const V = {
+    kisbetu: [(b) => JSON.stringify({ status: 'success', id: 'z1', visszhang: b.gclid.toLowerCase() }), '{"http":200,"status":"success","id":"z1"}'],
+    base64: [(b) => JSON.stringify({ status: 'success', id: 'z1', visszhang: b64(JSON.stringify(b)) }), '{"http":200,"status":"success","id":"z1"}'],
+    csonka: [(b) => JSON.stringify({ status: 'success', id: 'z1', visszhang: b.gclid.slice(0, 14) + '...' }), '{"http":200,"status":"success","id":"z1"}'],
+    nyers_szoveg: [(b) => 'OK ' + b.gclid.toLowerCase() + ' ' + JSON.stringify(b), '{"http":200}'],
+    id_visszhang: [(b) => JSON.stringify({ status: 'success', id: b.gclid }), '{"http":200,"status":"success"}'],
+    status_kisbetus_visszhang: [(b) => JSON.stringify({ status: b.gclid.toLowerCase(), id: 'z2' }), '{"http":200,"id":"z2"}'],
+    id_base64_visszhang: [(b) => JSON.stringify({ status: 'success', id: b64(b.gclid).replace(/[+/=]/g, '').slice(0, 40) }), '{"http":200,"status":"success"}'],
+    veszelyes_id: [() => JSON.stringify({ status: 'success', id: '<script>alert(1)</script>' }), '{"http":200,"status":"success"}'],
+    hosszu_id: [() => JSON.stringify({ status: 'success', id: 'x'.repeat(65) }), '{"http":200,"status":"success"}'],
+    hatar_id: [() => JSON.stringify({ status: 'success', id: 'x'.repeat(64) }), `{"http":200,"status":"success","id":"${'x'.repeat(64)}"}`],
+    objektum_id: [() => JSON.stringify({ status: 'success', id: { be: 'agyazott' } }), '{"http":200,"status":"success"}'],
+    tomb: [() => JSON.stringify(['success', 'z1']), '{"http":200}'],
+  };
+  for (const [nev, [valasz, vart]] of Object.entries(V)) {
+    const w = await vilag(); const r = await w.post(kuld({ futas_id: '5e5e5e5e' }), { net: halozat({ valasz }) });
+    assert.equal(r.status, 200, nev); assert.equal(r.body.kuldve, 8, nev);
+    for (const sor of w.probaSorok()) assert.equal(sor.platform_valasz, vart, `${nev}: D1 platform_valasz`);
+    for (const e of r.body.eredmenyek) assert.equal(e.valasz_roviden, vart, `${nev}: valasz_roviden`);
+    const minden = JSON.stringify(w.probaSorok()) + JSON.stringify(r.body);
+    for (const darab of [GCL_FOGL, GCL_FOGL.toLowerCase(), GCL_FOGL.slice(0, 14), b64(GCL_FOGL).slice(0, 24)]) assert.ok(!minden.includes(darab), `${nev}: a gclid (vagy kisbetus / base64 / csonka alakja) nincs a D1-ben / valaszban: ${darab}`);
+  }
+  // HTTP-hiba: csak a status-kod (+ a Zap status mezoje); halozati hiba: a kivetel szovege (URL, gclid) sem tarolodik
+  const w2 = await vilag(); const r2 = await w2.post(kuld({ futas_id: '5e5e5e5f' }), { net: halozat({ hiba: new Set(ELVART_8) }) });
+  assert.ok(w2.probaSorok().every((s) => s.allapot === 'hiba' && s.platform_valasz === '{"http":500,"status":"error"}')); assert.ok(r2.body.eredmenyek.every((e) => e.valasz_roviden === '{"http":500,"status":"error"}'));
+  const w3 = await vilag(); const dob = { hivasok: [], fetchImpl: async (url, opt) => { throw new Error(`connect ECONNREFUSED ${url} ${JSON.parse(opt.body).gclid}`); } };
+  const r3 = await w3.post(kuld({ futas_id: '5e5e5e60' }), { net: dob });
+  assert.ok(w3.probaSorok().every((s) => s.allapot === 'hiba' && s.platform_valasz === '{"http":null}' && s.http_status === null));
+  assert.ok(!JSON.stringify(r3.body).includes('hooks.zapier.com') && !JSON.stringify(w3.probaSorok()).includes('hooks.zapier.com') && !JSON.stringify(r3.body).includes(GCL_FOGL) && !JSON.stringify(w3.probaSorok()).includes(GCL_FOGL));
+});
+
 // ---------- T2 / QA-nap / lampa / egyeztetosor KIZARAS ----------
 const kivonat = (j) => { const c = structuredClone(j); delete c.generalva_utc; for (const u of Object.values(c.uzletagak)) for (const p of Object.values(u.arnyek)) delete p.proba_sor_kizarva; return c; };
 
@@ -279,35 +424,42 @@ test('V1 SZARAZ visszavonas: a terv a feltoltesek TUKORKEPE (ugyanazok az order_
   assert.ok(!JSON.stringify(r.body).includes(GCL_FOGL));
 });
 
-test('V2 visszavonas KULDES: a Zap dryRun:true torzset kap (validateOnly), a sor "kihagyva / dry_run" (NEM elkuldve: a feltoltes marad), ujrahivasra nem megy ketszer', async () => {
+test('V2 visszavonas kuld:true de ELES NELKUL: a korrekcio-Zapra SEMMI nem megy (0 POST, meg a webhook + GOOGLE_KORREKCIO_ELES=1 mellett sem), csak a dry-run SOR kerul a D1-be (kihagyva / dry_run); ujrahivasra nem ismetlodik', async () => {
   const w = await vilag(); await w.post(kuld({ futas_id: 'f00d0002' }));
   const net = halozat(); const keres = { muvelet: 'google_proba_visszavon', futas_id: 'f00d0002', kuld: true, megerosit: MEGEROSITES };
-  const r = await w.post(keres, { net, envFelul: { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO } });
-  assert.equal(r.status, 200, JSON.stringify(r.body)); assert.equal(r.body.mod, 'kuldes'); assert.equal(r.body.visszavonva, 0);
-  assert.equal(net.hivasok.length, 8);
-  for (const h of net.hivasok) {
-    assert.equal(h.url, KORREKCIO); assert.equal(h.body.dryRun, true); assert.equal(h.body.adjustments.length, 1);
-    const a = h.body.adjustments[0]; assert.equal(a.type, 'RETRACTION'); assert.match(a.orderId, /^Proba:f00d0002:\d{10}$/); assert.equal(a.conversionActionId, a.orderId.split(':')[2]); assert.equal(a.adjustmentDateTime, '2026-10-18 14:00:00+02:00');
-    assert.deepEqual(Object.keys(a).sort(), ['adjustmentDateTime', 'conversionActionId', 'note', 'orderId', 'type']);
-  }
+  const env = { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' };
+  const r = await w.post(keres, { net, envFelul: env }); // eles:true hianyzik
+  assert.equal(r.status, 200, JSON.stringify(r.body)); assert.equal(r.body.mod, 'dry_run_sor'); assert.equal(r.body.dry_run, true); assert.equal(r.body.visszavonva, 0); assert.equal(r.body.posztolt_db, 0);
+  assert.equal(net.hivasok.length, 0, 'dry-run: a korrekcio-Zap hivasa SEM');
   const vis = w.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:'));
-  assert.equal(vis.length, 8); assert.ok(vis.every((s) => s.allapot === 'kihagyva' && /^dry_run/.test(s.indok) && s.esemeny_tipus === 'korrekcio' && s.source_id === 'gp_f00d0002'));
-  const n2 = halozat(); const r2 = await w.post(keres, { net: n2, envFelul: { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO } });
-  assert.equal(n2.hivasok.length, 0, 'a dry-run sor nem ismetlodik'); assert.equal(r2.body.eredmenyek.filter((e) => e.duplikalt).length, 8);
+  assert.equal(vis.length, 8); assert.ok(vis.every((s) => s.allapot === 'kihagyva' && /^dry_run/.test(s.indok) && s.esemeny_tipus === 'korrekcio' && s.source_id === 'gp_f00d0002' && s.probalkozas === 0 && s.http_status === null && s.platform_valasz === null));
+  assert.ok(r.body.eredmenyek.every((e) => e.dry_run === true && e.posztolt === false && !e.duplikalt));
+  for (const s of vis) { const k = JSON.parse(s.kerelem); assert.equal(k.body.dryRun, true); assert.equal(k.cel.dry_run, true); }
+  const n2 = halozat(); const r2 = await w.post(keres, { net: n2, envFelul: env });
+  assert.equal(n2.hivasok.length, 0); assert.equal(r2.body.eredmenyek.filter((e) => e.duplikalt).length, 8, 'a dry-run sor nem ismetlodik'); assert.equal(w.probaSorok().length, 16);
+  // eles:true env nelkul es webhook nelkul is csak dry-run sor (a webhook a dry-run-hoz nem kell)
+  const w2 = await vilag(); await w2.post(kuld({ futas_id: 'f00d0012' }));
+  const n3 = halozat(); const r3 = await w2.post({ ...keres, futas_id: 'f00d0012', eles: true }, { net: n3, envFelul: {} });
+  assert.equal(r3.status, 200); assert.equal(r3.body.mod, 'dry_run_sor'); assert.equal(n3.hivasok.length, 0);
 });
 
-test('V3 ELES visszavonas CSAK eles:true ES GOOGLE_KORREKCIO_ELES=1 mellett (dryRun:false); egyik nelkul dryRun marad; a dry-run sor utan az eles ujra kimegy, es ketszer nem', async () => {
+test('V3 ELES visszavonas (POST a korrekcio-Zapra) CSAK eles:true ES GOOGLE_KORREKCIO_ELES=1 ES megerosit ES webhook mellett (dryRun:false); a dry-run sorokat az eles kor veszi at; ketszer nem megy', async () => {
   const w = await vilag(); await w.post(kuld({ futas_id: 'f00d0003' }));
   const kul = async (extra, env) => { const net = halozat(); const r = await w.post({ muvelet: 'google_proba_visszavon', futas_id: 'f00d0003', kuld: true, megerosit: MEGEROSITES, ...extra }, { net, envFelul: { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, ...env } }); return { r, net }; };
-  const a = await kul({ eles: true }, {}); assert.equal(a.r.body.dry_run, true, 'eles:true, de nincs GOOGLE_KORREKCIO_ELES -> dryRun');
-  // az a) dry-run sorait az eles kor felulirja
+  const a = await kul({ eles: true }, {}); assert.equal(a.r.body.dry_run, true, 'eles:true, de nincs GOOGLE_KORREKCIO_ELES -> dryRun'); assert.equal(a.net.hivasok.length, 0);
+  const b0 = await kul({}, { GOOGLE_KORREKCIO_ELES: '1' }); assert.equal(b0.r.body.dry_run, true, 'GOOGLE_KORREKCIO_ELES=1, de eles:true nincs -> dryRun'); assert.equal(b0.net.hivasok.length, 0);
+  assert.equal(w.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')).length, 8);
+  // eles, megerosites nelkul: 400, nincs POST
+  const m = await kul({ eles: true, megerosit: 'nem' }, { GOOGLE_KORREKCIO_ELES: '1' }); assert.equal(m.r.status, 400); assert.equal(m.net.hivasok.length, 0);
+  // eles, webhook nelkul: 409
+  const nw = await w.post({ muvelet: 'google_proba_visszavon', futas_id: 'f00d0003', kuld: true, megerosit: MEGEROSITES, eles: true }, { net: halozat(), envFelul: { GOOGLE_KORREKCIO_ELES: '1' } }); assert.equal(nw.status, 409); assert.match(nw.body.miert, /KORREKCIO_WEBHOOK/);
+  // az eles kor felulirja a dry-run sorokat
   const b = await kul({ eles: true }, { GOOGLE_KORREKCIO_ELES: '1' });
-  assert.equal(b.r.body.dry_run, false); assert.equal(b.net.hivasok.length, 8); assert.ok(b.net.hivasok.every((h) => h.body.dryRun === false)); assert.equal(b.r.body.visszavonva, 8);
-  assert.ok(w.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')).every((s) => s.allapot === 'elkuldve'));
+  assert.equal(b.r.body.dry_run, false); assert.equal(b.r.body.mod, 'kuldes'); assert.equal(b.net.hivasok.length, 8); assert.ok(b.net.hivasok.every((h) => h.url === KORREKCIO && h.body.dryRun === false && h.body.adjustments.length === 1)); assert.equal(b.r.body.visszavonva, 8); assert.equal(b.r.body.posztolt_db, 8);
+  for (const h of b.net.hivasok) { const aj = h.body.adjustments[0]; assert.equal(aj.type, 'RETRACTION'); assert.match(aj.orderId, /^Proba:f00d0003:\d{10}$/); assert.equal(aj.conversionActionId, aj.orderId.split(':')[2]); assert.equal(aj.adjustmentDateTime, '2026-10-18 14:00:00+02:00'); assert.deepEqual(Object.keys(aj).sort(), ['adjustmentDateTime', 'conversionActionId', 'note', 'orderId', 'type']); }
+  const vis = w.probaSorok().filter((s) => s.esemeny_id.startsWith('Visszavon:')); assert.equal(vis.length, 8);
+  assert.ok(vis.every((s) => s.allapot === 'elkuldve' && s.indok === null && s.platform_valasz === '{"http":200,"status":"success","id":"z1"}'));
   const c = await kul({ eles: true }, { GOOGLE_KORREKCIO_ELES: '1' }); assert.equal(c.net.hivasok.length, 0, 'az elkuldott visszavonas nem ismetlodik');
-  const w2 = await vilag(); await w2.post(kuld({ futas_id: 'f00d0004' }));
-  const net = halozat(); const d = await w2.post({ muvelet: 'google_proba_visszavon', futas_id: 'f00d0004', kuld: true, megerosit: MEGEROSITES }, { net, envFelul: { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO, GOOGLE_KORREKCIO_ELES: '1' } });
-  assert.equal(d.body.dry_run, true, 'GOOGLE_KORREKCIO_ELES=1, de eles:true nincs -> dryRun'); assert.ok(net.hivasok.every((h) => h.body.dryRun === true));
 });
 
 test('V4 visszavonas hibaesetek: futas_id kell (400), ismeretlen futas (404), a webhook / megerosites / MERES_ELOSZTO kapuk, csak az ELKULDOTT feltoltesek kerulnek a tervbe, a nem-proba order_id / elo akcio nem vonhato vissza', async () => {
@@ -318,7 +470,7 @@ test('V4 visszavonas hibaesetek: futas_id kell (400), ismeretlen futas (404), a 
   await w.post(kuld({ futas_id: 'f00d0005' }), { net: halozat({ hiba: new Set(['7825200916']) }) });
   const terv = await w.post({ muvelet: 'google_proba_visszavon', futas_id: 'f00d0005' }, { net });
   assert.equal(terv.body.retraction_db, 7, 'a hibas (nem feltoltott) sor nincs a tervben'); assert.ok(!terv.body.terv.some((t) => t.conversion_action_id === '7825200916'));
-  const ell = async (extra, envFelul, status, re) => { const r = await w.post({ muvelet: 'google_proba_visszavon', futas_id: 'f00d0005', kuld: true, megerosit: MEGEROSITES, ...extra }, { net, envFelul }); assert.equal(r.status, status, JSON.stringify(r.body)); if (re) assert.match(r.body.miert, re); };
+  const ell = async (extra, envFelul, status, re) => { const r = await w.post({ muvelet: 'google_proba_visszavon', futas_id: 'f00d0005', kuld: true, megerosit: MEGEROSITES, eles: true, ...extra }, { net, envFelul: { GOOGLE_KORREKCIO_ELES: '1', ...envFelul } }); assert.equal(r.status, status, JSON.stringify(r.body)); if (re) assert.match(r.body.miert, re); };
   await ell({ megerosit: 'nem' }, { GOOGLE_KORREKCIO_WEBHOOK_URL: KORREKCIO }, 400, /megerosit/);
   await ell({}, {}, 409, /KORREKCIO_WEBHOOK/);
   await ell({}, { GOOGLE_KORREKCIO_WEBHOOK_URL: 'https://evil.example/x' }, 409, /KORREKCIO_WEBHOOK/);

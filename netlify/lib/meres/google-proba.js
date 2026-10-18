@@ -1,12 +1,12 @@
 // GOOGLE ARNYEK BACKEND PROBA-FELTOLTES + VISSZAVONAS (a meresi oldal DECISION #196, #167 6246096267 / 6246123744; a hetfoi 2026-10-19 12:00-s Google E2E-kapu).
-// Kulcsos admin-muveletek a /api/meres-admin vegponton (POST {muvelet:'google_proba' | 'google_proba_visszavon', ...}; kulcs: x-egyeztetes-kulcs, a kulcs a meresi oldale, NEM a repoban):
+// Kulcsos admin-muveletek a /api/meres-admin vegponton (POST {muvelet:'google_proba' | 'google_proba_visszavon', ...}; kulcs: CSAK az x-egyeztetes-kulcs FEJLECBEN (a ?kulcs= query-kulcs ezeknel nem fogadhato el, lasd vegpontok.js), a kulcs a meresi oldale, NEM a repoban):
 //   google_proba            : egy MEGLEVO valodi HeadSpa-feltoltes gclid-jevel (a D1-bol, szerveroldalon valasztva) probafeltoltes a relay-Zapon a 8 nem-EXCELLENT ARNYEK akciora.
 //                             ALAPBOL SZARAZ (csak a terv, halozat es iras nelkul); kuldeshez kuld:true + megerosit + a GOOGLE_ARNYEK_WEBHOOK_URL + MERES_ELOSZTO=1 kell.
 //   google_proba_visszavon  : ugyanazon futas feltoltesenek RETRACTION-je (Zapier-korrekcio, a 01a0e569 elokeszitett minta / az eletut-ag googleKorrekcioKerelem formaja).
-//                             ALAPBOL SZARAZ (a terv: order_id + akcio + idopont, a meresi oldal a Google Ads API-n at is vegrehajthatja); a Zap hivasa kuld:true + megerosit + GOOGLE_KORREKCIO_WEBHOOK_URL,
-//                             az eles korrekcio (dryRun:false) ezen felul GOOGLE_KORREKCIO_ELES=1 + eles:true.
+//                             ALAPBOL SZARAZ (a terv: order_id + akcio + idopont, a meresi oldal a Google Ads API-n at is vegrehajthatja). kuld:true + megerosit, DE eles:true + GOOGLE_KORREKCIO_ELES=1 NELKUL is csak a dry-run SOR
+//                             kerul a D1-be (kihagyva / dry_run), a korrekcio-Zapra NEM megy POST; eles POST KIZAROLAG eles:true ES GOOGLE_KORREKCIO_ELES=1 mellett (+ megerosit + GOOGLE_KORREKCIO_WEBHOOK_URL).
 // VEDELMEK (fail-closed, a kodban): csak a Google ARNYEK fiok (6088874770) es a 8 felsorolt ARNYEK akcio (HeadSpa kimarad: mar EXCELLENT; elo akcio SOHA); a torzs mezoi egy zart lista (nincs vendegadat, nincs hash-elt azonosito);
-// a gclid CSAK a kuldendo torzsben van, SEHOL mashol (valasz, naplo, D1-kerelem): ott "gclid#1"; ad_user_data MINDIG DENIED (a probanak nincs vendegi hozzajarulasa: GRANTED-et nem allitunk);
+// a gclid CSAK a kuldendo torzsben van, SEHOL mashol (valasz, naplo, D1-kerelem): ott "gclid#1"; a Zap nyers valasz-torzse SEHOL nem tarolodik (csak http-status + a Zap status / id mezoje, biztonsagos karakterekkel); ad_user_data MINDIG DENIED (a probanak nincs vendegi hozzajarulasa: GRANTED-et nem allitunk);
 // minden proba-sor forras = 'google_proba', source_id = 'gp_<futas>' (a QA-nap / T2 / lampa / egyeztetosor szamlalok kizarjak), order_id = 'Proba:<futas>:<akcio>' (egyedi).
 import { ARNYEK, ELO_CELOK, googleIdo, kuldes } from './platformok.js';
 import { kapcsolokOlvas, kikapcsolva, meresSema } from './elosztas.js';
@@ -15,6 +15,7 @@ import { irasKi } from './iras-kapcsolo.js';
 export const PROBA_FORRAS = 'google_proba';
 export const MEGEROSITES = 'ARNYEK-6088874770-PROBA';   // kuldeshez a kerelemnek ezt a szoveget kell tartalmaznia (megerosit): vletlen / hibas hivas nem kuldhet
 export const PROBA_ERTEK = 1;                          // HUF: jelkepes ertek (a valodi ertekek az ARNYEK fiok szamait ne torzitsak); a feltoltes ELFOGADASA a cel, nem az osszeg
+const DRY_RUN_INDOK = 'dry_run: nincs POST (eles:true + GOOGLE_KORREKCIO_ELES=1 kell), a feltoltes marad';
 export const PROBA_MAX_24H = 40;                       // legfeljebb ennyi proba-sor (feltoltes + visszavonas) 24 oran belul: egy hibas hurok nem sokszorozhatja
 const GCLID_MAX_KOR_MP = 80 * 86400;                   // a Google kattintas-konverzio 90 napos ablaka: 80 napnal regebbi kattintas nem valaszthato
 const GCLID_MINTA = /^[A-Za-z0-9_-]{20,200}$/;
@@ -35,7 +36,20 @@ const valasz = (status, body) => ({ status, body });
 const sec = (ms) => Math.floor(ms / 1000);
 const sha8 = async (s) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s))))].slice(0, 4).map((b) => b.toString(16).padStart(2, '0')).join('');
 const veletlenFutas = () => [...crypto.getRandomValues(new Uint8Array(4))].map((b) => b.toString(16).padStart(2, '0')).join('');
-const titkotKi = (szoveg, gclid) => (gclid ? String(szoveg ?? '').split(gclid).join('gclid#1') : String(szoveg ?? ''));
+const BIZTONSAGOS_JEL = /^[A-Za-z0-9._-]{1,64}$/;
+// a gclid (es kisbetus / base64 / base64-url alakjai) barmely 10 karakteres szelete egy Zap-mezoben: visszhang, nem tarolhato
+const gclidAlakok = (g) => { const b = btoa(g); return [g, b, b.replace(/[+/=]/g, '')].map((x) => x.toLowerCase()); };
+const visszhang = (ertek, gclid) => { if (!gclid) return false; const a = String(ertek).toLowerCase(); return gclidAlakok(gclid).some((f) => { for (let i = 0; i + 10 <= f.length; i++) if (a.includes(f.slice(i, i + 10))) return true; return false; }); };
+/**
+ * A Zap valaszabol CSAK a http-status + a Zap `status` / `id` mezoje tarolhato / adhato vissza (biztonsagos karakterek, legfeljebb 64 hossz, a gclid-visszhangot kiszurve);
+ * a nyers valasz-torzs SOHA (a Zap a torzset modositva / csonkolva / kisbetusen is visszhangozhatja, ez kitakaras nelkul maradna). -> JSON-szoveg (a platform_valasz oszlopba / valasz_roviden-be).
+ */
+export function zapJelzes(e, gclid = null) {
+  const o = { http: e && e.http_status != null ? e.http_status : null };
+  let j = null; try { j = JSON.parse(String(e && e.valasz != null ? e.valasz : '')); } catch (x) { /* nem JSON: nincs Zap-mezo */ }
+  if (j && typeof j === 'object' && !Array.isArray(j)) for (const m of ['status', 'id']) { const v = j[m]; if (typeof v === 'string' && BIZTONSAGOS_JEL.test(v) && !visszhang(v, gclid)) o[m] = v; }
+  return JSON.stringify(o);
+}
 
 /** A felhasznalo altal kert akcio-lista ellenorzese: csak a 8 probalhato ID. -> { akciok } | { hiba } */
 export function akciokValasztas(kert) {
@@ -47,7 +61,7 @@ export function akciokValasztas(kert) {
   return { akciok: PROBA_AKCIOK.filter((a) => ids.includes(a.id)) };
 }
 
-/** Egy megfelelo, valodi HeadSpa-feltoltes gclid-je a D1-bol (CSAK OLVAS). sorszam: 1 = a legfrissebb FoglalasElso, utana az Ajandekkartya sorok. -> { gclid, sor_id, esemeny_nev, kor_nap } | null. A gclid a hivon kivul SEHOVA nem kerul. */
+/** Egy megfelelo, valodi HeadSpa-feltoltes gclid-je a D1-bol (CSAK OLVAS). A sorrend: ELOBB az osszes FoglalasElso (ujabb -> regebbi), UTANA az osszes Ajandekkartya (ujabb -> regebbi); sorszam az n-edik elem (1 = a legfrissebb FoglalasElso). -> { gclid, sor_id, esemeny_nev, kor_nap } | null. A gclid a hivon kivul SEHOVA nem kerul. */
 export async function probaGclid(db, { sorszam = 1, nowSec }) {
   const { results } = await db.prepare("SELECT id, esemeny_nev, letrehozva, kerelem FROM meres_kuldes WHERE platform = 'google' AND allapot = 'elkuldve' AND uzletag = 'headspa' AND forras IN ('motor', 'kartya') AND letrehozva >= ?1 ORDER BY id DESC").bind(nowSec - GCLID_MAX_KOR_MP).all();
   const jeloltek = [];
@@ -92,9 +106,21 @@ export function probaEllenorzes(k) {
 const SOR_BESZUR = "INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, indok, ertek, penznem, hozzajarulas, kerelem, http_status, platform_valasz, kuldo, probalkozas, letrehozva, frissitve, forras, attr_minoseg, attr_jelek, salonic_uuid, ertek_minoseg) VALUES (?1, ?2, ?3, 'google', ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?17, 'google_proba', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING";
 const HOZZAJARULAS_JSON = JSON.stringify({ proba: true, ad_user_data: 'DENIED', megjegyzes: 'proba: nincs vendegi hozzajarulas' });
 
+// A 24 oras plafon a tenyleges KIMENO KISERLETEKET szamolja (elkuldve / hiba / folyamatban); a kihagyva sorok (veszkapcsolo, dry-run) nem POST-oltak, nem szamitanak.
+// Az uj sorok szama pontos (tervDb = a meg NEM letezo order_id-k): az idempotens ujrafuttatas / az ujraprobalas (UPDATE) nem uj sor, igy a plafon nem 429-ezi.
 async function huszonnegyOra(db, nowSec) {
-  const r = await db.prepare("SELECT COUNT(*) AS n FROM meres_kuldes WHERE forras = 'google_proba' AND letrehozva >= ?1").bind(nowSec - 86400).first();
+  const r = await db.prepare("SELECT COUNT(*) AS n FROM meres_kuldes WHERE forras = 'google_proba' AND allapot IN ('elkuldve', 'hiba', 'folyamatban') AND letrehozva >= ?1").bind(nowSec - 86400).first();
   return r ? r.n : 0;
+}
+async function ujSorokSzama(db, esemenyIdk) {
+  if (!esemenyIdk.length) return 0;
+  const r = await db.prepare(`SELECT COUNT(*) AS n FROM meres_kuldes WHERE platform = 'google' AND esemeny_id IN (${esemenyIdk.map((_, i) => `?${i + 1}`).join(',')})`).bind(...esemenyIdk).first();
+  return esemenyIdk.length - (r ? r.n : 0);
+}
+// compare-and-swap: az ujraprobalt sor atvetele csak akkor sikerul, ha kozben senki nem vette at (egyideju hivasok nem POST-olnak ketszer)
+async function sorAtvetel(db, meglevo, nowSec, extraSet = '', extraArgs = []) {
+  const r = await db.prepare(`UPDATE meres_kuldes SET allapot = 'folyamatban', probalkozas = probalkozas + 1, frissitve = ?2${extraSet} WHERE id = ?1 AND allapot = ?3 AND probalkozas = ?4 AND frissitve = ?5`).bind(meglevo.id, nowSec, meglevo.allapot, meglevo.probalkozas, meglevo.frissitve, ...extraArgs).run();
+  return !!(r.meta && r.meta.changes > 0);
 }
 
 /** Kozos kapuk a KULDESHEZ. -> null | { status, body } */
@@ -125,7 +151,7 @@ export async function googleProba(db, env, o, { now = Date.now(), fetchImpl = fe
   const alap = { ok: true, futas_id: futasId, source_id: `gp_${futasId}`, ugyfel: ARNYEK.google.customerId, gclid: 'gclid#1', gclid_hash8: gclidHash8, gclid_hossz: g.gclid.length, gclid_forras: { meres_kuldes_id: g.sor_id, esemeny: g.esemeny_nev, kor_nap: g.kor_nap }, kuldes_feltetelei: { meres_elosztas_be: String(env.MERES_ELOSZTO) === '1', webhook_beallitva: !!env.GOOGLE_ARNYEK_WEBHOOK_URL && ZAPIER_HOOK_RE.test(String(env.GOOGLE_ARNYEK_WEBHOOK_URL).trim()) }, terv };
   if (o.kuld !== true) return valasz(200, { ...alap, mod: 'szaraz', kuldes: 'nem tortent (kuld:true + megerosit kell)', visszavonas: `google_proba_visszavon {futas_id:"${futasId}"}` });
 
-  const kapu = await kuldesKapu(db, env, o, nowSec, kerelmek.length);
+  const kapu = await kuldesKapu(db, env, o, nowSec, await ujSorokSzama(db, kerelmek.map((k) => k.body.order_id)));
   if (kapu) return kapu;
   if (!env.GOOGLE_ARNYEK_WEBHOOK_URL || !ZAPIER_HOOK_RE.test(String(env.GOOGLE_ARNYEK_WEBHOOK_URL).trim())) return valasz(409, { ok: false, miert: 'GOOGLE_ARNYEK_WEBHOOK_URL hianyzik / ervenytelen' });
   const kapcsolok = await kapcsolokOlvas(db);
@@ -140,16 +166,18 @@ export async function googleProba(db, env, o, { now = Date.now(), fetchImpl = fe
     if (meglevo && (meglevo.allapot === 'elkuldve' || (meglevo.allapot === 'folyamatban' && nowSec - meglevo.frissitve < 120) || meglevo.probalkozas >= 3)) { eredmenyek.push({ ...sorBase, allapot: meglevo.allapot, duplikalt: true }); continue; }
     const kerelemNaplo = JSON.stringify({ url: k.url, method: k.method, fejlec_nevek: k.fejlec_nevek, cel: k.cel, body: { ...k.naplo_body, gclid_hash8: gclidHash8 } });
     let id;
-    if (meglevo) { id = meglevo.id; await db.prepare("UPDATE meres_kuldes SET allapot = 'folyamatban', probalkozas = probalkozas + 1, frissitve = ?2 WHERE id = ?1").bind(id, nowSec).run(); }
-    else {
+    if (meglevo) {
+      if (!(await sorAtvetel(db, meglevo, nowSec))) { eredmenyek.push({ ...sorBase, allapot: 'folyamatban', duplikalt: true }); continue; } // egyideju hivas mar atvette
+      id = meglevo.id;
+    } else {
       const r = await db.prepare(SOR_BESZUR).bind(k.body.order_id, k.akcio.esemeny, 'alap', k.platform_nev, k.akcio.uzletag, `gp_${futasId}`, 'folyamatban', 'google_proba', PROBA_ERTEK, 'HUF', HOZZAJARULAS_JSON, kerelemNaplo, null, null, null, 1, nowSec).run();
       if (!(r.meta && r.meta.changes > 0)) { eredmenyek.push({ ...sorBase, allapot: 'folyamatban', duplikalt: true }); continue; }
       id = (await db.prepare("SELECT id FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = 'google'").bind(k.body.order_id).first()).id;
     }
     const e = await kuldo(k, env, fetchImpl);
-    const valaszSzoveg = titkotKi(e.valasz, g.gclid).slice(0, 2000);
-    await db.prepare('UPDATE meres_kuldes SET allapot = ?2, http_status = ?3, platform_valasz = ?4, kuldo = ?5, kerelem = ?6, frissitve = ?7 WHERE id = ?1').bind(id, e.allapot, e.http_status ?? null, valaszSzoveg, e.kuldo || null, kerelemNaplo, nowSec).run();
-    eredmenyek.push({ ...sorBase, id, allapot: e.allapot, http_status: e.http_status ?? null, valasz_roviden: valaszSzoveg.slice(0, 200) });
+    const jelzes = zapJelzes(e, g.gclid); // a nyers Zap-valasz SOHA nem tarolodik / nem adodik vissza (csak http + status + id)
+    await db.prepare('UPDATE meres_kuldes SET allapot = ?2, http_status = ?3, platform_valasz = ?4, kuldo = ?5, kerelem = ?6, frissitve = ?7 WHERE id = ?1').bind(id, e.allapot, e.http_status ?? null, jelzes, e.kuldo || null, kerelemNaplo, nowSec).run();
+    eredmenyek.push({ ...sorBase, id, allapot: e.allapot, http_status: e.http_status ?? null, valasz_roviden: jelzes });
   }
   return valasz(200, { ...alap, mod: 'kuldes', eredmenyek, kuldve: eredmenyek.filter((e) => e.allapot === 'elkuldve' && !e.duplikalt).length, kovetkezo: `ellenorzes: Google Ads API offline_conversion_upload_conversion_action_summary; visszavonas: google_proba_visszavon {futas_id:"${futasId}"}` });
 }
@@ -203,34 +231,41 @@ export async function googleProbaVisszavon(db, env, o, { now = Date.now(), fetch
   const alap = { ok: true, futas_id: futasId, ugyfel: ARNYEK.google.customerId, retraction_db: terv.length, dry_run: dryRun, webhook_beallitva: !!env.GOOGLE_KORREKCIO_WEBHOOK_URL, eles_engedelyezve: String(env.GOOGLE_KORREKCIO_ELES) === '1', terv };
   if (o.kuld !== true) return valasz(200, { ...alap, mod: 'szaraz', kuldes: 'nem tortent', megjegyzes: 'a terv a Google Ads API uploadConversionAdjustments hivasaval is vegrehajthato (order_id + conversion_action + adjustment_date_time)' });
 
-  const kapu = await kuldesKapu(db, env, o, nowSec, kerelmek.length);
+  // dryRun (nincs eles:true ES GOOGLE_KORREKCIO_ELES=1): SEMMI nem megy ki - csak a dry-run SOR kerul a D1-be (kihagyva / dry_run, nem szamit a 24 oras plafonba). A korrekcio-Zap mukodese ismeretlen
+  // (a QA2 naplo szerint a relay-Zap egyszer a dryrun jelzot elesnek ertelmezte), ezert dry-run mellett SEM hivjuk: eles POST kizarolag eles:true + GOOGLE_KORREKCIO_ELES=1 + megerosit mellett.
+  const kapu = await kuldesKapu(db, env, o, nowSec, dryRun ? 0 : await ujSorokSzama(db, kerelmek.map((k) => `Visszavon:${k.body.adjustments[0].orderId}`)));
   if (kapu) return kapu;
-  if (!ZAPIER_HOOK_RE.test(String(env.GOOGLE_KORREKCIO_WEBHOOK_URL || '').trim())) return valasz(409, { ok: false, miert: 'GOOGLE_KORREKCIO_WEBHOOK_URL hianyzik / ervenytelen (a korrekcio-Zap a meresi oldal dolga)' });
+  if (!dryRun && !ZAPIER_HOOK_RE.test(String(env.GOOGLE_KORREKCIO_WEBHOOK_URL || '').trim())) return valasz(409, { ok: false, miert: 'GOOGLE_KORREKCIO_WEBHOOK_URL hianyzik / ervenytelen (a korrekcio-Zap a meresi oldal dolga)' });
   const eredmenyek = [];
   for (const k of kerelmek) {
     const orderId = k.body.adjustments[0].orderId;
     const eid = `Visszavon:${orderId}`;
     const sorBase = { conversion_action_id: k.cel.conversion_action_id, order_id: orderId };
     const meglevo = await db.prepare("SELECT id, allapot, probalkozas, frissitve, indok FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = 'google'").bind(eid).first();
-    if (meglevo && ((meglevo.allapot === 'elkuldve') || (meglevo.allapot === 'kihagyva' && dryRunSor(meglevo) && k.dryRun) || (meglevo.allapot === 'folyamatban' && nowSec - meglevo.frissitve < 120) || meglevo.probalkozas >= 3)) { eredmenyek.push({ ...sorBase, allapot: meglevo.allapot, duplikalt: true }); continue; }
+    // dry-run: letezo sorhoz (barmilyen allapot) nem nyulunk; eles: az elkuldott / a friss folyamatban levo / a 3-szor probalt sor nem megy ujra
+    if (meglevo && (dryRun || meglevo.allapot === 'elkuldve' || (meglevo.allapot === 'folyamatban' && nowSec - meglevo.frissitve < 120) || meglevo.probalkozas >= 3)) { eredmenyek.push({ ...sorBase, allapot: meglevo.allapot, duplikalt: true }); continue; }
     const kerelemNaplo = JSON.stringify({ url: 'zapier-webhook: GOOGLE_KORREKCIO_WEBHOOK_URL (titok, nem naplozott)', method: 'POST', fejlec_nevek: ['content-type'], cel: k.cel, body: k.body });
+    if (dryRun) {
+      const r = await db.prepare(SOR_BESZUR).bind(eid, 'Visszavonas', 'korrekcio', k.platform_nev, k.uzletag, `gp_${futasId}`, 'kihagyva', DRY_RUN_INDOK, null, null, HOZZAJARULAS_JSON, kerelemNaplo, null, null, null, 0, nowSec).run();
+      eredmenyek.push({ ...sorBase, allapot: 'kihagyva', dry_run: true, posztolt: false, duplikalt: !(r.meta && r.meta.changes > 0) });
+      continue;
+    }
     let id;
-    if (meglevo) { id = meglevo.id; await db.prepare("UPDATE meres_kuldes SET allapot = 'folyamatban', probalkozas = probalkozas + 1, frissitve = ?2, kerelem = ?3 WHERE id = ?1").bind(id, nowSec, kerelemNaplo).run(); }
-    else {
+    if (meglevo) {
+      if (!(await sorAtvetel(db, meglevo, nowSec, ', kerelem = ?6', [kerelemNaplo]))) { eredmenyek.push({ ...sorBase, allapot: 'folyamatban', duplikalt: true }); continue; } // egyideju hivas mar atvette
+      id = meglevo.id;
+    } else {
       const r = await db.prepare(SOR_BESZUR).bind(eid, 'Visszavonas', 'korrekcio', k.platform_nev, k.uzletag, `gp_${futasId}`, 'folyamatban', 'google_proba', null, null, HOZZAJARULAS_JSON, kerelemNaplo, null, null, null, 1, nowSec).run();
       if (!(r.meta && r.meta.changes > 0)) { eredmenyek.push({ ...sorBase, allapot: 'folyamatban', duplikalt: true }); continue; }
       id = (await db.prepare("SELECT id FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = 'google'").bind(eid).first()).id;
     }
     const e = await korrekcioKuldes(k, env, fetchImpl);
-    // dryRun korrekcio: a Zap validateOnly-t hiv, a konverzio MARAD -> a sor allapota kihagyva (dry_run), nem elkuldve
-    const allapot = e.allapot === 'elkuldve' && k.dryRun ? 'kihagyva' : e.allapot;
-    const indok = allapot === 'kihagyva' ? 'dry_run: a Zap validateOnly-t hiv, a feltoltes marad' : null;
-    await db.prepare('UPDATE meres_kuldes SET allapot = ?2, indok = ?3, http_status = ?4, platform_valasz = ?5, kuldo = ?6, frissitve = ?7 WHERE id = ?1').bind(id, allapot, indok, e.http_status ?? null, String(e.valasz ?? '').slice(0, 2000), e.kuldo || null, nowSec).run();
-    eredmenyek.push({ ...sorBase, id, allapot, dry_run: k.dryRun, http_status: e.http_status ?? null, valasz_roviden: String(e.valasz ?? '').slice(0, 200) });
+    const jelzes = zapJelzes(e); // a nyers Zap-valasz nem tarolodik (csak http + status + id)
+    await db.prepare('UPDATE meres_kuldes SET allapot = ?2, indok = NULL, http_status = ?3, platform_valasz = ?4, kuldo = ?5, frissitve = ?6 WHERE id = ?1').bind(id, e.allapot, e.http_status ?? null, jelzes, e.kuldo || null, nowSec).run();
+    eredmenyek.push({ ...sorBase, id, allapot: e.allapot, dry_run: false, posztolt: true, http_status: e.http_status ?? null, valasz_roviden: jelzes });
   }
-  return valasz(200, { ...alap, mod: 'kuldes', eredmenyek, visszavonva: dryRun ? 0 : eredmenyek.filter((e) => e.allapot === 'elkuldve' && !e.duplikalt).length });
+  return valasz(200, { ...alap, mod: dryRun ? 'dry_run_sor' : 'kuldes', eredmenyek, posztolt_db: eredmenyek.filter((e) => e.posztolt).length, visszavonva: dryRun ? 0 : eredmenyek.filter((e) => e.allapot === 'elkuldve' && !e.duplikalt).length });
 }
-const dryRunSor = (sor) => /^dry_run/.test(String(sor.indok || ''));
 
 /** Az admin-vegpont belepesi pontja. o.muvelet: 'google_proba' | 'google_proba_visszavon'. A hiba JSON-valasz (soha nem kivetel). */
 export async function googleProbaMuvelet(db, env, o, deps = {}) {
