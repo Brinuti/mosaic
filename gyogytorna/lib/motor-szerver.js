@@ -15,6 +15,7 @@ import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js'
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesek, erintesTorol, lpcHiba } from './db.js';
 import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot, UUID_RE } from './salonic-szerver.js';
+const nevNorm = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 import { foglalasTipus, HELYSZINEK, HOST } from '../public/assets/js/motor/salonic-adapter.js';
 
 export const SUTI_MUNKAMENET = 'gy_s';
@@ -259,8 +260,12 @@ export async function koszonoVegpont({ request, env, deps = {} }) {
 // --- kulcsos vegpontok ------------------------------------------------------------------------------------------------------------------
 async function kulcsOk(request, env, fejlec, hashVar) {
   const k = request.headers.get(fejlec);
-  if (!k || !env[hashVar]) return false;
-  return egyenlo(await sha256Hex(k), String(env[hashVar]));
+  const hashek = [env[hashVar], env[hashVar + '_2']].filter(Boolean); // kulcsrotacio: a `_2` valtozo a masodik, egyszerre ervenyes hash (csere utan a regit toroljuk)
+  if (!k || !hashek.length) return false;
+  const h = await sha256Hex(k);
+  let ok = false;
+  for (const x of hashek) ok = egyenlo(h, String(x)) || ok; // nincs rovidzar: mindegyik osszehasonlitas lefut
+  return ok;
 }
 
 /** POST /api/gy-kampanyok {kampanyok:[{id, nev, allapot}], brand_ids?:[..]} - a Google Ads (259-612-0588) kampanylistaja (napi GAQL-szinkron kulcsos hivasa). */
@@ -294,10 +299,15 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
   if (!env.GY_HMAC_KULCS) return valasz(503, { ok: false, hiba: 'nincs_titkos_kulcs' });
   const be = await jsonTest(request, 2048);
-  if (!be || !['igazolas', 'lemondas'].includes(be.esemeny) || !UUID_RE.test(String(be.salonic_id || '').toLowerCase())) return nincsKerelem('ervenytelen_kerelem');
-  const salonicId = String(be.salonic_id).toLowerCase();
+  if (!be || !['igazolas', 'lemondas'].includes(be.esemeny)) return nincsKerelem('ervenytelen_kerelem');
+  const vanId = UUID_RE.test(String(be.salonic_id || '').toLowerCase());
+  const lemStart = egesz(be.start_unix, 1e9, 4e9), lemHely = egesz(be.place_id, 1, 999999);
+  // lemondas-level bookingId nelkul: csak hely + idopont alapjan, szigoru bizonyitekkal (lemondasBookingIdNelkul)
+  if (!vanId && !(be.esemeny === 'lemondas' && lemStart !== null && HELYSZINEK[lemHely])) return nincsKerelem('ervenytelen_kerelem');
   await sema(db);
   const most = mostUnix(deps);
+  if (!vanId) return lemondasBookingIdNelkul({ db, env, deps, most, start: lemStart, hely: lemHely });
+  const salonicId = String(be.salonic_id).toLowerCase();
   const tudott = await foglalasSalonicIdAlapjan(db, salonicId);
   const elo = await eloAllapot(salonicId, { fetchFn: deps.fetch || globalThis.fetch });
 
@@ -312,7 +322,13 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   const start = egesz(be.start_unix, 1e9, 4e9), hely = egesz(be.place_id, 1, 999999);
   if (start === null || !HELYSZINEK[hely]) return nincsKerelem('ervenytelen_idopont_vagy_hely');
   if (elo.allapot !== 'aktiv' || (elo.startUnix && elo.startUnix !== start)) { await riaszt(db, 'igazolas_nem_aktiv', { adat: elo.miert || elo.allapot, most }); return valasz(409, { ok: false, hiba: 'nem_aktiv_vagy_idopont_nem_egyezik', okkod: elo.allapot !== 'aktiv' ? 'salonic_nem_aktiv' : 'idopont_elteres' }); }
-  const jeloltek = await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`));
+  let jeloltek = await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`));
+  // tobb jelolt (ugyanaz a hely + idopont, kulonbozo munkatars): a Zap opcionalis `munkatars_nev` mezoje CSAK szukit (nincs fuzzy egyezes). Pontosan egy employeeId a helyszinen, utana pontosan egy HMAC-egyezo jelolt kell.
+  let tobbOkkod = 'tobb_azonos_idopont_es_hely';
+  if (jeloltek.length > 1 && typeof be.munkatars_nev === 'string' && be.munkatars_nev.trim()) {
+    const szuk = await munkatarsSzukites({ env, deps, jeloltek, nev: be.munkatars_nev, start, hely });
+    if (szuk.jeloltek) jeloltek = szuk.jeloltek; else tobbOkkod = szuk.okkod;
+  }
   if (jeloltek.length === 0) {
     // VEGLEGES, uzletileg elfogadott kimenet (nem motoros foglalas VAGY illesztesi hiba): 2xx + nincs_par, a Zap NE probalja ujra. Az okkod szetvalasztja a ketto: ha MASIK helyszinen van
     // jelolt ugyanarra az idopontra -> hely_elteres (illesztesi hiba gyanu), kulonben nincs_motoros_jelolt (valoszinuleg a Salonicban kozvetlenul letrejott foglalas).
@@ -323,9 +339,40 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
     await riaszt(db, 'igazolas_nincs_par', { adat: okkod, most });
     return valasz(200, { ok: true, nincs_par: true, okkod });
   }
-  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length}`, most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: 'tobb_azonos_idopont_es_hely' }); }
+  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length}`, most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
   return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
+}
+
+/** A munkatars neve alapjan szukiti a jelolteket. @returns {{jeloltek: Array}|{okkod: string}} - pontosan egy egyezo jeloltnel jeloltek, kulonben okkod (a hivo 409-et ad). */
+async function munkatarsSzukites({ env, deps, jeloltek, nev, start, hely }) {
+  try {
+    const staff = await szerverAdapter(env, deps.fetch || globalThis.fetch).getStaff();
+    const egyezo = Object.values(staff).filter((e) => e.nev && nevNorm(e.nev) === nevNorm(nev) && Array.isArray(e.helyszinek) && e.helyszinek.includes(hely));
+    if (egyezo.length === 0) return { okkod: 'munkatars_nev_nincs_egyezes' };
+    if (egyezo.length > 1) return { okkod: 'munkatars_nev_tobbertelmu' };
+    const par = await hmacHex(env.GY_HMAC_KULCS, `gy-parosito|${start}|${egyezo[0].id}`);
+    const talalt = jeloltek.filter((j) => j.parosito && j.parosito === par);
+    return talalt.length === 1 ? { jeloltek: talalt } : { okkod: talalt.length === 0 ? 'munkatars_nincs_jelolt' : 'munkatars_tobb_jelolt' };
+  } catch (e) { return { okkod: 'munkatars_lista_nem_elerheto' }; }
+}
+
+/**
+ * Lemondas-level bookingId NELKUL (a Zap nem talal azonositot): hely + idopont alapjan igazolt, aktiv foglalasok; mindegyik ELO bookingDetails oldala ellenorizve.
+ * Csak akkor lemondott, ha a jeloltek TELJES halmaza sikeresen ellenorizheto es PONTOSAN EGY bizonyitottan torolt (deleteSuccess ugyanarra az UUID-ra). Kulonben nem valtoztat.
+ */
+async function lemondasBookingIdNelkul({ db, env, deps, most, start, hely }) {
+  const sorok = (await db.prepare("SELECT uuid, salonic_id FROM gy_foglalas WHERE parosito_hely = ?1 AND salonic_id IS NOT NULL AND allapot = 'aktiv' AND teszt = 0 LIMIT 6").bind(await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`)).all()).results || [];
+  const nemValt = async (okkod) => { await riaszt(db, 'lemondas_bizonytalan', { adat: okkod, most }); return valasz(200, { ok: true, valtozas: false, okkod }); };
+  if (sorok.length === 0) return nemValt('nincs_aktiv_jelolt');
+  if (sorok.length > 5) return nemValt('tul_sok_jelolt');
+  const allapotok = [];
+  for (const sor of sorok) allapotok.push(await eloAllapot(sor.salonic_id, { fetchFn: deps.fetch || globalThis.fetch }));
+  if (allapotok.some((a) => a.allapot === 'ismeretlen')) return nemValt('ellenorzes_hiba');
+  const torolt = sorok.filter((_, i) => allapotok[i].allapot === 'torolve' && allapotok[i].forras === 'atiranyitas');
+  if (torolt.length !== 1) return nemValt(torolt.length === 0 ? 'nincs_torolt_jelolt' : 'tobb_torolt_jelolt');
+  const r = await db.prepare("UPDATE gy_foglalas SET allapot = 'lemondott', frissitve = ?2 WHERE uuid = ?1 AND allapot = 'aktiv'").bind(torolt[0].uuid, most).run(); // feltetelesen: idempotens
+  return valasz(200, { ok: true, valtozas: !!(r.meta && r.meta.changes), allapot: 'lemondott' });
 }
 
 /** GET /api/gy-admin?riport=YYYY-MM | ?riasztasok=1 | ?foglalas=<uuid>   (x-gy-kulcs). A riport CSAK aggregalt szamokat ad, vendegadat nincs. */

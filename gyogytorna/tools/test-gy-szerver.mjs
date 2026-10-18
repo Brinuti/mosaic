@@ -738,3 +738,79 @@ test('GY-22: a foglalas-valasz, a cimke es a koszono-esemeny VALTOZATLAN (arnyek
   assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 0);
 });
 async function takaritTeszt(env, most) { const { takarit } = await import('../lib/db.js'); await takarit(env.GY_DB, Math.floor(most)); }
+
+// --- Zapier igazolas: munkatars-szukites, lemondas bookingId nelkul, kulcsrotacio (GPT-review 2026-10-18: MODOSITASSAL jovahagyva) -----------------------------------------------
+const SID2 = '0f3a1c52-7d9e-4b8a-9c11-aa22bb33cc44';
+async function ketFoglalas(env) {
+  const d = deps();
+  const uj = (uuid, emp) => foglalasVegpont({ request: kerelem('/api/gy-foglalas', foglalasBody({ url: { emp }, body: { uuid } })), env, deps: d });
+  assert.equal((await (await uj('mb_ketfoglalas000001', '31525')).json()).ok, true);
+  assert.equal((await (await uj('mb_ketfoglalas000002', '18783')).json()).ok, true);
+  return d;
+}
+const elo = (d, foglalasok) => ({ ...d, fetch: salonicHamis({ szabad: {}, foglalasok }) });
+
+test('igazolas: tobb jelolt -> a munkatars_nev CSAK szukit (pontosan egy employeeId + egy HMAC-egyezo jelolt); egyebkent 409 + okkod', async () => {
+  const env = await ujKornyezet();
+  const d = await ketFoglalas(env);
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  const dd = elo(d, { [SID]: { startUnix: START } });
+  const r0 = await igazolasVegpont({ request: zapKerelem(be), env, deps: dd });
+  assert.deepEqual([r0.status, (await r0.json()).okkod], [409, 'tobb_azonos_idopont_es_hely']);
+  // ismeretlen nev / masik helyszin munkatarsa: nincs fuzzy egyezes
+  for (const nev of ['Nincs Ilyen', 'Nemeth Nora']) {
+    const r = await igazolasVegpont({ request: zapKerelem({ ...be, munkatars_nev: nev }), env, deps: dd });
+    assert.deepEqual([r.status, (await r.json()).okkod], [409, 'munkatars_nev_nincs_egyezes']);
+  }
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_foglalas WHERE salonic_id IS NOT NULL').first()).n, 0);
+  // pontos nev (kis/nagybetu es ekezet nem szamit): a megfelelo foglalas igazolodik, a masik valtozatlan marad
+  const r1 = await igazolasVegpont({ request: zapKerelem({ ...be, munkatars_nev: 'tomor ALEXANDRA' }), env, deps: dd });
+  assert.deepEqual([r1.status, (await r1.json()).igazolt], [200, true]);
+  const sorok = (await env.GY_DB.prepare('SELECT uuid, salonic_id, igazolt FROM gy_foglalas ORDER BY uuid').all()).results;
+  assert.deepEqual(sorok.map((x) => [x.uuid, x.salonic_id, x.igazolt]), [['mb_ketfoglalas000001', SID, 1], ['mb_ketfoglalas000002', null, 0]]);
+  // a masodik foglalas a sajat munkatarsaval igazolodik (mar csak egy jelolt maradt)
+  const r2 = await igazolasVegpont({ request: zapKerelem({ ...be, salonic_id: SID2, munkatars_nev: 'Mosolygó Zsuzsanna' }), env, deps: elo(d, { [SID2]: { startUnix: START } }) });
+  assert.equal(r2.status, 200);
+});
+
+test('lemondas bookingId nelkul: pontosan egy bizonyitottan torolt jelolt -> lemondott; 0 / tobb torolt / ellenorzesi hiba -> nem valtoztat, okkod', async () => {
+  const env = await ujKornyezet();
+  const d = await ketFoglalas(env);
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  await igazolasVegpont({ request: zapKerelem({ ...be, munkatars_nev: 'Tomor Alexandra' }), env, deps: elo(d, { [SID]: { startUnix: START } }) });
+  await igazolasVegpont({ request: zapKerelem({ ...be, salonic_id: SID2, munkatars_nev: 'Mosolygó Zsuzsanna' }), env, deps: elo(d, { [SID2]: { startUnix: START } }) });
+  const lem = { esemeny: 'lemondas', start_unix: START, place_id: 8439 };
+  const allapotok = async () => (await env.GY_DB.prepare('SELECT allapot FROM gy_foglalas ORDER BY uuid').all()).results.map((x) => x.allapot);
+  const futtat = async (foglalasok) => { const r = await igazolasVegpont({ request: zapKerelem(lem), env, deps: elo(d, foglalasok) }); return [r.status, await r.json()]; };
+  // egyik sem torolt
+  let [st, j] = await futtat({ [SID]: { startUnix: START }, [SID2]: { startUnix: START } });
+  assert.deepEqual([st, j.valtozas, j.okkod], [200, false, 'nincs_torolt_jelolt']);
+  // mindketto torolt: nem valasztunk
+  [st, j] = await futtat({ [SID]: { startUnix: START, torolve: true }, [SID2]: { startUnix: START, torolve: true } });
+  assert.deepEqual([j.valtozas, j.okkod], [false, 'tobb_torolt_jelolt']);
+  // az egyik jelolt oldala nem ellenorizheto (404 a Salonicbol): semmi nem valtozik
+  [st, j] = await futtat({ [SID]: { startUnix: START, torolve: true } });
+  assert.deepEqual([j.valtozas, j.okkod], [false, 'ellenorzes_hiba']);
+  assert.deepEqual(await allapotok(), ['aktiv', 'aktiv']);
+  // pontosan egy bizonyitottan torolt: csak az mondodik le, ismetlesre nincs ujabb valtozas
+  [st, j] = await futtat({ [SID]: { startUnix: START, torolve: true }, [SID2]: { startUnix: START } });
+  assert.deepEqual([st, j.valtozas, j.allapot], [200, true, 'lemondott']);
+  assert.deepEqual(await allapotok(), ['lemondott', 'aktiv']);
+  [st, j] = await futtat({ [SID]: { startUnix: START, torolve: true }, [SID2]: { startUnix: START } });
+  assert.equal(j.valtozas, false);
+  // ervenytelen: sem bookingId, sem ervenyes hely / idopont
+  assert.equal((await igazolasVegpont({ request: zapKerelem({ esemeny: 'lemondas', place_id: 8439 }), env, deps: d })).status, 400);
+  assert.equal((await igazolasVegpont({ request: zapKerelem({ esemeny: 'igazolas', start_unix: START, place_id: 8439 }), env, deps: d })).status, 400);
+});
+
+test('Zap kulcs-rotacio: GY_ZAP_KULCS_HASH mellett GY_ZAP_KULCS_HASH_2 is ervenyes; hamis kulcs 401', async () => {
+  const env = await ujKornyezet();
+  env.GY_ZAP_KULCS_HASH_2 = await sha256Hex('uj-zap-kulcs');
+  const d = deps();
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  assert.notEqual((await igazolasVegpont({ request: zapKerelem(be, 'uj-zap-kulcs'), env, deps: d })).status, 401);
+  assert.notEqual((await igazolasVegpont({ request: zapKerelem(be, ZAP), env, deps: d })).status, 401);
+  assert.equal((await igazolasVegpont({ request: zapKerelem(be, 'hamis'), env, deps: d })).status, 401);
+  delete env.GY_ZAP_KULCS_HASH_2; // a regi kulcs visszavonasa utan csak a masik marad
+  assert.equal((await igazolasVegpont({ request: zapKerelem(be, 'uj-zap-kulcs'), env, deps: d })).status, 401);
+});
