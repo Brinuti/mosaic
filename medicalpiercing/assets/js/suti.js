@@ -38,7 +38,7 @@
   //     egy fagyasztott, nem felsorolhato objektumba kerul (window.mpKoszonoAdat); szolgaltatasnev, kategoria, helyszin,
   //     munkatars, vendegazonosito NEM;
   //  2) a cim semleges lesz: /foglalas-ok (vagy /fulbevalo-ok), parameterekbol csak a GTM-triggerekhez kello `price` es
-  //     `first_booking` marad, plusz a `mert=1` jel (ismetelt meres ellen) (a 3 Ads-konverzio triggere: Page Path tartalmazza "/foglalas-ok" + first_booking + price);
+  //     `first_booking`, valamint a Google kattintas-azonositok (gclid/gbraid/wbraid) maradnak, plusz a `mert=1` jel (ismetelt meres ellen) (a 3 Ads-konverzio triggere: Page Path tartalmazza "/foglalas-ok" + first_booking + price);
   //  3) a lap cime semleges (a build is atirja: tools/build.mjs).
   // Tarolas (suti, localStorage, sessionStorage) nincs.
   var KOSZONO_UT = /^\/(foglalas-ok|fulbevalo-ok)/i.test(location.pathname);
@@ -58,6 +58,9 @@
       try { Object.defineProperty(window, 'mpKoszonoAdat', { value: adat, writable: false, enumerable: false, configurable: false }); } catch (e) { /* mar letezik */ }
       var tq = new URLSearchParams();
       ['price', 'first_booking'].forEach(function (k) { if (eq.has(k)) tq.set(k, eq.get(k)); });
+      // A Google kattintas-azonositok (gclid/gbraid/wbraid) a cimben maradnak: nem egeszsegugyi adat, es a fo Google-konverzio
+      // (GTM 107) mobilon a suti nelkul csak a cimbol tudja a kattintashoz kotni (2026-10-18, a mobil konverzio felezodese utan).
+      KATT.forEach(function (k) { if (eq.get(k)) tq.set(k, eq.get(k)); });
       // `mert=1`: a tisztitott cim jele. F5, vissza/elore, a tisztitott cim uj lapon: a foglalasi kulcs mar nincs a cimben,
       // ezert a marMert() errol a jelrol tudja, hogy ezt a foglalast mar kezeltuk (nincs uj tarolas, semleges ertek).
       tq.set('mert', '1');
