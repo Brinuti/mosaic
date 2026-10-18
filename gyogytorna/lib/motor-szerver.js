@@ -99,7 +99,7 @@ export async function forrasVegpont({ request, env, deps = {} }) {
       }
     }
     // GY-22 (ARNYEK): a fizetett erintes a naploba is (csak D1; a foglalasi folyamatot nem valtoztatja). Fail-open: hibaban a vendeg semmit nem erez.
-    if (lpcFizetett(uj)) {
+    if (lpcFizetett(uj) && !(lRec && lRec.belepes && uj.kattintas_ertek && lRec.belepes.kattintas_ertek === uj.kattintas_ertek)) { // ugyanaz a kattintas (belso navigacio gclid-del): nem uj erintes
       try {
         let lh = lHash;
         if (!lh) { const t = ujToken(); lh = await sha256Hex(t); extra.cookies.push(suti(SUTI_LPT, t, { maxAge: IDOK.hozzajarulasMax })); await munkamenetIr(db, { idHash: lh, fajta: 'l', letrehozva: most, utolso: most, lejar: most + IDOK.hozzajarulasMax, hozzajarulas: 'igen', fizetett: true, belepes: uj }); }
@@ -325,6 +325,13 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   let jeloltek = await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`));
   // tobb jelolt (ugyanaz a hely + idopont, kulonbozo munkatars): a Zap opcionalis `munkatars_nev` mezoje CSAK szukit (nincs fuzzy egyezes). Pontosan egy employeeId a helyszinen, utana pontosan egy HMAC-egyezo jelolt kell.
   let tobbOkkod = 'tobb_azonos_idopont_es_hely';
+  // elsodleges: ha az ELO bookingDetails oldal egyertelmuen hordozza a munkatars azonositojat, azzal szukitunk (megbizhatobb a nevnel)
+  if (jeloltek.length > 1 && elo.employeeId) {
+    const par = await hmacHex(env.GY_HMAC_KULCS, `gy-parosito|${start}|${elo.employeeId}`);
+    const talalt = jeloltek.filter((j) => j.parosito && j.parosito === par);
+    if (talalt.length === 1) jeloltek = talalt; else tobbOkkod = talalt.length === 0 ? 'oldal_munkatars_nincs_jelolt' : 'oldal_munkatars_tobb_jelolt';
+  }
+  const oldalDiag = elo.employeeId ? 'oldal_emp=1' : `oldal_emp=${elo.oldalEmp || 0}`; // diagnosztika (riasztas): hany munkatars-azonosito latszik az elo oldalon
   if (jeloltek.length > 1 && typeof be.munkatars_nev === 'string' && be.munkatars_nev.trim()) {
     const szuk = await munkatarsSzukites({ env, deps, jeloltek, nev: be.munkatars_nev, start, hely });
     if (szuk.jeloltek) jeloltek = szuk.jeloltek; else tobbOkkod = szuk.okkod;
@@ -339,7 +346,7 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
     await riaszt(db, 'igazolas_nincs_par', { adat: okkod, most });
     return valasz(200, { ok: true, nincs_par: true, okkod });
   }
-  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length}`, most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
+  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length};${tobbOkkod};${oldalDiag}`.slice(0, 190), most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
   return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
 }
@@ -418,10 +425,14 @@ export async function adminVegpont({ request, env, deps = {} }) {
     const lpcAz = ['google_markas', 'google_nem_markas', 'organikus_direkt'];
     const regiAz = ['google_brand', 'google_nem_brand', 'organikus', 'direkt'];
     const hib = await db.prepare("SELECT ertek FROM gy_meta WHERE kulcs = 'lpc_hiba'").first();
+    // fizetett erkezes kampany-ID NELKUL: csak a parameterek NEVEI (ertek nelkul) es a referrer-kategoria szerint, aggregalva (a munkamenet-rekordok lejaratig elnek)
+    const kampanyNelkuli = (await db.prepare(
+      `SELECT json_extract(belepes,'$.param_nevek') AS param_nevek, json_extract(belepes,'$.ref_kat') AS ref, COUNT(*) AS db FROM gy_munkamenet WHERE fajta = 'l' AND fizetett = 1 AND json_extract(belepes,'$.utm_campaign') IS NULL GROUP BY param_nevek, ref ORDER BY db DESC LIMIT 20`,
+    ).all()).results || [];
     const erintesDb = await db.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first();
     return valasz(200, { ok: true, honap: lho, szabaly_verzio: LPC_VERZIO, nevezo: osszeg(nevezo), lpc_azonositott: osszeg(nevezo.filter((x) => lpcAz.includes(x.lpc_cimke))), munkamenet_azonositott: osszeg(nevezo.filter((x) => regiAz.includes(x.cimke))),
       mindketto_azonositott: osszeg(nevezo.filter((x) => lpcAz.includes(x.lpc_cimke) && regiAz.includes(x.cimke))), csak_lpc_adott: osszeg(nevezo.filter((x) => lpcAz.includes(x.lpc_cimke) && !regiAz.includes(x.cimke))),
-      kesoi_fizetett: osszeg(nevezo.filter((x) => x.kesoi)), lpc_hiba_szamlalo: hib ? Number(hib.ertek) : 0, erintesi_naplo_sorok: erintesDb ? erintesDb.n : 0, keresztezes: nevezo.map((x) => ({ cimke: x.cimke, lpc_cimke: x.lpc_cimke, db: x.db })) });
+      kesoi_fizetett: osszeg(nevezo.filter((x) => x.kesoi)), lpc_hiba_szamlalo: hib ? Number(hib.ertek) : 0, erintesi_naplo_sorok: erintesDb ? erintesDb.n : 0, kampany_nelkuli_fizetett: kampanyNelkuli, keresztezes: nevezo.map((x) => ({ cimke: x.cimke, lpc_cimke: x.lpc_cimke, db: x.db })) });
   }
   const ho = u.searchParams.get('riport');
   if (ho && /^\d{4}-\d{2}$/.test(ho)) {

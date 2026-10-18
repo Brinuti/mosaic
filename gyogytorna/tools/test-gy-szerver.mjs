@@ -814,3 +814,41 @@ test('Zap kulcs-rotacio: GY_ZAP_KULCS_HASH mellett GY_ZAP_KULCS_HASH_2 is erveny
   delete env.GY_ZAP_KULCS_HASH_2; // a regi kulcs visszavonasa utan csak a masik marad
   assert.equal((await igazolasVegpont({ request: zapKerelem(be, 'uj-zap-kulcs'), env, deps: d })).status, 401);
 });
+
+test('ugyanaz a kattintas (azonos gclid) UTM nelkul, belso navigacio: az eredeti kampany megmarad, nincs uj erintes; mas gclid = uj erintes; param_nevek csak nevek', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&utm_term=119331641405&utm_content=787722148962&gclid=ABCDEFGH12345&gad_source=1`);
+  const sut = sutikBol(r);
+  const lpt = sut.split('; ').find((c) => c.startsWith('gy_lpt=')), gys = sut.split('; ').find((c) => c.startsWith('gy_s='));
+  // belso link: ugyanaz a gclid, UTM nelkul, sajat referrer
+  await ping(env, 120000, '?gclid=ABCDEFGH12345', `${lpt}; ${gys}; ${HJ_IGEN}`, 'https://www.gyogytornaszom.hu/elso-cikk/');
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 1);
+  const b = JSON.parse((await env.GY_DB.prepare("SELECT belepes FROM gy_munkamenet WHERE fajta = 'l'").first()).belepes);
+  assert.deepEqual([b.utm_campaign, b.utm_term, b.param_nevek.join(',')], [DSA, '119331641405', 'gad_source,gclid,utm_campaign,utm_content,utm_medium,utm_source,utm_term']);
+  const j = await foglal(env, 600000, `${lpt}; ${gys}; ${HJ_IGEN}`, 'mb_lpch0000000000001');
+  assert.equal(j.ok, true);
+  const sor = await env.GY_DB.prepare('SELECT cimke, kampany, hirdetescsoport, lpc_cimke, lpc_kampany FROM gy_foglalas WHERE uuid = ?').bind('mb_lpch0000000000001').first();
+  assert.deepEqual({ ...sor }, { cimke: 'google_nem_brand', kampany: DSA, hirdetescsoport: '119331641405', lpc_cimke: 'google_nem_markas', lpc_kampany: DSA });
+  // MASIK gclid UTM nelkul = uj kattintas (a regit nem orokli): kampany nelkuli erintes
+  await ping(env, 900000, '?gclid=ZZZZZZZZ99999', `${lpt}; ${gys}; ${HJ_IGEN}`);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 2);
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?lpc=2026-10', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.deepEqual(rap.kampany_nelkuli_fizetett.map((x) => [x.param_nevek, x.db]), [['["gclid"]', 1]]);
+  assert.equal(JSON.stringify(rap).includes('ZZZZZZZZ99999'), false); // a click-ID ertek nem lathato
+});
+
+test('igazolas: ha az elo bookingDetails oldal egyertelmuen hordozza a munkatars-azonositot, az szukit (nev nelkul); ketertelmu / nincs: 409', async () => {
+  const env = await ujKornyezet();
+  const d = await ketFoglalas(env);
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  const r = await igazolasVegpont({ request: zapKerelem(be), env, deps: elo(d, { [SID]: { startUnix: START, emp: '18783' } }) });
+  assert.deepEqual([r.status, (await r.json()).igazolt], [200, true]);
+  const sorok = (await env.GY_DB.prepare('SELECT uuid, salonic_id FROM gy_foglalas ORDER BY uuid').all()).results;
+  assert.deepEqual(sorok.map((x) => [x.uuid, x.salonic_id]), [['mb_ketfoglalas000001', null], ['mb_ketfoglalas000002', SID]]); // a 18783-as munkatars foglalasa
+  // oldal munkatars-azonosito nelkul: 409, a diagnosztika a riasztasban (oldal_emp=0)
+  const env2 = await ujKornyezet();
+  const d2 = await ketFoglalas(env2);
+  const r2 = await igazolasVegpont({ request: zapKerelem(be), env: env2, deps: elo(d2, { [SID]: { startUnix: START } }) });
+  assert.equal(r2.status, 409);
+  assert.match((await env2.GY_DB.prepare("SELECT adat FROM gy_riasztas WHERE tipus = 'igazolas_tobb_par'").first()).adat, /oldal_emp=0/);
+});

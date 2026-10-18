@@ -68,6 +68,7 @@ export function belepes({ search = '', referrer = '', path = '/', sajatHostok } 
   const o = { utm_source: null, utm_medium: null, utm_campaign: null, utm_content: null, gyt_ag: null, kattintas_param: null, kattintas_ertek: null, landing: null, ref_domain: null, ref_kat: 'nincs' };
   for (const k of UTM_MEZOK) o[k] = utmTisztit(p.get(k));
   o.gyt_ag = ads_id(p.get('gyt_ag'));
+  o.param_nevek = [...new Set([...p.keys()].map((k) => k.toLowerCase()).filter((k) => /^[a-z0-9_]{1,30}$/.test(k)))].sort().slice(0, 15); // CSAK a parameterek NEVEI (ertek nelkul): diagnosztika, ha fizetett erkezesnel hianyzik a kampany
   o.utm_term = ads_id(p.get('utm_term')); // a fiokszintu suffix a hirdetescsoportot utm_term={adgroupid}-kent adja (csak szamjegy)
   o.kampany_jel = null;
   // TOBB utm_campaign (regi hirdetesszintu template + fiokszintu suffix): a szamszeru (ID) nyer; ket KULONBOZO ID = konfliktus (nem valasztunk); csak szoveges: ellenorzott alias, kulonben szoveges
@@ -119,6 +120,8 @@ export function kampanyId(b) {
  */
 export function osszevon(regi, uj) {
   const ujFiz = fizetett(uj);
+  // UGYANAZ a kattintas (azonos click-ID), pl. a webhelyen belul tovabbvitt gclid UTM nelkul: nem uj erintes, az eredeti landing / UTM / kampany megmarad (nem irjuk felul hianyosabb adattal)
+  if (regi && regi.belepes && uj && uj.kattintas_ertek && regi.belepes.kattintas_ertek === uj.kattintas_ertek) return { belepes: regi.belepes, fizetett: true };
   const direkt = !ujFiz && uj.ref_kat !== 'search' && uj.ref_kat !== 'social' && uj.ref_kat !== 'egyeb' && !uj.utm_source;
   if (!regi || !regi.belepes) return { belepes: uj, fizetett: ujFiz };
   if (ujFiz) return { belepes: uj, fizetett: true };
