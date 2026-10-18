@@ -10,6 +10,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { parseContext, fillGoogleIds, handoffSearch, withAttribution, GOOGLE_KEYS } from '../assets/js/booking-engine/flow.js';
+import { engineSearch } from '../assets/js/booking-engine/beagyazott.js';
 import { createTracker } from '../assets/js/booking-engine/tracking.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -77,7 +78,10 @@ test('R1: attribucio.googleAzonositok - marketing-hozzajarulassal a mentett mh_a
   const ls = tarolo({ mh_cc: CC(), mh_attr: ATTR_ALL({ gclid: { ertek: GCLID, ts: ts() }, gbraid: { ertek: GBRAID, ts: ts() }, wbraid: { ertek: WBRAID, ts: ts() } }) });
   const b = bongeszo({ ls, search: '?business=laser' });
   assert.deepEqual(b.g(), { gclid: GCLID, gbraid: GBRAID, wbraid: WBRAID });
-  assert.equal(ls._irasok.filter((k) => k === 'mh_attr').length >= 0, true);
+  // a googleAzonositok() csak olvas: a betoltes utani hivasok nem irnak se localStorage-ot, se sutit
+  const irasokElotte = ls._irasok.length; b.g(); b.g();
+  assert.equal(ls._irasok.length, irasokElotte, 'a googleAzonositok() hivasa 0 localStorage-iras');
+  assert.equal(b.win.document.cookie, '', 'es nem allit sutit');
   // az aktualis URL azonositoja is beleszamit (memoria)
   assert.equal(bongeszo({ ls: tarolo({ mh_cc: CC() }), search: `?gclid=${GCLID}` }).g().gclid, GCLID);
   // a regi (>90 nap) azonosito nem jon vissza
@@ -132,43 +136,116 @@ test('R1: engine.js - a parseContext UTAN, a tracker ELOTT potol a mentett allap
 });
 
 // --- R3: foglalo-pmu.js mhKeretbenOldal ---------------------------------------------------------------------------------------------------------------
-function pmuAtiranyitas({ beagyazva = true, topSearch = '', mentett = {}, mhAttribucio = true, forras = PMU, idegen = false } = {}) {
-  const m = forras.match(/(  \/\/ R3 \(DECISION #196\/1\)[\s\S]*?\n  window\.mhKeretbenOldal = \(href\) => \{[\s\S]*?\n  \};)/);
-  assert.ok(m, 'a foglalo-pmu.js R3 blokkja megvan');
+// A PMU-kod a VALODI attribucio.js-sel fut egyutt (a szulo ablak = a vm-harness valodi mhAttribucio-val, hozzajarulas-kapuval): a hozzajarulasi kapu megkerulese itt buknia kell.
+const PMU_BLOKK = (forras) => { const m = forras.match(/(  \/\/ R3 \(DECISION #196\/1\)[\s\S]*?\n  window\.mhKeretbenOldal = \(href\) => \{[\s\S]*?\n  \};)/); assert.ok(m, 'a foglalo-pmu.js R3 blokkja megvan'); return m[1]; };
+function pmuAtiranyitas({ beagyazva = true, szulo = {}, mhAttribucio = true, idegen = false, stub = null, forras = PMU } = {}) {
+  const blokk = PMU_BLOKK(forras);
   const atiranyitasok = [];
-  const fo = { location: { search: topSearch, assign: (u) => atiranyitasok.push(u) }, mhAttribucio: mhAttribucio ? { googleAzonositok: () => mentett } : undefined };
+  const b = bongeszo(szulo); // a szulo (landing) ablaka: valodi attribucio.js, a megadott URL-lel / tarolt allapottal / sutikkel / hozzajarulassal
+  const fo = b.win; fo.location.assign = (u) => atiranyitasok.push(u);
+  if (!mhAttribucio) delete fo.mhAttribucio;
+  if (stub) fo.mhAttribucio = { googleAzonositok: () => stub }; // csak a PMU sajat mintaellenorzesehez (melysegi vedelem): a valodi googleAzonositok() mar szuri a hibas alakot
+  if (idegen) Object.defineProperty(fo, 'mhAttribucio', { configurable: true, get() { throw new Error('SecurityError: cross-origin'); } });
   const sajat = { location: { assign: (u) => atiranyitasok.push('SAJAT:' + u), search: '' } };
-  if (idegen) { Object.defineProperty(fo.location, 'search', { get() { throw new Error('SecurityError: cross-origin'); } }); Object.defineProperty(fo, 'mhAttribucio', { get() { throw new Error('SecurityError: cross-origin'); } }); }
   const win = { top: fo, location: sajat.location };
   const ctx = { window: win, BEAGYAZVA: beagyazva, URL, URLSearchParams, $: () => ({ removeAttribute() {} }), allapot: {}, history: { replaceState() {} }, mutat() {}, BELEPES: { ido() {} } };
-  vm.createContext(ctx); vm.runInContext(m[1], ctx);
-  return { be: (href) => ctx.window.mhKeretbenOldal(href), atiranyitasok, ctx };
+  vm.createContext(ctx); vm.runInContext(blokk, ctx);
+  return { be: (href) => ctx.window.mhKeretbenOldal(href), atiranyitasok, b };
 }
-test('R3: PMU - a sikeres foglalas utani teljes-ablakos atiranyitas (/pmu-ok) URL-je hordozza a gclid / gbraid / wbraid-et (a szulo URL-jebol, ennek hianyaban a mentett allapotbol)', () => {
-  const href = 'https://www.mosaicheadspa.hu/pmu-ok?bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fback%3Dmb_abcdefghijkl&x=1';
-  // a szulo (landing) URL-jeben ott van
-  let r = pmuAtiranyitas({ topSearch: `?gclid=${GCLID}&gbraid=${GBRAID}&wbraid=${WBRAID}&utm_source=google` }); r.be(href);
-  let u = new URL(r.atiranyitasok[0]); assert.deepEqual([u.pathname, u.searchParams.get('mh_proba'), u.searchParams.get('gclid'), u.searchParams.get('gbraid'), u.searchParams.get('wbraid')], ['/pmu-ok', 'pmu', GCLID, GBRAID, WBRAID]);
+const PMU_HREF = 'https://www.mosaicheadspa.hu/pmu-ok?bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fback%3Dmb_abcdefghijkl&x=1';
+const KERES_MIND = `?gclid=${GCLID}&gbraid=${GBRAID}&wbraid=${WBRAID}&utm_source=google`;
+const TAROLT = { gclid: 'Tarolt_gclid_0123456789', gbraid: 'Tarolt_gbraid_0123456789', wbraid: 'Tarolt_wbraid_0123456789' };
+const MH_ATTR_TAROLT = () => ATTR_ALL({ gclid: { ertek: TAROLT.gclid, ts: ts() }, gbraid: { ertek: TAROLT.gbraid, ts: ts() }, wbraid: { ertek: TAROLT.wbraid, ts: ts() } });
+const SUTIK_TAROLT = `_gcl_aw=GCL.1759759200.Suti_gclid_0123456789; _gcl_gb=GCL.1759759200.Suti_gbraid_0123456789`;
+const azonositok = (u) => Object.fromEntries(GOOGLE_KEYS.map((k) => [k, new URL(u).searchParams.get(k)]));
+const main = (href) => { const u = new URL(href); u.searchParams.set('mh_proba', 'pmu'); return u.href; }; // a main-beli (R3 elotti) viselkedes: csak a mh_proba
+
+test('R3: PMU - hozzajarulassal a sikeres foglalas utani teljes-ablakos atiranyitas (/pmu-ok) URL-je hordozza a gclid / gbraid / wbraid-et (a szulo aktualis URL-jebol, tarolt allapotabol, tartalekban a Google-cimke sutijebol)', () => {
+  // a szulo (landing) URL-jeben ott van (a hamis suti.js: dontes nelkul granted, #170)
+  let r = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_cc: CC() }), search: KERES_MIND } }); r.be(PMU_HREF);
+  let u = new URL(r.atiranyitasok[0]); assert.deepEqual([u.pathname, u.searchParams.get('mh_proba')], ['/pmu-ok', 'pmu']);
+  assert.deepEqual(azonositok(u.href), { gclid: GCLID, gbraid: GBRAID, wbraid: WBRAID });
   assert.equal(u.searchParams.get('x'), '1'); assert.ok(u.searchParams.get('bookingUrl').includes('back=mb_abcdefghijkl'), 'a tobbi parameter megmarad');
   assert.equal(u.searchParams.get('utm_source'), null, 'csak a Google-azonositok');
-  // a szulo URL-jeben nincs (masik oldalrol nyitva), a mentett allapotbol jon
-  r = pmuAtiranyitas({ topSearch: '?x=1', mentett: { gclid: GCLID, gbraid: GBRAID } }); r.be(href);
-  u = new URL(r.atiranyitasok[0]); assert.deepEqual([u.searchParams.get('gclid'), u.searchParams.get('gbraid'), u.searchParams.get('wbraid')], [GCLID, GBRAID, null]);
-  // az URL elsobbseget elvez a mentett felett; a Salonic URL-jeben mar meglevo azonositot nem irjuk felul
-  r = pmuAtiranyitas({ topSearch: `?gclid=URLBOL_gclid_0123`, mentett: { gclid: GCLID } }); r.be(href); assert.equal(new URL(r.atiranyitasok[0]).searchParams.get('gclid'), 'URLBOL_gclid_0123');
-  r = pmuAtiranyitas({ topSearch: `?gclid=${GCLID}` }); r.be(href + '&gclid=SALONICBOL_gclid_0123'); assert.equal(new URL(r.atiranyitasok[0]).searchParams.get('gclid'), 'SALONICBOL_gclid_0123');
-  // nem beagyazva (onallo /foglalo-pmu oldal): a sajat ablak
-  r = pmuAtiranyitas({ beagyazva: false, mentett: { gclid: GCLID } }); r.be(href); assert.ok(r.atiranyitasok[0].startsWith('SAJAT:'), 'sajat ablak'); assert.ok(new URL(r.atiranyitasok[0].slice(6)).searchParams.get('gclid') === null, 'az onallo oldalon a sajat mhAttribucio hianyaban sincs mit hozzaadni (fo === window)');
+  // a szulo URL-jeben nincs (masik oldalrol nyitva): a hozzajarulassal tarolt mh_attr-bol jon
+  r = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_cc: CC(), mh_attr: MH_ATTR_TAROLT() }), search: '?x=1' } }); r.be(PMU_HREF);
+  assert.deepEqual(azonositok(r.atiranyitasok[0]), TAROLT);
+  // tartalek: a Google-cimke sutije (gclid, gbraid; wbraid sutibol nem)
+  r = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_cc: CC() }), cookie: SUTIK_TAROLT } }); r.be(PMU_HREF);
+  assert.deepEqual(azonositok(r.atiranyitasok[0]), { gclid: 'Suti_gclid_0123456789', gbraid: 'Suti_gbraid_0123456789', wbraid: null });
+  // suti.js "adv: true" is eleg
+  r = pmuAtiranyitas({ szulo: { suti: hamisSuti({ adv: true }), search: KERES_MIND } }); r.be(PMU_HREF); assert.deepEqual(azonositok(r.atiranyitasok[0]), { gclid: GCLID, gbraid: GBRAID, wbraid: WBRAID });
+  // az aktualis URL elsobbseget elvez a tarolt felett; a Salonic URL-jeben mar meglevo azonositot nem irjuk felul
+  r = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_cc: CC(), mh_attr: MH_ATTR_TAROLT() }), search: `?gclid=URLBOL_gclid_0123` } }); r.be(PMU_HREF);
+  assert.deepEqual(azonositok(r.atiranyitasok[0]), { gclid: 'URLBOL_gclid_0123', gbraid: TAROLT.gbraid, wbraid: TAROLT.wbraid });
+  r = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_cc: CC() }), search: `?gclid=${GCLID}` } }); r.be(PMU_HREF + '&gclid=SALONICBOL_gclid_0123'); assert.equal(azonositok(r.atiranyitasok[0]).gclid, 'SALONICBOL_gclid_0123');
+  // nem beagyazva (onallo /foglalo-pmu oldal): a sajat ablak, ott nincs mhAttribucio -> nincs mit hozzaadni (a main-nel azonos)
+  r = pmuAtiranyitas({ beagyazva: false, szulo: { ls: tarolo({ mh_cc: CC() }), search: KERES_MIND } }); r.be(PMU_HREF); assert.ok(r.atiranyitasok[0].startsWith('SAJAT:'), 'sajat ablak'); assert.equal(r.atiranyitasok[0].slice(6), main(PMU_HREF));
+});
+test('R3 HOZZAJARULAS (N1): kifejezett elutasitas / statisztika-csak / dontes es suti.js nelkul / suti.js adv tiltva / visszavonas UTAN a /pmu-ok URL-je azonosito NELKUL marad - akkor is, ha a szulo URL-jeben, a tarolt mh_attr-ban vagy a sutikben van - es a main-nel azonos', () => {
+  const tiltott = [
+    ['adv:false', { ls: tarolo({ mh_cc: CC({ adv: false }), mh_attr: MH_ATTR_TAROLT() }) }],
+    ['csak statisztika', { ls: tarolo({ mh_cc: CC({ adv: false, fun: false }), mh_attr: MH_ATTR_TAROLT() }) }],
+    ['dontes nelkul, suti.js nelkul', { ls: tarolo({ mh_attr: MH_ATTR_TAROLT() }) }],
+    ['suti.js: adv tiltva', { ls: tarolo({ mh_attr: MH_ATTR_TAROLT() }), suti: hamisSuti({ adv: false, ana: true }) }],
+  ];
+  for (const [nev, opt] of tiltott) {
+    // E1/E2: URL-ben azonosito (hirdetesbol erkezo landing) + tarolt allapot + Google-cimke sutik, MIND egyszerre
+    for (const [leiras, szulo] of [['URL + tarolt + suti', { ...opt, search: KERES_MIND, cookie: SUTIK_TAROLT }], ['csak URL', { ...opt, search: KERES_MIND }], ['csak tarolt + suti', { ...opt, search: '?x=1', cookie: SUTIK_TAROLT }]]) {
+      const r = pmuAtiranyitas({ szulo: { ...szulo, ls: tarolo({ ...Object.fromEntries(opt.ls._m) }) } }); r.be(PMU_HREF);
+      assert.equal(r.atiranyitasok.length, 1, `${nev} / ${leiras}: van atiranyitas`);
+      assert.deepEqual(azonositok(r.atiranyitasok[0]), { gclid: null, gbraid: null, wbraid: null }, `${nev} / ${leiras}: nincs azonosito`);
+      assert.equal(r.atiranyitasok[0], main(PMU_HREF), `${nev} / ${leiras}: bajtra azonos a main-beli atiranyitassal`);
+    }
+  }
+  // visszavonas az oldal betoltese UTAN (a suti.js valtozasa): a PMU is ures
+  const suti = { adv: true, engedely: (k) => k !== 'adv' || suti.adv, figyel: () => {} };
+  const r = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_attr: MH_ATTR_TAROLT() }), suti, search: KERES_MIND } });
+  suti.adv = false; r.be(PMU_HREF); assert.equal(r.atiranyitasok[0], main(PMU_HREF), 'visszavonas utan a main-nel azonos');
+  // kontroll: UGYANAZ a bemenet hozzajarulassal (adv:true) mindharom azonositot hordozza (az elutasitott eset nem a harness hibaja)
+  const k = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_cc: CC({ adv: true }), mh_attr: MH_ATTR_TAROLT() }), search: KERES_MIND, cookie: SUTIK_TAROLT } }); k.be(PMU_HREF);
+  assert.deepEqual(azonositok(k.atiranyitasok[0]), { gclid: GCLID, gbraid: GBRAID, wbraid: WBRAID }, 'kontroll: adv:true -> mindharom');
+});
+test('R3: PMU - a kod a szulo URL-jet / a nyers allapotot / a sutit KOZVETLENUL nem olvassa (csak a hozzajarulasi kapus googleAzonositok()-ot)', () => {
+  const blokk = PMU_BLOKK(PMU).slice(PMU_BLOKK(PMU).indexOf('function googleAzonositokHozzaad'));
+  assert.match(blokk, /\.mhAttribucio\.googleAzonositok\(\)/);
+  for (const tilos of [/\.location\.search/, /URLSearchParams\(fo\./, /pillanatkep\s*\(/, /document\.cookie/, /localStorage/, /mh_attr/, /_gcl_/]) assert.ok(!tilos.test(blokk), 'tiltott kapu-megkerules: ' + tilos);
 });
 test('R3: PMU - hibas minta / hianyzo mhAttribucio / idegen eredetu szulo: az atiranyitas AZONOSITO NELKUL de HIBA NELKUL megy, a mh_proba marad; a "kozben elfogyott" ag valtozatlan', () => {
-  const href = 'https://www.mosaicheadspa.hu/pmu-ok?bookingUrl=x';
-  for (const [nev, opt] of [['rovid azonosito', { topSearch: '?gclid=rovid', mentett: { gclid: 'rovid' } }], ['nincs mhAttribucio', { topSearch: '', mhAttribucio: false }], ['idegen eredetu szulo', { idegen: true }], ['tiltott karakterek', { topSearch: '?gclid=%3Cscript%3Ealert(1)', mentett: { gbraid: '<x>' } }]]) {
-    const r = pmuAtiranyitas(opt); assert.doesNotThrow(() => r.be(href), nev);
-    assert.equal(r.atiranyitasok.length, 1, nev + ': van atiranyitas'); const u = new URL(r.atiranyitasok[0].replace(/^SAJAT:/, ''));
-    assert.equal(u.searchParams.get('mh_proba'), 'pmu', nev); for (const k of GOOGLE_KEYS) assert.equal(u.searchParams.get(k), null, nev + ': nincs ' + k);
+  for (const [nev, opt] of [['rovid / hibas azonosito az URL-ben', { szulo: { ls: tarolo({ mh_cc: CC() }), search: '?gclid=rovid&gbraid=%3Cx%3E' } }], ['nincs mhAttribucio', { mhAttribucio: false, szulo: { ls: tarolo({ mh_cc: CC() }), search: KERES_MIND } }], ['idegen eredetu szulo', { idegen: true, szulo: { ls: tarolo({ mh_cc: CC() }), search: KERES_MIND } }]]) {
+    const r = pmuAtiranyitas(opt); assert.doesNotThrow(() => r.be(PMU_HREF), nev);
+    assert.equal(r.atiranyitasok.length, 1, nev + ': van atiranyitas');
+    assert.equal(r.atiranyitasok[0], main(PMU_HREF), nev + ': a main-nel azonos');
   }
+  // melysegi vedelem: ha a szulo googleAzonositok()-ja (barmi okbol) hibas alakot adna, a PMU sajat mintaellenorzese is eldobja
+  const s = pmuAtiranyitas({ stub: { gclid: '<script>alert(1)', gbraid: 'rovid', wbraid: 'x'.repeat(201) } }); s.be(PMU_HREF); assert.equal(s.atiranyitasok[0], main(PMU_HREF), 'hibas alaku stub-ertekek: eldobva');
   // az elfogyott idopont (a foglalo-pmu oldalra iranyit vissza) tovabbra sem navigal
-  const r = pmuAtiranyitas({ topSearch: `?gclid=${GCLID}` }); r.be('https://www.mosaicheadspa.hu/foglalo-pmu'); assert.equal(r.atiranyitasok.length, 0);
+  const r = pmuAtiranyitas({ szulo: { ls: tarolo({ mh_cc: CC() }), search: `?gclid=${GCLID}` } }); r.be('https://www.mosaicheadspa.hu/foglalo-pmu'); assert.equal(r.atiranyitasok.length, 0);
+});
+
+// --- a fo foglalo koszonooldal-atadasa elutasitas mellett a main-nel azonos (N1 kiegeszites) ---------------------------------------------------------------------
+test('R1: a fo foglalo koszonooldal-atadasa kifejezett elutasitas mellett BAJTRA azonos a main-beli withAttribution(href, win.location.search)-csel; hozzajarulassal a tarolt allapot is hozzakerul', () => {
+  const atadas = (b) => { // a motor: a lap URL-jebol epitett kontextus + R1 potlas a kapus googleAzonositok()-bol + a koszonooldal-atadas
+    const win = { location: { search: b.win.location.search, pathname: '/lezeres-szortelenites-budapest' } };
+    const c = parseContext(engineSearch({ business: 'laser', service: 'konzult' }, win));
+    fillGoogleIds(c.attribution, b.win.mhAttribucio.googleAzonositok());
+    return withAttribution(SALONIC, handoffSearch(win.location.search, c.attribution));
+  };
+  const mainAtadas = (b) => withAttribution(SALONIC, b.win.location.search);
+  for (const [nev, opt] of [
+    ['adv:false', { ls: tarolo({ mh_cc: CC({ adv: false }), mh_attr: MH_ATTR_TAROLT() }) }],
+    ['dontes nelkul, suti.js nelkul', { ls: tarolo({ mh_attr: MH_ATTR_TAROLT() }) }],
+    ['suti.js: adv tiltva', { ls: tarolo({ mh_attr: MH_ATTR_TAROLT() }), suti: hamisSuti({ adv: false }) }],
+  ]) {
+    for (const search of [KERES_MIND, '?x=1&utm_source=google', `?gclid=${GCLID}`]) {
+      const b = bongeszo({ ...opt, ls: tarolo(Object.fromEntries(opt.ls._m)), search, cookie: SUTIK_TAROLT });
+      assert.equal(atadas(b), mainAtadas(b), `${nev} / ${search}: a koszonooldal URL-je a main-nel azonos`);
+    }
+  }
+  // kontroll: hozzajarulassal, azonosito nelkuli oldalrol a tarolt allapot hozzakerul (R1); az URL-beli azonosito a main-nel azonos modon megy
+  const b = bongeszo({ ls: tarolo({ mh_cc: CC(), mh_attr: MH_ATTR_TAROLT() }), search: '?x=1' });
+  assert.equal(atadas(b), SALONIC + `&gclid=${TAROLT.gclid}&gbraid=${TAROLT.gbraid}&wbraid=${TAROLT.wbraid}`);
+  const c = bongeszo({ ls: tarolo({ mh_cc: CC() }), search: KERES_MIND }); assert.equal(atadas(c), mainAtadas(c), 'URL-beli azonositonal hozzajarulassal is a main-nel azonos');
 });
 
 // --- mi nem valtozott: a vedett fajlok masik kodja (struktura) --------------------------------------------------------------------------------------

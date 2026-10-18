@@ -514,16 +514,16 @@
   //    a mh_proba jelre a klon.js a meres utan visszahoz a koszonooldalra;
   //  - ha az idopont kozben elkelt, a Salonic "vissza" iranyit (a fooldalra vagy ide).
   // R3 (DECISION #196/1): a siker utani teljes-ablakos atiranyitas (/pmu-ok) URL-je is hordozza a Google-azonositokat (gclid / gbraid / wbraid), mint a fo foglalo koszonooldal-atadasa
-  // (withAttribution). Forras: a szulo (landing / reteg gazdaoldala, azonos eredet) URL-je, ennek hianyaban a mentett allapota (window.mhAttribucio.googleAzonositok(): marketing-
-  // hozzajarulas nelkul ures). Csak a HIANYZO kulcsokat fuzi hozza; ervenytelen / idegen eredetu szulo eseten az URL valtozatlan.
+  // (withAttribution). MINDEN forras a marketing-hozzajarulasi kapun megy: a szulo (landing / reteg gazdaoldala, azonos eredet) window.mhAttribucio.googleAzonositok()-a adja (az aktualis
+  // URL azonositoi, a hozzajarulassal mentett mh_attr, a Google-cimke sutije); hozzajarulas nelkul / kifejezett elutasitas utan / suti.js nelkul ures - ilyenkor a /pmu-ok URL-je azonosito
+  // nelkul marad, mint a main-en. A szulo URL-jet SOSEM olvassuk kozvetlenul. Csak a HIANYZO kulcsokat fuzi hozza; ervenytelen / idegen eredetu szulo eseten az URL valtozatlan.
   function googleAzonositokHozzaad(u) {
     try {
       const fo = BEAGYAZVA ? window.top : window;
-      const urlbol = new URLSearchParams(fo.location.search);
-      const mentett = fo.mhAttribucio && typeof fo.mhAttribucio.googleAzonositok === 'function' ? fo.mhAttribucio.googleAzonositok() : {};
+      const kapus = fo.mhAttribucio && typeof fo.mhAttribucio.googleAzonositok === 'function' ? fo.mhAttribucio.googleAzonositok() : {};
       for (const k of ['gclid', 'gbraid', 'wbraid']) {
         if (u.searchParams.get(k)) continue;
-        const v = urlbol.get(k) || mentett[k];
+        const v = kapus[k];
         if (v && /^[A-Za-z0-9_-]{10,200}$/.test(v)) u.searchParams.set(k, v);
       }
     } catch (e) { /* idegen eredetu szulo: az URL azonositok nelkul marad */ }
