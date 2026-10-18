@@ -82,9 +82,11 @@
   // nem dontes, igy a sav megjelenik; a vendeg valasztasa (elfogad / elutasit) az egesz oldalon ervenyes.
   // Feri kerese (2026-10-14, kb. 07:30): az URLAPROL a sav lekerul (a /kontroll oldal az urlapot nyitja meg, a sav rafedett): a kontroll-oldal kikerult a
   // tesztoldalak kozul, es amig a foglalo ablak nyitva van, a sav rejtve van (akarmelyik oldalon; bezaras utan, ha nincs dontes, ujra latszik).
-  var TESZT_OLDAL = /^\/(shenmen-piercing-ezt-tedd-ha-begyulladt)\/?$/i.test(location.pathname);
-  var SAV_KI = !TESZT_OLDAL;
-  if (dontes && dontes.t === 0 && !SAV_KI) dontes = null;
+  // Feri dontese (2026-10-18 08:08): NINCS suti-sav sehol (a sav-teszt oldal is megszunik), es minden platformnak
+  // elfogadott hozzajarulassal kuldunk mindent, ahogy a sav elott. A korabbi (sav-teszt idejen tarolt) elutasitas sem ervenyes.
+  var TESZT_OLDAL = false;
+  var SAV_KI = true;
+  if (dontes && (!dontes.stat || !dontes.mark)) dontes = null;
   if (!dontes && SAV_KI) {
     dontes = { stat: true, mark: true, t: 0 };
     try {
@@ -300,7 +302,7 @@
     if (cel) { a.className = cel.className; a.style.color = 'inherit'; cel.after(document.createTextNode(' - '), a); }
   };
   var felepit = function () {
-    if (sav || keretben || !document.body) return;
+    if (sav || keretben || !document.body || SAV_KI) return; // nincs sav, nincs lablec-link (Feri, 2026-10-18)
     var st = document.createElement('style');
     st.textContent = STILUS;
     document.head.appendChild(st);
