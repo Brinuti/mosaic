@@ -2,13 +2,13 @@
 
 **MÉRÉST ÉRINT (az ÁRNYÉK-láncot: sd esemény-képzés / HOLD, elosztó újrapróbáló UPDATE, sd-riasztás); VÉDETT `netlify/lib/meres/{salonic-direct,elosztas}.js` módosul.** Élő konverziót nem kapcsol be és nem cserél, a foglalási folyamatot, a futó hirdetéseket, külső fiókot nem érint. **D1-et, kapcsolót (`meres_kapcsolo`) nem módosít; a `salonic_direct:headspa` sor NEM jön létre.** Vendégadat sehova nem kerül (a tesztek példa-adatokkal futnak, a számláló csak összesített darabszám).
 
-**Stacked a #402-re** (alap: `claude/meres-194-kupon-nem-konverzio` `73df48e1`): a #402 módosítja az `arFeloldas`-t és az `esemeny-modell.js`-t, erre épül. A #402 merge-e után a diff csak a saját commitokra szűkül; a #402 ezen **visszafelé nem változtat** (a mérési oldal kikötése).
+**A #402 mergelve (`main` `88944af5`, végső SHA `931f3dc9`); az ág a `main`-nel összeolvasztva (a #402-re épült, `73df48e1`-ről):** a #402 módosítja az `arFeloldas`-t és az `esemeny-modell.js`-t, erre épül. A #402 merge-e után a diff csak a saját commitokra szűkül; a #402 ezen **visszafelé nem változtat** (a mérési oldal kikötése).
 
 ## 1. Engedély
 - **DECISION #195** (mérési oldal + ChatGPT): #167 6243023279 (2026-10-18 01:23 Budapest) és a Drive DECISION-LOG „## #195 – 2026-10-18 01:35” (a fájl `modifiedTime` 2026-10-17T23:23:29Z; a két forrás egyezik): „Ismeretlen PMU-ár: nem küldünk érték nélkül; HOLD + hiba-számláló + névtábla-bővítés (#98).” A 6243023279 szó szerint: „ne küldjünk érték nélkül konverziót (#98: érték = valós ár). Legyen HOLD + hiba-számláló (`lepes_szamlalo`, pl. `pmu.unknown_price`), és a névtábla bővítése. Ha ez nem fér a #402-be, külön kis PR, de a #402 ne változtasson rajta visszafelé.”
 - Napi 1 merge szabály: a 2026-10-18-i `main`-merge a #402; ez a PR legkorábban 10-19-én (vagy Feri külön mondatára) mehet. Feltételek a végső SHA-ra (CLAUDE.md): független review PASS, védett hash dokumentált (6.), rollback (7.), vendégadat sehova.
 
-## 2. Mi van benne (`git diff 73df48e1..HEAD`)
+## 2. Mi van benne (`git diff origin/main..HEAD`, `main` = `88944af5`, a #402 mergelve)
 | fájl | tartalom |
 |---|---|
 | `netlify/lib/meres/salonic-direct.js` | `pmuArHold(uzletag, jelleg, minoseg)` (`PMU_AR_HOLD_JELLEGEK = ['elso', 'visszajaro']`), `PMU_AR_HOLD_INDOK`, `PMU_AR_HOLD_SZAMLALO`; a `kuldesFuttat` `normal` módban `fk.fixAllapot = { allapot: 'halasztva', indok: 'pmu_unknown_price: HOLD …' }` (a `confirmed` / `suspected` mód elsőbbséget élvez); `pmuHoldSzamol` (foglalásonként egyszer, hibatűrő); a száraz terv jelzi (`ar_hold`), de írásmentes; `sdRiasztasok`: új típus `pmu_ar_ismeretlen` (a `tartva` sor, amelynek cellái `pmu_unknown_price` HOLD-ban vannak) |
@@ -38,15 +38,15 @@ Nincs D1-séma-változás: a HOLD a meglévő `meres_kuldes` cellákat (`halaszt
 - **Meglévő tesztek:** `test-salonic-direct.mjs` 75/75 (golden-paritás S0-13 zöld: a motoros kérés-törzsek bájtra azonosak), `test-sd-194.mjs` 18/18, `test-sd-smoke.mjs` 14/14, `test-qa-nap.mjs` 43/43. **Teljes suite (teljes checkout): 506 teszt = 501 PASS / 2 FAIL (a `main` két ismert alap-hibája: `test-foglalo-atkotes` 19., `test-fuggetlenseg` 3.) / 3 SKIP.** (Sparse checkout-ban a `klon/` hiánya további 6 tesztet buktat – nem valódi hiba; a teljes checkouton zöldek.)
 
 ## 6. Védett elemek (blob-hash, 10 karakter)
-| elem | `main` `97999a17` | #402 `73df48e1` | ez a PR | |
+| elem | `main` `97999a17` (a #402 előtt) | `main` `88944af5` (#402 mergelve) | ez a PR | |
 |---|---|---|---|---|
 | `netlify/lib/meres/hash.js` | 41cfe4f599 | 41cfe4f599 | 41cfe4f599 | változatlan |
 | `netlify/lib/meres/salonic-direct.js` | 18e8d6c971 | 885d5d777b | 393587a10c | **VÁLTOZIK** (PMU-ár HOLD, riasztás-típus) |
 | `netlify/lib/meres/elosztas.js` | b8a48dc737 | ae57d630a9 | 823dd35af5 | **VÁLTOZIK** (1 sor: `ertek_minoseg` COALESCE az újrapróbáló UPDATE-ben) |
-| `netlify/lib/meres/esemeny-modell.js` | e1cf68dec0 | f07e2ce4fe | f07e2ce4fe | változatlan (a #402-höz képest) |
+| `netlify/lib/meres/esemeny-modell.js` | e1cf68dec0 | 4342e6f09b | 4342e6f09b | változatlan (a #402-höz képest) |
 | `netlify/lib/meres/egyeztetes-sor.js` | 503a3eddcf | d967f83646 | d967f83646 | változatlan (a #402-höz képest) |
 | `netlify/lib/meres/qa-nap.js` | e1d8dca808 | 23a73e442d | 23a73e442d | változatlan (a #402-höz képest) |
-| fa `netlify` | 0435d58de0 | 6e494dac7a | 3129a6e6a0 | VÁLTOZIK (szándékos, a fenti 2 fájl) |
+| fa `netlify` | 0435d58de0 | 4c9e859f92 | 774b5f0edf | VÁLTOZIK (szándékos, a fenti 2 fájl) |
 | `netlify/lib/foglalo-szamlalo.js` | 04fdf3a3fb | 04fdf3a3fb | 04fdf3a3fb | változatlan (csak importálom az `ir`, `napBudapest` függvényeket) |
 | `assets/js/suti.js` | ea41ffd20d | ea41ffd20d | ea41ffd20d | változatlan |
 | `assets/js/attribucio.js` | 79c09c5937 | 79c09c5937 | 79c09c5937 | változatlan |
