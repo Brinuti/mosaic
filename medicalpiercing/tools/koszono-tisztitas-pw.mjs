@@ -9,7 +9,7 @@ const CIM = `http://www.medicalpiercing.hu:${PORT}`;
 const G = 'Cj0KCQjwTESZTKOSZONO_' + Date.now();
 const START = 1900000000 + Math.floor(Math.random() * 1e6);
 const BURL = `https://medicalpiercing.salonic.hu/guestData/?placeId=12169&serviceId=9001&employeeId=555&startDate=${START}`;
-const ERZEKENY = ['Migr', 'service=', 'category=', 'Gy%C3%B3gy', 'location=', 'employee=', 'bookingUrl', 'serviceId', 'booking_id', G, 'Szeged', 'TesztKezelo', 'foglalas-ok-', 'fulbevalo-ok3', 'klimax', 'slim'];
+const ERZEKENY = ['Migr', 'service=', 'category=', 'Gy%C3%B3gy', 'location=', 'employee=', 'bookingUrl', 'serviceId', 'booking_id', 'Szeged', 'TesztKezelo', 'foglalas-ok-', 'fulbevalo-ok3', 'klimax', 'slim'];
 const koszono = (ut, extra = '') => `${CIM}${ut}?first_booking=true&location=Szeged&employee=TesztKezelo&bookingUrl=${encodeURIComponent(BURL)}&price=24900&service=Migr%C3%A9n%20piercing&g=2038420&category=Gy%C3%B3gy&booking_id=mb_tesztkoszono${START}&gclid=${G}${extra}`;
 const suti = (igen) => ({ name: 'mp_suti', value: `v1-s${igen ? 1 : 0}-m${igen ? 1 : 0}-t${Math.floor(Date.now() / 1000)}`, domain: 'www.medicalpiercing.hu', path: '/' });
 
@@ -41,7 +41,7 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
   const allapot = await p.evaluate(() => ({ dl: JSON.stringify(window.dataLayer || []), ss: JSON.stringify(sessionStorage), ls: JSON.stringify(localStorage), cim: document.title,
     adat: JSON.stringify(window.mpKoszonoAdat || null), felsorolhato: Object.keys(window).includes('mpKoszonoAdat'), regi: 'mpKoszonoEredeti' in window, fagyott: Object.isFrozen(window.mpKoszonoAdat) }));
   const semleges = ut.startsWith('/fulbevalo-ok') ? '/fulbevalo-ok' : '/foglalas-ok';
-  ok(`${ut}: semleges utvonal (${semleges}), a cimben csak price + first_booking + mert=1 marad`, new URL(p.url()).pathname === semleges && [...q.keys()].sort().join(',') === 'first_booking,mert,price' && q.get('price') === '24900' && q.get('mert') === '1', p.url().replace(CIM, ''));
+  ok(`${ut}: semleges utvonal (${semleges}), a cimben csak price + first_booking + gclid + mert=1 marad`, new URL(p.url()).pathname === semleges && [...q.keys()].sort().join(',') === 'first_booking,gclid,mert,price' && q.get('gclid') === G && q.get('price') === '24900' && q.get('mert') === '1', p.url().replace(CIM, ''));
   ok(`${ut}: semleges lapcim`, allapot.cim === 'Sikeres foglalás | Medical Piercing', allapot.cim);
   ok(`${ut}: a memoriaban csak minimalis, fagyasztott, nem felsorolhato adat (szolgaltatasnev, helyszin, munkatars nelkul); teljes eredeti URL nincs`,
     allapot.fagyott && !allapot.felsorolhato && !allapot.regi && !['Migr', '"service"', '"category"', 'Szeged', 'TesztKezelo', '"location"', '"employee"', '"g"', 'ok-mi', 'ok-slim', 'ok3', 'klimax'].some((x) => allapot.adat.includes(x)), allapot.adat.slice(0, 160));
@@ -55,13 +55,14 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
   }
   await ctx.close();
 }
-// 3. Hozzajarulas nelkul is tiszta cim, a meres azonosito nelkul megy
+// 3. Korabbi elutasito suti (a sav-teszt idejebol): 2026-10-18 ota nincs sav, mindent elfogadottkent kuldunk (Feri) -
+//    a cim tiszta, a gclid marad, a sajat meres a kattintas-azonositot is megkapja, kulso keres erzekeny adat nelkul
 {
   const { ctx, kuldott, kulso } = await kornyezet(false);
   const p = await ctx.newPage();
   await p.goto(koszono('/foglalas-ok-mi'), { waitUntil: 'load' }); await varj(1200);
-  ok('3 elutasitas: tiszta cim, meres foglalasi adattal de gclid nelkul, kulso keres erzekeny adat nelkul',
-    [...new URL(p.url()).searchParams.keys()].sort().join(',') === 'first_booking,mert,price' && kuldott.length === 1 && !kuldott[0].kattintas && kuldott[0].p.bookingUrl === BURL && kulso.every((k) => !szivarog(k.u).length));
+  ok('3 regi elutasitas: elfogadottkent kezelve, tiszta cim gclid-del, meres foglalasi adattal es gclid-del, kulso keres erzekeny adat nelkul',
+    [...new URL(p.url()).searchParams.keys()].sort().join(',') === 'first_booking,gclid,mert,price' && kuldott.length === 1 && kuldott[0].kattintas?.gclid?.ertek === G && kuldott[0].p.bookingUrl === BURL && kulso.every((k) => !szivarog(k.u).length));
   await ctx.close();
 }
 // 4. Ujratoltes: a tiszta cimrol sem mer ketszer (a marMert az eredeti booking_id-t jegyzi meg), es a cim tiszta marad
