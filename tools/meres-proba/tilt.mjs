@@ -32,10 +32,15 @@ const ENGEDETT_GET = [
 // utoljara" sorba); a kereset a szkriptek helyben megvalaszoljak. Szandekos vizsgalathoz (elonezeti KV): MERES_ESEMENY_IRAS=1.
 export const esemenyIras = (url, method) => /\/api\/foglalas-esemeny(\?|$)/.test(url) && method !== 'GET' && process.env.MERES_ESEMENY_IRAS !== '1';
 export const esemenyUres = () => ({ status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: '{"irva":false,"ok":"proba"}' });
+// A SAJAT elo domain ket ROGZITO vegpontja: /api/meres-erkezes (az erkezesi adat, benne a gclid) es /api/foglalas-kulcs (a foglalas kulcsa). Mindketto csak a sajat D1-be ir,
+// hirdetesi fiokba nem; a kuldes kizarolag szerveroldali. A Google E2E-kapu valodi foglalasanal (DECISION #198) kellenek, kulonben a gclid nem jut el a szerverig es a lanc nem
+// bizonyithato. ALAPBOL TILTVA; MERES_SAJAT_IRAS=1 engedi, KIZAROLAG ezt a ket vegpontot, POST-tal, az elo domainen (a jegyzettomb /api/foglalas-esemeny es a
+// /api/foglalo-szamlalo tolcser-szamlalo tovabbra is tiltott: a teszt-foglalas ne keruljon a valodi jegyzettombbe / tolcser-statisztikaba).
+export const sajatIras = (url, method) => process.env.MERES_SAJAT_IRAS === '1' && method === 'POST' && /^https:\/\/www\.mosaicheadspa\.hu\/api\/(meres-erkezes|foglalas-kulcs)(\?|$)/.test(url);
 
 // a Salonic maga barmilyen metodussal; a reCAPTCHA (a Salonic sajat vedelme, nem meres) barmilyen metodussal; a tobbi csak GET
 // a sajat PR-elonezetek (Cloudflare Pages: <ag>.mosaic-d77.pages.dev) is a sajat oldalunk: barmilyen metodussal engedett (a meres ott ugyse fut: nem eles domain); a jegyzettomb-iras kivetel (lasd fent)
-export const engedett = (url, method) => (/^https:\/\/([a-z0-9-]+\.)?mosaic-d77\.pages\.dev\//.test(url) && !esemenyIras(url, method)) || /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url)
+export const engedett = (url, method) => (/^https:\/\/([a-z0-9-]+\.)?mosaic-d77\.pages\.dev\//.test(url) && !esemenyIras(url, method)) || /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url) || sajatIras(url, method)
   || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url)
   || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
 
