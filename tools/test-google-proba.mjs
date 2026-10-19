@@ -141,6 +141,11 @@ test('A3b a proba GRANTED-del megy, ezert NEM valaszt olyan sor gclid-jet, amely
   const h = async (n) => (await w.post({ muvelet: 'google_proba', gclid_sorszam: n })).body.gclid_hash8;
   assert.equal(await h(1), sha8(GCL_DONTES_NELKUL), 'a legfrissebb NEM elutasito sor: a dontes nelkuli (az elutasito es a reszleges kimarad)');
   assert.equal(await h(2), sha8(GCL_IGEN)); assert.equal((await w.post({ muvelet: 'google_proba', gclid_sorszam: 3 })).status, 409, 'csak 2 valaszthato sor van');
+  // olvashatatlan (nem ures) hozzajarulas-JSON = KIHAGYVA (fail-closed); a dontes az ana / adv ertekekbol szamolodik (a tarolt `dontes` jelzo hamis, de adv:false -> kihagyva)
+  w.beszur({ esemeny_id: 'FoglalasElso:mb_rossz_json', kerelem: w.googleKerelem('7825199989', 'CjwKCAjwTESZTrossz_' + 'l'.repeat(30)), t: NOW_SEC - 60 });
+  w.futtat("UPDATE meres_kuldes SET hozzajarulas = '{nem json' WHERE esemeny_id = 'FoglalasElso:mb_rossz_json'");
+  w.beszur({ esemeny_id: 'FoglalasElso:mb_hamis_jelzo', kerelem: w.googleKerelem('7825199989', 'CjwKCAjwTESZThamisjelzo_' + 'm'.repeat(30)), t: NOW_SEC - 30, hozz: { ana: false, adv: false, fun: false, dontes: false } });
+  assert.equal(await h(1), sha8(GCL_DONTES_NELKUL), 'a rossz JSON-u es a hamis `dontes: false` jelzoju (de adv:false) sor kimarad');
 });
 
 test('A4 a KULDES kapui: megerosites, MERES_ELOSZTO, webhook, iras-veszkapcsolo, 24 oras plafon - mindegyiknel 0 halozat, 0 iras', async () => {
