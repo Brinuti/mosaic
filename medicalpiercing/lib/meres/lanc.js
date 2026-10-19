@@ -15,6 +15,8 @@ import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, e
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
 import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
 import { metaArnyekLepes, ARNYEK_SEMA } from './meta.js';
+/** IP + user agent a foglalas pillanatabol, legfeljebb 48 oraig (TikTok-kuldeshez). Vendegnev / e-mail / telefon NINCS. */
+export const KONTEXTUS_SEMA = 'CREATE TABLE IF NOT EXISTS mp_kontextus (kulcs TEXT PRIMARY KEY, ip TEXT, ua TEXT, ido INTEGER NOT NULL, ext TEXT)';
 import { tipusSzamlal } from './tipus-stat.js';
 import { lemondasErtelmezes, lemondasRogzites } from './lemondas.js';
 import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
@@ -132,6 +134,8 @@ export function bemenet(b) {
     forras: b.forras && typeof b.forras === 'object' && b.forras.v === FORRAS_VERZIO ? b.forras : null,
     forrasV2: !!(b.forras && typeof b.forras === 'object' && b.forras.v === FORRAS_VERZIO) || b.forras_v === FORRAS_VERZIO,
     keret: b.keret === true,
+    // sajat latogato-azonosito (assets/js/suti.js mp_vid): csak ervenyes UUID; a szerver csak a SHA-256 lenyomatat hasznalja
+    vid: typeof b.vid === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(b.vid) ? b.vid.toLowerCase() : null,
     // a munkamenet-erintes a 2 oras latogatas-tarolobol jott-e (assets/js/mp-meres.js 6. pont), es a "nincs_jel" diagnosztika
     forrasTarolo: b.forras_tarolo === 'latogatas' ? 'latogatas' : 'munkamenet',
     diag: diagBemenet(b.diag) };
@@ -229,7 +233,17 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     // Meta arnyekmeres (meta.js, Feri 2026-10-14): az uj foglalasrol azonnal, a bongeszo user agentjevel (NEM taroljuk),
     // a kampanyban nem hasznalt ARNYEK adathalmazba. Fuggetlen, sajat hibakezelessel; a lancot nem allithatja meg.
     try {
-      const pa = metaArnyekLepes(db, sor, request.headers.get('user-agent') || '', env, host, { fetchImpl, most })
+      const ip = request.headers.get('cf-connecting-ip') || '';
+      const vid = be.vid || ((cookie.match(/(?:^|;\s*)mp_vid=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) || [])[1] || '').toLowerCase() || null;
+      const ext = vid ? await sha256hex(vid) : null; // external_id: a veletlen latogato-azonosito lenyomata
+      // a TikTok-kuldes az igazolaskor tortenik (a Zapierbol, a vendeg IP-je nelkul): az IP + user agent legfeljebb 48 orara
+      // ide kerul, kuldes utan torlodik (Feri dontese 2026-10-19: max. adat, egeszsegugyi adat nelkul)
+      try {
+        await db.prepare(KONTEXTUS_SEMA).run();
+        try { await db.prepare('ALTER TABLE mp_kontextus ADD COLUMN ext TEXT').run(); } catch (e) { /* mar letezik */ }
+        await db.prepare('INSERT OR IGNORE INTO mp_kontextus (kulcs, ip, ua, ido, ext) VALUES (?,?,?,?,?)').bind(sor.kulcs, ip.slice(0, 45) || null, (request.headers.get('user-agent') || '').slice(0, 400) || null, most, ext).run();
+      } catch (e) { /* nem allithatja meg */ }
+      const pa = metaArnyekLepes(db, sor, request.headers.get('user-agent') || '', env, host, { fetchImpl, most, ip, ext })
         .catch((e) => console.error('mp-meres: meta arnyek hiba', String(e && e.message || e).slice(0, 200)));
       if (typeof waitUntil === 'function') waitUntil(pa); else await pa;
     } catch (e) { /* nem allithatja meg */ }
@@ -249,6 +263,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       db.prepare('DELETE FROM mp_tiktok_feltoltes WHERE ido < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare(ARNYEK_SEMA),
       db.prepare("DELETE FROM mp_meta_arnyek WHERE ido < ?").bind(most - MEGORZES_NAP * 86400),
+      db.prepare(KONTEXTUS_SEMA),
+      db.prepare('DELETE FROM mp_kontextus WHERE ido < ?').bind(most - 48 * 3600),
       db.prepare('UPDATE mp_foglalas SET kattintas_ertek = NULL WHERE kattintas_ertek IS NOT NULL AND letrehozva < ?').bind(most - 90 * 86400),
       db.prepare(`UPDATE mp_foglalas SET ${PLATFORM_ID_OSZLOPOK.map((o) => `${o} = NULL`).join(', ')}
         WHERE (${PLATFORM_ID_OSZLOPOK.map((o) => `${o} IS NOT NULL`).join(' OR ')}) AND letrehozva < ?`).bind(most - 90 * 86400),

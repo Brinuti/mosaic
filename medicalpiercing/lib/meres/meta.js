@@ -3,8 +3,8 @@
 // semleges nevu "IgazoltFoglalas" esemeny vinne a kattintasazonositot (fbc/fbp). Elobb Meta-tesztuzemben (test_event_code)
 // megnezzuk, hogy a Meta elfogadja-e, es a korlatozott (egeszsegugyi) domain miatt jelol-e valamit. Eles kuldes NINCS.
 //
-// Adatvedelem: kifele csak esemenynev, ido, esemeny_id, fbc/fbp, semleges URL. NINCS e-mail, telefon, nev, IP, user agent,
-// szolgaltatasnev, kategoria, helyszin.
+// Adatvedelem: kifele csak esemenynev, ido, esemeny_id, fbc/fbp, user agent, IP (az ARNYEK-esemenyben, Feri 2026-10-19), semleges URL.
+// NINCS e-mail, telefon, nev, szolgaltatasnev, kategoria, helyszin (egeszsegugyi adat soha).
 import { SEMLEGES_URL, esemenyId, vanErzekeny } from './meres.js';
 import { kitakar, ELES_HOST } from './google-ads.js';
 
@@ -111,9 +111,14 @@ export function arnyekJogosult(sor, ua) {
   return { ok: true };
 }
 
-/** Torzs (tiszta). Dob, ha a nem-azonosito mezokben erzekeny adat lenne. */
-export function arnyekTorzs(sor, ua) {
+/** IP-cim ellenorzese (IPv4 / IPv6), kulonben null. */
+export const ipJo = (ip) => { const s = String(ip || '').trim(); return /^(\d{1,3}\.){3}\d{1,3}$/.test(s) || (/^[0-9a-f:]+$/i.test(s) && s.includes(':') && s.length <= 45) ? s : null; };
+
+/** Torzs (tiszta). Dob, ha a nem-azonosito mezokben erzekeny adat lenne. IP: Feri dontese 2026-10-19 (max. adat, egeszsegugyi adat nelkul). */
+export function arnyekTorzs(sor, ua, ip = null, ext = null) {
   const user = { client_user_agent: String(ua).slice(0, 400) };
+  if (ipJo(ip)) user.client_ip_address = ipJo(ip);
+  if (ext && /^[0-9a-f]{64}$/.test(String(ext))) user.external_id = String(ext); // a veletlen latogato-azonosito SHA-256-ja
   if (sor.meta_fbc) user.fbc = String(sor.meta_fbc);
   if (sor.meta_fbp) user.fbp = String(sor.meta_fbp);
   const e = { event_name: ARNYEK_ESEMENY, event_time: Number(sor.letrehozva), event_id: esemenyId(sor.kulcs), action_source: 'website', event_source_url: SALONIC_FORRAS_URL };
@@ -124,7 +129,7 @@ export function arnyekTorzs(sor, ua) {
 }
 
 /** Az uj foglalas arnyek-lepese. Soha nem dob; kulcsonkent egyszer. A user agent nem kerul a naplóba. */
-export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchImpl = fetch, most = Math.floor(Date.now() / 1000) } = {}) {
+export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchImpl = fetch, most = Math.floor(Date.now() / 1000), ip = null, ext = null } = {}) {
   try {
     const j = arnyekJogosult(sor, ua);
     if (!j.ok) return { kihagyva: j.miert };
@@ -134,11 +139,11 @@ export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchI
     const van = await db.prepare('SELECT allapot FROM mp_meta_arnyek WHERE kulcs = ?').bind(sor.kulcs).first();
     if (van) return { kihagyva: 'mar_rogzitve' };
     let torzs;
-    try { torzs = arnyekTorzs(sor, ua); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    try { torzs = arnyekTorzs(sor, ua, ip, ext); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
     let allapot = 'naplozva';
     let valasz = null;
     if (mod === 'eles') {
-      const nyersek = [sor.meta_fbc, sor.meta_fbp, env.META_CAPI_TOKEN, ua].filter(Boolean);
+      const nyersek = [sor.meta_fbc, sor.meta_fbp, env.META_CAPI_TOKEN, ua, ip].filter(Boolean);
       try {
         const r = await fetchImpl(`${ARNYEK_VEGPONT()}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(torzs) });
         const sz = await r.text();

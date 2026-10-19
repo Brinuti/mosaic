@@ -28,13 +28,18 @@ Szintetikus gclid: uzletagankent KULON, `MERES_GCLID=E2E<uzletag><datum><veletle
 
 | Uzletag | Parancs (PR-elonezeten vagy az elo domainen; `--out` a naploba) |
 |---|---|
-| Fodrasz | `MERES_GCLID=… node tools/meres-proba/meres-proba.mjs --szenario hair --mod valodi --clickids 1 --landing 1 --popup 1 --out hair.json` |
+| Fodrasz | `MERES_SAJAT_IRAS=1 MERES_GCLID=… node tools/meres-proba/meres-proba.mjs --szenario hair --mod valodi --clickids 1 --landing 1 --popup 1 --out hair.json` |
 | Oxigen | `… --szenario oxigen2 …` (466147 elso: `--szenario oxigen1`) |
 | Szor (lezer) | `… --szenario lezer …` |
-| PMU | `MERES_GCLID=… node tools/meres-proba/uj-utak-proba.mjs --ut pmu --mod valodi --out pmu.json` |
+| PMU | `MERES_SAJAT_IRAS=1 MERES_GCLID=… node tools/meres-proba/uj-utak-proba.mjs --ut pmu --mod valodi --out pmu.json` |
 
+- **Az elo domainen KOTELEZO a `MERES_SAJAT_IRAS=1`** (DECISION #198, 2026-10-19 tapasztalat): a probaeszkoz alapbol tilt minden POST-ot a sajat elo domainre, igy a `/api/meres-erkezes` (az erkezesi adat, benne a gclid)
+  es a `/api/foglalas-kulcs` irasa is elmarad, a gclid NEM jut el a szerverig, es a lanc nem bizonyithato (a valodi foglalas letrejon, de a `meres_erkezes`-ben nincs sor). A kapcsolo KIZAROLAG ezt a ket vegpontot engedi (POST, `www.mosaicheadspa.hu`); **csak parancsonkent add meg, `export` nelkul** (a `tilt.mjs`-t ~23 proba-szkript hasznalja: egy exportalt valtozo mellett mind az elo D1-be irna);
+  a jegyzettomb (`/api/foglalas-esemeny`), a tolcser-szamlalo (`/api/foglalo-szamlalo`) es minden mero-vegpont tovabbra is tiltott. Tesztelve: `node tools/test-tilt-sajat-iras.mjs`.
+- **Lemondas az esemenyek kikuldese UTAN** (nem a foglalas masodpercere): a szerveroldali kuldes elott elo ellenorzes van (aktiv foglalas kell); a visszaigazolo level kb. 1–2 perc mulva jon, a Zap/parosito kb. ennyi ido mulva fut. A lemondast ezert a D1-ben latott kuldesek (`meres_kuldes`) utan, de legfeljebb ~10 percen belul vegezd; ha 10 perc utan sincs kuldes (a Zap ujraprobai 0, ~1, ~4, ~14,5 perc), akkor is mondd le, es a futast a lancban hibasnak jelold.
+- A visszaigazolo level a `MERES_EMAIL` postafiokjaba erkezik (a +cimkes valtozatok is ugyanoda futnak), a „Lemondom” link: `https://<szalon>.salonic.hu/booking/cancelBooking/<uuid>` (a level HTML-jebol; a sima szoveges valtozatban nincs benne az URL).
 - Ha a Salonic **reCAPTCHA-kihivast** ad, az eszkoz megall (nem tori meg): ember oldja meg, vagy a futas kimarad (jelezd a #167-ben). Az eddigi automatizalt valodi futasoknal nem jott kihivas.
-- **Lemondas** (azonnal, a visszaigazolo e-mail „Lemondom” linkjevel; NEM torles): `LEMONDAS_OK="Probafoglalas (TESZT), lemondva" node tools/meres-proba/lemond.mjs <cancelBooking-URL>`.
+- **Lemondas** (a fenti idozites szerint, a `meres_kuldes` sorok utan; a visszaigazolo e-mail „Lemondom” linkjevel; NEM torles): `LEMONDAS_OK="Probafoglalas (TESZT), lemondva" node tools/meres-proba/lemond.mjs <cancelBooking-URL>`.
 - A `proba` jelolo: a futas kimenetebol a foglalas `source_id`-je / UUID-ja → a napi QA-hoz `&proba=<uuid-elotag>` (a T2-bol KI), lasd `QA_NAP.md`.
 
 **Ellenorzes uzletagankent (a meresi oldal, kulcsos GET, csak olvas):**
