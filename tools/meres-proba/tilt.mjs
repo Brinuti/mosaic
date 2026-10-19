@@ -37,6 +37,7 @@ export const esemenyUres = () => ({ status: 200, headers: { 'content-type': 'app
 // bizonyithato. ALAPBOL TILTVA; MERES_SAJAT_IRAS=1 engedi, KIZAROLAG ezt a ket vegpontot, POST-tal, az elo domainen (a jegyzettomb /api/foglalas-esemeny es a
 // /api/foglalo-szamlalo tolcser-szamlalo tovabbra is tiltott: a teszt-foglalas ne keruljon a valodi jegyzettombbe / tolcser-statisztikaba).
 export const sajatIras = (url, method) => process.env.MERES_SAJAT_IRAS === '1' && method === 'POST' && /^https:\/\/www\.mosaicheadspa\.hu\/api\/(meres-erkezes|foglalas-kulcs)(\?|$)/.test(url);
+if (process.env.MERES_SAJAT_IRAS === '1') console.error('FIGYELEM: MERES_SAJAT_IRAS=1 - a probaeszkoz a /api/meres-erkezes es a /api/foglalas-kulcs POST-ot az ELO D1-be engedi (csak E2E-foglalashoz, DECISION #198; parancsonkent add meg, export nelkul)');
 
 // a Salonic maga barmilyen metodussal; a reCAPTCHA (a Salonic sajat vedelme, nem meres) barmilyen metodussal; a tobbi csak GET
 // a sajat PR-elonezetek (Cloudflare Pages: <ag>.mosaic-d77.pages.dev) is a sajat oldalunk: barmilyen metodussal engedett (a meres ott ugyse fut: nem eles domain); a jegyzettomb-iras kivetel (lasd fent)
