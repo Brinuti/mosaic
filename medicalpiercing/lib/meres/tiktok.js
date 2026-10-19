@@ -13,6 +13,10 @@
 import { esemenyId, vanErzekeny, SEMLEGES_URL } from './meres.js';
 import { ipJo } from './meta.js';
 import { maszk, kitakar, ELES_HOST } from './google-ads.js';
+// Elo konverzio javitasa (Feri 2026-10-19 19:50: "mehet es A"): a 7 elo adgroup a pixel SCHEDULE esemenyere optimalizal. Az URL-szabalyos
+// (event_id nelkuli) Schedule helyett a koszonooldal kodbol kuldi a 'Schedule'-t (suti.js), a szerver ugyanazzal az event_id-val -> dedup.
+// Kapcsolo: mp_beallitas.tiktok_schedule = 'be' (alapertelmezes: ki). Az URL-szabalyt a TikTok Esemenykezeloben egyszerre kell kikapcsolni.
+export const TIKTOK_ELO_ESEMENY = 'Schedule';
 export const TIKTOK_ESEMENY = 'SubmitForm'; // Feri dontese (2026-10-13 16:48): a split teszthez Leads -> Submit form; a Salonic-oldali GTM-cimke (68) ki, mi kuldjuk
 
 export const TIKTOK_VEGPONT = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
@@ -69,7 +73,7 @@ export const esemenyIdo = (sor) => Number(sor.foglalas_ido || sor.letrehozva);
  * TikTok Events API 2.0 torzs (tiszta). A user objektumban CSAK ttclid (+ ttp, ha van). Ertek csak ismert osszegnel.
  * Dob, ha a nem-azonosito mezok barmelyike erzekeny adatot tartalmazna (vedohalo: inkabb semmi ne epuljon).
  */
-export function tiktokTorzs(sor, ktx = null) {
+export function tiktokTorzs(sor, ktx = null, { schedule = false } = {}) {
   const user = {};
   // IP + user agent a foglalas pillanatabol (mp_kontextus, legfeljebb 48 ora): Feri dontese 2026-10-19 (max. adat, egeszsegugyi adat nelkul)
   if (ktx && ipJo(ktx.ip)) user.ip = ipJo(ktx.ip);
@@ -80,17 +84,18 @@ export function tiktokTorzs(sor, ktx = null) {
   const ertek = Number(sor.ertek);
   const esemeny = { event: TIKTOK_ESEMENY, event_time: esemenyIdo(sor), event_id: esemenyId(sor.kulcs), page: { url: SEMLEGES_URL } };
   if (sor.ertek != null && Number.isFinite(ertek) && ertek > 0) esemeny.properties = { currency: 'HUF', value: Math.round(ertek) };
-  const torzs = { event_source: 'web', event_source_id: TIKTOK_PIXEL, data: [{ ...esemeny, user }] };
+  const data = [{ ...esemeny, user }];
+  if (schedule) data.push({ ...esemeny, event: TIKTOK_ELO_ESEMENY, user: { ...user } }); // azonos event_id: a bongeszos Schedule-lel dedup
+  const torzs = { event_source: 'web', event_source_id: TIKTOK_PIXEL, data };
   // a ttclid / ttp veletlen karaktersor: a tartalmi ellenorzes minden masra vonatkozik
-  if (vanErzekeny({ ...torzs, data: [esemeny] })) throw new Error('mp_tiktok_erzekeny_adat');
+  if (vanErzekeny({ ...torzs, data: data.map(({ user: _u, ...e }) => e) })) throw new Error('mp_tiktok_erzekeny_adat');
   return torzs;
 }
 
 /** A naplozhato valtozat: ttclid / ttp maszkolva (h:xxxxxxxx). */
 export async function maszkoltTorzs(torzs) {
   const m = JSON.parse(JSON.stringify(torzs));
-  const u = m.data[0].user;
-  for (const k of Object.keys(u)) u[k] = await maszk(u[k]);
+  for (const d of m.data) { const u = d.user; for (const k of Object.keys(u)) u[k] = await maszk(u[k]); }
   return m;
 }
 
@@ -126,7 +131,8 @@ export async function tiktokLepes(db, sor, env = {}, host = '', { fetchImpl = fe
     let torzs;
     let ktx = null;
     try { ktx = await db.prepare('SELECT ip, ua, ext FROM mp_kontextus WHERE kulcs = ?').bind(sor.kulcs).first(); } catch (e) { /* nincs tabla */ }
-    try { torzs = tiktokTorzs(sor, ktx); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    const schedule = String((await beallitas(db, 'tiktok_schedule')) || '').trim().toLowerCase() === 'be';
+    try { torzs = tiktokTorzs(sor, ktx, { schedule }); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
     const mtorzs = JSON.stringify(await maszkoltTorzs(torzs));
     let allapot = 'naplozva';
     if (mod === 'eles') {

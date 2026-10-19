@@ -264,3 +264,17 @@ test('lanc: kesoi hozzajarulas (potlas) mar igazolt soron -> 1 naplosor, fetch n
   assert.ok(!('external_id' in tiktokTorzs({ kulcs: '1|2|3', letrehozva: 1792300000 }, { ext: 'nem-hash' }).data[0].user));
   console.log('OK external_id (tiktok)');
 }
+
+{
+  const { tiktokTorzs, maszkoltTorzs } = await import('../lib/meres/tiktok.js');
+  const sor = { kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' };
+  assert.equal(tiktokTorzs(sor).data.length, 1);
+  const t5 = tiktokTorzs(sor, { ip: '84.1.2.3', ua: 'UA' }, { schedule: true });
+  assert.deepEqual(t5.data.map((d) => d.event), ['SubmitForm', 'Schedule']);
+  assert.equal(t5.data[0].event_id, t5.data[1].event_id);
+  assert.equal(t5.data[1].event_id, 'Foglalas:1|2|3');
+  assert.equal(t5.data[1].user.ttclid, 'E.C.P.abcdefgh');
+  const m = await maszkoltTorzs(t5);
+  assert.ok(m.data.every((d) => String(d.user.ttclid).startsWith('h:')));
+  console.log('OK kodos Schedule (azonos event_id)');
+}
