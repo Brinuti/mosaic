@@ -124,7 +124,7 @@
   window.gtag('set', 'ads_data_redaction', true);
   if (dontes) window.gtag('consent', 'update', jelek(dontes));
 
-  var TIKTOK_KODOS_SCHEDULE = false; // ATALLASKOR true (egyszerre a TikTok URL-szabaly kikapcsolasaval + mp_beallitas.tiktok_schedule=be); Feri 2026-10-19 19:50 "mehet es A"
+  var TIKTOK_KODOS_SCHEDULE = true; // ATALLASKOR true (egyszerre a TikTok URL-szabaly kikapcsolasaval + mp_beallitas.tiktok_schedule=be); Feri 2026-10-19 19:50 "mehet es A"
   var tiktokFoglalas = null; // a koszonooldali TikTok SubmitForm adatai (lent: tiktokSubmitForm)
   // Igazolhato foglalas (Google Ads "Időpontfoglalás - igazolt", orderId = foglalasi kulcs): a kulcs ugyanaz, mint a szerveren
   // (lib/meres/meres.js foglalasKulcs: placeId|employeeId|startUnix), igy a szerver a Salonic-igazolas alapjan
