@@ -809,10 +809,18 @@ test('Zap kulcs-rotacio: GY_ZAP_KULCS_HASH mellett GY_ZAP_KULCS_HASH_2 is erveny
   const d = deps();
   const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
   assert.notEqual((await igazolasVegpont({ request: zapKerelem(be, 'uj-zap-kulcs'), env, deps: d })).status, 401);
-  assert.notEqual((await igazolasVegpont({ request: zapKerelem(be, ZAP), env, deps: d })).status, 401);
+  // VEGLEGESITETT csere (2026-10-19): ha a _2 be van allitva, a REGI hash-t a Zap-vegpont nem olvassa
+  assert.equal((await igazolasVegpont({ request: zapKerelem(be, ZAP), env, deps: d })).status, 401);
   assert.equal((await igazolasVegpont({ request: zapKerelem(be, 'hamis'), env, deps: d })).status, 401);
-  delete env.GY_ZAP_KULCS_HASH_2; // a regi kulcs visszavonasa utan csak a masik marad
+  // vesz-visszaallitas: GY_ZAP_REGI_KULCS = "1" a regi hash-t is ervenyesiti
+  env.GY_ZAP_REGI_KULCS = '1';
+  assert.notEqual((await igazolasVegpont({ request: zapKerelem(be, ZAP), env, deps: d })).status, 401);
+  delete env.GY_ZAP_REGI_KULCS;
+  // az admin / kampany-vegpontok kulcsa (GY_ADMIN_KULCS_HASH) ettol fuggetlen
+  assert.notEqual((await kampanyokVegpont({ request: kerelem('/api/gy-kampanyok', { kampanyok: [] }, { fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).status, 401);
+  delete env.GY_ZAP_KULCS_HASH_2; // _2 nelkul a regi hash marad az egyetlen (visszafele kompatibilis)
   assert.equal((await igazolasVegpont({ request: zapKerelem(be, 'uj-zap-kulcs'), env, deps: d })).status, 401);
+  assert.notEqual((await igazolasVegpont({ request: zapKerelem(be, ZAP), env, deps: d })).status, 401);
 });
 
 test('ugyanaz a kattintas (azonos gclid) UTM nelkul, belso navigacio: az eredeti kampany megmarad, nincs uj erintes; mas gclid = uj erintes; param_nevek csak nevek', async () => {
@@ -851,4 +859,24 @@ test('igazolas: ha az elo bookingDetails oldal egyertelmuen hordozza a munkatars
   const r2 = await igazolasVegpont({ request: zapKerelem(be), env: env2, deps: elo(d2, { [SID]: { startUnix: START } }) });
   assert.equal(r2.status, 409);
   assert.match((await env2.GY_DB.prepare("SELECT adat FROM gy_riasztas WHERE tipus = 'igazolas_tobb_par'").first()).adat, /oldal_emp=0/);
+});
+
+test('gad_campaignid: tartalek kampany-ID csak ha az utm_campaign nincs; brand / nem brand csak pontos listaegyezessel, kulonben bizonytalan; fbclid onmagaban = social_meta', () => {
+  const q = (x) => belepes({ search: x });
+  // gad_campaignid + click-ID, utm_campaign nelkul
+  const a = q(`?gclid=ABCDEFGH12345&gad_source=1&gad_campaignid=${BRAND}`);
+  assert.equal(a.utm_campaign, BRAND);
+  assert.deepEqual([cimkez(a, { lista: LISTA }).cimke, cimkez(a, { lista: LISTA }).bizonyitek], ['google_brand', 'gad_campaignid']);
+  assert.deepEqual([cimkez(q(`?gbraid=ABCDEFGH12345&gad_campaignid=${DSA}`), { lista: LISTA }).cimke], ['google_nem_brand']);
+  // ismeretlen szamjegyes ID: google_bizonytalan (nem kitalalt brand)
+  const b = q('?gclid=ABCDEFGH12345&gad_campaignid=99887766554');
+  assert.deepEqual([cimkez(b, { lista: LISTA }).cimke, cimkez(b, { lista: LISTA }).bizonyitek], ['google_bizonytalan', 'ismeretlen_kampany']);
+  // nem szamjegyes gad_campaignid: nem kampany
+  assert.equal(q('?gclid=ABCDEFGH12345&gad_campaignid=abc').utm_campaign, null);
+  // ha az utm_campaign megvan, a gad_campaignid NEM irja felul (akkor sem, ha mas)
+  assert.equal(q(`?utm_campaign=${DSA}&gclid=ABCDEFGH12345&gad_campaignid=${BRAND}`).utm_campaign, DSA);
+  // fbclid onmagaban: social_meta, nem organikus, nem Google; ha Google-jel is van, az nyer
+  const f = q('?fbclid=ABCDEFGH12345');
+  assert.deepEqual([cimkez(f, { lista: LISTA }).cimke, cimkez(f, { lista: LISTA }).bizonyitek], ['social_meta', 'fbclid_fizetett_ismeretlen']);
+  assert.equal(cimkez(q(`?fbclid=ABCDEFGH12345&gclid=ABCDEFGH12345&utm_campaign=${BRAND}`), { lista: LISTA }).cimke, 'google_brand');
 });
