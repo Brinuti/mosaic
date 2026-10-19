@@ -97,6 +97,9 @@ SZAMLALO_OLVASO_HASH = "d7122e43eeeca61db826d113cb06aa5028568fb63e57a00835978833
 # elo pixel, elsodleges konverzio, licitalas nem erintett. A titkok (Secret tipussal, Production): META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GA4_TESZT_API_SECRET, GOOGLE_ARNYEK_WEBHOOK_URL; titok nelkul "nincs_hitelesites" (nem megy ki semmi).
 # Vészkapcsolo az uj irasokra: meres_kapcsolo 'iras' (POST /api/meres-admin {muvelet:"iras",be:false}) vagy MERES_IRAS_KI = "1" ide; a kuldesre: meres_kapcsolo 'mind' / platform:* / uzletag:*.
 EGYEZTETES_KULCS_HASH = "68d73ff4a920377c383026c3f6dc5ef053b95af99b30b2f7886a87672c358fbd"   # a foglalas-kulcs / parositas / meres-admin vegpontok kulcsanak SHA-256-ja; a kulcs a Zapier Storage-ban van (egyeztetes_kulcs)
+# CELHOZ KOTOTT, LEJARATOS proba-kulcs (DECISION #199/#200; netlify/lib/meres/proba-kulcs.js): a Google ARNYEK google_proba / google_proba_visszavon muveletekhez; a hash nem titok. A lejarat utan (vagy a kodban rogzitett 2026-10-21 00:00Z plafon utan) semmire nem jo; a futas utan ez a ket sor torlendo.
+GOOGLE_PROBA_KULCS_HASH = "7ed75d0e8c2175df13a03de2395a9422f06b25acdddcc64d7225f484028c6359"
+GOOGLE_PROBA_KULCS_LEJAR = "2026-10-20T12:00:00Z"
 MERES_ELOSZTO = "1"
 # DECISION #202 visszagorgetes (kodvaltoztatas nelkul): a kovetkezo sor bekapcsolasa (+ deploy) a regi, valos-jel szerinti hozzajarulas-szabalyt allitja vissza (Google dontes nelkul DENIED). A preview szekciojaba is kell.
 # MERES_HOZZAJARULAS_VALOS = "1"

@@ -84,3 +84,13 @@ test('elonezet hoszton eles beallitas mellett sem kuld', async () => {
   assert.ok(!/"em"|"ph"|"fn"|"ln"/.test(JSON.stringify(a)));
   console.log('OK ip az arnyek-esemenyben');
 }
+
+// Feri 2026-10-19: external_id = a veletlen latogato-azonosito SHA-256-ja; mas formatum nem megy at
+{
+  const { arnyekTorzs } = await import('../lib/meres/meta.js');
+  const sor = { kulcs: '1|2|3', letrehozva: 1792300000, ertek: 24900, meta_fbc: 'fb.1.1.IwAR', meta_fbp: 'fb.1.1.2' };
+  const h = 'a'.repeat(64);
+  assert.equal(arnyekTorzs(sor, 'UA', '84.1.2.3', h).data[0].user_data.external_id, h);
+  assert.ok(!('external_id' in arnyekTorzs(sor, 'UA', '84.1.2.3', 'vendeg@pelda.hu').data[0].user_data));
+  console.log('OK external_id');
+}

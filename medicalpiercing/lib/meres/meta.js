@@ -115,9 +115,10 @@ export function arnyekJogosult(sor, ua) {
 export const ipJo = (ip) => { const s = String(ip || '').trim(); return /^(\d{1,3}\.){3}\d{1,3}$/.test(s) || (/^[0-9a-f:]+$/i.test(s) && s.includes(':') && s.length <= 45) ? s : null; };
 
 /** Torzs (tiszta). Dob, ha a nem-azonosito mezokben erzekeny adat lenne. IP: Feri dontese 2026-10-19 (max. adat, egeszsegugyi adat nelkul). */
-export function arnyekTorzs(sor, ua, ip = null) {
+export function arnyekTorzs(sor, ua, ip = null, ext = null) {
   const user = { client_user_agent: String(ua).slice(0, 400) };
   if (ipJo(ip)) user.client_ip_address = ipJo(ip);
+  if (ext && /^[0-9a-f]{64}$/.test(String(ext))) user.external_id = String(ext); // a veletlen latogato-azonosito SHA-256-ja
   if (sor.meta_fbc) user.fbc = String(sor.meta_fbc);
   if (sor.meta_fbp) user.fbp = String(sor.meta_fbp);
   const e = { event_name: ARNYEK_ESEMENY, event_time: Number(sor.letrehozva), event_id: esemenyId(sor.kulcs), action_source: 'website', event_source_url: SALONIC_FORRAS_URL };
@@ -128,7 +129,7 @@ export function arnyekTorzs(sor, ua, ip = null) {
 }
 
 /** Az uj foglalas arnyek-lepese. Soha nem dob; kulcsonkent egyszer. A user agent nem kerul a naplóba. */
-export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchImpl = fetch, most = Math.floor(Date.now() / 1000), ip = null } = {}) {
+export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchImpl = fetch, most = Math.floor(Date.now() / 1000), ip = null, ext = null } = {}) {
   try {
     const j = arnyekJogosult(sor, ua);
     if (!j.ok) return { kihagyva: j.miert };
@@ -138,7 +139,7 @@ export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchI
     const van = await db.prepare('SELECT allapot FROM mp_meta_arnyek WHERE kulcs = ?').bind(sor.kulcs).first();
     if (van) return { kihagyva: 'mar_rogzitve' };
     let torzs;
-    try { torzs = arnyekTorzs(sor, ua, ip); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    try { torzs = arnyekTorzs(sor, ua, ip, ext); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
     let allapot = 'naplozva';
     let valasz = null;
     if (mod === 'eles') {

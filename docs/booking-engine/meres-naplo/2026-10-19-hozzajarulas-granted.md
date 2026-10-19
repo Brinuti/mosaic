@@ -28,7 +28,7 @@ Vendegadat, kulcs, gclid nincs benne.
 - `netlify/lib/meres/qa-nap.js` 2334390be3 -> 2334390be3 (valtozatlan)
 - `netlify/lib/meres/esemeny-modell.js` 4342e6f09b -> 4342e6f09b (valtozatlan)
 - `netlify/lib/foglalas-kulcs.js` e1448b4d13 -> e1448b4d13 (valtozatlan)
-- `netlify/lib/meres/vegpontok.js` b5e3881fc7 -> b5e3881fc7 (valtozatlan; a #418 modositja, kulon PR)
+- `netlify/lib/meres/vegpontok.js` 085bed6aad -> 085bed6aad (valtozatlan; a #418 proba-kulcs belepesi aga, b5e3881fc7 -> 085bed6aad, 10-20 00:05 Budapest-kor mar a mainben van; ez a PR hozza nem nyul)
 - `netlify/lib/meres/google-proba.js` f6e5bf9d13 -> f1bb0095f8 (**VALTOZIK**: a proba jele GRANTED, a gclid-valasztas kihagyja a rogzitett elutasitast / olvashatatlan hozzajarulas-JSON-t; dokumentalt, ez a PR targya)
 - `netlify/lib/meres/hozzajarulas.js` beb2b760ea -> fbca9adeb9; `platformok.js` 8f2a229d83 -> d38fa8e012; `elosztas.js` ae57d630a9 -> 7ef66e862b; `tools/fixtures/golden-motor-kerelem.json` 563a14cf9c -> f01a959807 (szandekos, lasd 3.)
 
