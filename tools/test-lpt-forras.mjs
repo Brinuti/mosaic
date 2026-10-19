@@ -22,6 +22,7 @@ import { onRequest as erkezesFv } from '../functions/api/meres-erkezes.js';
 import { parseContext, fillGoogleIds, fillClickIds, handoffSearch, withAttribution, lptPotlas, CLICK_KEYS, GOOGLE_KEYS } from '../assets/js/booking-engine/flow.js';
 import { engineSearch } from '../assets/js/booking-engine/beagyazott.js';
 import * as R from './lpt-riport-sql.mjs';
+import { meresSema } from '../netlify/lib/meres/elosztas.js';
 
 const GYOKER = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const olvas = (...p) => fs.readFileSync(path.join(GYOKER, ...p), 'utf8');
@@ -263,10 +264,10 @@ test('B) GET visszanyeres: a 30 napon beluli sutibol {suti, platform, kor_nap, k
   const e = { v: 1, kp: 'ttclid', kv: TTCLID, um: 'paid_social', us: 'tiktok', uc: 'titkos kampany', t: t0 - 5 * NAP - 100 };
   let r = await GET({ cookie: suti(e) });
   assert.equal(r.status, 200); assert.equal(r.headers.get('cache-control'), 'no-store'); const j = await ures(r);
-  assert.deepEqual(j, { ok: true, suti: true, platform: 'tiktok', kor_nap: 5, klikk: { ttclid: TTCLID } });
+  assert.deepEqual(j, { ok: true, suti: true, platform: 'tiktok', kor_nap: 5, t: e.t, klikk: { ttclid: TTCLID } }, 'a t a suti kattintasi ideje');
   assert.equal(JSON.stringify(j).includes('titkos'), false, 'utm nem megy ki');
-  assert.deepEqual(await ures(await GET({ cookie: suti({ ...e, kp: 'gbraid', kv: GBRAID }) })), { ok: true, suti: true, platform: 'google', kor_nap: 5, klikk: { gbraid: GBRAID } });
-  assert.deepEqual(await ures(await GET({ cookie: suti({ v: 1, um: 'cpc', us: 'google', t: t0 - 60 }) })), { ok: true, suti: true, platform: 'google', kor_nap: 0, klikk: {} }, 'csak utm: nincs azonosito');
+  assert.deepEqual(await ures(await GET({ cookie: suti({ ...e, kp: 'gbraid', kv: GBRAID }) })), { ok: true, suti: true, platform: 'google', kor_nap: 5, t: e.t, klikk: { gbraid: GBRAID } });
+  assert.deepEqual(await ures(await GET({ cookie: suti({ v: 1, um: 'cpc', us: 'google', t: t0 - 60 }) })), { ok: true, suti: true, platform: 'google', kor_nap: 0, t: t0 - 60, klikk: {} }, 'csak utm: nincs azonosito');
   for (const cookie of [undefined, 'mas=1', 'mh_lpt=', 'mh_lpt=xxx', suti({ ...e, t: t0 - 31 * NAP }), 'mh_lpt=' + 'A'.repeat(2000)]) assert.deepEqual(await ures(await GET({ cookie })), { ok: true, suti: false, klikk: {} }, String(cookie).slice(0, 30));
   assert.deepEqual(await ures(await GET({ cookie: suti(e), query: '?adv=0' })), { ok: true, suti: false, klikk: {} }, 'a kliens tiltast jelez');
   assert.equal((await GET({ cookie: suti(e), query: '?adv=1' })).status, 200);
@@ -360,13 +361,13 @@ test('C) KESEI fizetett kattintas: 8-30 napos suti -> a cimke NEM valtozik (a mu
   const { d, env } = ujEnv();
   const kuld = (i, kor, forras = SES({ rk: 'search' })) => erkezes(env, ERK({ source_id: ID(i), forras }), { cookie: suti({ v: 1, kp: 'gclid', kv: GCLID, um: 'cpc', us: 'google', uc: '1', t: NOW - kor }) }).then(ures);
   let j = await kuld('A', 7 * NAP + 3600);
-  assert.deepEqual(j.forras, { cimke: 'organikus_direkt', bizonyitek_forras: 'munkamenet', klikk_potolt: 'gclid', kesei_fizetett: true }, 'a cimke nem a sutibol; a shadow-lanc attr-ja viszont 30 napig potlodik');
+  assert.deepEqual(j.forras, { cimke: 'organikus_direkt', bizonyitek_forras: 'munkamenet', klikk_potolt: null, kesei_fizetett: true }, 'a cimke nem a sutibol, az azonosito sem potlodik (>7 nap: csak kesei jelzes)');
   let s = sor(d, ID('A')); assert.deepEqual([s.kesei_fizetett, s.kesei_fizetett_platform, s.kesei_kor_nap, s.cimke_megjegyzes, s.platform, s.kattintas_param], [1, 'google', 7, 'organikus_kereso', null, null], 'a cimke es a bizonyitek nem a sutibol');
   j = await kuld('B', 30 * NAP); assert.equal(j.forras.kesei_fizetett, true); assert.equal(sor(d, ID('B')).kesei_kor_nap, 30);
   j = await kuld('C', 31 * NAP); assert.deepEqual(j.forras, { cimke: 'organikus_direkt', bizonyitek_forras: 'munkamenet', klikk_potolt: null, kesei_fizetett: false }, '31 napos suti: semmi');
   // nincs munkamenet-erintes + kesei suti: ismeretlen (nincs jel), de a kesei jelzes megvan; bizonyitek_forras nincs
   j = await ures(await erkezes(env, ERK({ source_id: ID('D') }), { cookie: suti({ v: 1, kp: 'gclid', kv: GCLID, t: NOW - 12 * NAP }) }));
-  assert.deepEqual(j.forras, { cimke: 'ismeretlen', bizonyitek_forras: null, klikk_potolt: 'gclid', kesei_fizetett: true });
+  assert.deepEqual(j.forras, { cimke: 'ismeretlen', bizonyitek_forras: null, klikk_potolt: null, kesei_fizetett: true });
   assert.equal(sor(d, ID('D')).ismeretlen_ok, 'nincs_jel');
   // a kesei jelzes nem ir at fizetett latogatas-erintest
   j = await kuld('E', 20 * NAP, SES({ rk: 'search', kp: 'fbclid' })); assert.deepEqual([j.forras.cimke, j.forras.kesei_fizetett], ['meta', false]);
@@ -690,7 +691,7 @@ test('D) klikkAzonositok / klikkReszletes: a bongeszobol jovo elsobbseget elvez 
   // a mh_attr (tarolt) is megelozi a sutit; a Google-cimke sutije (_gcl_aw) is
   k = kliens({ search: '?x=1', suti: hamisSuti({ adv: true }), ls: tarolo({ mh_cc: CC(), mh_attr: JSON.stringify({ v: 1, google: { gclid: { ertek: TAROLT.gclid, ts } }, meta: { fbclid: TAROLT.fbclid, ts }, tiktok: { ttclid: { ertek: TAROLT.ttclid, ts } } }) }), lptValasz: { ok: true, klikk: { gclid: 'Suti_gclid_0123456789' } } }); await k.mh.lptKlikkVar();
   assert.deepEqual(k.j(k.mh.klikkReszletes()), { ids: TAROLT, lpt: [] }, 'mh_attr: minden platform a bongeszobol');
-  k = kliens({ search: '?x=1', suti: hamisSuti({ adv: true }), cookie: '_gcl_aw=GCL.1759759200.Gcl_aw_gclid_0123456789; _fbc=fb.1.1759759200000.Fbc_suti_fbclid_01', lptValasz: { ok: true, klikk: { ttclid: TTCLID } } }); await k.mh.lptKlikkVar();
+  k = kliens({ search: '?x=1', suti: hamisSuti({ adv: true }), cookie: `_gcl_aw=GCL.1759759200.Gcl_aw_gclid_0123456789; _fbc=fb.1.${Date.now() - 1000}.Fbc_suti_fbclid_01`, lptValasz: { ok: true, klikk: { ttclid: TTCLID } } }); await k.mh.lptKlikkVar();
   assert.deepEqual(k.j(k.mh.klikkReszletes()), { ids: { gclid: 'Gcl_aw_gclid_0123456789', fbclid: 'Fbc_suti_fbclid_01', ttclid: TTCLID }, lpt: ['ttclid'] }, '_gcl_aw, _fbc a bongeszobol; csak a TikTok a sutibol');
   // Google: ha a bongeszobol van barmilyen Google-azonosito, a sutibol NEM potlodik masik Google-kulcs
   k = kliens({ search: '?x=1', suti: hamisSuti({ adv: true }), ls: tarolo({ mh_cc: CC(), mh_attr: JSON.stringify({ v: 1, google: { gbraid: { ertek: GBRAID, ts } } }) }), lptValasz: { ok: true, klikk: { gclid: GCLID } } }); await k.mh.lptKlikkVar();
@@ -918,4 +919,137 @@ test('F) riport: a kis cellak (darab < min) ket lepcsoben osszevonodnak (sulyozo
   assert.equal(o.reduce((a, x) => a + x.darab, 0), 11, 'az osszeg megmarad'); assert.equal(R.kisCellakOsszevonasa(sorok, 0).length, 5, 'min <= 1: nincs osszevonas'); assert.equal(R.kisCellakOsszevonasa(sorok, 1).length, 5);
   assert.deepEqual(R.sorokBol(sorok), sorok); assert.deepEqual(R.sorokBol({ results: sorok }), sorok); assert.deepEqual(R.sorokBol([{ results: sorok.slice(0, 2) }, { results: sorok.slice(2) }]), sorok); assert.throws(() => R.sorokBol('x'), /ismeretlen/);
   assert.match(R.tablaSzoveg(o, { formatum: 'md' }), /^\| uzletag \| platform/); assert.equal(R.tablaSzoveg(o).split('\n').length, 5);
+});
+
+// ======================================================================== G) review-javitasok: F1 (potlasi ablak), F2 (ts), F3 (suti-tajekoztato), F4 (forras_adv), ekezet, klikk_potolt
+const attrOf = (d, id = BID) => JSON.parse(d.db.prepare('SELECT attr FROM meres_erkezes WHERE source_id = ?').get(id).attr);
+test('G) F1: a SUTIBOL visszanyert azonosito MIND AZ 5 tipusra csak <= 7 napos kattintasnal (GET klikk + shadow-lanc attr-potlas); 8-30 nap: csak kor_nap + kesei jelzes, azonosito-potlas nincs', async () => {
+  const t0 = Math.floor(Date.now() / 1000);
+  const AZ = { gclid: GCLID, gbraid: GBRAID, wbraid: WBRAID, fbclid: FBCLID, ttclid: TTCLID };
+  for (const [kp, kv] of Object.entries(AZ)) {
+    for (const [kor, bent] of [[6 * NAP + 23 * 3600, true], [7 * NAP - 60, true], [7 * NAP + 3600, false], [8 * NAP, false], [30 * NAP - 60, false]]) {
+      const j = await ures(await GET({ cookie: suti({ v: 1, kp, kv, t: t0 - kor }) }));
+      assert.equal(j.suti, true, `${kp} ${kor}`); assert.deepEqual(j.klikk, bent ? { [kp]: kv } : {}, `GET: ${kp} ${(kor / NAP).toFixed(2)} nap`); assert.equal(j.kor_nap, Math.floor(kor / NAP)); assert.equal(j.t, t0 - kor);
+    }
+    assert.equal((await ures(await GET({ cookie: suti({ v: 1, kp, kv, t: t0 - 31 * NAP }) }))).suti, false, '31 nap = nincs');
+    // a shadow-lanc attr-potlasa ugyanazzal az ablakkal (Google is: a 8 napos gclid a SUTIBOL nem potlodik)
+    for (const [kor, bent] of [[6 * NAP + 23 * 3600, true], [7 * NAP, true], [7 * NAP + 3600, false], [8 * NAP, false], [30 * NAP, false], [31 * NAP, false]]) {
+      const { d, env } = ujEnv();
+      const j = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }) }), { cookie: suti({ v: 1, kp, kv, t: NOW - kor }) }));
+      assert.equal(Object.keys(attrOf(d)).length > 0, bent, `attr: ${kp} ${(kor / NAP).toFixed(2)} nap`); assert.equal(j.forras.klikk_potolt, bent ? kp : null, `klikk_potolt: ${kp} ${(kor / NAP).toFixed(2)} nap`);
+    }
+  }
+  assert.ok(L.potlasAblakban({ kor_s: 7 * NAP })); assert.ok(!L.potlasAblakban({ kor_s: 7 * NAP + 1 })); assert.ok(!L.potlasAblakban(null)); assert.equal(L.POTLAS_NAP, 7);
+  // a 8-30 napos kattintas a cimkehez tovabbra is csak "kesei" jelzes (nem valtozott)
+  const { env } = ujEnv(); const j = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'search' }) }), { cookie: suti({ v: 1, kp: 'gclid', kv: GCLID, t: NOW - 8 * NAP }) }));
+  assert.deepEqual(j.forras, { cimke: 'organikus_direkt', bizonyitek_forras: 'munkamenet', klikk_potolt: null, kesei_fizetett: true });
+});
+test('G) F1 kliens: a klikkReszletes() mh_attr-aga Meta / TikTok csak <= 7 napos (ts) azonositot ad (ts nelkuli sem); a Google ag (mh_attr 90 nap, _gcl_aw) VALTOZATLAN; az _fbc ideje is szamit; a regi GET-valasz nem potlas', async () => {
+  const ts = Math.floor(Date.now() / 1000);
+  const attr = (kor) => JSON.stringify({ v: 1, google: { gclid: { ertek: 'Tarolt_gclid_0123456789', ts: ts - kor } }, meta: { fbclid: 'Tarolt_fbclid_0123', ts: ts - kor }, tiktok: { ttclid: { ertek: 'Tarolt.ttclid.0123', ts: ts - kor } } });
+  const reszl = (kor, extra = {}) => { const k = kliens({ search: '?x=1', suti: hamisSuti({ adv: true }), ls: tarolo({ mh_attr: attr(kor) }), ...extra }); return k.j(k.mh.klikkReszletes()); };
+  assert.deepEqual(reszl(6 * NAP + 23 * 3600).ids, { gclid: 'Tarolt_gclid_0123456789', fbclid: 'Tarolt_fbclid_0123', ttclid: 'Tarolt.ttclid.0123' }, '6 nap: mind');
+  assert.deepEqual(reszl(8 * NAP).ids, { gclid: 'Tarolt_gclid_0123456789' }, '8 nap: a Meta / TikTok kiesik, a Google marad (R1: 90 nap)');
+  assert.deepEqual(reszl(60 * NAP).ids, { gclid: 'Tarolt_gclid_0123456789' }, '60 napos Meta / TikTok = nem; a Google 60 napos mh_attr tovabbra is jo');
+  assert.deepEqual(reszl(89 * NAP).ids, { gclid: 'Tarolt_gclid_0123456789' });
+  const tsNelkul = kliens({ search: '?x=1', suti: hamisSuti({ adv: true }), ls: tarolo({ mh_attr: JSON.stringify({ v: 1, google: { gclid: { ertek: GCLID } }, meta: { fbclid: FBCLID }, tiktok: { ttclid: { ertek: TTCLID } } }) }) }); assert.deepEqual(tsNelkul.j(tsNelkul.mh.klikkReszletes()).ids, { gclid: GCLID }, 'ts nelkul a Meta / TikTok nem hasznalhato (a Google R1 viselkedese valtozatlan)');
+  // a 8 napos mh_attr Meta helyett a (friss) suti potol
+  const k = kliens({ search: '?x=1', suti: hamisSuti({ adv: true }), ls: tarolo({ mh_attr: attr(8 * NAP) }), lptValasz: { ok: true, t: ts - NAP, klikk: { fbclid: FBCLID, ttclid: TTCLID } } }); await k.mh.lptKlikkVar();
+  assert.deepEqual(k.j(k.mh.klikkReszletes()), { ids: { gclid: 'Tarolt_gclid_0123456789', fbclid: FBCLID, ttclid: TTCLID }, lpt: ['fbclid', 'ttclid'] });
+  // _fbc: a suti ideje (ms) is szamit
+  const fbc = (ido) => `_fbc=fb.1.${ido}.Fbc_suti_fbclid_01`;
+  assert.deepEqual(reszl(60 * NAP, { cookie: fbc((ts - 6 * NAP) * 1000) }).ids.fbclid, 'Fbc_suti_fbclid_01'); assert.equal(reszl(60 * NAP, { cookie: fbc((ts - 8 * NAP) * 1000) }).ids.fbclid, undefined, '8 napos _fbc: nem'); assert.equal(reszl(60 * NAP, { cookie: fbc(ts - 8 * NAP) }).ids.fbclid, undefined, 'masodperces _fbc-ido is');
+  // vedelem: ha a GET-valasz t-je >7 napos, a klikk nem potlas (a szerver mar nem adja, de a kliens sem hiszi el)
+  const v = kliens({ suti: hamisSuti({ adv: true }), lptValasz: { ok: true, t: ts - 9 * NAP, klikk: { gclid: GCLID } } }); assert.deepEqual(v.j(await v.mh.lptKlikkVar()), {});
+  const v2 = kliens({ suti: hamisSuti({ adv: true }), lptValasz: { ok: true, t: ts - 2 * NAP, klikk: { gclid: GCLID } } }); assert.deepEqual(v2.j(await v2.mh.lptKlikkVar()), { gclid: GCLID });
+});
+test('G) F2: ugyanazt az azonositot az URL-parse nem belyegzi ujra (mindharom platform); csak UJ azonosito kap uj ts-t; a sutibol POTOLT azonosito a suti valodi kattintasi idejet kapja (csak a koszonooldalon); a koszonooldali parse lefut', async () => {
+  const now = Math.floor(Date.now() / 1000), T1 = now - 3 * NAP, T2 = now - 2 * NAP, T3 = now - NAP;
+  const tarolt = () => tarolo({ mh_attr: JSON.stringify({ v: 1, google: { gclid: { ertek: GCLID, ts: T1 } }, meta: { fbclid: FBCLID, ts: T2 }, tiktok: { ttclid: { ertek: TTCLID, ts: T3 } } }) });
+  const pk = (k) => k.j(k.mh.pillanatkep());
+  // 1) ugyanaz az azonosito az URL-ben (hirdetes-ujranyitas / ugyanaz az oldal): a ts marad, a localStorage is a regi ts-t kapja
+  let ls = tarolt(); let k = kliens({ search: `?gclid=${GCLID}&fbclid=${FBCLID}&ttclid=${TTCLID}`, ls });
+  let p = pk(k); assert.equal(p.google.gclid.ts, T1); assert.equal(p.meta.ts, T2); assert.equal(p.tiktok.ttclid.ts, T3);
+  const mentett = JSON.parse(ls._m.get('mh_attr')); assert.deepEqual([mentett.google.gclid.ts, mentett.meta.ts, mentett.tiktok.ttclid.ts], [T1, T2, T3], 'a tarolt allapot sem belyegzodik ujra');
+  assert.equal(p.meta.fbc, `fb.1.${T2 * 1000}.${FBCLID}`, 'az fbc ideje a regi ts');
+  // 2) UJ azonosito: uj ts (most)
+  k = kliens({ search: '?gclid=Uj_gclid_0123456789&fbclid=Uj_fbclid_0123&ttclid=Uj.ttclid.0123', ls: tarolt() }); p = pk(k);
+  for (const x of [p.google.gclid.ts, p.meta.ts, p.tiktok.ttclid.ts]) assert.ok(Math.abs(x - now) <= 5, 'uj azonosito = uj ts');
+  assert.equal(p.google.gclid.ertek, 'Uj_gclid_0123456789');
+  // 3) koszonooldal: a sutibol POTOLT azonosito (marker) a suti valodi kattintasi idejet kapja, nem a betoltes idejet
+  const CT = now - 5 * NAP;
+  const koszono = (marker, o = {}) => kliens({ pathname: '/fodrasz-ok', search: `?first_booking=true&gclid=${GCLID}&fbclid=${FBCLID}&ttclid=${TTCLID}&bookingUrl=${encodeURIComponent('https://mosaic-hair.salonic.hu/guestData/?back=' + BID)}`, ss: tarolo(marker ? { mh_lpt_potlas: marker } : {}), ...o });
+  k = koszono(`gclid:${CT},fbclid:${CT + 60},ttclid:${CT + 120}`); p = pk(k);
+  assert.deepEqual([p.google.gclid.ts, p.meta.ts, p.tiktok.ttclid.ts], [CT, CT + 60, CT + 120]); assert.equal(p.meta.fbc, `fb.1.${(CT + 60) * 1000}.${FBCLID}`, 'a shadow-lanc fbc ideje a suti kattintasi ideje');
+  await k.mh.kuld({ source_id: BID, uzletag: 'fodrasz', tipus: 'foglalas' }); const b = k.kuldesek()[0].body; assert.equal(b.attr.google.gclid.ts, CT); assert.equal(b.attr.meta.ts, CT + 60); assert.deepEqual(b.lpt_potlas, ['gclid', 'fbclid', 'ttclid']);
+  // a tarolt (egyezo) azonosito ts-e elsobbseget elvez a markerrel szemben
+  p = pk(koszono(`gclid:${CT}`, { ls: tarolt() })); assert.equal(p.google.gclid.ts, T1);
+  // marker nelkul / nem koszonooldalon / ervenytelen idovel / a jelolt kulcshoz nem tartozo azonositora: a mostani ido
+  for (const [nev, kk] of [['marker nelkul', koszono(null)], ['nem koszonooldal', kliens({ pathname: '/lezeres-szortelenites-budapest', search: `?gclid=${GCLID}&fbclid=${FBCLID}`, ss: tarolo({ mh_lpt_potlas: `gclid:${CT},fbclid:${CT}` }) })],
+    ['jovobeli ido', koszono(`gclid:${now + 99999}`)], ['szoveg ido', koszono('gclid:x,fbclid:')], ['2020 elotti', koszono('gclid:1500000000')], ['120 napnal regebbi', koszono(`gclid:${now - 121 * NAP}`)], ['ismeretlen kulcs', koszono(`rendszer:${CT}`)]]) {
+    assert.ok(Math.abs(pk(kk).google.gclid.ts - now) <= 5, nev);
+  }
+  assert.ok(Math.abs(pk(koszono(`ttclid:${CT}`)).google.gclid.ts - now) <= 5, 'a jelolt kulcshoz tartozo azonosito kap suti-idot, a tobbi nem');
+  assert.equal(pk(koszono(`ttclid:${CT}`)).tiktok.ttclid.ts, CT);
+  // hozzajarulas nelkul a koszonooldali parse is lefut (SZ-38 memoria-pillanatkep), a marker ts-t ad, de nem ir tarolot
+  const nk = koszono(`gclid:${CT}`, { suti: hamisSuti({ adv: false }) }); assert.equal(pk(nk).google.gclid.ertek, GCLID); assert.equal(nk.ls._irasok.filter((x) => x === 'mh_attr').length, 0);
+  // a marker ideje a GET-valaszbol jon: lptJelol "kulcs:t"
+  const g = kliens({ pathname: '/foglalo-motor', suti: hamisSuti({ adv: true }), lptValasz: { ok: true, t: CT, klikk: { fbclid: FBCLID } } }); await g.mh.lptKlikkVar(); g.mh.lptJelol(['fbclid', 'gclid']); assert.equal(g.ss._m.get('mh_lpt_potlas'), `fbclid:${CT},gclid:${CT}`);
+  const g2 = kliens({ suti: hamisSuti({ adv: true }), lptValasz: { ok: true, klikk: { fbclid: FBCLID } } }); await g2.mh.lptKlikkVar(); g2.mh.lptJelol(['fbclid']); assert.equal(g2.ss._m.get('mh_lpt_potlas'), 'fbclid', 'ido nelkul csak a kulcs');
+  // a GET-valasz t mezoje a szerverrol
+  assert.ok((await ures(await GET({ cookie: suti({ v: 1, kp: 'gclid', kv: GCLID, t: Math.floor(Date.now() / 1000) - NAP }) }))).t > 1600000000);
+});
+test('G) F4: a szerver a HATALYOS marketing-allapotot (forras_adv) hasznalja a suti-olvasashoz / potlashoz; a "hozz" (nyers mh_cc, SZ-38) valtozatlan; reszleges mh_cc eset', async () => {
+  const cookie = suti({ v: 1, kp: 'gclid', kv: GCLID, um: 'cpc', us: 'google', uc: '1', t: NOW - NAP });
+  const RESZLEGES = { ana: false, adv: false, fun: true, reszleges: true }; // a suti.js: dontes nelkul / reszleges bejegyzes = alapertek (granted); a nyers mh_cc adv:false
+  let { d, env } = ujEnv();
+  let j = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }), hozz: RESZLEGES, forras_adv: true }), { cookie }));
+  assert.deepEqual(j.forras, { cimke: 'google_nem_markas', bizonyitek_forras: 'suti', klikk_potolt: 'gclid', kesei_fizetett: false }, 'forras_adv:true -> a suti hasznalhato, a nyers hozz.adv:false ellenere');
+  assert.equal(JSON.parse(d.db.prepare('SELECT hozz FROM meres_erkezes').get().hozz).adv, false, 'a meres_erkezes.hozz a nyers allapotot tarolja (SZ-38 valtozatlan)');
+  assert.ok(attrOf(d).google, 'attr-potlas');
+  // regi viselkedes forras_adv nelkul: a nyers hozz.adv === false tilt
+  ({ d, env } = ujEnv()); j = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }), hozz: RESZLEGES }), { cookie })); assert.equal(j.forras.bizonyitek_forras, 'munkamenet'); assert.deepEqual(attrOf(d), {});
+  // forras_adv:false: a suti nem hasznalhato, hozz:{} ellenere
+  ({ d, env } = ujEnv()); j = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }), hozz: {}, forras_adv: false, lpt_potlas: ['gclid'] }), { cookie })); assert.deepEqual(j.forras, { cimke: 'organikus_direkt', bizonyitek_forras: 'munkamenet', klikk_potolt: null, kesei_fizetett: false }); assert.deepEqual(attrOf(d), {});
+  // nem boolean forras_adv: figyelmen kivul marad (a nyers hozz dont)
+  for (const rossz of ['igen', 1, 0, null, {}, 'false']) { ({ d, env } = ujEnv()); j = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }), hozz: { adv: false }, forras_adv: rossz }), { cookie })); assert.equal(j.forras.bizonyitek_forras, 'munkamenet', String(rossz)); ({ d, env } = ujEnv()); j = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }), hozz: {}, forras_adv: rossz }), { cookie })); assert.equal(j.forras.bizonyitek_forras, 'suti', String(rossz)); }
+  assert.equal(L.advEngedett({ forras_adv: true, hozz: { adv: false } }), true); assert.equal(L.advEngedett({ forras_adv: false }), false); assert.equal(L.advEngedett({ hozz: { adv: false } }), false); assert.equal(L.advEngedett({}), true); assert.equal(L.advEngedett(null), true);
+  // kliens: a kuld() additiv forras_adv-ot kuld (a hatalyos engedely), a hozz valtozatlan
+  const kuldBody = async (opt) => { const k = kliens({ pathname: '/foglalas-ok', ...opt }); await k.mh.kuld({ source_id: BID, uzletag: 'headspa', tipus: 'foglalas' }); return k.kuldesek()[0].body; };
+  let b = await kuldBody({ suti: hamisSuti({ adv: true }), ls: tarolo({ mh_cc: JSON.stringify({ v: 1, t: Date.now(), reszleges: true, ...RESZLEGES }) }) });
+  assert.equal(b.forras_adv, true); assert.deepEqual(b.hozz, { ana: false, adv: false, fun: true }, 'a nyers mh_cc (SZ-38) valtozatlan');
+  b = await kuldBody({ suti: hamisSuti({ adv: false }), ls: tarolo({ mh_cc: CC({ adv: false }) }) }); assert.equal(b.forras_adv, false); assert.equal(b.hozz.adv, false);
+  b = await kuldBody({ suti: hamisSuti({ adv: true }) }); assert.equal(b.forras_adv, true); assert.deepEqual(b.hozz, {});
+  b = await kuldBody({ suti: null }); assert.equal(b.forras_adv, false, 'suti.js es dontes nelkul nincs engedely');
+  // vegpontol vegpontig: kliens-torzs -> szerver (reszleges mh_cc, suti.js granted): a suti hasznalhato
+  const k = kliens({ pathname: '/foglalas-ok', suti: hamisSuti({ adv: true }), ls: tarolo({ mh_cc: JSON.stringify({ v: 1, t: Date.now(), reszleges: true, ...RESZLEGES }) }) }); await k.mh.kuld({ source_id: BID, uzletag: 'headspa', tipus: 'foglalas' });
+  ({ d, env } = ujEnv()); j = await ures(await erkezes(env, k.kuldesek()[0].body, { cookie })); assert.equal(j.forras.bizonyitek_forras, 'suti');
+});
+test('G) ekezetmentesites: "Karacsonyi akcio" ekezetesen -> Karacsonyi_akcio (szerver es kliens); a kombinalo jelek torolve, utana a tiltott karakterek "_"; a suti tartalma is tisztitott', async () => {
+  const ek = 'Kar\u00e1csonyi akci\u00f3'; // Karácsonyi akció
+  assert.equal(L.utmTisztit(ek), 'Karacsonyi_akcio'); assert.equal(L.utmTisztit('\u0150szi \u0170R \u00c1rv\u00edzt\u0171r\u0151 t\u00fck\u00f6rf\u00far\u00f3g\u00e9p'), 'Oszi_UR_Arvizturo_tukorfurogep');
+  assert.equal(L.utmTisztit('e\u0301s \u00f1'), 'es_n', 'osszetett (NFD) alak'); assert.equal(L.utmTisztit('\u03b1\u03b2'), null, 'nem latin: eldobva'); assert.equal(L.utmTisztit('\u00e9\u00e9'.repeat(70)).length, 100);
+  const k = kliens({ search: `?fbclid=${FBCLID}&utm_source=meta&utm_medium=paid_social&utm_campaign=${encodeURIComponent(ek)}&utm_content=${encodeURIComponent('\u0151sz')}` });
+  assert.equal(JSON.parse(k.ss._m.get('mh_forras')).uc, 'Karacsonyi_akcio'); assert.equal(JSON.parse(k.ss._m.get('mh_forras')).uco, 'osz'); assert.equal(k.posztok()[0].body.forras.uc, 'Karacsonyi_akcio');
+  const r = await POST({ forras: { v: 1, kp: 'fbclid', kv: FBCLID, um: 'paid_social', us: 'meta', uc: ek } }); assert.equal(L.lptDekodol(ertekFejlecbol(r), Math.floor(Date.now() / 1000)).uc, 'Karacsonyi_akcio');
+  const { d, env } = ujEnv(); await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }) }), { cookie: suti({ v: 1, kp: 'fbclid', kv: FBCLID, um: 'paid_social', us: 'meta', uc: ek, t: NOW - NAP }) }); assert.equal(sor(d).utm_campaign, 'Karacsonyi_akcio');
+});
+test('G) klikk_potolt csak akkor kerul a sorba / a valaszba, ha a potlas TENYLEG mentodott: az "esemeny mar kiment" (frissitve:false) agon nem', async () => {
+  const { d, env } = ujEnv();
+  await meresSema(d);
+  d.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, letrehozva, frissitve) VALUES ('FoglalasElso:' || ?1, 'FoglalasElso', 'alap', 'meta', 'headspa', ?1, 'elkuldve', ?2, ?2)").run(BID, NOW);
+  const cookie = suti({ v: 1, kp: 'fbclid', kv: FBCLID, um: 'paid_social', us: 'meta', t: NOW - NAP });
+  const r = await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }), lpt_potlas: ['fbclid'] }), { cookie }); const j = await ures(r);
+  assert.equal(j.frissitve, false, 'az esemeny mar kiment'); assert.ok(j.forras, 'a cimke igy is megvan'); assert.equal(j.forras.klikk_potolt, null); assert.equal(sor(d).klikk_potolt, null);
+  assert.equal(d.db.prepare('SELECT COUNT(*) AS n FROM meres_erkezes WHERE source_id = ?').get(BID).n, 0, 'az attr nem mentodott');
+  // kontroll: ugyanez egy meg nem kiment foglalasnal potolt
+  const j2 = await ures(await erkezes(env, ERK({ source_id: ID('z'), forras: SES({ rk: 'nincs' }), lpt_potlas: ['fbclid'] }), { cookie })); assert.equal(j2.frissitve, true); assert.equal(j2.forras.klikk_potolt, 'fbclid');
+});
+test('G) F3: a suti-tajekoztato (foglalas/suti-tajekoztato.html) 3.4 szakasza tenyszeru mh_lpt bejegyzest kapott; a jogi szoveg tobbi resze bajtra valtozatlan az origin/main-hez kepest', () => {
+  const uj = fs.readFileSync(path.join(GYOKER, 'foglalas/suti-tajekoztato.html'), 'utf8');
+  const regi = execFileSync('git', ['show', 'origin/main:foglalas/suti-tajekoztato.html'], { cwd: GYOKER, encoding: 'utf8' });
+  const sor = uj.split('\n').find((l) => l.includes('mh_lpt'));
+  assert.ok(sor, 'van mh_lpt bejegyzes'); assert.equal(uj.replace(sor + '\n', ''), regi, 'a bejegyzes torlesevel az eredeti szoveg adodik vissza');
+  for (const resz of ['Mosaic Head Spa', 'első fél', 'HttpOnly', 'mh_lpt', '30 nap', 'legutóbbi hirdetési kattintás', 'platform, kampányjelölés, kattintásazonosító', 'marketing-hozzájárulással', 'Süti beállítások']) assert.ok(sor.includes(resz), resz);
+  assert.ok(sor.trim().startsWith('<li>') && sor.trim().endsWith('</li>')); assert.ok(uj.indexOf(sor) > uj.indexOf('3.4. Marketing') && uj.indexOf(sor) < uj.indexOf('<h2>4. Külső oldalak'), 'a 3.4 szakaszban van');
 });

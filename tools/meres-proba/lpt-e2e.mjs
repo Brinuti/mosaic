@@ -190,6 +190,11 @@ async function egyEset(bongeszo, uz, platform) {
     const kt = er.kuldott || {};
     ok(`${cim} 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito`, kt.forras_tarolo && Array.isArray(kt.lpt_potlas) && kt.lpt_potlas.includes(P.kp) && !JSON.stringify(kt.forras || {}).includes(id), JSON.stringify({ tarolo: kt.forras_tarolo, potlas: kt.lpt_potlas }));
     ok(`${cim} 5. uzletag a koszonooldalon: ${U.szerver} (a Salonic-host szerint)`, kt.uzletag === U.szerver, kt.uzletag);
+    // F2: a sutibol potolt azonosito idobelyege a suti VALODI kattintasi ideje (nem a koszonooldal betoltese): a shadow-lanc fbc / ts ideje
+    const sutiT = JSON.parse(Buffer.from(c1.value, 'base64url').toString()).t;
+    const attrTs = P.kp === 'fbclid' ? kt.attr && kt.attr.meta && kt.attr.meta.ts : P.kp === 'ttclid' ? kt.attr && kt.attr.tiktok && kt.attr.tiktok.ttclid && kt.attr.tiktok.ttclid.ts : kt.attr && kt.attr.google && kt.attr.google.gclid && kt.attr.google.gclid.ts;
+    ok(`${cim} 5. a kuldott attr ts-e a suti kattintasi ideje (nem a foglalas / a betoltes ideje)`, attrTs === sutiT, `attr.ts=${attrTs} suti.t=${sutiT}`);
+    ok(`${cim} 5. a kuldott torzs forras_adv = true (a hatalyos marketing-allapot), a hozz (nyers mh_cc) mellette`, kt.forras_adv === true && typeof kt.hozz === 'object', JSON.stringify({ forras_adv: kt.forras_adv, hozz: kt.hozz }));
     ok(`${cim} 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem "uj kattintas")`, await lap.evaluate(() => { try { const o = JSON.parse(sessionStorage.getItem('mh_forras') || 'null'); return !o || !o.kp; } catch (e) { return true; } }));
     if (LOKALIS) {
       const sor = lokalis.db.prepare('SELECT * FROM meres_forras WHERE source_id = ?').get(bid);

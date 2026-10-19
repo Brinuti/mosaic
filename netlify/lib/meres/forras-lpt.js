@@ -30,6 +30,7 @@ export const LPT_SUTI = 'mh_lpt';
 export const LPT_VERZIO = 1;
 export const LPT_NAP = 30; // a suti elettartama es a visszanyerheto kattintas legnagyobb kora
 export const LPT_ABLAK_NAP = 7; // a forras-cimkehez hasznalhato kattintas legnagyobb kora
+export const POTLAS_NAP = 7; // a sutibol visszanyert kattintasazonosito (az elo esemenybe es a shadow-lancba potlas) legnagyobb kora: MIND az 5 tipusra 7 nap (= a cimke-ablak; MP #432 LPT_CIMKE_NAP); a 8-30 napos kattintas csak "kesei" jelzes
 export const LPT_MAX_HOSSZ = 1200; // a suti ertekenek (base64url) legnagyobb hossza
 export const MEGORZES_NAP = 30; // mint a meres_erkezes-nel (elosztas.js): MOSAIC_LPT_MEGORZES_NAP-pal felulirhato (7-3650)
 const MAX_TORZS = 4000; // a sutit iro POST torzsenek korlatja
@@ -44,10 +45,13 @@ const kis = (v) => (v == null ? '' : String(v).toLowerCase());
 const sec = (ms) => Math.floor(ms / 1000);
 
 // ---------- tisztitas ----------
-/** Egy utm-ertek tisztitasa: trim, a nem engedett karakterek (nem [A-Za-z0-9._~:+-]) "_"-ra csereldnek, legfeljebb 100 karakter; ures / nem szoveg = null. (A Meta kotelezo UTM-je a kampany NEVET adja, szokozokkel.) */
+/**
+ * Egy utm-ertek tisztitasa: trim, ELOBB ekezetmentesites (NFD + a kombinalo jelek torlese: a, o, u ekezetei), UTANA a nem engedett karakterek (nem [A-Za-z0-9._~:+-]) "_"-ra csereldnek,
+ * legfeljebb 100 karakter; ures / nem szoveg = null. (A Meta kotelezo UTM-je a kampany NEVET adja szokozokkel, ekezetekkel: "Karacsonyi akcio" ekezetesen -> "Karacsonyi_akcio".)
+ */
 export function utmTisztit(v) {
   if (typeof v !== 'string' && typeof v !== 'number') return null;
-  const s = String(v).trim().replace(/[^A-Za-z0-9._~:+-]+/g, '_').slice(0, 100).replace(/^_+|_+$/g, '');
+  const s = String(v).trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9._~:+-]+/g, '_').slice(0, 100).replace(/^_+|_+$/g, '');
   return s || null;
 }
 /** Hirdetesi azonosito (kampany / hirdetescsoport / hirdetes): csak szamjegyek, legfeljebb 20; kulonben null. */
@@ -65,6 +69,13 @@ export function klikkTisztit(kp, kv) {
 export function fizetett(e) {
   return !!e && (KATT_PARAMOK.includes(e.kp) || FIZETETT_MEDIUM.includes(kis(e.um)));
 }
+/** A sutibol visszanyert kattintasazonosito potlasra hasznalhato-e (a kattintas legfeljebb POTLAS_NAP napos)? s: lptDekodol eredmenye. */
+export const potlasAblakban = (s) => !!s && s.kor_s <= POTLAS_NAP * 86400;
+/**
+ * A marketing-hozzajarulas HATALYOS allapota a koszonooldali jelzesben: a kliens "forras_adv" mezoje (a hatalyos engedely: suti.js dontese / alapertek, a reszleges mh_cc bejegyzes NEM elutasitas), ha van;
+ * kulonben a nyers "hozz" (mh_cc) szerint: csak a kifejezett elutasitas (adv === false) tilt. A "hozz" mezo (SZ-38) valtozatlan marad.
+ */
+export const advEngedett = (be) => (be && typeof be.forras_adv === 'boolean' ? be.forras_adv : hozzajarulasTisztit(be && be.hozz).adv !== false);
 /** A fizetett erintes platformja (google | meta | tiktok) vagy null. Elobb a platform altal tett kattintasi parameter, utana az utm_source. */
 export function fizetettPlatform(e) {
   if (!fizetett(e)) return null;
@@ -203,8 +214,7 @@ const potlasLista = (...listak) => [...new Set(listak.flat().filter((k) => KATT_
  * -> { sor (a meres_forras oszlopai), valasz: { cimke, bizonyitek_forras, klikk_potolt, kesei_fizetett } }
  */
 export function forrasSor({ be, cookieFejlec = '', most, markasLista = null, szerverPotlas = [] }) {
-  const hozz = hozzajarulasTisztit(be && be.hozz);
-  const adv = hozz.adv !== false; // kifejezett elutasitas = tilos (a Mosaic alapertelmezese: megadva, DECISION #170)
+  const adv = advEngedett(be); // kifejezett elutasitas = tilos (a Mosaic alapertelmezese: megadva, DECISION #170); a hatalyos allapotot a kliens forras_adv mezoje adja
   const m = erintesTisztit(be && be.forras, most);
   const munkamenet = m && m.rk ? m : null; // hivatkozo-kategoria nelkul nem bizonyitek
   const suti = adv ? lptOlvas(cookieFejlec, most) : null;
@@ -213,7 +223,7 @@ export function forrasSor({ be, cookieFejlec = '', most, markasLista = null, sze
   const c = cimkez(e, markasLista);
   const kesei = v.kesei && v.bizonyitek_forras !== 'suti' ? v.kesei : null;
   // melyik platform(ok) kattintasazonositojat potolta a suti: a kliens jelzese (foglalo-atadas) CSAK akkor, ha a suti ugyanilyen azonositot hordoz; + a szerver sajat potlasa
-  const kliensJelzes = Array.isArray(be && be.lpt_potlas) && suti && suti.kv ? be.lpt_potlas.filter((k) => k === suti.kp) : [];
+  const kliensJelzes = Array.isArray(be && be.lpt_potlas) && suti && suti.kv && potlasAblakban(suti) ? be.lpt_potlas.filter((k) => k === suti.kp) : [];
   const potolt = adv ? potlasLista(kliensJelzes, szerverPotlas) : [];
   const sutis = v.bizonyitek_forras === 'suti';
   const sor = {
@@ -297,8 +307,8 @@ export async function forrasVegpont({ request, env = {} }, { most = sec(Date.now
     if (url.searchParams.get('adv') === '0') return json({ ok: true, suti: false, klikk: {} });
     const s = lptOlvas(cookie, most);
     if (!s) return json({ ok: true, suti: false, klikk: {} });
-    const klikk = {}; if (s.kv && s.kp) klikk[s.kp] = s.kv;
-    return json({ ok: true, suti: true, platform: s.p, kor_nap: s.kor_nap, klikk });
+    const klikk = {}; if (s.kv && s.kp && potlasAblakban(s)) klikk[s.kp] = s.kv; // csak a 7 napon beluli kattintas azonositoja (8-30 nap: kor_nap marad, azonosito nincs)
+    return json({ ok: true, suti: true, platform: s.p, kor_nap: s.kor_nap, t: s.t, klikk });
   }
   if (Number(request.headers.get('content-length') || 0) > MAX_TORZS) return json({ ok: false, miert: 'tul nagy' }, 413);
   const szoveg = await request.text();
@@ -357,7 +367,9 @@ export async function erkezesForrassal(request, env, kezel, deps = {}) {
     if (!j || j.ok !== true || !UZLETAGAK.includes(be.uzletag) || !SOURCE_ID_MINTA.test(String(be.source_id || ''))) return valasz;
     await forrasSema(env.KULCS_DB);
     const markas = await markasListaOlvas(env.KULCS_DB);
-    const { sor } = forrasSor({ be, cookieFejlec: cookie, most, markasLista: markas, szerverPotlas: ujKeres ? szerverPotlas : [] });
+    // klikk_potolt csak akkor, ha a potlas TENYLEG mentodott: ha az esemeny mar kiment (frissitve:false), a meres_erkezes sor (attr) nem frissult - sem a szerver, sem a kliens jelzese nem szamit
+    const mentve = j.frissitve !== false;
+    const { sor } = forrasSor({ be: mentve ? be : { ...be, lpt_potlas: undefined }, cookieFejlec: cookie, most, markasLista: markas, szerverPotlas: mentve && ujKeres ? szerverPotlas : [] });
     const forras = await forrasMent(env.KULCS_DB, sor, { env });
     return new Response(JSON.stringify({ ...j, forras }), { status: valasz.status, headers: valasz.headers });
   } catch (e) {
@@ -366,12 +378,12 @@ export async function erkezesForrassal(request, env, kezel, deps = {}) {
   }
 }
 
-/** A shadow-lanc attr-jaba a sutibol potolt kattintasazonosito (csak ha a bongeszobol az adott platformhoz nem jott; hozzajarulas nelkul nem). -> { be (masolat), potolt: [kattintasi parameter tipusok] } */
+/** A shadow-lanc attr-jaba a sutibol potolt kattintasazonosito (csak ha a bongeszobol az adott platformhoz nem jott; hozzajarulas nelkul nem; csak <= 7 napos kattintasnal). -> { be (masolat), potolt: [kattintasi parameter tipusok] } */
 export function attrPotlas(be, cookieFejlec, most) {
   const nincs = { be, potolt: [] };
-  if (hozzajarulasTisztit(be && be.hozz).adv === false) return nincs;
+  if (!advEngedett(be)) return nincs;
   const s = lptOlvas(cookieFejlec, most);
-  if (!s || !s.kv || !s.kp) return nincs;
+  if (!s || !s.kv || !s.kp || !potlasAblakban(s)) return nincs; // csak a 7 napon beluli kattintas azonositoja potlodik
   const { adat } = erkezesTisztit(be.attr, most * 1000);
   const attr = be.attr && typeof be.attr === 'object' && !Array.isArray(be.attr) ? { ...be.attr } : {};
   let potolt = false;

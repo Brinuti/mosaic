@@ -27,6 +27,24 @@
   var MINTA = { gclid: /^[A-Za-z0-9_-]{10,200}$/, gbraid: /^[A-Za-z0-9_-]{10,200}$/, wbraid: /^[A-Za-z0-9_-]{10,200}$/, fbclid: /^[A-Za-z0-9_-]{8,200}$/, ttclid: /^[A-Za-z0-9_.-]{8,200}$/ };
   var UTM = ['source', 'medium', 'campaign', 'term', 'content'];
   var ma = function () { return Math.floor(Date.now() / 1000); };
+  // 7 napos utolso fizetett kattintas (docs/booking-engine/FORRAS_LPT.md): a parse (lent) mar a vegen levo szakasz elott fut, ezert ezek a deklaraciok itt vannak
+  var KP = ['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid'], F_POTLAS = 'mh_lpt_potlas', POTLAS_MP = 7 * 86400; // POTLAS_MP: a sutibol / Meta- es TikTok-azonositokbol potolt kattintas legnagyobb kora (7 nap = a cimke-ablak)
+  // a Salonic-foglalas utani koszonooldalak (assets/js/foglalas-kulcs.js, tools/netlify-build.mjs FOGLALAS_KOSZONO): ezek NEM erkezesek, ott nem keletkezik uj erintes
+  var KOSZONO_UT = /^\/(success-foglalas[a-z0-9-]*|oxigenterapia-masodik|ajikartya-ok|eltavolitas-ok|elysion-ok|fodrasz-ok|foglalas-ok|korrekcio-ok|oxigenterapia-ok|pmu-ok|szor-konzi-ok|szortelenites-ok|pmu-vh|pmu-lead-ok)\/?$/;
+  function koszonoOldal() { return KOSZONO_UT.test(location.pathname) || /(?:^|[?&])bookingUrl=/.test(location.search); }
+  // a foglalo-atadasnal a SUTIBOL potolt azonositok (sessionStorage 'mh_lpt_potlas': "kulcs:suti-kattintasi-ido,..."): a koszonooldalon az URL-ben levo ilyen azonosito ts-e a suti VALODI kattintasi ideje
+  // (nem a koszonooldal betoltese), igy a shadow-lanc fbc / ts ideje sem a foglalas ideje. Csak a koszonooldalon (oda megy az atadas). -> { kulcs: unix mp }
+  function potlasIdok() {
+    var o = {};
+    try {
+      if (!koszonoOldal()) return o;
+      String(sessionStorage.getItem(F_POTLAS) || '').split(',').forEach(function (e) {
+        var p = e.split(':'), n = Number(p[1]);
+        if (KP.indexOf(p[0]) >= 0 && Number.isInteger(n) && n > 1600000000 && n <= ma() + 300 && ma() - n <= 120 * 86400) o[p[0]] = n;
+      });
+    } catch (e) { /* nincs jelzes */ }
+    return o;
+  }
 
   // marketing-hozzajarulas (a suti.js dontese): dontes nelkul / elutasitva = false
   function engedely() {
@@ -51,9 +69,12 @@
   ['google', 'meta', 'tiktok'].forEach(function (p) { var o = allapot[p]; if (o && o.ts && t - o.ts > TTL) delete allapot[p]; });
   try {
     var q = new URLSearchParams(location.search);
-    ['gclid', 'gbraid', 'wbraid'].forEach(function (k) { var v = q.get(k); if (v && MINTA[k].test(v)) { allapot.google = allapot.google || {}; allapot.google[k] = { ertek: v, ts: t }; } });
-    var fb = q.get('fbclid'); if (fb && MINTA.fbclid.test(fb)) allapot.meta = { fbclid: fb, ts: t };
-    var tt = q.get('ttclid'); if (tt && MINTA.ttclid.test(tt)) allapot.tiktok = { ttclid: { ertek: tt, ts: t } };
+    // F2: UGYANAZT az azonositot nem belyegezzuk ujra (a mar tarolt / memoriabeli azonositoval egyezo ertek megtartja a ts-t); csak UJ azonosito kap uj ts-t - a sutibol potolt azonosito (koszonooldal)
+    // a suti valodi kattintasi idejet (potlasIdok), kulonben a mostani idot. A parse a koszonooldalon is lefut (a hozzajarulas nelkuli SZ-38 memoria-pillanatkep es a Google R1 ettol fugg).
+    var pi = potlasIdok();
+    ['gclid', 'gbraid', 'wbraid'].forEach(function (k) { var v = q.get(k); if (v && MINTA[k].test(v)) { var r = allapot.google && allapot.google[k]; allapot.google = allapot.google || {}; allapot.google[k] = { ertek: v, ts: r && r.ertek === v && r.ts ? r.ts : (pi[k] || t) }; } });
+    var fb = q.get('fbclid'); if (fb && MINTA.fbclid.test(fb)) { var rm = allapot.meta; allapot.meta = { fbclid: fb, ts: rm && rm.fbclid === fb && rm.ts ? rm.ts : (pi.fbclid || t) }; }
+    var tt = q.get('ttclid'); if (tt && MINTA.ttclid.test(tt)) { var rt = allapot.tiktok && allapot.tiktok.ttclid; allapot.tiktok = { ttclid: { ertek: tt, ts: rt && rt.ertek === tt && rt.ts ? rt.ts : (pi.ttclid || t) } }; }
     var utm = {}, van = false;
     UTM.forEach(function (k) { var v = q.get('utm_' + k); if (v) { utm[k] = String(v).slice(0, 120); van = true; } });
     if (van) { utm.ts = t; allapot.utm_utolso = utm; if (!allapot.utm_elso) allapot.utm_elso = JSON.parse(JSON.stringify(utm)); }
@@ -114,6 +135,7 @@
       try { if (sessionStorage.getItem(jel)) return Promise.resolve({ allapot: 'mar_kuldve' }); } catch (e) { /* privat mod */ }
       var body = Object.assign({}, o, { attr: pillanatkep(), hozz: hozzajarulas(), oldal: location.origin + location.pathname });
       try { // 7 napos utolso fizetett kattintas: a latogatas erintese (tisztitva, azonosito-ertek nelkul) + a tarolo tipusa + a foglalo-atadasnal a sutibol potolt kattintasi parameterek (csak tipusok)
+        body.forras_adv = engedely(); // a HATALYOS marketing-allapot (a "hozz" nyers mh_cc marad, SZ-38): a szerver a suti-olvasashoz / potlashoz ezt hasznalja
         var fo = forrasOlvas();
         if (fo) { body.forras = tiszta(fo); body.forras_tarolo = fo.b === 'l' ? 'latogatas' : 'munkamenet'; }
         var pot = lptPotlasOlvas(); if (pot.length) body.lpt_potlas = pot;
@@ -152,12 +174,9 @@
   }
   // ===================== 7 NAPOS UTOLSO FIZETETT KATTINTAS (forras-meres) =====================
   var LPT_HOST = /^(www\.)?mosaicheadspa\.hu$/.test(location.hostname) || /\.pages\.dev$/.test(location.hostname) || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  var F_SESS = 'mh_forras', F_LATOG = 'mh_forras_l', F_POTLAS = 'mh_lpt_potlas', F_TOROLVE = 'mh_lpt_torolve', LATOG_MP = 2 * 3600, F_V = 1;
-  var KP = ['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid'];
+  var F_SESS = 'mh_forras', F_LATOG = 'mh_forras_l', F_TOROLVE = 'mh_lpt_torolve', LATOG_MP = 2 * 3600, F_V = 1;
   var FIZ_MEDIUM = ['cpc', 'ppc', 'paid', 'paid_social', 'paidsocial', 'paid_search', 'cpm'];
-  // a Salonic-foglalas utani koszonooldalak (assets/js/foglalas-kulcs.js, tools/netlify-build.mjs FOGLALAS_KOSZONO): ezek NEM erkezesek, ott nem keletkezik uj erintes
-  var KOSZONO_UT = /^\/(success-foglalas[a-z0-9-]*|oxigenterapia-masodik|ajikartya-ok|eltavolitas-ok|elysion-ok|fodrasz-ok|foglalas-ok|korrekcio-ok|oxigenterapia-ok|pmu-ok|szor-konzi-ok|szortelenites-ok|pmu-vh|pmu-lead-ok)\/?$/;
-  function utmT(v) { v = String(v == null ? '' : v).trim().replace(/[^A-Za-z0-9._~:+-]+/g, '_').slice(0, 100).replace(/^_+|_+$/g, ''); return v || null; }
+  function utmT(v) { v = String(v == null ? '' : v).trim(); if (v.normalize) v = v.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); v = v.replace(/[^A-Za-z0-9._~:+-]+/g, '_').slice(0, 100).replace(/^_+|_+$/g, ''); return v || null; }
   function szamT(v) { v = String(v == null ? '' : v).trim(); return /^\d{1,20}$/.test(v) ? v : null; }
   function refKat() { // a hivatkozo KATEGORIAJA (URL nincs): belso | search | social | egyeb | nincs
     var r = d.referrer; if (!r) return 'nincs';
@@ -240,7 +259,7 @@
       if (!mar) { try { sessionStorage.setItem(F_TOROLVE, '1'); } catch (e2) { /* nem baj */ } lptTorolKuld(); }
       return;
     }
-    if (KOSZONO_UT.test(location.pathname) || /(?:^|[?&])bookingUrl=/.test(location.search)) { latogatasFrissit(); return; } // koszonooldal: nem erkezes
+    if (koszonoOldal()) { latogatasFrissit(); return; } // koszonooldal: nem erkezes
     var rk = refKat(), regi = forrasOlvas(), er = erintes(new URLSearchParams(location.search), rk === 'belso' ? 'nincs' : rk), uj = er.touch, csere = false;
     if (!regi) csere = rk !== 'belso' || jel(uj); // elso erkezes (belso hivatkozoval csak ha van jel)
     else if (rk === 'belso') csere = false; // belso navigacio / tovabbvitt parameterek: nem valtoztat
@@ -263,17 +282,18 @@
     try {
       if (!engedely()) return;
       var l = []; (kulcsok || []).forEach(function (k) { if (KP.indexOf(k) >= 0 && l.indexOf(k) < 0) l.push(k); });
-      if (l.length) sessionStorage.setItem(F_POTLAS, l.join(',')); else sessionStorage.removeItem(F_POTLAS);
+      // "kulcs:suti-kattintasi-ido" (a GET-valasz t mezoje); ido nelkul csak a kulcs
+      if (l.length) sessionStorage.setItem(F_POTLAS, l.map(function (k) { return lpt.t ? k + ':' + lpt.t : k; }).join(',')); else sessionStorage.removeItem(F_POTLAS);
     } catch (e) { /* nem baj */ }
   }
   function lptPotlasOlvas() {
     var o = [];
-    try { if (!engedely()) return o; String(sessionStorage.getItem(F_POTLAS) || '').split(',').forEach(function (k) { if (KP.indexOf(k) >= 0 && o.indexOf(k) < 0) o.push(k); }); } catch (e) { /* nem baj */ }
+    try { if (!engedely()) return o; String(sessionStorage.getItem(F_POTLAS) || '').split(',').forEach(function (e) { var k = e.split(':')[0]; if (KP.indexOf(k) >= 0 && o.indexOf(k) < 0) o.push(k); }); } catch (e) { /* nem baj */ }
     return o;
   }
 
   // --- a sutibol (a szerverrol, GET) visszanyert kattintasazonositok: egyszer kerjuk le (a foglalo megnyitasakor), a memoriaban tartjuk; az atadas (handoff) a MAR MEGJOTT eredmenyt hasznalja, nem var ra ---
-  var lpt = { inditva: false, kesz: false, klikk: {}, ig: null };
+  var lpt = { inditva: false, kesz: false, klikk: {}, t: null, ig: null }; // t: a suti kattintasi ideje (a GET-valaszbol)
   function lptInditas() {
     if (lpt.inditva) return lpt.ig;
     lpt.inditva = true;
@@ -285,8 +305,10 @@
         fetch('/api/mosaic-forras', { method: 'GET', credentials: 'same-origin', cache: 'no-store' })
           .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (j) {
-            var k = {}, s = j && j.ok === true && j.klikk && typeof j.klikk === 'object' ? j.klikk : {};
+            var k = {}, s = j && j.ok === true && j.klikk && typeof j.klikk === 'object' ? j.klikk : {}, tv = Number(j && j.t);
+            lpt.t = Number.isInteger(tv) && tv > 1600000000 && tv <= ma() + 300 ? tv : null;
             KP.forEach(function (p) { if (typeof s[p] === 'string' && MINTA[p].test(s[p])) k[p] = s[p]; });
+            if (lpt.t && ma() - lpt.t > POTLAS_MP) k = {}; // vedelem: a 7 napnal regebbi kattintas azonositoja nem potlas (a szerver mar nem adja)
             vege(k);
           }).catch(function () { vege({}); });
       } catch (e) { vege({}); }
@@ -304,8 +326,8 @@
     try { if (!engedely()) return Promise.resolve({}); return lptInditas().then(function () { return lptKlikk(); }); } catch (e) { return Promise.resolve({}); }
   }
   /**
-   * Az osszevont kattintasazonositok a foglalo koszonooldal-atadasahoz: a BONGESZOBOL jovo elsobbseget elvez (Google: az URL / mh_attr / _gcl_aw / _gcl_gb = googleAzonositok(); Meta: az URL / mh_attr fbclid, tartalekban a
-   * _fbc suti; TikTok: az URL / mh_attr ttclid), a sutibol (lptKlikk) csak az a platform potlodik, amelyikhez a bongeszobol NEM jott azonosito. -> { ids: { gclid?.. ttclid? }, lpt: [a sutibol potolt kulcsok] }
+   * Az osszevont kattintasazonositok a foglalo koszonooldal-atadasahoz: a BONGESZOBOL jovo elsobbseget elvez (Google: az URL / mh_attr / _gcl_aw / _gcl_gb = googleAzonositok(), valtozatlanul; Meta: az URL / mh_attr fbclid,
+   * tartalekban a _fbc suti; TikTok: az URL / mh_attr ttclid - Meta / TikTok csak <= 7 napos kattintas), a sutibol (lptKlikk, <= 7 napos kattintas) csak az a platform potlodik, amelyikhez a bongeszobol NEM jott azonosito. -> { ids: { gclid?.. ttclid? }, lpt: [a sutibol potolt kulcsok] }
    * Hozzajarulas nelkul / elutasitas utan ures (ugyanaz a kapu, mint a googleAzonositok()-nal). Csak olvas.
    */
   function klikkReszletes() {
@@ -314,11 +336,15 @@
       if (!engedely()) return { ids: ids, lpt: lp };
       var g = googleAzonositok(), most = ma();
       for (var gk in g) ids[gk] = g[gk];
+      // Meta / TikTok: a click-through ablakuk 7 nap -> csak <= 7 napos (ts) azonosito; a Google ag (googleAzonositok: mh_attr 90 nap, _gcl_aw) VALTOZATLAN
       var mt = allapot.meta, fb = mt && mt.fbclid;
-      if (fb && MINTA.fbclid.test(fb) && (!mt.ts || most - mt.ts <= TTL)) ids.fbclid = fb;
-      else { var fbc = suti('_fbc'), fm = fbc && fbc.match(/^fb\.[0-2]\.\d{10,13}\.([A-Za-z0-9_-]{8,200})$/); if (fm) ids.fbclid = fm[1]; }
+      if (fb && MINTA.fbclid.test(fb) && mt.ts && most - mt.ts <= POTLAS_MP) ids.fbclid = fb;
+      else {
+        var fbc = suti('_fbc'), fm = fbc && fbc.match(/^fb\.[0-2]\.(\d{10,13})\.([A-Za-z0-9_-]{8,200})$/), fsec = fm && (fm[1].length >= 13 ? Math.floor(Number(fm[1]) / 1000) : Number(fm[1]));
+        if (fm && most - fsec <= POTLAS_MP) ids.fbclid = fm[2]; // az _fbc ideje a kattintas (vagy a Pixel betoltesenek) ideje
+      }
       var tk = allapot.tiktok && allapot.tiktok.ttclid;
-      if (tk && tk.ertek && MINTA.ttclid.test(tk.ertek) && (!tk.ts || most - tk.ts <= TTL)) ids.ttclid = tk.ertek;
+      if (tk && tk.ertek && MINTA.ttclid.test(tk.ertek) && tk.ts && most - tk.ts <= POTLAS_MP) ids.ttclid = tk.ertek;
       var s = lptKlikk(), googleVan = !!(ids.gclid || ids.gbraid || ids.wbraid);
       KP.forEach(function (k) {
         if (!s[k] || ids[k]) return;
