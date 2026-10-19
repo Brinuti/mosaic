@@ -98,11 +98,12 @@ export function meterNelkul(src, hivasok = null) { // hivasok (opcionalis tomb):
 export function hivasHiba(h) {
   const hibak = [];
   if (!(h.elozo === '' || h.elozo === ';' || h.elozo === '{' || h.elozo === '}')) hibak.push(`nem utasitas-hataron all (elozo: ${JSON.stringify(h.elozo)})`);
+  if (h.arg.includes('${')) hibak.push('sablon-literal interpolacio az argumentumban');
   const a = h.arg.replace(/nowUnix\(\)/g, 'N').replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, 'S').replace(/`[^`]*`/g, 'S');
   if (/\b(await|new|delete|typeof|void|function|class|yield)\b|=>/.test(a)) hibak.push('tiltott kulcsszo az argumentumban');
   if (/[\w$\]]\s*\(/.test(a)) hibak.push('fuggvenyhivas az argumentumban');
   if (/(^|[^=!<>])=(?!=)/.test(a)) hibak.push('ertekadas az argumentumban');
-  if (/\+\+|--|\+=|-=|\*=|\/=/.test(a)) hibak.push('novel / csokkent / osszetett ertekadas az argumentumban');
+  if (/\+\+|--|\+=|-=|\*=|\/=|%=|&=|\|=|\^=|<<=|>>=|>>>=|\*\*=|&&=|\|\|=|\?\?=/.test(a)) hibak.push('novel / csokkent / osszetett ertekadas az argumentumban');
   if (!/^[\w$.\s,&|!=?:<>()+\-\[\]]*$/.test(a)) hibak.push('nem megengedett karakter az argumentumban');
   return hibak;
 }

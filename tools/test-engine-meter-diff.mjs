@@ -23,7 +23,7 @@ test('hivasHiba: engedelyezett alakok (utasitas-hatar, azonosito / tagolvasas / 
 test('hivasHiba: tiltott alakok kimutatva (nem utasitas-hataron: if-torzs / else-torzs / kifejezes; mellekhatasos argumentum: ertekadas, hivas, await, new, ++)', () => {
   const nem = (src) => assert.ok(hibak(src).length > 0, src);
   nem('if (c) meter.x(); stmt();'); nem('if (!S.slots.length) meter.c1(1); { track("x"); go("A1"); return null; }'); nem('else meter.a2Ok("taken"); go("A2");'); nem('x && meter.a2Ok("taken");'); nem('const m_ = 1; y = meter.a2Ok("taken");'); nem('f(meter.a2Ok("x"));');
-  nem('a(); meter.c1(S.slots.reverse(), S.staff, nowUnix());'); nem('a(); meter.a2Ok((S.state = "C1"));'); nem('a(); meter.c1(go("A2"), 1, 2);'); nem('a(); meter.c1(await x(), 1, 2);'); nem('a(); meter.c1(new Date(), 1, 2);'); nem('a(); meter.c1(S.n++, 1, 2);'); nem('a(); meter.c1(() => 1, 1, 2);'); nem('a(); meter.c1(S.slots.length += 1, 1, 2);');
+  nem('a(); meter.c1(S.slots.reverse(), S.staff, nowUnix());'); nem('a(); meter.a2Ok((S.state = "C1"));'); nem('a(); meter.c1(go("A2"), 1, 2);'); nem('a(); meter.c1(await x(), 1, 2);'); nem('a(); meter.c1(new Date(), 1, 2);'); nem('a(); meter.c1(S.n++, 1, 2);'); nem('a(); meter.c1(() => 1, 1, 2);'); nem('a(); meter.c1(S.slots.length += 1, 1, 2);'); nem('a(); meter.c1(`${go(1)}`, 2);'); nem('a(); meter.c1(`${S.x = 1}`, 2);'); nem('a(); meter.c1(S.n >>= 1, 2);'); nem('a(); meter.c1(S.n <<= 1, 2);'); nem('a(); meter.c1(S.n ||= 1, 2);');
 });
 
 test('a masik meter-hivas utan allo meter-hivas az elozo hivas lezaro jelet kapja (nem az `else`-t, amit a torles hagyott maga utan)', () => {
