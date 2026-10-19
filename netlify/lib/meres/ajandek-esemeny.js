@@ -19,7 +19,7 @@ export function ajandekForras(pi, mod) {
   const fillerben = atu ? pi.amount : (pi.amount_received || pi.amount); // a HUF-ot a Stripe fillerben (x100) adja
   const email = String(pi.receipt_email || (ch && ch.billing_details && ch.billing_details.email) || '').trim();
   const telefon = String(md.telefon || (ch && ch.billing_details && ch.billing_details.phone) || '').trim();
-  return { fk: { tipus: 'ajandekkartya', uzletag: 'headspa', source_entity_id: sourceId, ertek: Math.round(Number(fillerben) || 0) / 100, ido: Number.isFinite(ido) && ido > 0 ? ido : null, szolgaltatas: md.termek || null, vendeg: { email, telefon, g: null }, forras: atu ? 'atutalas' : 'kartya' } };
+  return { fk: { tipus: 'ajandekkartya', uzletag: 'headspa', source_entity_id: sourceId, ertek: Math.round(Number(fillerben) || 0) / 100, ido: Number.isFinite(ido) && ido > 0 ? ido : null, szolgaltatas: md.termek || null, vendeg: { email, telefon, g: null, nev: md.nev || null, varos: md.varos || null, iranyitoszam: md.iranyitoszam || null }, forras: atu ? 'atutalas' : 'kartya' } }; // nev / varos / iranyitoszam (DECISION #202): a vasarlo adatai a PI metadataban, csak hash-elve mennek (a nyers adat nem naplozodik)
 }
 
 /** Az "elo allapot": a Stripe-tol UJRA lekerdezett PaymentIntent - sikeres, nem visszateritett / vitatott / visszavont. 'aktiv' | 'torolve'; hiba = kivetel (-> halasztva). */

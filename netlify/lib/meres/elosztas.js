@@ -6,7 +6,7 @@
 //   - esemeny kuldese ELOTT elo allapot-ellenorzes (deps.eloEllenorzes): torolt foglalasra nem megy pozitiv konverzio; nem ellenorizheto -> halasztva
 // Csak ARNYEKMODBAN fut (MERES_ELOSZTO=1 es a platformok.js vedelmei); elo pixelre / property-re / akciora nem kuldhet.
 import { esemenyek, konzultacioTabla, SOURCE_ID_MINTA, UZLETAGAK } from './esemeny-modell.js';
-import { emailNormal, hashEmail, hashTelefon, hashAzonosito, kuponNelkul } from './hash.js';
+import { felhasznaloHash } from './felhasznalo-hash.js';
 import { erkezesTisztit } from './erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from './hozzajarulas.js';
 import { KEREM_EPITO, kuldes, PLATFORMOK } from './platformok.js';
@@ -125,7 +125,7 @@ export async function elosztas(db, fk, deps = {}) {
   const kapcsolok = await kapcsolokOlvas(db);
   const ctxAlap = { fk: { ...fk, ido: fk.ido || (erkRow ? erkRow.ido : t) }, erk, ua: erkRow ? erkRow.ua : null, ip: erkRow ? erkRow.ip : null, oldal: fk.oldal || (erkRow ? erkRow.oldal : null), hozz: { meta: platformSzabaly('meta', hozz, env), tiktok: platformSzabaly('tiktok', hozz, env), google: platformSzabaly('google', hozz, env), ga4: platformSzabaly('ga4', hozz, env) } };
   const v = fk.vendeg || {};
-  ctxAlap.hash = { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await hashAzonosito(v.g || emailNormal(v.email) || kuponNelkul(v.email)) };
+  ctxAlap.hash = await felhasznaloHash(env, v); // DECISION #202: em / ph / ext + fn / ln / country (Meta), Google / GA4 e-mail, GA4 user_id; nyers adat sehova
   const osszefoglalo = { allapot: 'kesz', source_id: fk.source_entity_id, erkezesi_adat: !!erkRow, esemenyek: [] };
 
   // minden (esemeny, platform) cella mar VEGLEGES (elkuldve / modell szerint kihagyva / lemondva): nincs teendo, elo lekeres sem kell (az ismetelt hivas olcso es nem kuld)
@@ -190,7 +190,16 @@ export async function elosztas(db, fk, deps = {}) {
   }
   return osszefoglalo;
 }
-function maszkolt(body) { // a naplozott kerelemben a nyers IP maszkolt (a kuldott kerelemben valodi)
-  const s = JSON.stringify(body, (k, v) => (k === 'client_ip_address' || k === 'ip' ? maszkIp(v) : v));
+// DECISION #202 / 4. pont: nyers vendegadat SEHOVA (D1-naplo se): a kimeno kerelemben a hash megy, a NAPLOZOTT torzsben a hash-ertekek ("[hash]") es a nyers IP maszkoltak (a mezo megleten latszik, melyik adat ment ki).
+// A nev-hash (fn / ln) szotar-tamadassal trivialisan visszafejtheto, ezert nem marad a naploban. A gclid / fbc / fbp / ttclid / ttp NEM vendegadat (technikai azonosito): valtozatlan (a google_proba a naplobol valaszt gclid-et).
+const HASH_KULCSOK = new Set(['em', 'ph', 'fn', 'ln', 'ct', 'zp', 'country', 'external_id', 'email', 'phone', 'first_name', 'last_name', 'user_id', 'hashed_email', 'hashed_phone', 'hashed_phone_number', 'sha256_email_address', 'sha256_phone_number', 'sha256_first_name', 'sha256_last_name', 'sha256_street']);
+const HASH_ALAK = /^[0-9a-f]{32,64}$/;
+const maszkErtek = (x) => (typeof x === 'string' && HASH_ALAK.test(x) ? '[hash]' : x);
+function maszkolt(body) { // a naplozott kerelemben a nyers IP es a hash-ertekek maszkoltak (a kuldott kerelemben valodi)
+  const s = JSON.stringify(body, (k, v) => {
+    if (k === 'client_ip_address' || k === 'ip' || k === 'ip_address' || k === 'user_ip_address') return maszkIp(v);
+    if (HASH_KULCSOK.has(k)) return Array.isArray(v) ? v.map(maszkErtek) : maszkErtek(v);
+    return v;
+  });
   return JSON.parse(s);
 }
