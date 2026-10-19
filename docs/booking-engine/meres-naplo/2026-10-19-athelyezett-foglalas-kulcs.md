@@ -19,11 +19,11 @@ Ha a kulcs birtokosa `aktiv`, az aktuális kezdet: 1. a megtekintés-oldal linkj
 Kapcsolódó csomagok zölden: `test-meres`, `test-qa-nap`, `test-google-proba`, `test-salonic-direct`, `test-sd-194`, `test-sd-headspa`, `test-qa4-smoke`. (`test-fuggetlenseg` 3. esete a main-en is bukik, nem ez a PR.)
 
 ## 5. Védett elemek (blob-hash, main -> PR)
-- `netlify/lib/meres/google-proba.js` f1bb0095f8 -> f1bb0095f8 (változatlan; a main b0ffa49d-n)
-- `netlify/lib/meres/vegpontok.js` 085bed6aad -> 085bed6aad (változatlan; a main b0ffa49d-n)
+- `netlify/lib/meres/google-proba.js` f1bb0095f8 -> f1bb0095f8 (változatlan; a main a8bb89ca-n)
+- `netlify/lib/meres/vegpontok.js` 085bed6aad -> 085bed6aad (változatlan; a main a8bb89ca-n)
 - `netlify/lib/meres/qa-nap.js` 2334390be3 -> 2334390be3 (változatlan)
-- `netlify/lib/meres/esemeny-modell.js` 4342e6f09b -> 4342e6f09b (változatlan); a `netlify/lib/meres` fa ef94fecccd -> ef94fecccd (változatlan)
-- `netlify/lib/foglalas-kulcs.js` e1448b4d13 -> 574f59b000 (VÁLTOZIK: ez a PR tárgya, dokumentált); ezzel a `netlify` fa 44a318e2f6 -> b3f7749f0e (a main b0ffa49d-n)
+- `netlify/lib/meres/esemeny-modell.js` 4342e6f09b -> 4342e6f09b (változatlan); a `netlify/lib/meres` fa 776c1e6ddb -> 776c1e6ddb (változatlan)
+- `netlify/lib/foglalas-kulcs.js` e1448b4d13 -> 574f59b000 (VÁLTOZIK: ez a PR tárgya, dokumentált); ezzel a `netlify` fa ed2e028751 -> 79c649b20d (a main a8bb89ca-n)
 
 ## 6. Nyitott / korlát
 A két kiesett sor (`8accdc58`, `b39d2de4`) `ellentmondas` állapotban marad, amíg a párosítást (az eredeti e-mail-adatokkal) újra nem futtatják; az `egyeztet` az `ellentmondas` sort újrafuttatja (nem lezárt állapot). Ha A-t ugyanarra az időre, de másik munkatárshoz helyezik át, a kezdet egyezik: a (régi) hamis ellentmondás marad.
