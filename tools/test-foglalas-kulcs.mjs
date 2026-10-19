@@ -495,10 +495,12 @@ test('foglalasKezdet: a naptar-export DTSTART-ja (UTC) -> unix; idegen host, ros
   assert.equal((await kez(F({}))).ok, false, 'a Salonic nem ad naptar-exportot (404)'); assert.equal((await kez(F({}))).miert, 'http 404');
   const r500 = await kez(F({ [UUID]: 'hiba' })); assert.deepEqual({ ok: r500.ok, status: r500.status, miert: r500.miert }, { ok: false, status: 500, miert: 'http 500' });
   for (const [nev, t] of [['nincs DTSTART', 'BEGIN:VCALENDAR\r\nEND:VCALENDAR'], ['TZID-s', 'DTSTART;TZID=Europe/Budapest:20261020T180000\r\n'], ['Z nelkuli', 'DTSTART:20261020T180000\r\n'],
-    ['tobb DTSTART', 'DTSTART:20261020T160000Z\r\nDTSTART:20261021T160000Z\r\n'], ['ervenytelen honap', 'DTSTART:20261320T160000Z\r\n'], ['ervenytelen nap', 'DTSTART:20261031T250000Z\r\n'], ['tartomanyon kivul (1999)', 'DTSTART:19990101T000000Z\r\n']]) {
+    ['tobb DTSTART', 'DTSTART:20261020T160000Z\r\nDTSTART:20261021T160000Z\r\n'], ['ervenytelen honap', 'DTSTART:20261320T160000Z\r\n'], ['ervenytelen nap', 'DTSTART:20260231T160000Z\r\n'], ['ervenytelen ora', 'DTSTART:20261031T250000Z\r\n'], ['tartomanyon kivul (1999)', 'DTSTART:19990101T000000Z\r\n']]) {
     assert.equal((await kez(szoveg(t))).ok, false, nev);
   }
-  assert.equal((await kez(async () => { throw new Error('halozati hiba'); })).ok, false); assert.match((await kez(async () => { throw new Error('halozati hiba'); })).miert, /lekeres-hiba/);
+  const rk = await kez(async () => { throw new Error('halozati hiba'); }); assert.deepEqual({ ok: rk.ok, atmeneti: rk.atmeneti }, { ok: false, atmeneti: true }); assert.match(rk.miert, /lekeres-hiba/);
+  for (const [st, atm] of [[500, true], [503, true], [408, true], [429, true], [404, false], [403, false]]) { const rr = await kez(async () => ({ ok: false, status: st, url: 'x', text: async () => '' })); assert.deepEqual({ ok: rr.ok, atmeneti: rr.atmeneti, miert: rr.miert }, { ok: false, atmeneti: atm, miert: 'http ' + st }, 'http ' + st); }
+  assert.equal((await kez(szoveg('DTSTART:20261119T163000Z\r\n'))).atmeneti, undefined, 'siker: nincs atmeneti jelzo');
   assert.equal((await foglalasKezdet({ host: 'evil.example.com', uuid: UUID, fetchImpl: F({ [UUID]: k0 }) })).ok, false, 'idegen host nem kerdezheto');
   assert.equal((await foglalasKezdet({ host: 'mosaic-hair.salonic.hu', uuid: 'nem-uuid', fetchImpl: F({}) })).ok, false);
 });
@@ -547,6 +549,11 @@ test('ket ELO foglalas azonos kulccsal tovabbra is ELLENTMONDAS: a link kezdete 
   await kulcsIras(H.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, H.t());
   const rh = await egyeztet(H.adb, bMezok(H), H.deps());
   assert.deepEqual({ a: rh.allapot, k: rh.kuldheto, r: rh.riasztas }, { a: 'fuggoben', k: false, r: false }); assert.match(rh.miert, /atmeneti hiba/);
+  const X = await lanc(); X.t.tick(3600); X.allapotok[UUID] = 'athelyezett'; // az export lekerese kivetelt dob (halozat / idotullepes): szinten atmeneti -> varakozas
+  await kulcsIras(X.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, X.t());
+  const fx0 = eloFetch(X.allapotok, X.kezdetek);
+  const rx = await egyeztet(X.adb, bMezok(X), { now: X.t, fetchImpl: async (url) => { if (String(url).includes('/addToCalendar/')) throw new Error('idotullepes'); return fx0(url); } });
+  assert.deepEqual({ a: rx.allapot, k: rx.kuldheto }, { a: 'fuggoben', k: false }); assert.match(rx.miert, /atmeneti hiba.*lekeres-hiba/);
 });
 
 test('SORREND 2/3: az A LEMONDASI ertesitoje B e-mailje ELOTT ert ide (B koszonooldala mar iras): a kulcs CSAK felszabadul (a jelolt elo allapota itt nem ellenorizheto), B levelenel - elo ellenorzes utan - veszi at', async () => {

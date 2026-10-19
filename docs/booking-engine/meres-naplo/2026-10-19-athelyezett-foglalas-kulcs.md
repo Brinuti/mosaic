@@ -15,11 +15,15 @@ fodrász ×3 (`ff130617`, `60e751f6`, `8c93723e`), HeadSpa ×3 (`07917640`, `ded
 Ha a kulcs birtokosa `aktiv`, az aktuális kezdet: 1. a megtekintés-oldal linkjének kezdete; 2. ha nincs link: a naptár-export (pontosan egy UTC `DTSTART`, érvényes dátum, tartomány). Ha eltér a kulcs kezdetétől: a kulcs felszabadul, az új foglalás kapja (átadás oka: „áthelyezve”, a forrással). Ha egyezik, vagy az export nem olvasható / érvénytelen: `ellentmondas` (fail-closed); átmeneti exporthiba (hálózat, 5xx): függőben, újrapróbálás.
 
 ## 4. Tesztek
-`node --test tools/test-foglalas-kulcs.mjs`: 46/46 (új: `foglalasKezdet` egységtesztek – TZID-s, Z nélküli, több, érvénytelen, tartományon kívüli DTSTART, http-hiba, hálózati hiba, idegen host, rossz uuid; áthelyezett birtokos naptár-exporttal; áthelyezett birtokos, ha az oldal linkje más kezdetet mutat; azonos kezdet / nem olvasható export → `ellentmondas`; átmeneti exporthiba → függőben).
+`node --test tools/test-foglalas-kulcs.mjs`: 46/46 (a delta-review nit-jei után is; új: `foglalasKezdet` egységtesztek – TZID-s, Z nélküli, több, érvénytelen, tartományon kívüli DTSTART, http-hiba, hálózati hiba, idegen host, rossz uuid; áthelyezett birtokos naptár-exporttal; áthelyezett birtokos, ha az oldal linkje más kezdetet mutat; azonos kezdet / nem olvasható export → `ellentmondas`; átmeneti exporthiba → függőben).
 Kapcsolódó csomagok zölden: `test-meres`, `test-qa-nap`, `test-google-proba`, `test-salonic-direct`, `test-sd-194`, `test-sd-headspa`, `test-qa4-smoke`. (`test-fuggetlenseg` 3. esete a main-en is bukik, nem ez a PR.)
 
-## 5. Védett elemek
-`google-proba.js`, `vegpontok.js`, `qa-nap.js`, `esemeny-modell.js`: változatlanok. Változik: `netlify/lib/foglalas-kulcs.js` (és ezzel a `netlify/lib` fa), dokumentált.
+## 5. Védett elemek (blob-hash, main -> PR)
+- `netlify/lib/meres/google-proba.js` f6e5bf9d13 -> f6e5bf9d13 (változatlan)
+- `netlify/lib/meres/vegpontok.js` b5e3881fc7 -> b5e3881fc7 (változatlan)
+- `netlify/lib/meres/qa-nap.js` 2334390be3 -> 2334390be3 (változatlan)
+- `netlify/lib/meres/esemeny-modell.js` 4342e6f09b -> 4342e6f09b (változatlan); a `netlify/lib/meres` fa 488d8f699c -> 488d8f699c (változatlan)
+- `netlify/lib/foglalas-kulcs.js` e1448b4d13 -> HASH_FK (VÁLTOZIK: ez a PR tárgya, dokumentált); ezzel a `netlify` fa 1e6028d604 -> HASH_NETLIFY
 
 ## 6. Nyitott / korlát
 A két kiesett sor (`8accdc58`, `b39d2de4`) `ellentmondas` állapotban marad, amíg a párosítást (az eredeti e-mail-adatokkal) újra nem futtatják; az `egyeztet` az `ellentmondas` sort újrafuttatja (nem lezárt állapot). Ha A-t ugyanarra az időre, de másik munkatárshoz helyezik át, a kezdet egyezik: a (régi) hamis ellentmondás marad.

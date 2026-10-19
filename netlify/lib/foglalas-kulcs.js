@@ -161,6 +161,7 @@ export async function salonicOldalKulcs({ host, uuid, fetchImpl }) {
 /**
  * Egy Salonic-foglalas ELO allapota (csak olvasas: GET /booking/bookingDetails/<uuid>): 'aktiv' (a "Foglalas modositasa" link / "Visszaigazolt" / "Confirmed" megvan),
  * 'torolve' ("Idopont torolve!" / "Appointment deleted!"), egyebkent 'ismeretlen' (hiba, mas oldal). A levelek sorrendjetol fuggetlen: mindig az aktualis allapotot kerdezi.
+ * 'aktiv' eseten a startUnix (additiv mezo) a "Foglalas modositasa" link kezdete, vagy null (link nelkul, pl. a vendeg athelyezte a foglalast: ekkor a foglalasKezdet adja az aktualis kezdetet).
  */
 export async function foglalasAllapot({ host, uuid, fetchImpl }) {
   if (!HOSTOK[host]) return { allapot: 'ismeretlen', miert: 'ismeretlen host' };
@@ -178,14 +179,14 @@ export async function foglalasAllapot({ host, uuid, fetchImpl }) {
 /**
  * Egy Salonic-foglalas AKTUALIS kezdete (csak olvasas: GET /booking/addToCalendar/<uuid>/ios -> "DTSTART:YYYYMMDDTHHMMSSZ"). Azert kell, mert a vendeg ATHELYEZHETI a foglalast
  * ("Foglalas modositva vendeg altal"): az UUID aktiv marad, a kulcstabla viszont a REGI kezdetet orzi; az athelyezett foglalas megtekintes oldalan nincs gepi kezdet
- * (nincs "Foglalas modositasa" link), a naptar-export viszont az aktualisat adja. -> { ok, startUnix, status, miert }
+ * (nincs "Foglalas modositasa" link), a naptar-export viszont az aktualisat adja. -> { ok, startUnix, status, miert, atmeneti } (atmeneti: halozati hiba / 5xx / 408 / 429: ujraprobalhato)
  */
 export async function foglalasKezdet({ host, uuid, fetchImpl }) {
   if (!HOSTOK[host]) return { ok: false, miert: 'ismeretlen host' };
   if (!UUID_MINTA.test(String(uuid))) return { ok: false, miert: 'ervenytelen uuid' };
   try {
     const r = await lekerSzoveg(fetchImpl, `https://${host}/booking/addToCalendar/${uuid}/ios`);
-    if (!(r.status >= 200 && r.status < 300)) return { ok: false, status: r.status, miert: 'http ' + r.status };
+    if (!(r.status >= 200 && r.status < 300)) return { ok: false, status: r.status, miert: 'http ' + r.status, atmeneti: r.status >= 500 || r.status === 408 || r.status === 429 };
     // pontosan EGY, UTC ("Z") DTSTART kell (TZID-s / Z nelkuli / tobb esemenyes export: nem dontunk), ervenyes datum-ido, ertelmes tartomany
     const t = [...String(r.szoveg).matchAll(/^DTSTART:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z\r?$/gm)];
     if (t.length !== 1) return { ok: false, status: r.status, miert: t.length ? 'a naptar-exportban tobb DTSTART van' : 'a naptar-exportban nincs (UTC) DTSTART' };
@@ -196,7 +197,7 @@ export async function foglalasKezdet({ host, uuid, fetchImpl }) {
     const startUnix = Math.round(ms / 1000);
     if (startUnix < KEZDES_MIN || startUnix > KEZDES_MAX) return { ok: false, status: r.status, miert: 'a DTSTART tartomanyon kivul' };
     return { ok: true, status: r.status, startUnix };
-  } catch (e) { return { ok: false, miert: 'lekeres-hiba: ' + String(e && e.message || e).slice(0, 80) }; }
+  } catch (e) { return { ok: false, atmeneti: true, miert: 'lekeres-hiba: ' + String(e && e.message || e).slice(0, 80) }; }
 }
 
 // --- e-mail (a Salonic ertesito levele) ----------------------------------------------------------------------------------------------------
@@ -532,7 +533,7 @@ export async function egyeztet(db, mezok, deps) {
 
   // a kulcs JELOLTJEIBOL (minden foglalas, ami erre a kulcsra jelentkezett) a levelhez tartozo kivalasztasa - a levelek sorrendjetol fuggetlenul:
   //  - ha a kulcs BIRTOKOSA mar mas Salonic-UUID-ra kikuldott esemeny: elo ellenorzes a birtokos foglalas Salonic-oldalan ("Idopont torolve!"):
-  //      torolve -> a kulcs birtoka atkerul erre a foglalasra; el -> ELLENTMONDAS + riasztas; nem ellenorizheto -> varakozas (ujraprobalas)
+  //      torolve -> a kulcs birtoka atkerul erre a foglalasra; el -> ELLENTMONDAS + riasztas, KIVEVE ha a vendeg athelyezte (az aktualis kezdet != a kulcs kezdete: a kulcs felszabadult); nem ellenorizheto -> varakozas (ujraprobalas)
   //  - tobb szabad jelolt kozott a level datuma es a koszonooldali iras ideje (legfeljebb TURES_TOBB_MP) dont; ha nem egyertelmu: ELLENTMONDAS + riasztas
   async function valaszt(k) {
     const lista = await kulcsJeloltek(db, k, now);
@@ -548,10 +549,10 @@ export async function egyeztet(db, mezok, deps) {
         // aktiv, de a vendeg kozben ATHELYEZHETTE masik idopontra: a kulcs a REGI kezdetet orzi, a Salonic aktualis kezdete mas -> a kulcs felszabadult (nem ket elo foglalas azonos kulccsal).
         // Az aktualis kezdet: 1. a megtekintes oldal "Foglalas modositasa" linkje (nem athelyezett foglalas; az UTC-kezelestol fuggetlen), 2. ha nincs link (athelyezett): a naptar-export DTSTART-ja (UTC).
         const kulcsKezdet = Number(String(k).split('|')[2]);
-        let kezdet = elo.startUnix || null, kezForras = kezdet ? 'oldal' : null, kez = null;
+        let kezdet = (elo.startUnix >= KEZDES_MIN && elo.startUnix <= KEZDES_MAX) ? elo.startUnix : null, kezForras = kezdet ? 'oldal' : null, kez = null; // a link kezdete is tartomanyra ellenorizve
         if (!kezdet) { kez = await foglalasKezdet({ host: mezok.host, uuid: birtokosJelolt.kuldve_uuid, fetchImpl: deps.fetchImpl }); if (kez.ok) { kezdet = kez.startUnix; kezForras = 'naptar-export'; } }
         nyom.birtokos_ellenorzes.aktualis_kezdet = { ok: !!kezdet, startUnix: kezdet, forras: kezForras, kulcs_kezdet: kulcsKezdet, status: kez ? (kez.status || null) : null, miert: kez && !kez.ok ? kez.miert : null };
-        if (!kezdet && kez && (/lekeres-hiba/.test(kez.miert || '') || kez.status >= 500)) return { allapot: 'varakozas', kulcs: k, miert: 'a kulcs birtokosanak aktualis kezdete nem olvashato (atmeneti hiba): ' + kez.miert }; // ujraprobalas, nem dont
+        if (!kezdet && kez && kez.atmeneti) return { allapot: 'varakozas', kulcs: k, miert: 'a kulcs birtokosanak aktualis kezdete nem olvashato (atmeneti hiba): ' + kez.miert }; // ujraprobalas, nem dont
         if (!kezdet || !Number.isFinite(kulcsKezdet) || kezdet === kulcsKezdet) return { allapot: 'ellentmondas', kulcs: k, miert: 'a kulcsot mar mas, ELO Salonic-foglalas birtokolja (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + '): ket elo foglalas azonos kulccsal' };
         atadas = { regi: birtokos.booking_id, ok: 'a birtokos Salonic-foglalas (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + ') a vendeg altal athelyezve (aktualis kezdet: ' + new Date(kezdet * 1000).toISOString() + ', forras: ' + kezForras + ') - elo ellenorzes' };
       } else if (elo.allapot !== 'torolve') return { allapot: 'varakozas', kulcs: k, miert: 'a kulcs birtokosa nem ellenorizheto: ' + (elo.miert || elo.allapot) };
