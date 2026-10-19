@@ -153,6 +153,8 @@ const get = (q) => new Request(ORIGIN + '/api/foglalo-szamlalo?' + q);
 const ido = (iso) => ({ most: () => new Date(iso) });
 
 test('ervenyesit: zart lista; minden mas elutasitva', () => {
+  for (const rossz of ['{"lepes":["verify_check"],"uzletag":"hair","tipus":"price"}', '{"lepes":["success_unverified"],"uzletag":"hair"}', '{"lepes":[["lepes_bontas"]],"uzletag":"hair","tipus":"open.google.mobil"}', '{"lepes":5,"uzletag":"hair"}', '{"lepes":{"toString":"open"},"uzletag":"hair"}', '{"lepes":null,"uzletag":"hair"}', '{"uzletag":"hair"}'])
+    assert.equal(ervenyesit(rossz).ok, false, 'nem szoveg lepes: ' + rossz);
   assert.deepEqual(ervenyesit('{"lepes":"open","uzletag":"hair"}'), { ok: true, adat: { lepes: 'open', uzletag: 'hair', tipus: '', loadMs: null } });
   assert.equal(ervenyesit('{"lepes":"slots_loaded","uzletag":"hair","load_ms":99999999}').adat.loadMs, 60000);
   assert.equal(ervenyesit('{"lepes":"error","uzletag":"hair","tipus":"timeout"}').adat.tipus, 'timeout');
@@ -418,7 +420,8 @@ test('#205 forrasOsztaly: kattintas-azonosito KULCSA (az erteke sehova), utm_sou
   const f = (attribution, referrer) => K.forrasOsztaly({ attribution, referrer });
   assert.equal(f({ gclid: 'Cj0KCQ_x' }), 'google'); assert.equal(f({ gbraid: 'abc' }), 'google'); assert.equal(f({ wbraid: 'abc' }), 'google');
   assert.equal(f({ fbclid: 'IwAR_x' }), 'meta'); assert.equal(f({ ttclid: 'E.C.P_x' }), 'tiktok');
-  assert.equal(f({ gclid: 'a', fbclid: 'b', ttclid: 'c' }), 'google', 'tobb azonosito: google > meta > tiktok (zart sorrend)'); assert.equal(f({ fbclid: 'b', ttclid: 'c' }), 'meta');
+  assert.equal(f({ gclid: 'a', fbclid: 'b', ttclid: 'c' }), 'meta', 'tobb azonosito: meta > tiktok > utm_source > google (a Google-azonosito lehet a mentett, 90 napos is: a friss URL-jelek elobbre valok)'); assert.equal(f({ fbclid: 'b', ttclid: 'c' }), 'meta'); assert.equal(f({ gclid: 'a', ttclid: 'c' }), 'tiktok');
+  assert.equal(f({ gclid: 'a', utm_source: 'facebook' }), 'meta', 'a mentett Google-azonosito nem veri le a Meta utm_source-t'); assert.equal(f({ gclid: 'a', utm_source: 'newsletter' }), 'google', 'ismeretlen utm_source: marad a Google-azonosito');
   assert.equal(f({ gclid: '', fbclid: '' }), 'egyeb', 'ures ertek nem azonosito'); assert.equal(f({ gclid: 5 }), 'egyeb', 'nem szoveg');
   for (const [u, e] of [['google', 'google'], ['Google', 'google'], ['googleads', 'google'], ['facebook', 'meta'], ['FB', 'meta'], ['ig', 'meta'], ['instagram', 'meta'], ['meta', 'meta'], ['tiktok', 'tiktok'], ['newsletter', 'egyeb'], ['', 'egyeb'], ['constructor', 'egyeb'], ['__proto__', 'egyeb'], ['toString', 'egyeb']]) assert.equal(f({ utm_source: u }), e, 'utm_source=' + u);
   for (const [r, e] of [['https://www.google.com/', 'google'], ['https://google.hu/search?q=head+spa', 'google'], ['https://www.google.co.uk/', 'google'], ['https://l.facebook.com/l.php?u=x', 'meta'], ['https://m.facebook.com/', 'meta'], ['https://l.instagram.com/?u=x', 'meta'],
@@ -545,6 +548,14 @@ test('#205 A2: a belso szamlalo MINDEN elofordulast szamol sorszammal (a GA4 / a
   const w2 = ablak205({ ana: true }); const m2 = createStepMeter({ win: w2, ctx: ctx(), ido: ora() }); m2.service(7);
   m2.a2Ok('expired'); m2.error('hold_expired', 'C4'); m2.a2Ok('redirect'); m2.error('hold_expired' /* a motor korabbi, hibas hozzarendelese */, 'C4');
   assert.deepEqual(ujak(w2).filter((x) => x.startsWith('a2_elofordulas')), ['a2_elofordulas:hold_expired.1', 'a2_elofordulas:slot_lost.2']);
+  // dupla ertesites (pl. ketszer megerkezo atiranyitas-jelzes): ugyanaz az ok, 2 mp-en belul, uj adatlap-megjelenes nelkul = NEM uj elofordulas; 2 mp utan / uj form_start utan igen
+  const t4 = ora(); const w4 = ablak205({ ana: true }); const m4 = createStepMeter({ win: w4, ctx: ctx(), ido: t4 }); m4.service(7);
+  m4.formStart('d1'); t4.mulik(800); m4.a2Ok('redirect'); m4.error('slot_lost', 'C4'); t4.mulik(300); m4.a2Ok('redirect'); m4.error('slot_lost', 'C4'); t4.mulik(300); m4.a2Ok('redirect'); m4.error('slot_lost', 'C4');
+  assert.deepEqual(ujak(w4).filter((x) => x.startsWith('a2_elofordulas')), ['a2_elofordulas:slot_lost.1'], 'a gyors dupla / tripla ertesites egy elofordulas');
+  t4.mulik(2500); m4.a2Ok('redirect'); m4.error('slot_lost', 'C4');
+  assert.deepEqual(ujak(w4).filter((x) => x.startsWith('a2_elofordulas')), ['a2_elofordulas:slot_lost.1', 'a2_elofordulas:slot_lost.2'], '2 mp utan ugyanaz az ok mar uj elofordulas');
+  m4.formStart('d2'); t4.mulik(100); m4.a2Ok('redirect'); m4.error('slot_lost', 'C4');
+  assert.equal(ujak(w4).filter((x) => x.startsWith('a2_elofordulas')).length, 3, 'uj adatlap-megjelenes utan azonnal is uj elofordulas');
   // ismeretlen jelzes (null / szemet): semmi
   for (const jel of [null, undefined, 'x', 5, {}]) { const w3 = ablak205(); const m3 = createStepMeter({ win: w3, ctx: ctx(), ido: ora() }); m3.a2Ok(jel); m3.error('slot_lost', 'C4'); assert.deepEqual(ujak(w3).filter((x) => x.startsWith('a2_')), [], String(jel)); }
 });

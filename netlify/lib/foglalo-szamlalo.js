@@ -84,6 +84,7 @@ export function ervenyesit(torzs) {
   if (!o || typeof o !== 'object' || Array.isArray(o)) return { ok: false, miert: 'nem objektum' };
   const ismert = new Set(['lepes', 'uzletag', 'tipus', 'load_ms']);
   for (const k of Object.keys(o)) if (!ismert.has(k)) return { ok: false, miert: 'ismeretlen mezo: ' + k };
+  if (typeof o.lepes !== 'string') return { ok: false, miert: 'ismeretlen lepes' }; // tomb / szam / objektum nem lehet lepes (a hasOwnProperty sztringge alakitana)
   if (!LEPESEK.includes(o.lepes) && o.lepes !== RESZLET_LEPES && !belso205(o.lepes)) return { ok: false, miert: 'ismeretlen lepes' };
   if (!UZLETAGAK.includes(o.uzletag)) return { ok: false, miert: 'ismeretlen uzletag' };
   let tipus = '';

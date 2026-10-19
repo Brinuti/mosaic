@@ -110,16 +110,21 @@ export function eszkozOsztaly(szelesseg) {
   return w < ESZKOZ_KUSZOB.mobil ? 'mobil' : w < ESZKOZ_KUSZOB.tablet ? 'tablet' : 'asztali';
 }
 // forras-osztalyozas: a kattintas-azonosito kulcsanak LETE (az erteke sehova nem megy), utana az utm_source, utana a referrer gazdagepe; egyebkent egyeb
-const AZONOSITO_FORRAS = Object.freeze([['google', ['gclid', 'gbraid', 'wbraid']], ['meta', ['fbclid']], ['tiktok', ['ttclid']]]);
+// SORREND: a Meta / TikTok azonosito (csak az URL-bol jon, mentett allapotbol nem potlodik) es az utm_source ELOBB, a Google-azonosito UTANA: a motor a megnyitas elott a mentett (mh_attr / _gcl_aw, 90 nap, hozzajarulassal)
+// Google-azonositokkal potolja a kontextust, ezert egy Meta-hirdetesrol erkezo, korabban Google-ra kattintott latogato ne minosuljon 'google'-nak.
+const AZONOSITO_FORRAS_ELSO = Object.freeze([['meta', ['fbclid']], ['tiktok', ['ttclid']]]);
+const AZONOSITO_FORRAS_GOOGLE = Object.freeze(['gclid', 'gbraid', 'wbraid']);
 const UTM_FORRAS = Object.freeze({ google: 'google', googleads: 'google', 'google-ads': 'google', adwords: 'google', facebook: 'meta', fb: 'meta', ig: 'meta', instagram: 'meta', meta: 'meta', tiktok: 'tiktok' });
 const REFERRER_FORRAS = Object.freeze([['google', /(^|\.)google\.[a-z]{2,3}(\.[a-z]{2})?$/], ['meta', /(^|\.)(facebook\.com|fb\.com|fb\.me|instagram\.com|messenger\.com)$/], ['tiktok', /(^|\.)tiktok\.com$/]]);
 /** { attribution, referrer } -> google | meta | tiktok | egyeb. Az attribution a motor kontextusa (parseContext): CSAK a kulcsok letet / az utm_source zart-listas erteket nezzuk, az azonosito erteket nem. */
 export function forrasOsztaly(arg) {
   const { attribution = null, referrer = '' } = arg && typeof arg === 'object' ? arg : {};
   const a = attribution && typeof attribution === 'object' ? attribution : {};
-  for (const [nev, kulcsok] of AZONOSITO_FORRAS) if (kulcsok.some((k) => typeof a[k] === 'string' && a[k] !== '')) return nev;
+  const van = (k) => typeof a[k] === 'string' && a[k] !== '';
+  for (const [nev, kulcsok] of AZONOSITO_FORRAS_ELSO) if (kulcsok.some(van)) return nev;
   const utm = typeof a.utm_source === 'string' ? a.utm_source.trim().toLowerCase() : '';
   if (Object.prototype.hasOwnProperty.call(UTM_FORRAS, utm)) return UTM_FORRAS[utm];
+  if (AZONOSITO_FORRAS_GOOGLE.some(van)) return 'google'; // megjegyzes: lehet a mentett (90 napos) Google-kattintas is, ha az aktualis URL-ben nincs azonosito
   try {
     const host = new URL(String(referrer)).hostname.toLowerCase();
     for (const [nev, re] of REFERRER_FORRAS) if (re.test(host)) return nev;
@@ -180,7 +185,7 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
   try { eszkoz = eszkozOsztaly(win ? win.innerWidth : undefined); } catch (e) { /* asztali */ }
   let formStartMs = null; // az utolso adatlap-megjelenes (form_start) ideje: ebbol szamoljuk a kimenet-idot (csak ha volt form_start)
   let a2Fuggo = null; // az A2-t kivalto ok (slot_lost | hold_expired), amit a motor az A2 nezet megnyitasa elott jelzett (a2Ok); az A2 nezet egyszer hasznalja fel (nullazodik)
-  let a2Db = 0; let a2Utolso = null; // az A2-k szama az ulesben, es az utolso A2 oka (a recovered jelzohoz)
+  let a2Db = 0; let a2Utolso = null; let a2UtolsoIdo = NaN; // az A2-k szama az ulesben, az utolso A2 oka (a recovered jelzohoz) es ideje (a dupla ertesites szurese)
 
   // a statisztikai hozzajarulas (mhSuti.engedely('ana')); a dontes barmikor valtozhat, ezert esemenyenkent kerdezzuk
   const hozzajarult = () => { try { const s = win && win.mhSuti; return !!(s && typeof s.engedely === 'function' && s.engedely('ana')); } catch (e) { return false; } };
@@ -226,7 +231,10 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
   // az A2 (elkelt idopont / lejart foglalasi ido) egy VALODI elofordulasa: a belso szamlalo MINDEN ilyet szamol (a GA4 egyszer-kapuja valtozatlan), sorszammal
   function a2Elofordulas(ok) {
     try {
-      a2Db += 1; a2Utolso = ok;
+      const most = Number(ido());
+      // ugyanaz az ok, 2 mp-en belul, uj adatlap-megjelenes (form_start) nelkul = ugyanannak az elkelt idopontnak a dupla ertesitese (pl. ketszer megerkezo atiranyitas-jelzes): nem uj elofordulas
+      if (ok === a2Utolso && Number.isFinite(most) && Number.isFinite(a2UtolsoIdo) && most - a2UtolsoIdo >= 0 && most - a2UtolsoIdo < 2000 && formStartMs === null) return;
+      a2Db += 1; a2Utolso = ok; a2UtolsoIdo = most;
       belso(A2_LEPES, `${ok}.${a2Db >= 5 ? 'ge5' : a2Db}`);
       kimenetek([ok]);
     } catch (e) { /* nem kritikus */ }
