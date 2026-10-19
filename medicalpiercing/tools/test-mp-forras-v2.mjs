@@ -93,10 +93,11 @@ test('bongeszo: hivatkozo-kategoriak (csak tartomany) es utm-tisztitas', () => {
   assert.ok(!JSON.stringify(f).includes('valami-blog'), 'hivatkozo URL nincs tarolva');
 });
 
-test('bongeszo: hozzajarulassal fizetett erkezeskor /api/mp-forras hivas (ertek nelkul), hozzajarulas nelkul nincs', () => {
+test('bongeszo: hozzajarulassal fizetett erkezeskor /api/mp-forras hivas (a bizonyitek ertek nelkul; a nyers azonosito kulon, 2026-10-19), hozzajarulas nelkul nincs', () => {
   const igen = lap({ url: `${H}/?fbclid=SECRETfbclid123&utm_source=meta&utm_medium=paid_social`, cookie: `mp_suti=v1-s1-m1-t${MOST}` });
   const h = igen.hivasok.filter((x) => x.cim === '/api/mp-forras');
-  assert.equal(h.length, 1); assert.equal(h[0].torzs.forras.kp, 'fbclid'); assert.ok(!JSON.stringify(h[0]).includes('SECRET'));
+  assert.equal(h.length, 1); assert.equal(h[0].torzs.forras.kp, 'fbclid'); assert.ok(!JSON.stringify(h[0].torzs.forras).includes('SECRET'));
+  assert.deepEqual(h[0].torzs.kattintas, { t: 'fbclid', e: 'SECRETfbclid123' }, 'a nyers azonosito csak hozzajarulassal, a HttpOnly sutihez');
   assert.equal(lap({ url: `${H}/?fbclid=SECRETfbclid123`, cookie: `mp_suti=v1-s0-m0-t${MOST}` }).hivasok.length, 0);
   assert.equal(lap({ url: `${H}/?fbclid=SECRETfbclid123` }).hivasok.length, 0);
   assert.equal(lap({ url: `${H}/`, cookie: `mp_suti=v1-s1-m1-t${MOST}` }).hivasok.length, 0, 'nem fizetett erintesre nincs hivas');
@@ -235,6 +236,63 @@ test('szerver: mp_lpt tartalek csak hozzajarulassal es csak ha a munkamenetben n
   // a munkamenet fizetett erintese nyer a suti felett
   s = await foglal(env, { forras: { v: 'mp_v2', us: 'tiktok', um: 'paid_social', kp: 'ttclid', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lpt}`);
   assert.deepEqual([s.forras_cimke, s.bizonyitek_forras], ['tiktok', 'munkamenet']);
+});
+
+test('mp_lpt 7 napos cimke-ablak (Feri 2026-10-14): 8-30 napos fizetett kattintas cimket nem ad, csak kesoi jelzes', async () => {
+  const { env } = uj();
+  const lpt = (nap) => `mp_lpt=${lptErtek(bizonyitekBemenet({ ...META, t: MOST - nap * 86400 }, MOST))}`;
+  let s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lpt(6.9)}`);
+  assert.deepEqual([s.forras_cimke, s.bizonyitek_forras, s.lpt_jelzes], ['meta', 'suti', null], '7 napon belul: cimke');
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lpt(12)}`);
+  assert.deepEqual([s.forras_cimke, s.bizonyitek_forras, s.lpt_jelzes], ['organikus_direkt', 'munkamenet', 'kesoi:meta:12'], '8-30 nap: kesoi jelzes, cimke nem valtozik');
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lpt(31)}`);
+  assert.deepEqual([s.forras_cimke, s.lpt_jelzes], ['organikus_direkt', null], '30 nap felett semmi');
+  assert.equal(lptOlvas(lpt(8), MOST).kesoi, true);
+  assert.equal(lptOlvas(lpt(8), MOST).kor_nap, 8);
+});
+
+test('mp_lpt nyers kattintasazonosito: sutibe kerul (hozzajarulassal), visszanyerheto, a hianyzo mezot potolja, felulirni nem ir', async () => {
+  const v = (t, cookie) => forrasVegpont({ request: keres('/api/mp-forras', t, cookie) }, { most: MOST });
+  const FB = 'IwAR0abcdefGHIJK_123-xyz';
+  let r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB } }, SUTI_IGEN);
+  const ertek = /^mp_lpt=([^;]+)/.exec(r.headers.get('set-cookie'))[1];
+  assert.equal(lptOlvas(`mp_lpt=${ertek}`, MOST).kattintas_azonosito, FB);
+  // tipus-elteres / ervenytelen formatum: a suti azonosito NELKUL jon letre
+  r = await v({ forras: META, kattintas: { t: 'gclid', e: FB } }, SUTI_IGEN);
+  assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'tipus-elteres');
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: 'rossz<script>ertek' } }, SUTI_IGEN);
+  assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'formatum');
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: 'a'.repeat(301) } }, SUTI_IGEN);
+  assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'tul hosszu');
+  // hozzajarulas nelkul nincs suti
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB } }, SUTI_NEM);
+  assert.equal(r.headers.get('set-cookie'), null);
+
+  const { env } = uj();
+  const lptB = (o, nap) => `mp_lpt=${lptErtek({ ...bizonyitekBemenet({ ...o, t: MOST - nap * 86400 }, MOST), kattintas_azonosito: o.ki })}`;
+  // Meta: a visszatero foglalo (munkamenetben nincs fizetett erintes) megkapja az fbc-t a sutibol
+  let s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lptB({ ...META, ki: FB }, 2)}`);
+  assert.equal(s.meta_fbc, `fb.1.${(MOST - 2 * 86400) * 1000}.${FB}`);
+  assert.equal(s.meta_kattintas_ido, MOST - 2 * 86400);
+  assert.equal(s.lpt_jelzes, 'azonosito:meta');
+  // a bongeszobol / _fbc sutibol jott erteket soha nem irja felul
+  const FBC_SUTI = `fb.1.${(MOST - 3600) * 1000}.SAJATbongeszo123`;
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; _fbc=${FBC_SUTI}; ${lptB({ ...META, ki: FB }, 2)}`);
+  assert.equal(s.meta_fbc, FBC_SUTI);
+  assert.equal(s.lpt_jelzes, null);
+  // Google gclid es TikTok ttclid
+  const G = { v: 'mp_v2', us: 'google', um: 'cpc', uc: '123', kp: 'gclid', rk: 'search' };
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lptB({ ...G, ki: 'Cj0KCQjwTEST_gclid1' }, 1)}`);
+  assert.deepEqual([s.kattintas_tipus, s.kattintas_ertek, s.kattintas_ido, s.lpt_jelzes], ['gclid', 'Cj0KCQjwTEST_gclid1', MOST - 86400, 'azonosito:google']);
+  const T = { v: 'mp_v2', us: 'tiktok', um: 'paid_social', kp: 'ttclid', rk: 'social' };
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lptB({ ...T, ki: 'E.C.P.ttclidTEST1' }, 3)}`);
+  assert.deepEqual([s.tiktok_ttclid, s.tiktok_kattintas_ido, s.lpt_jelzes], ['E.C.P.ttclidTEST1', MOST - 3 * 86400, 'azonosito:tiktok']);
+  // 7 napon tul az azonosito NEM potol (kesoi jelzes marad)
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lptB({ ...META, ki: FB }, 9)}`);
+  assert.deepEqual([s.meta_fbc, s.lpt_jelzes], [null, 'kesoi:meta:9']);
+  // hozzajarulas nelkul nem potol
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_NEM}; ${lptB({ ...META, ki: FB }, 2)}`);
+  assert.equal(s.meta_fbc, null);
 });
 
 test('riport: cimkek, lefedettseg osszes / uj vendeg, hozzajarulas szerinti bontas, igazolt; csak eles', async () => {

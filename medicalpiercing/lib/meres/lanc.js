@@ -19,7 +19,7 @@ import { metaArnyekLepes, ARNYEK_SEMA } from './meta.js';
 export const KONTEXTUS_SEMA = 'CREATE TABLE IF NOT EXISTS mp_kontextus (kulcs TEXT PRIMARY KEY, ip TEXT, ua TEXT, ido INTEGER NOT NULL, ext TEXT)';
 import { tipusSzamlal } from './tipus-stat.js';
 import { lemondasErtelmezes, lemondasRogzites } from './lemondas.js';
-import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
+import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO, lptOlvas, lptAzonositok } from './cimke.js';
 
 export const SEMA = [
   `CREATE TABLE IF NOT EXISTS mp_foglalas (
@@ -67,6 +67,7 @@ export const BOVITES = [
   ['bizonyitek_forras', 'TEXT'], // munkamenet|latogatas (2 oras localStorage-tarolo)|suti (mp_lpt, csak hozzajarulassal)
   ['forras_cimke', 'TEXT'], // meta|tiktok|google_nem_markas|google_markas|organikus_direkt|ismeretlen (cimkez())
   ['ismeretlen_ok', 'TEXT'], // nincs_jel|iframe_munkamenet|hianyos_utm|regi_kliens
+  ['lpt_jelzes', 'TEXT'], // mp_lpt suti: 'kesoi:<platform>:<nap>' (8-30 napos fizetett kattintas, cimket nem ad) | 'azonosito:<google,meta,tiktok>' (a suti potolta)
   ['cimke_megjegyzes', 'TEXT'], // organikus_kereso|organikus_social|direkt|... |markas_lista_hianyzik|nincs_kampany_id
   ['tipus', 'TEXT'], // 'ful' = divat fulpiercing (/fulbevalo-ok*); NULL = minden mas. Egeszsegugyi tipus SOHA (meres.js tarolhatoTipus)
   // "nincs_jel" diagnosztika (cimke.js diagBemenet; szemelyes adat / URL nelkul)
@@ -158,9 +159,16 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
   const host = new URL(request.url).hostname;
   const cookie = request.headers.get('cookie') || '';
   const hozz = hozzajarulas(cookie);
-  const katt = hozz.hirdetes ? kattintasValaszt(be.kattintas, cookie, most) : null;
-  // Meta / TikTok azonositok: CSAK hirdetesi hozzajarulassal (kulonben mind NULL); most sehova nem kuldjuk
+  let katt = hozz.hirdetes ? kattintasValaszt(be.kattintas, cookie, most) : null;
+  // Meta / TikTok azonositok: CSAK hirdetesi hozzajarulassal (kulonben mind NULL)
   const plat = hozz.hirdetes ? platformAzonositok(be.kattintas, cookie, most) : { ...URES_PLATFORM_ID };
+  // mp_lpt suti (Feri 2026-10-19 21:51): a 7 napon beluli fizetett kattintas nyers azonositoja a HIANYZO mezoket potolja
+  // (a bongeszobol / platform-sutikbol jott erteket soha nem irja felul), hogy a kesobb visszatero foglalonal is meglegyen.
+  const lptAz = hozz.hirdetes ? lptAzonositok(lptOlvas(cookie, most)) : lptAzonositok(null);
+  const lptPotolt = [];
+  if (!katt && lptAz.google) { katt = lptAz.google; lptPotolt.push('google'); }
+  if (!plat.meta_fbc && lptAz.meta_fbc) { plat.meta_fbc = lptAz.meta_fbc; plat.meta_kattintas_ido = lptAz.meta_kattintas_ido; lptPotolt.push('meta'); }
+  if (!plat.tiktok_ttclid && lptAz.tiktok_ttclid) { plat.tiktok_ttclid = lptAz.tiktok_ttclid; plat.tiktok_kattintas_ido = lptAz.tiktok_kattintas_ido; lptPotolt.push('tiktok'); }
   const ert = ertekFeloldas(a, arlista);
   const kulcs = foglalasKulcs(a);
   // forras v2: munkamenet-erintes (hozzajarulastol fuggetlen), fizetett erintes hianyaban hozzajarulassal az mp_lpt suti
@@ -173,6 +181,7 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     utm_term: biz ? biz.utm_term : null, utm_content: biz ? biz.utm_content : null, kattintas_param: biz ? biz.kattintas_param : null,
     referrer_kat: biz ? biz.referrer_kat : null, forras_ido: biz ? biz.forras_ido : null, forras_verzio: v2 ? FORRAS_VERZIO : null,
     forras_keret: be.keret ? 1 : 0, bizonyitek_forras,
+    lpt_jelzes: valasztott.kesoi || (lptPotolt.length ? `azonosito:${lptPotolt.join(',')}` : null),
   };
   const sor = {
     kulcs, salonic_id: be.bookingId || null, forras: be.bookingId ? 'motor' : 'salonic', kornyezet: host === ELES_HOST ? 'eles' : 'elonezet', letrehozva: most,

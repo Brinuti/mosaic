@@ -169,8 +169,15 @@
     var o = forrasOlvas();
     if (!o || o.v !== V2 || !fizetett(o) || !hirdetesiHozzajarulas()) return;
     var f = {}; ['v', 't', 'us', 'um', 'uc', 'ut', 'uco', 'kp', 'rk'].forEach(function (k) { if (o[k] != null) f[k] = o[k]; });
+    // a nyers kattintasazonosito is a HttpOnly sutibe kerul (Feri 2026-10-19: a kesobb visszatero foglalonal is meglegyen);
+    // csak hirdetesi hozzajarulassal (fent), csak a nyertes erintes tipusaval: a mostani cimbol, kulonben a tarolt mp_gk-bol
+    var torzs = { forras: f };
+    if (o.kp) {
+      var kv = (friss[o.kp] && friss[o.kp].ertek) || ((olvas()[o.kp] || {}).ertek);
+      if (kv && /^[A-Za-z0-9._-]{8,300}$/.test(kv)) torzs.kattintas = { t: o.kp, e: kv };
+    }
     try {
-      fetch('/api/mp-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify({ forras: f }) })
+      fetch('/api/mp-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })
         .catch(function () { /* nem zavar */ });
     } catch (e) { /* regi bongeszo */ }
   };
