@@ -100,6 +100,9 @@ EGYEZTETES_KULCS_HASH = "68d73ff4a920377c383026c3f6dc5ef053b95af99b30b2f7886a876
 MERES_ELOSZTO = "1"
 # DECISION #202 visszagorgetes (kodvaltoztatas nelkul): a kovetkezo sor bekapcsolasa (+ deploy) a regi, valos-jel szerinti hozzajarulas-szabalyt allitja vissza (Google dontes nelkul DENIED). A preview szekciojaba is kell.
 # MERES_HOZZAJARULAS_VALOS = "1"
+# DECISION #202 (PR-B) visszagorgetes (kodvaltoztatas nelkul): a kovetkezo sor bekapcsolasa (+ deploy) kiveszi az OSSZES bovitett mezot (nev / orszag / varos / iranyitoszam / fbc-potlas, Google hash + IP / UA, GA4 user_id / user_data, TikTok nev):
+# a PR-B elotti torzs-alak all vissza. A preview szekciojaba is kell. (A feluleten megadott nem titkos valtozot a wrangler.toml torli: tartosan csak ez a sor vagy egy Secret tipusu valtozo mukodik.)
+# MERES_GAZDAGITAS = "0"
 META_TESZT_KOD = "TEST83939"
 TIKTOK_TESZT_KOD = "TEST83543"
 GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"

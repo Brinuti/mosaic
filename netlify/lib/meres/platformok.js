@@ -185,19 +185,24 @@ const ZAPIER_HOOK_RE = /^(https:\/\/hooks\.zapier\.com\/hooks\/catch\/\d+\/[A-Za
  * Szallito: a titkokat (token / api_secret / webhook-cim) CSAK itt, a kornyezetbol adjuk a kereshez; a naplozott kerelembe nem kerulnek.
  * Google: a Zapier-webhook (2xx = atvette). GA4: elobb a Measurement Protocol VALIDALO vegpontja (/debug/mp/collect), csak tiszta validacio utan a valodi /mp/collect.
  * -> { allapot: 'elkuldve' | 'hiba' | 'nincs_hitelesites', http_status, valasz (szoveg, max 2000), kuldo }
- * DECISION #202 tartalek: ha a kerelemnek van `tartalek_body`-ja (a kibovitett mezok nelkuli, regi torzs) ES a platform VALASZOLT, de kifejezetten elutasitotta (nem 5xx, nem halozati hiba / idotullepes),
- * a szallito EGYSZER ujraprobal a regi torzzsel (az esemeny nem kerult feldolgozasra; az event_id / order_id azonos, a platform dedup-ja ugyanugy vedi); a hiba szovege a platform_valaszban marad.
+ * DECISION #202 tartalek: ha a kerelemnek van `tartalek_body`-ja (a kibovitett mezok nelkuli, regi torzs) ES a platform KIFEJEZETTEN elutasitotta a kerest (kuldesEgy: kifejezett_elutasitas - parse-olt Meta `error` / TikTok hibakod
+ * (nem 5xxxx, nem 40100), HTTP 4xx a 408 / 429 kivetelevel, GA4 validacios uzenet), a szallito EGYSZER ujraprobal a regi torzzsel (az esemeny nem kerult feldolgozasra; az event_id / order_id azonos, a platform dedup-ja ugyanugy vedi).
+ * NEM probal ujra: halozati hiba / idotullepes, 5xx, 408 / 429, 200 csonkolt vagy nem-JSON valasszal (az esemeny feldolgozodhatott); a hiba szovege a platform_valaszban marad.
  */
 export async function kuldes(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
-  const elso = hibaMaszk(await kuldesEgy(kerelem, env, fetchImpl, ms));
-  if (elso.allapot !== 'hiba' || !kerelem.tartalek_body || elso.http_status === null || elso.http_status >= 500) return elso;
-  const masodik = hibaMaszk(await kuldesEgy({ ...kerelem, body: kerelem.tartalek_body }, env, fetchImpl, ms));
+  const { kifejezett_elutasitas: elutasitva, ...egy } = await kuldesEgy(kerelem, env, fetchImpl, ms);
+  const elso = hibaMaszk(egy);
+  if (!elutasitva || elso.allapot !== 'hiba' || !kerelem.tartalek_body) return elso;
+  const { kifejezett_elutasitas: _, ...ketto } = await kuldesEgy({ ...kerelem, body: kerelem.tartalek_body }, env, fetchImpl, ms);
+  const masodik = hibaMaszk(ketto);
   const elsoHiba = String(elso.valasz || '').slice(0, 250);
   return { ...masodik, valasz: JSON.stringify({ tartalek_ujraprobalas: true, elso_kiserlet: { http_status: elso.http_status, valasz: elsoHiba }, masodik_kiserlet: { http_status: masodik.http_status, allapot: masodik.allapot, valasz: String(masodik.valasz || '').slice(0, 600) } }) }; // 250 + 600 karakter: az escape-elessel is 2000 alatt (ervenyes JSON marad)
 }
-/** DECISION #202: hiba eseten a platform valaszszovege a D1-be kerul; ha a platform visszhangozza a mezoertekeket, a hash-szeru (32-64 hexa) ertekek maszkoltak. */
-const hibaMaszk = (r) => (r.allapot === 'hiba' && typeof r.valasz === 'string' ? { ...r, valasz: r.valasz.replace(/\b[0-9a-f]{32,64}\b/gi, '[hash]') } : r);
+/** DECISION #202: a platform valaszszovege a D1-be kerul; ha visszhangozza a mezoertekeket, a hash-szeru (32+ hexa, onallo futam) ertekek maszkoltak. A kulso szallito valaszat (kuldesMegerosit) is ez maszkolja. */
+export const valaszMaszk = (x) => (typeof x === 'string' ? x.replace(/(?<![0-9a-f])[0-9a-f]{32,}(?![0-9a-f])/gi, '[hash]') : x);
+const hibaMaszk = (r) => (r.allapot === 'hiba' && typeof r.valasz === 'string' ? { ...r, valasz: valaszMaszk(r.valasz) } : r);
 
+const KIFEJEZETT_HTTP = (st) => st >= 400 && st < 500 && st !== 408 && st !== 429; // kifejezett elutasitas (nem atmeneti): 4xx a 408 / 429 kivetelevel
 async function kuldesEgy(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
   const titkos = { meta: env.META_CAPI_TOKEN, tiktok: env.TIKTOK_EVENTS_TOKEN, google: env.GOOGLE_ARNYEK_WEBHOOK_URL, ga4: env.GA4_TESZT_API_SECRET };
   if (!titkos[kerelem.platform]) return { allapot: 'nincs_hitelesites', http_status: null, valasz: null, kuldo: 'kozvetlen' };
@@ -213,7 +218,7 @@ async function kuldesEgy(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
     if (kerelem.platform === 'ga4' && String(env.GA4_VALIDALAS) !== '0') {
       const dr = await fetchImpl(url.replace('/mp/collect', '/debug/mp/collect'), { method: 'POST', headers: fejlec, body: JSON.stringify(kerelem.body), signal: ab.signal });
       const dszoveg = (await dr.text()).slice(0, 1500); let dj = null; try { dj = JSON.parse(dszoveg); } catch (x) { /* nem JSON */ }
-      if (!(dr.status >= 200 && dr.status < 300) || !dj || (dj.validationMessages || []).length) return { allapot: 'hiba', http_status: dr.status, valasz: 'GA4 validacio (/debug/mp/collect): ' + dszoveg, kuldo };
+      if (!(dr.status >= 200 && dr.status < 300) || !dj || (dj.validationMessages || []).length) return { allapot: 'hiba', http_status: dr.status, valasz: 'GA4 validacio (/debug/mp/collect): ' + dszoveg, kuldo, ...(KIFEJEZETT_HTTP(dr.status) || (dj && (dj.validationMessages || []).length) ? { kifejezett_elutasitas: true } : {}) };
       elozo = { ga4_validacio: { vegpont: '/debug/mp/collect', validationMessages: dj.validationMessages || [] } };
     }
     const r = await fetchImpl(url, { method: kerelem.method, headers: fejlec, body: JSON.stringify(kerelem.body), signal: ab.signal });
@@ -221,6 +226,8 @@ async function kuldesEgy(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
     let j = null; try { j = JSON.parse(szoveg); } catch (x) { /* nem JSON */ }
     const ok = r.status >= 200 && r.status < 300 && (kerelem.platform === 'meta' ? j && j.events_received >= 1 : kerelem.platform === 'tiktok' ? j && j.code === 0 : true);
     const valasz = elozo ? JSON.stringify({ ...elozo, collect_status: r.status, collect_valasz: szoveg }) : szoveg;
-    return { allapot: ok ? 'elkuldve' : 'hiba', http_status: r.status, valasz, kuldo };
+    const nemAtmeneti = r.status < 500 && r.status !== 408 && r.status !== 429; // 5xx / 408 / 429 sosem kifejezett elutasitas (a torzstol fuggetlenul)
+    const kifejezett = !ok && nemAtmeneti && (r.status >= 400 || (!!j && ((kerelem.platform === 'meta' && !!j.error) || (kerelem.platform === 'tiktok' && Number.isInteger(j.code) && j.code !== 0 && j.code < 50000 && j.code !== 40100))));
+    return { allapot: ok ? 'elkuldve' : 'hiba', http_status: r.status, valasz, kuldo, ...(kifejezett ? { kifejezett_elutasitas: true } : {}) };
   } catch (e) { return { allapot: 'hiba', http_status: null, valasz: 'halozati hiba: ' + String(e && e.message || e).slice(0, 200), kuldo }; } finally { clearTimeout(t); }
 }

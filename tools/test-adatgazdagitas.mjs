@@ -15,7 +15,9 @@ import { erkezesTisztit, metaFbc } from '../netlify/lib/meres/erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from '../netlify/lib/meres/hozzajarulas.js';
 import { ga4Kerelem, googleKerelem, kuldes, metaKerelem, tiktokKerelem } from '../netlify/lib/meres/platformok.js';
 import { ajandekForras } from '../netlify/lib/meres/ajandek-esemeny.js';
-import { elosztas, erkezesMent, naploLeker } from '../netlify/lib/meres/elosztas.js';
+import { elosztas, erkezesMent, kuldesMegerosit, maszkolt, naploLeker } from '../netlify/lib/meres/elosztas.js';
+import { valaszMaszk } from '../netlify/lib/meres/platformok.js';
+import { motorKepek } from './meres-proba/golden-motor.mjs';
 
 const h = (s) => crypto.createHash('sha256').update(s).digest('hex'); // FUGGETLEN orakulum
 const KULCS = 'teszt-guest-hmac-kulcs-0123456789abcdef';
@@ -108,10 +110,15 @@ test('nevEmailbol: a szalonnak szolo level "Nev:" sora (tablazat / egysoros), a 
     assert.ok(nev === null || (typeof nev === 'string' && !/function|\[object/.test(nev)), ent + ' -> ' + nev);
   }
   assert.equal(nevEmailbol('<p>Név: Kovács &#99999999999; Anna</p>'), 'Kovács Anna'); assert.equal(nevEmailbol('<p>Név: Kovács &#xD800; Anna</p>'), 'Kovács Anna');
-  // hosszu / rosszindulatu bemenet: gyors (nincs katasztrofalis regex-visszalepes), nem dob
+  // NBSP / egyeb szokoz-jellegu karakter: egyetlen szokozze esik ossze (a motor a Zap email_html-jet latja, abban a Salonic NBSP-t is hasznalhat)
+  assert.equal(nevEmailbol('<p>Kedves\u00a0Anna!</p>'), 'Anna'); assert.equal(nevEmailbol('<p>Név:\u00a0Kovács\u00a0Anna</p>'), 'Kovács Anna'); assert.equal(nevEmailbol('<p>Kedves\u2003Anna!</p>'), 'Anna');
+  // hosszu / rosszindulatu bemenet: LINEARIS (nincs negyzetes visszalepes: a lezaratlan <script> / <style>, a "Kedves" + szokoz-futam minden fajtaja)
   const t0 = Date.now();
-  for (const be of ['<p>' + ' '.repeat(300000) + 'Név:', 'Kedves ' + 'a'.repeat(200000), '<script>' + '<'.repeat(100000), '<' + 'a'.repeat(300000), 'Név:' + ' \n'.repeat(100000) + 'x', '&' + 'a'.repeat(100000) + ';']) assert.doesNotThrow(() => nevEmailbol(be));
-  assert.ok(Date.now() - t0 < 3000, 'rosszindulatu bemenetek: ' + (Date.now() - t0) + ' ms');
+  for (const be of ['<p>' + ' '.repeat(300000) + 'Név:', 'Kedves ' + 'a'.repeat(200000), '<script>'.repeat(40000), '<style>'.repeat(40000), '<script>' + '<'.repeat(100000), '<' + 'a'.repeat(300000), 'Név:' + ' \n'.repeat(100000) + 'x', '&' + 'a'.repeat(100000) + ';', '&a'.repeat(60000),
+    'Kedves' + '\u00a0'.repeat(30000), 'Kedves' + '\r'.repeat(30000), 'Kedves' + '\u2003'.repeat(30000), 'Kedves' + '\n'.repeat(30000), 'Kedves a '.repeat(14000), '<br' + ' '.repeat(100000), '<br '.repeat(30000), 'Név:' + '\u00a0'.repeat(100000)]) assert.doesNotThrow(() => nevEmailbol(be));
+  assert.ok(Date.now() - t0 < 1500, 'rosszindulatu bemenetek: ' + (Date.now() - t0) + ' ms');
+  for (const rossz of ['<script>'.repeat(30000), 'Kedves' + '\u00a0'.repeat(20000)]) { const t1 = Date.now(); nevEmailbol(rossz); assert.ok(Date.now() - t1 < 200, 'egy bemenet: ' + (Date.now() - t1) + ' ms'); }
+  assert.equal(nevEmailbol('<script>Név: Rossz</script><p>Név: Jó Név</p><style>x{}</style>'), 'Jó Név', 'a lezart script / style kimarad, a tobbi marad');
 });
 test('forras-bekotesek: az sd a bejovo.nev-et, a motor a Zap nev-et (+ level-tartalek), az ajandekkartya a PI metadata nev / varos / iranyitoszam mezot adja at (csak hash-eleshez); ct / zp a motornal / sd-nel nincs', async () => {
   const sd = fs.readFileSync(fileURLToPath(new URL('../netlify/lib/meres/salonic-direct.js', import.meta.url)), 'utf8');
@@ -286,4 +293,57 @@ test('elosztas: MERES_NAPLO_TELJES=1 (csak elonezet): a nyers IP es az e-mail / 
   for (const nevHash of [h('anna'), h('kovács'), h('debrecen'), h('4025')]) assert.ok(!naplo.includes(nevHash), 'TELJES: nev / varos / iranyitoszam hash a naploban: ' + nevHash.slice(0, 10));
   const nyersEllenorzes = d1Dump(db); for (const nyers of ['kovács', 'kovacs', 'teszt.claude@example.com', '+36 30 000 0001', '06 30 000 0001']) assert.ok(!nyersEllenorzes.includes(nyers), 'TELJES: nyers adat a D1-ben: ' + nyers);
   assert.ok(naplo.includes('[hash]'), 'a maszkolt nev-mezok jelen vannak');
+});
+
+// --- review-javitasok (J1-J6): maszk, hibamaszk, ujraprobalas-feltetelek, a visszagorgetes bajtra egyezese -------------------------------------------
+test('maszkolt(): a HASH_KULCSOK alatt MINDEN nem ures szoveg maszkolt (melyseg-vedelem: nyers / nagybetus ertek sem juthat a naploba); a technikai azonositok es az ures ertek valtozatlan; TELJES modban csak a nev / varos / iranyitoszam mezok', () => {
+  const be = { data: [{ user_data: { fn: ['Kovács'], ln: 'RAW', em: ['RAW@x.hu'], ph: ['0630'], country: 'HU', external_id: ['ABCDEF'], client_ip_address: '203.0.113.7', fbc: 'fb.1.1.x', fbp: 'fb.1.2.y', ct: ['x'], zp: [''] } }], user: { email: 'RAW', first_name: 'Anna', ttclid: 'E.C.P.x', ip: '203.0.113.7' }, hashed_phone_number: 'raw', hashed_email: h('x'), user_id: 'abc', user_ip_address: '203.0.113.7', gclid: 'Cj0K_TESZT', user_data: { sha256_email_address: ['RAW'], sha256_phone_number: [null] } };
+  const ki = maszkolt(be); const u = ki.data[0].user_data;
+  assert.deepEqual([u.fn, u.ln, u.em, u.ph, u.country, u.external_id, u.ct, u.zp], [['[hash]'], '[hash]', ['[hash]'], ['[hash]'], '[hash]', ['[hash]'], ['[hash]'], ['']]);
+  assert.deepEqual([u.client_ip_address, u.fbc, u.fbp], ['203.0.113.xxx', 'fb.1.1.x', 'fb.1.2.y']);
+  assert.deepEqual([ki.user.email, ki.user.first_name, ki.user.ttclid, ki.user.ip, ki.hashed_phone_number, ki.hashed_email, ki.user_id, ki.user_ip_address, ki.gclid], ['[hash]', '[hash]', 'E.C.P.x', '203.0.113.xxx', '[hash]', '[hash]', '[hash]', '203.0.113.xxx', 'Cj0K_TESZT']);
+  assert.deepEqual(ki.user_data, { sha256_email_address: ['[hash]'], sha256_phone_number: [null] });
+  assert.equal(JSON.stringify(ki).includes('RAW'), false); assert.equal(be.data[0].user_data.fn[0], 'Kovács', 'a bemenetet nem modositja');
+  const t = maszkolt(be, true).data[0].user_data; assert.deepEqual([t.fn, t.ln, t.ct, t.em, t.ph, t.client_ip_address], [['[hash]'], '[hash]', ['[hash]'], ['RAW@x.hu'], ['0630'], '203.0.113.7'], 'TELJES mod: IP es e-mail / telefon valodi, a nev / varos hash maszkolt');
+});
+test('valaszMaszk / hibaMaszk: a hash-szeru (32+ hexa) futamok maszkoltak, kornyezettol fuggetlenul (alahuzas / betu mellett, 64 karakternel hosszabb, nagybetus is); a rovid hexa es a szoveg valtozatlan; a kulso szallito valasza (kuldesMegerosit) is maszkolt', async () => {
+  const x = h('anna'); const hosszu = x + x;
+  assert.equal(valaszMaszk(`fn=${x}`), 'fn=[hash]'); assert.equal(valaszMaszk(`hash_${x}`), 'hash_[hash]'); assert.equal(valaszMaszk(`x${x}y`), 'x[hash]y'); assert.equal(valaszMaszk(hosszu), '[hash]'); assert.equal(valaszMaszk(x.toUpperCase()), '[hash]');
+  assert.equal(valaszMaszk(x.slice(0, 31)), x.slice(0, 31), '31 karakter nem hash'); assert.equal(valaszMaszk('Invalid parameter'), 'Invalid parameter'); assert.equal(valaszMaszk(null), null); assert.equal(valaszMaszk(12), 12);
+  const db = d1(); const { f } = hamis(); await erkezesMent(db, erkBe(), NOW);
+  await elosztas(db, FK(), { env: { ...TELJES_ENV, META_CAPI_TOKEN: undefined }, fetchImpl: f, now: () => NOW });
+  const sor = db.db.prepare("SELECT id FROM meres_kuldes WHERE platform = 'meta' AND allapot = 'nincs_hitelesites'").get(); assert.ok(sor, 'van hitelesites nelkuli Meta-sor');
+  const r = await kuldesMegerosit(db, { id: sor.id, allapot: 'hiba', http_status: 400, valasz: `bad fn=${h('anna')} em_${h('teszt.claude@example.com')}`, kuldo: 'kulso' }); assert.equal(r.ok, true);
+  const mentett = db.db.prepare('SELECT platform_valasz FROM meres_kuldes WHERE id = ?').get(sor.id).platform_valasz; assert.equal(mentett, 'bad fn=[hash] em_[hash]');
+});
+test('kuldes(): a tartalek-ujraprobalas CSAK kifejezett elutasitasra fut (Meta error / 4xx a 408 es 429 kivetelevel, TikTok 4xxxx kod, GA4 validacio); csonkolt / nem-JSON 200, 429, 5xx, halozati hiba: NEM (az esemeny feldolgozodhatott)', async () => {
+  const ctx = await ctxEpit(); const meta = metaKerelem(esemenyek(ctx.fk)[0], ctx, ENV); assert.ok(meta.tartalek_body);
+  const tik = tiktokKerelem(esemenyek(ctx.fk)[0], ctx, { ...ENV, TIKTOK_NEV_MEZOK: '1' }); assert.ok(tik.tartalek_body);
+  const hivasSzam = async (kerelem, env, valasz) => { let n = 0; const r = await kuldes(kerelem, env, async () => { n++; return typeof valasz === 'function' ? valasz() : valasz; }); return { n, r }; };
+  const V = (status, szoveg) => ({ status, text: async () => (typeof szoveg === 'string' ? szoveg : JSON.stringify(szoveg)) });
+  const ME = { ...ENV, META_CAPI_TOKEN: 't' }; const TE = { ...ENV, TIKTOK_EVENTS_TOKEN: 't' };
+  // Meta
+  assert.equal((await hivasSzam(meta, ME, V(400, { error: { message: 'x' } }))).n, 2, '400 + error: kifejezett');
+  assert.equal((await hivasSzam(meta, ME, V(400, 'Bad Request'))).n, 2, '4xx nem-JSON torzzsel is kifejezett');
+  assert.equal((await hivasSzam(meta, ME, V(200, { error: { message: 'x' } }))).n, 2, '200 + parse-olt error');
+  assert.equal((await hivasSzam(meta, ME, V(200, 'nem json'))).n, 1, '200 nem-JSON: feldolgozodhatott');
+  assert.equal((await hivasSzam(meta, ME, V(200, '{"events_received":0,"x":"' + 'a'.repeat(2500) + '"}'))).n, 1, '200 csonkolt (2000 char) valasz');
+  assert.equal((await hivasSzam(meta, ME, V(429, { error: { message: 'rate' } }))).n, 1, '429: atmeneti'); assert.equal((await hivasSzam(meta, ME, V(408, ''))).n, 1, '408: atmeneti');
+  assert.equal((await hivasSzam(meta, ME, V(503, { error: { message: 'x' } }))).n, 1, '5xx'); assert.equal((await hivasSzam(meta, ME, () => { throw new Error('halozat'); })).n, 1, 'halozati hiba');
+  assert.equal((await hivasSzam(meta, ME, V(200, { events_received: 1 }))).n, 1, 'siker: nincs ujraprobalas'); assert.equal((await hivasSzam(meta, ME, V(200, { events_received: 1 }))).r.allapot, 'elkuldve');
+  // TikTok
+  assert.equal((await hivasSzam(tik, TE, V(200, { code: 40002, message: 'param' }))).n, 2, 'TikTok 4xxxx kod'); assert.equal((await hivasSzam(tik, TE, V(200, { code: 50000, message: 'internal' }))).n, 1, '5xxxx: belso hiba');
+  assert.equal((await hivasSzam(tik, TE, V(200, { code: 40100, message: 'rate' }))).n, 1, '40100: rate limit'); assert.equal((await hivasSzam(tik, TE, V(200, { code: 0 }))).n, 1); assert.equal((await hivasSzam(tik, TE, V(200, 'nem json'))).n, 1);
+  // GA4: a validacios hiba (debug) kifejezett; a debug-vegpont 5xx-e nem
+  const ga = ga4Kerelem(esemenyek(ctx.fk)[0], ctx, ENV); assert.ok(ga.tartalek_body); const GE = { ...ENV, GA4_TESZT_API_SECRET: 's' };
+  assert.equal((await hivasSzam(ga, GE, V(503, 'unavailable'))).n, 1, 'GA4 debug 5xx: nincs ujraprobalas');
+  assert.equal((await hivasSzam(ga, GE, V(400, { validationMessages: [] }))).n, 2, 'GA4 debug 4xx: kifejezett');
+  // a naplozott kerelem nem fedi fel a tartalek-ujraprobalast, ezert a valasz jelzi: ervenyes JSON, a hash maszkolt
+  const { r } = await hivasSzam(meta, ME, V(400, { error: { message: `fn=${h('anna')}` } })); const j = JSON.parse(r.valasz); assert.equal(j.tartalek_ujraprobalas, true); assert.ok(!r.valasz.includes(h('anna')));
+});
+test('MERES_GAZDAGITAS=0: a golden kep (kerelem-epitok + elosztas HTTP-hivasai) BAJTRA azonos a PR-A (a PR-B elotti) allapottal', async () => {
+  const kep = (j) => ({ kerelmek: j.kerelmek, hivasok: Object.fromEntries(Object.entries(j.elosztasok).map(([k, v]) => [k, v.hivasok])) });
+  const ki = await motorKepek({ MERES_GAZDAGITAS: '0' }); const hash = crypto.createHash('sha256').update(JSON.stringify(kep(ki))).digest('hex');
+  assert.equal(hash, '29238089ec2f1ce0cfdae4440935befcdf1c3af1a71f0ebc6c199bb8efd179d2', 'a PR-A golden fixture (f01a959807) kerelem- es hivas-kepe'); // a hash a claude/meres-202-granted golden-motor-kerelem.json kerelmek + hivasok szekciojabol szamolt (sorok nelkul: a naplo [hash]-maszkja PR-B-ben szandekosan ujabb)
+  const be = await motorKepek({}); assert.notEqual(crypto.createHash('sha256').update(JSON.stringify(kep(be))).digest('hex'), hash, 'kapcsolo nelkul a bovitett torzs megy (kontroll)');
 });

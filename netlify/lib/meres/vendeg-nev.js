@@ -14,14 +14,30 @@ const entitas = (m, e) => {
   return Number.isInteger(n) && n > 0 && n <= 0x10FFFF && !(n >= 0xD800 && n <= 0xDFFF) ? String.fromCodePoint(n) : ' ';
 };
 
-/** HTML -> sima szoveg (sortoresek a blokk-elemeknel / <br>-nel). Csak a nev-tartalek-feldolgozashoz; nem biztonsagi hatar. */
+/** ASCII-kisbetusites HOSSZMEGORZOEN (a toLowerCase() egyes betuknel - pl. "İ" - hosszt valtoztat, az indexek elcsuszanak). */
+const asciiKis = (s) => s.replace(/[A-Z]+/g, (m) => m.toLowerCase());
+/** <script> / <style> blokkok kivetele indexOf-ciklussal (LINEARIS; a lezaratlan blokk a vegeig eldobodik). */
+function blokkKi(s, tag) {
+  const kis = asciiKis(s); let ki = '', i = 0;
+  for (;;) {
+    const a = kis.indexOf('<' + tag, i);
+    if (a < 0) return ki + s.slice(i);
+    ki += s.slice(i, a) + ' ';
+    const b = kis.indexOf('</' + tag, a + 1 + tag.length);
+    const c = b < 0 ? -1 : kis.indexOf('>', b);
+    if (c < 0) return ki;
+    i = c + 1;
+  }
+}
+const BEMENET_MAX = 120000; // a valodi Salonic-level ~17 KB; a vegpont-korlat 262144 bajt - a nev-kinyeres a feletti reszt nem nezi
+
+/** HTML -> sima szoveg (sortoresek a blokk-elemeknel / <br>-nel). Csak a nev-tartalek-feldolgozashoz; nem biztonsagi hatar. Minden minta LINEARIS (korlatos kvantorok, nincs egymasba agyazott ismetles). */
 function szovegge(html) {
-  return String(html || '').slice(0, 400000)
-    .replace(/<(script|style)[^<>]*>[^<]*(?:<(?!\/\1)[^<]*)*<\/\1>/gi, ' ')
-    .replace(/<br\s*\/?>|<\/(?:p|div|tr|li|h[1-6]|td|th)>/gi, '\n')
+  return blokkKi(blokkKi(String(html || '').slice(0, BEMENET_MAX), 'script'), 'style')
+    .replace(/<br[ \t\r\n]{0,10}\/?>|<\/(?:p|div|tr|li|h[1-6]|td|th)>/gi, '\n')
     .replace(/<[^<>]*>/g, ' ')
-    .replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, entitas)
-    .replace(/[ \t ]+/g, ' ');
+    .replace(/&(#x?[0-9a-f]{1,12}|[a-z]{1,12});/gi, entitas)
+    .replace(/[^\S\n]+/g, ' '); // minden nem-sortores szokoz-jellegu karakter (NBSP, \r, U+2003 ...) egyetlen szokozze
 }
 
 const ALTALANOS = new Set(['vendeg', 'vendég', 'vendegunk', 'vendégünk', 'ugyfelunk', 'ügyfelünk', 'guest', 'customer', 'client', 'user']);
@@ -32,7 +48,7 @@ const CIMKE_ELEJE = new RegExp('^\\s*' + CIMKE, 'i'); // ures "Nev:" cella: a ko
 const tisztaNev = (x) => {
   const eleje = String(x || '').slice(0, 200).split(CIMKE_VEG)[0]; // hosszkorlat a split ELOTT (a regex ne fusson hosszu szokozsorozaton)
   if (/[<>@]/.test(eleje) || CIMKE_ELEJE.test(eleje)) return null; // markup / e-mail szeru szoveg / mezocimke nem nev
-  const s = eleje.replace(/[<>@:;{}[\]()\\/0-9]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+  const s = eleje.replace(/[<>@:;{}[\]()\\/0-9&#]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
   if (!s || s.split(' ').some((t) => ALTALANOS.has(t.toLowerCase()))) return null;
   return nevReszek(s) ? s : null;
 };
@@ -41,8 +57,8 @@ const tisztaNev = (x) => {
 export function nevEmailbol(html) {
   try {
     const sz = szovegge(html);
-    const salon = sz.match(/(?:^|[\s\n])N[eé]v[ \t]*:[ \t]*\n?[ \t]*([^\n]{2,120})/i); // "Nev: Kovacs Anna Mobiltelefonszam: ..." (a szalonnak szolo level); tablazatnal a kettospont utan legfeljebb EGY sortores
-    const koszon = sz.match(/(?:Kedves|Dear)\s+([^!\n,.:]{2,80})\s*[!,]/i); // "Kedves Anna!" / "Dear Anna!" (a vendegnek szolo level)
+    const salon = sz.match(/(?:^|[ \n])N[eé]v[ \t]{0,5}:[ \t]{0,5}\n?[ \t]{0,5}([^\n]{2,120})/i); // "Nev: Kovacs Anna Mobiltelefonszam: ..." (a szalonnak szolo level); tablazatnal a kettospont utan legfeljebb EGY sortores
+    const koszon = sz.match(/(?:Kedves|Dear)[ \n]{1,6}([^!\n,.:]{2,80})[ ]{0,5}[!,]/i); // "Kedves Anna!" / "Dear Anna!" (a vendegnek szolo level)
     return tisztaNev(salon && salon[1]) || tisztaNev(koszon && koszon[1]);
   } catch (e) { return null; }
 }
