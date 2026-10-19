@@ -22,7 +22,9 @@ const ALTALANOS = new Set(['vendeg', 'vendég', 'vendegunk', 'vendégünk', 'ugy
 const CIMKE_VEG = /\s+(?:mobil|telefon|tel\.|e-?mail|megjegyz|szolg[aá]ltat|id[oő]pont|munkat[aá]rs|d[aá]tum|price|phone|service|employee|date)\S*:?/i; // a kovetkezo mezo cimkeje: a nev itt veget er (egysoros, tabla nelkuli levelnel)
 
 const tisztaNev = (x) => {
-  const s = String(x || '').split(CIMKE_VEG)[0].replace(/[<>@:;{}[\]()\\/0-9]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+  const eleje = String(x || '').split(CIMKE_VEG)[0];
+  if (/[<>@]/.test(eleje)) return null; // markup / e-mail szeru szoveg nem nev
+  const s = eleje.replace(/[<>@:;{}[\]()\\/0-9]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
   if (!s || s.split(' ').some((t) => ALTALANOS.has(t.toLowerCase()))) return null;
   return nevReszek(s) ? s : null;
 };

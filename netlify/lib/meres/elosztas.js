@@ -1,5 +1,5 @@
 // QA-2 ARNYEK-ELOSZTO: egy foglalas / ajandekkartya forras-entitasbol az alap- es ernyoesemenyek eloallitasa, es kuldese a platformok ARNYEK-celpontjaira.
-//   - hozzajarulas: DECISION #202 szerint elfogadott hozzajarulas minden platformra (hozzajarulas.js; a rogzitett allapot a naploban latszik), hash-elt e-mail / telefon, ertek = tenyleges ar, penznem HUF
+//   - hozzajarulas: DECISION #202 szerint elfogadott hozzajarulas, ha nincs rogzitett elutasito dontes (hozzajarulas.js; a rogzitett allapot a naploban latszik); a felhasznaloi adat CSAK hash-elve megy (felhasznalo-hash.js: e-mail / telefon / nev / orszag / varos / iranyitoszam / user_id), a D1-naploban "[hash]"; ertek = tenyleges ar, penznem HUF
 //   - duplikacioszures: (esemeny_id, platform) egyedi -> egy esemeny egy platformra legfeljebb egyszer megy ki, ujrahivasra sem
 //   - veszkapcsolo uzletagankent ES platformonkent (meres_kapcsolo): "mind", "uzletag:<u>", "platform:<p>", "cella:<u>:<p>"
 //   - MINDEN kuldes naplozva (meres_kuldes): a kerelem (titok nelkul, IP maszkolva), a platform valasza, a hozzajarulas, az allapot

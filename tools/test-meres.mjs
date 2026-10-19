@@ -723,6 +723,27 @@ import { jellegRogzit } from '../netlify/lib/meres/jelleg-rogzites.js';
 const x1Elokeszit = async (salonic = 'aktiv') => { const D = d1(); const e = HTTP_ENV(D); const h = halozat({ salonic }); await kulcsIras(e.KULCS_DB, { bookingId: BID, bookingUrl: HAIR_URL }, NOW); await kezelErkezes(kerErkezes(HAIR_ERK()), e, { now: () => NOW }); return { D, e, h }; };
 const x1Post = (x, body) => kezelEgyeztetes(egyeztetKer(body), x.e, { fetchImpl: x.h.f, now: () => NOW, esemenyKuldo: foglalasEsemenyKuldes }).then((r) => r.json());
 const alapNevek = async (x) => [...new Set((await naploLeker(x.e.KULCS_DB, BID)).kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_nev))];
+test('DECISION #202 VEGPONTTOL VEGPONTIG (motoros ag): a Zap `nev` mezoje -> Meta fn / ln hash, tartalekban a level "Kedves X!" koszonese; nyers nev / e-mail / telefon / hash-ertek SEHOL a D1-ben, a kimeno hivasokban csak hash', async () => {
+  const hashOk = (s) => crypto.createHash('sha256').update(s).digest('hex');
+  const D1Szoveg = (D) => D.db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().map((t) => JSON.stringify(D.db.prepare(`SELECT * FROM "${t.name}"`).all())).join('\n').toLowerCase();
+  const metaAlap = (x) => x.h.hivasok.find((h) => h.kulcs === 'meta' && h.body.data[0].event_name.endsWith('Konzultacio')).body.data[0].user_data;
+  // a) explicit `nev` (a Zap uj mezoje): "Kovacs Anna" -> vezeteknev elol (magyar sorrend): ln = kovács, fn = anna; a level koszonese NEM bolygatja
+  const x = await x1Elokeszit(); const r = await x1Post(x, { ...LEVEL(), nev: 'Kovács Anna' });
+  assert.equal(r.esemeny_kuldes.allapot, 'kesz');
+  const u = metaAlap(x);
+  assert.deepEqual([u.fn, u.ln, u.country], [[hashOk('anna')], [hashOk('kovács')], [hashOk('hu')]]);
+  assert.ok(u.em && u.ph && u.external_id, 'a tobbi azonosito is megy');
+  const kimenet = JSON.stringify(x.h.hivasok).toLowerCase();
+  for (const nyers of ['kovács', 'kovacs', 'anna', 'teszt.claude@example.com', '36300000001', '30 000 0001', 'teszt – claude']) assert.ok(!kimenet.includes(nyers), 'a kimeno hivasokban nincs nyers adat: ' + nyers);
+  const d1 = D1Szoveg(x.D);
+  for (const nyers of ['kovács', 'kovacs', 'anna', 'teszt.claude@example.com', '36300000001', hashOk('anna'), hashOk('kovács'), hashOk('teszt.claude@example.com'), hashOk('36300000001'), hashOk('+36300000001')]) assert.ok(!d1.includes(nyers), 'a D1-ben nincs nyers adat / hash-ertek: ' + nyers.slice(0, 12));
+  assert.ok(d1.includes('[hash]'), 'a naploban a mezo megleten latszik, mi ment ki');
+  // b) nincs `nev`: a level (email_html) "Kedves TESZT – Claude!" koszonese a tartalek (a fixture-ben ez a vendeg neve)
+  const y = await x1Elokeszit(); await x1Post(y, LEVEL());
+  const uy = metaAlap(y); assert.deepEqual([uy.fn, uy.ln], [[hashOk('claude')], [hashOk('teszt')]], 'tartalek: "Kedves TESZT – Claude!" -> ln teszt, fn claude (az irasjel-token kimarad)');
+  // c) ures / null / ertelmezhetetlen `nev` a leveltol fuggetlenul nem hiba: a tobbi mezo (em, ph, country) megy; a nyers nev sehol
+  for (const rossz of ['', null, '   ', 12345, { a: 1 }, '<b>@</b>']) { const z = await x1Elokeszit(); const rz = await x1Post(z, { ...LEVEL(), nev: rossz }); assert.equal(rz.esemeny_kuldes.allapot, 'kesz', String(rossz)); assert.ok(metaAlap(z).em && metaAlap(z).country, 'a tobbi mezo megy: ' + String(rossz)); }
+});
 test('X1: ket level ELTERO uj_vendeg jelzessel ugyanarra az elo foglalasra (uj -> nem uj): az alapesemeny tipusa az elso levelnel rogzul, a 2. level nem kuld masik alapesemenyt', async () => {
   const x = await x1Elokeszit();
   const r1 = await x1Post(x, LEVEL()); // uj_vendeg: true -> Konzultacio + Fodrasz_AkviziciosFoglalas

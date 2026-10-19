@@ -128,7 +128,8 @@ export function tiktokKerelem(e, ctx, env = {}) {
  * Google Ads (ARNYEK masodlagos akciok): a szerver NEM hiv kozvetlenul Google-t (az OAuth access token 1 ora utan lejar); a #89-es minta szerint egy ZAPIER-WEBHOOKNAK szol
  * (GOOGLE_ARNYEK_WEBHOOK_URL, titok); a Zap (csak a 10 ARNYEK akciora ir, elo azonositot visszautasit) tolti fel a masodlagos ARNYEK akciokba. A torzs PONTOSAN a Zap mezoi:
  * { conversion_action_id, gclid | wbraid | gbraid (egy), conversion_date_time, value, currency: 'HUF', order_id (= event_id), ad_user_data: 'GRANTED' | 'DENIED', ad_personalization: 'GRANTED' | 'DENIED' }.
- * ad_user_data / ad_personalization = a hozzajarulas-szabaly jele (hozzajarulas.js): DECISION #202 ota (nincs sutisav, elfogadott hozzajarulas) MINDIG GRANTED; MERES_HOZZAJARULAS_VALOS=1 mellett a regi, valos-jel szerinti szabaly (dontes nelkul DENIED).
+ * ad_user_data / ad_personalization = a hozzajarulas-szabaly jele (hozzajarulas.js): DECISION #202 ota (nincs sutisav, elfogadott hozzajarulas) GRANTED, ha nincs rogzitett elutasito dontes (azt a valos jel adja: DENIED); MERES_HOZZAJARULAS_VALOS=1 mellett a regi, valos-jel szerinti szabaly (dontes nelkul DENIED).
+ * DECISION #202 mezoi (csak GRANTED-es szabalynal, hash-elve): hashed_email (Ads-normalizalt SHA-256), hashed_phone_number (E.164 SHA-256), user_identifiers [{hashed_email}, {hashed_phone_number}] (max. 5), user_ip_address / user_agent (amit a motor rogzitett).
  */
 export function googleKerelem(e, ctx, env = {}) {
   if (e.tipus !== 'alap' || e.nev === 'Visszajaro') return { kihagyva: 'a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)' };
