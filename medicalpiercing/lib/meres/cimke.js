@@ -278,6 +278,8 @@ export async function forrasVegpont({ request, env = {} }, { most = Math.floor(D
   if (!biz || !fizetett(biz) || !biz.forras_ido || most - biz.forras_ido > LPT_NAP * 86400) return json({ ok: true, suti: false });
   // a nyers kattintasazonosito (csak ha a tipusa egyezik a bizonyitek kattintasi parameterevel es formailag ervenyes)
   const ki = b && b.kattintas && typeof b.kattintas === 'object' ? b.kattintas : null;
-  if (ki && biz.kattintas_param && ki.t === biz.kattintas_param && KATT_ID_MINTA.test(String(ki.e || ''))) biz.kattintas_azonosito = String(ki.e);
+  // az azonosito ideje (ki.i) az erintes idejevel egyezzen (+-10 mp): regi, mas erintesbol szarmazo azonosito nem kerulhet a sutibe
+  if (ki && biz.kattintas_param && ki.t === biz.kattintas_param && KATT_ID_MINTA.test(String(ki.e || '')) && Number.isFinite(Number(ki.i))
+    && Math.abs(Number(ki.i) - biz.forras_ido) <= 10) biz.kattintas_azonosito = String(ki.e);
   return json({ ok: true, suti: true }, 200, { 'set-cookie': lptSuti(biz) });
 }

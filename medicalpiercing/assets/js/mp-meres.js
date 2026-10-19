@@ -173,8 +173,10 @@
     // csak hirdetesi hozzajarulassal (fent), csak a nyertes erintes tipusaval: a mostani cimbol, kulonben a tarolt mp_gk-bol
     var torzs = { forras: f };
     if (o.kp) {
-      var kv = (friss[o.kp] && friss[o.kp].ertek) || ((olvas()[o.kp] || {}).ertek);
-      if (kv && /^[A-Za-z0-9._-]{8,300}$/.test(kv)) torzs.kattintas = { t: o.kp, e: kv };
+      // csak a NYERTES erintes sajat azonositoja: a tarolt mp_gk-erteket csak akkor, ha az ideje az erintesevel egyezik
+      // (+-10 mp); kulonben (pl. kesobbi oldalon adott hozzajarulas, regi mp_gk) nem kuldunk azonositot (review #432)
+      var jel = friss[o.kp] || olvas()[o.kp];
+      if (jel && jel.ertek && /^[A-Za-z0-9._-]{8,300}$/.test(jel.ertek) && Math.abs(Number(jel.ido) - Number(o.t)) <= 10) torzs.kattintas = { t: o.kp, e: jel.ertek, i: Number(jel.ido) };
     }
     try {
       fetch('/api/mp-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })

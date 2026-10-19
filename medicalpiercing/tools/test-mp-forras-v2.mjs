@@ -15,7 +15,8 @@ const JS = fs.readFileSync(new URL('../assets/js/mp-meres.js', import.meta.url),
 const MOST = 1791700000;
 
 /** Az mp-meres.js futtatasa egy lapbetoltesre: { url, referrer, tar (sessionStorage Map), cookie } -> { tar, hivasok } */
-function lap({ url, referrer = '', tar = new Map(), cookie = '', top = true, ls = new Map(), nowMs = null, opener = null, nav = null, tiltott = false }) {
+function lap({ url, referrer = '', tar = new Map(), cookie = '', top = true, ls = new Map(), nowMs = null, opener = null, nav = null, tiltott = false, esemeny = null }) {
+  const figyelok = {};
   const u = new URL(url);
   const hivasok = [];
   const dob = () => { throw new Error('SecurityError'); };
@@ -23,7 +24,7 @@ function lap({ url, referrer = '', tar = new Map(), cookie = '', top = true, ls 
   const localStorage = tiltott ? { getItem: dob, setItem: dob, removeItem: dob } : { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) };
   const w = {
     location: { hostname: u.hostname, pathname: u.pathname, search: u.search, href: u.href },
-    document: { referrer, cookie, addEventListener: () => {}, documentElement: { getAttribute: () => null } },
+    document: { referrer, cookie, addEventListener: (n, f) => { (figyelok[n] = figyelok[n] || []).push(f); }, documentElement: { getAttribute: () => null } },
     sessionStorage, localStorage, URLSearchParams, URL, JSON, Math, Date: nowMs == null ? Date : { now: () => nowMs }, Object, String, Number, setTimeout: () => 0,
     addEventListener: () => {}, opener,
     fetch: (cim, o) => { hivasok.push({ cim, torzs: JSON.parse(o.body) }); return Promise.resolve({}); },
@@ -31,6 +32,7 @@ function lap({ url, referrer = '', tar = new Map(), cookie = '', top = true, ls 
   if (nav) w.performance = { getEntriesByType: () => [{ type: nav }] };
   w.window = w; w.top = top ? w : {};
   vm.runInNewContext(JS, w);
+  if (esemeny) { w.document.cookie = esemeny.cookie; for (const f of figyelok[esemeny.nev] || []) f(); }
   return { tar, ls, hivasok, forras: tar.has('mp_forras') ? JSON.parse(tar.get('mp_forras')) : null, latogatas: ls.has('mp_forras_l') ? JSON.parse(ls.get('mp_forras_l')) : null };
 }
 const H = 'https://www.medicalpiercing.hu';
@@ -97,10 +99,28 @@ test('bongeszo: hozzajarulassal fizetett erkezeskor /api/mp-forras hivas (a bizo
   const igen = lap({ url: `${H}/?fbclid=SECRETfbclid123&utm_source=meta&utm_medium=paid_social`, cookie: `mp_suti=v1-s1-m1-t${MOST}` });
   const h = igen.hivasok.filter((x) => x.cim === '/api/mp-forras');
   assert.equal(h.length, 1); assert.equal(h[0].torzs.forras.kp, 'fbclid'); assert.ok(!JSON.stringify(h[0].torzs.forras).includes('SECRET'));
-  assert.deepEqual(h[0].torzs.kattintas, { t: 'fbclid', e: 'SECRETfbclid123' }, 'a nyers azonosito csak hozzajarulassal, a HttpOnly sutihez');
+  assert.deepEqual([h[0].torzs.kattintas.t, h[0].torzs.kattintas.e, h[0].torzs.kattintas.i], ['fbclid', 'SECRETfbclid123', h[0].torzs.forras.t], 'a nyers azonosito csak hozzajarulassal, a HttpOnly sutihez, az erintes idejevel');
   assert.equal(lap({ url: `${H}/?fbclid=SECRETfbclid123`, cookie: `mp_suti=v1-s0-m0-t${MOST}` }).hivasok.length, 0);
   assert.equal(lap({ url: `${H}/?fbclid=SECRETfbclid123` }).hivasok.length, 0);
   assert.equal(lap({ url: `${H}/`, cookie: `mp_suti=v1-s1-m1-t${MOST}` }).hivasok.length, 0, 'nem fizetett erintesre nincs hivas');
+});
+
+test('bongeszo (review #432): kesobbi oldalon adott hozzajarulasnal a regi mp_gk-azonosito NEM kerul a sutibe; a sajat (egyezo ideju) igen', () => {
+  const tar = new Map(), ls = new Map();
+  // 1. oldal: fizetett erkezes hozzajarulas nelkul (mp_gk nem irodik), a munkamenetben a meta erintes
+  lap({ url: `${H}/?utm_source=meta&utm_medium=paid_social&fbclid=UJfbclid12345`, tar, ls });
+  const t = JSON.parse(tar.get('mp_forras')).t;
+  // egy korabbi latogatasbol maradt, 5 napos mp_gk (mas erintes)
+  ls.set('mp_gk', JSON.stringify({ fbclid: { ertek: 'REGIfbclid12345', ido: t - 5 * 86400 } }));
+  // 2. oldal (belso), itt fogad el: mp_suti_valtozas
+  let r = lap({ url: `${H}/arak`, referrer: `${H}/`, tar, ls, esemeny: { nev: 'mp_suti_valtozas', cookie: `mp_suti=v1-s1-m1-t${MOST}` } });
+  let h = r.hivasok.filter((x) => x.cim === '/api/mp-forras');
+  assert.equal(h.length, 1); assert.equal(h[0].torzs.kattintas, undefined, 'regi azonosito nem megy');
+  // ha az mp_gk ugyanabbol az erintesbol van (egyezo ido), mehet
+  ls.set('mp_gk', JSON.stringify({ fbclid: { ertek: 'UJfbclid12345', ido: t } }));
+  r = lap({ url: `${H}/arak`, referrer: `${H}/`, tar, ls, esemeny: { nev: 'mp_suti_valtozas', cookie: `mp_suti=v1-s1-m1-t${MOST}` } });
+  h = r.hivasok.filter((x) => x.cim === '/api/mp-forras');
+  assert.deepEqual(h[0].torzs.kattintas, { t: 'fbclid', e: 'UJfbclid12345', i: t });
 });
 
 test('utmTisztit es bizonyitekBemenet', () => {
@@ -248,24 +268,37 @@ test('mp_lpt 7 napos cimke-ablak (Feri 2026-10-14): 8-30 napos fizetett kattinta
   s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${lpt(31)}`);
   assert.deepEqual([s.forras_cimke, s.lpt_jelzes], ['organikus_direkt', null], '30 nap felett semmi');
   assert.equal(lptOlvas(lpt(8), MOST).kesoi, true);
+  // pontos hatar: 7*86400 mp -> cimke; 7*86400+1 -> kesoi
+  const hatar = (mp) => `mp_lpt=${lptErtek(bizonyitekBemenet({ ...META, t: MOST - mp }, MOST))}`;
+  assert.equal(lptOlvas(hatar(7 * 86400), MOST).kesoi, false);
+  assert.equal(lptOlvas(hatar(7 * 86400 + 1), MOST).kesoi, true);
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${hatar(7 * 86400)}`);
+  assert.deepEqual([s.forras_cimke, s.bizonyitek_forras], ['meta', 'suti'], 'pontosan 7 nap: cimke');
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 } }, `${SUTI_IGEN}; ${hatar(7 * 86400 + 1)}`);
+  assert.deepEqual([s.forras_cimke, s.lpt_jelzes], ['organikus_direkt', 'kesoi:meta:7'], '7 nap + 1 mp: kesoi');
   assert.equal(lptOlvas(lpt(8), MOST).kor_nap, 8);
 });
 
 test('mp_lpt nyers kattintasazonosito: sutibe kerul (hozzajarulassal), visszanyerheto, a hianyzo mezot potolja, felulirni nem ir', async () => {
   const v = (t, cookie) => forrasVegpont({ request: keres('/api/mp-forras', t, cookie) }, { most: MOST });
   const FB = 'IwAR0abcdefGHIJK_123-xyz';
-  let r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB } }, SUTI_IGEN);
+  let r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB, i: META.t } }, SUTI_IGEN);
   const ertek = /^mp_lpt=([^;]+)/.exec(r.headers.get('set-cookie'))[1];
   assert.equal(lptOlvas(`mp_lpt=${ertek}`, MOST).kattintas_azonosito, FB);
   // tipus-elteres / ervenytelen formatum: a suti azonosito NELKUL jon letre
-  r = await v({ forras: META, kattintas: { t: 'gclid', e: FB } }, SUTI_IGEN);
+  r = await v({ forras: META, kattintas: { t: 'gclid', e: FB, i: META.t } }, SUTI_IGEN);
   assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'tipus-elteres');
-  r = await v({ forras: META, kattintas: { t: 'fbclid', e: 'rossz<script>ertek' } }, SUTI_IGEN);
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: 'rossz<script>ertek', i: META.t } }, SUTI_IGEN);
   assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'formatum');
-  r = await v({ forras: META, kattintas: { t: 'fbclid', e: 'a'.repeat(301) } }, SUTI_IGEN);
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: 'a'.repeat(301), i: META.t } }, SUTI_IGEN);
   assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'tul hosszu');
+  // regi (masik erintesbol szarmazo) azonosito: az ido nem egyezik az erintesevel -> nem kerul a sutibe; ido nelkul sem
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB, i: META.t - 86400 } }, SUTI_IGEN);
+  assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'regi ido');
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB } }, SUTI_IGEN);
+  assert.equal(lptOlvas(/^(mp_lpt=[^;]+)/.exec(r.headers.get('set-cookie'))[1], MOST).kattintas_azonosito, null, 'ido nelkul');
   // hozzajarulas nelkul nincs suti
-  r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB } }, SUTI_NEM);
+  r = await v({ forras: META, kattintas: { t: 'fbclid', e: FB, i: META.t } }, SUTI_NEM);
   assert.equal(r.headers.get('set-cookie'), null);
 
   const { env } = uj();

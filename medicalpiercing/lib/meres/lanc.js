@@ -164,11 +164,13 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
   const plat = hozz.hirdetes ? platformAzonositok(be.kattintas, cookie, most) : { ...URES_PLATFORM_ID };
   // mp_lpt suti (Feri 2026-10-19 21:51): a 7 napon beluli fizetett kattintas nyers azonositoja a HIANYZO mezoket potolja
   // (a bongeszobol / platform-sutikbol jott erteket soha nem irja felul), hogy a kesobb visszatero foglalonal is meglegyen.
-  const lptAz = hozz.hirdetes ? lptAzonositok(lptOlvas(cookie, most)) : lptAzonositok(null);
   const lptPotolt = [];
-  if (!katt && lptAz.google) { katt = lptAz.google; lptPotolt.push('google'); }
-  if (!plat.meta_fbc && lptAz.meta_fbc) { plat.meta_fbc = lptAz.meta_fbc; plat.meta_kattintas_ido = lptAz.meta_kattintas_ido; lptPotolt.push('meta'); }
-  if (!plat.tiktok_ttclid && lptAz.tiktok_ttclid) { plat.tiktok_ttclid = lptAz.tiktok_ttclid; plat.tiktok_kattintas_ido = lptAz.tiktok_kattintas_ido; lptPotolt.push('tiktok'); }
+  try { // fail-open: a suti-potlas hibaja soha nem allithatja meg a foglalas rogziteset
+    const lptAz = hozz.hirdetes ? lptAzonositok(lptOlvas(cookie, most)) : lptAzonositok(null);
+    if (!katt && lptAz.google) { katt = lptAz.google; lptPotolt.push('google'); }
+    if (!plat.meta_fbc && lptAz.meta_fbc) { plat.meta_fbc = lptAz.meta_fbc; plat.meta_kattintas_ido = lptAz.meta_kattintas_ido; lptPotolt.push('meta'); }
+    if (!plat.tiktok_ttclid && lptAz.tiktok_ttclid) { plat.tiktok_ttclid = lptAz.tiktok_ttclid; plat.tiktok_kattintas_ido = lptAz.tiktok_kattintas_ido; lptPotolt.push('tiktok'); }
+  } catch (e) { console.error('mp-meres: lpt potlas hiba', String(e && e.message || e).slice(0, 120)); }
   const ert = ertekFeloldas(a, arlista);
   const kulcs = foglalasKulcs(a);
   // forras v2: munkamenet-erintes (hozzajarulastol fuggetlen), fizetett erintes hianyaban hozzajarulassal az mp_lpt suti
