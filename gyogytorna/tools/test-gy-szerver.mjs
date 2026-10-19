@@ -2,7 +2,7 @@
 // Futtatas: node --test tools/test-gy-szerver.mjs   (halozat nincs, foglalas nincs)
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { belepes, cimkez, osszevon, fizetett, referrerKategoria } from '../lib/forras.js';
+import { belepes, cimkez, osszevon, fizetett, referrerKategoria, erintesAdatok } from '../lib/forras.js';
 import { hozzajarulas } from '../lib/hozzajarulas.js';
 import { tranzakcioId, hmacHex, ujToken, sha256Hex } from '../lib/titkos.js';
 import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes, visszahivasVegpont, sutiConfigVegpont, sutiTesztEllenorzes, SUTI_TESZT_ALAP } from '../lib/motor-szerver.js';
@@ -55,7 +55,7 @@ test('belepes: a kattintas-azonosito erteke csak ervenyes alakban, a tobbi platf
   assert.equal(x.ref_domain, 'google.com');
   const y = belepes({ search: '?fbclid=ABCDEFGH12345678' });
   assert.equal(y.kattintas_param, 'fbclid');
-  assert.equal(y.kattintas_ertek, null);
+  assert.equal(y.kattintas_ertek, 'ABCDEFGH12345678'); // GY-25: a Meta / TikTok click-ID nyers erteke is (ervenyes alakban), csak hozzajarulassal tarolodik
   assert.equal(referrerKategoria('gyogytornaszom.hu'), 'sajat');
   assert.equal(referrerKategoria('bing.com'), 'search');
 });
@@ -213,7 +213,7 @@ test('foglalas-vegpont: sikeres foglalas -> aktiv, egyszeri token, forras-cimke 
   assert.match(j.token, /^[A-Za-z0-9_-]{43}$/);
   assert.deepEqual(Object.keys(j).sort(), ['allapot', 'koszono', 'ok', 'token']); // a valasz nem hordoz cimkét / forrast / szolgaltatasnevet
   const sor = await env.GY_DB.prepare('SELECT * FROM gy_foglalas').first();
-  assert.equal(sor.cimke, 'google_brand');
+  assert.equal(sor.cimke, 'google_markas');
   assert.equal(sor.tipus, 'allapotfelmeres');
   assert.equal(sor.uj_vendeg, 'uj');
   assert.equal(sor.hozzajarulas, 'nincs_dontes');
@@ -224,7 +224,8 @@ test('foglalas-vegpont: sikeres foglalas -> aktiv, egyszeri token, forras-cimke 
   for (const tilos of ['ABCDEFGH12345', 'Allapotfelmeres', 'Állapotfelmérés', 'g:555', 'utm_', 'gclid']) assert.equal(mind.includes(tilos), false, tilos);
   // a tobbi tabla: a click-ID csak a munkamenet-rekordban (max 24 ora), a riasztas / token / kampany tablakban nincs
   for (const t of ['gy_token', 'gy_riasztas', 'gy_kampany', 'gy_meta']) assert.equal(JSON.stringify((await env.GY_DB.prepare(`SELECT * FROM ${t}`).all()).results).includes('ABCDEFGH12345'), false, t);
-  assert.equal(JSON.stringify((await env.GY_DB.prepare('SELECT * FROM gy_munkamenet').all()).results).includes('ABCDEFGH12345'), true);
+  // GY-25: hozzajarulas-dontes nelkul (nincs_dontes) nyers click-ID a munkamenet-rekordban sem tarolodik
+  assert.equal(JSON.stringify((await env.GY_DB.prepare('SELECT * FROM gy_munkamenet').all()).results).includes('ABCDEFGH12345'), false);
   void d;
 });
 
@@ -443,9 +444,9 @@ test('lemondas: csak ha a Salonic elo oldala szerint torolve; ismetles rendben; 
 test('UTM-sablon (Feri 2026-10-13): kampany / hirdetescsoport / hirdetes azonosito a foglalasra kerul (csak szamok); ervenytelen ertek eldobva; riport-bontas', async () => {
   const { env, d } = await teljesFolyamat({ search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&utm_content=987654321&gyt_ag=123456789&gclid=ABCDEFGH12345` });
   const sor = await env.GY_DB.prepare('SELECT kampany, hirdetescsoport, hirdetes, cimke FROM gy_foglalas').first();
-  assert.deepEqual({ ...sor }, { kampany: DSA, hirdetescsoport: '123456789', hirdetes: '987654321', cimke: 'google_nem_brand' });
+  assert.deepEqual({ ...sor }, { kampany: DSA, hirdetescsoport: '123456789', hirdetes: '987654321', cimke: 'google_nem_markas' });
   const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?riport=2026-10', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).json();
-  assert.deepEqual(rap.kampany_bontas.map((x) => ({ ...x })), [{ kampany: DSA, hirdetescsoport: '123456789', cimke: 'google_nem_brand', db: 1 }]);
+  assert.deepEqual(rap.kampany_bontas.map((x) => ({ ...x })), [{ kampany: DSA, hirdetescsoport: '123456789', cimke: 'google_nem_markas', db: 1 }]);
   // rossz formatum (nem 6-15 szamjegy / szoveg) -> null, nem javitjuk
   const { env: env2 } = await teljesFolyamat({ search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&utm_content=abc&gyt_ag=12&gclid=ABCDEFGH12345` });
   const sor2 = await env2.GY_DB.prepare('SELECT hirdetescsoport, hirdetes FROM gy_foglalas').first();
@@ -642,7 +643,7 @@ test('GY-22 (a): gclid-es erkezes -> 3 nappal kesobbi direkt visszateres -> fogl
   const j = await foglal(env, harom + 3600 * 1000, lpt.split('; ').filter((c) => c.startsWith('gy_lpt=')).join('; ') + '; ' + HJ_IGEN, 'mb_lpca0000000000001');
   assert.equal(j.ok, true);
   const sor = await lpcSor(env, 'mb_lpca0000000000001');
-  assert.deepEqual({ ...sor }, { cimke: 'google_nem_brand', lpc_cimke: 'google_nem_markas', lpc_bizonyitek: 'kampany_es_katt', lpc_kampany: DSA, lpc_hirdetescsoport: '123456789', lpc_hirdetes: '987654321', lpc_kora_nap: 3, kesoi_fizetett: null, lpc_verzio: 'lpc1' });
+  assert.deepEqual({ ...sor }, { cimke: 'google_nem_markas', lpc_cimke: 'google_nem_markas', lpc_bizonyitek: 'kampany_es_katt', lpc_kampany: DSA, lpc_hirdetescsoport: '123456789', lpc_hirdetes: '987654321', lpc_kora_nap: 3, kesoi_fizetett: null, lpc_verzio: 'lpc1' });
 });
 
 test('GY-22 (b): BRAND kattintas -> google_markas; ujabb fizetett felulirja a regebbit; organikus / direkt nem ir felul', async () => {
@@ -695,7 +696,8 @@ test('GY-22 (d): elutasitas (visszavont hozzajarulas) utan nincs iras, a meglevo
   const r = await ping(env, 0, `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ABCDEFGH12345&email=a@b.hu`);
   const lpt = sutikBol(r).split('; ').find((c) => c.startsWith('gy_lpt='));
   const sor = JSON.stringify(await env.GY_DB.prepare('SELECT * FROM gy_erintes').first());
-  for (const tilos of ['ABCDEFGH12345', 'gclid', 'a@b.hu', 'utm_', 'Mozilla']) assert.equal(sor.includes(tilos), false, tilos);
+  for (const tilos of ['a@b.hu', 'utm_', 'Mozilla']) assert.equal(sor.includes(tilos), false, tilos);
+  assert.equal((await env.GY_DB.prepare('SELECT katt_tipus AS t, katt_ertek AS k FROM gy_erintes').first()).k, 'ABCDEFGH12345'); // GY-25: a nyers click-ID csak a katt_ertek oszlopban (hozzajarulassal; 60 nap utan torlodik)
   assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 1);
   const NEM = `gy_suti=v1-s0-m0-t${ts()}`; // lábléci elutasítás: nincs marketing-hozzajarulas
   await ping(env, 1000, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ZZZZZZZZ99999`, `${lpt}; ${NEM}`);
@@ -728,7 +730,7 @@ test('GY-22: a foglalas-valasz, a cimke es a koszono-esemeny VALTOZATLAN (arnyek
   const cook = `${sutikBol(r)}; ${HJ_IGEN}`;
   const j = await foglal(env, 600000, cook, 'mb_lpcg0000000000001');
   assert.deepEqual(Object.keys(j).sort(), ['allapot', 'koszono', 'ok', 'token']);
-  assert.equal((await env.GY_DB.prepare('SELECT cimke FROM gy_foglalas WHERE uuid = ?').bind('mb_lpcg0000000000001').first()).cimke, 'google_brand'); // a regi besorolas valtozatlan
+  assert.equal((await env.GY_DB.prepare('SELECT cimke FROM gy_foglalas WHERE uuid = ?').bind('mb_lpcg0000000000001').first()).cimke, 'google_markas'); // GY-25: a foglalas cimkeje az uj (7 napos utolso fizetett kattintas), a regi a cimke_regi-ben
   const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?lpc=2026-10', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
   assert.equal(rap.ok, true);
   assert.deepEqual([rap.szabaly_verzio, rap.nevezo, rap.lpc_azonositott, rap.munkamenet_azonositott, rap.erintesi_naplo_sorok], ['lpc1', 1, 1, 1, 1]);
@@ -836,7 +838,7 @@ test('ugyanaz a kattintas (azonos gclid) UTM nelkul, belso navigacio: az eredeti
   const j = await foglal(env, 600000, `${lpt}; ${gys}; ${HJ_IGEN}`, 'mb_lpch0000000000001');
   assert.equal(j.ok, true);
   const sor = await env.GY_DB.prepare('SELECT cimke, kampany, hirdetescsoport, lpc_cimke, lpc_kampany FROM gy_foglalas WHERE uuid = ?').bind('mb_lpch0000000000001').first();
-  assert.deepEqual({ ...sor }, { cimke: 'google_nem_brand', kampany: DSA, hirdetescsoport: '119331641405', lpc_cimke: 'google_nem_markas', lpc_kampany: DSA });
+  assert.deepEqual({ ...sor }, { cimke: 'google_nem_markas', kampany: DSA, hirdetescsoport: '119331641405', lpc_cimke: 'google_nem_markas', lpc_kampany: DSA });
   // MASIK gclid UTM nelkul = uj kattintas (a regit nem orokli): kampany nelkuli erintes
   await ping(env, 900000, '?gclid=ZZZZZZZZ99999', `${lpt}; ${gys}; ${HJ_IGEN}`);
   assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_erintes').first()).n, 2);
@@ -877,7 +879,11 @@ test('gad_campaignid: tartalek kampany-ID csak ha az utm_campaign nincs; brand /
   assert.equal(q(`?utm_campaign=${DSA}&gclid=ABCDEFGH12345&gad_campaignid=${BRAND}`).utm_campaign, DSA);
   // fbclid onmagaban: social_meta, nem organikus, nem Google; ha Google-jel is van, az nyer
   const f = q('?fbclid=ABCDEFGH12345');
-  assert.deepEqual([cimkez(f, { lista: LISTA }).cimke, cimkez(f, { lista: LISTA }).bizonyitek], ['social_meta', 'fbclid_fizetett_ismeretlen']);
+  assert.deepEqual([cimkez(f, { lista: LISTA }).cimke, cimkez(f, { lista: LISTA }).bizonyitek], ['ismeretlen', 'nem_google_fizetett']);
+  const ef = erintesAdatok(f, { lista: LISTA });
+  assert.deepEqual([ef.platform, ef.cimke, ef.bizonyitek, ef.katt_tipus, ef.katt_ertek], ['meta', 'meta', 'fbclid_utm_nelkul', 'fbclid', 'ABCDEFGH12345']); // GY-25: uj szokincs
+  const et = erintesAdatok(q('?ttclid=ABCDEFGH12345&utm_source=tiktok&utm_medium=paid'), { lista: LISTA });
+  assert.deepEqual([et.platform, et.cimke], ['tiktok', 'tiktok']);
   assert.equal(cimkez(q(`?fbclid=ABCDEFGH12345&gclid=ABCDEFGH12345&utm_campaign=${BRAND}`), { lista: LISTA }).cimke, 'google_brand');
 });
 
@@ -917,7 +923,7 @@ test('GY-23: a 7 napos last paid click Google click-ID-ja a foglalashoz kerul (t
   assert.match(x.click_ido, /^2026-10-14 \d\d:\d\d:\d\d\+02:00$/);
   assert.equal(x.order_id, await tranzakcioId('mb_gads00000000000001', KULCS)); // ugyanaz, mint a dataLayer tranzakcio_id (deduplikalashoz)
   assert.equal(x.forras.szabaly, 'gads1+lpc1');
-  assert.match(x.forras.munkamenet, /^[0-9a-f]{16}$/);
+  assert.equal(x.forras.munkamenet, undefined); // GY-25 review: a latogato-hash nem megy ki az exportban
   const mind = JSON.stringify(l);
   for (const tilos of ['nev', 'email', 'telefon', 'kezeles', 'salonic_id', SID, 'mb_gads']) assert.equal(mind.includes(tilos), false, tilos);
   // lemondas: a lista lemondott agaban jelenik meg (kesobbi kiigazitashoz)
@@ -943,7 +949,7 @@ test('GY-23: hozzajarulas nelkul / nem Google erintes / organikus nincs click-ID
   assert.equal((await env3.GY_DB.prepare('SELECT gads_katt_ertek AS k FROM gy_foglalas').first()).k, 'ABCDEFGH12345');
   await takaritTeszt(env3, MOST / 1000 + 61 * 86400);
   const t = await env3.GY_DB.prepare('SELECT gads_katt_ertek AS k, gads_katt_tipus AS t, cimke FROM gy_foglalas').first();
-  assert.deepEqual([t.k, t.t, t.cimke], [null, null, 'google_brand']);
+  assert.deepEqual([t.k, t.t, t.cimke], [null, null, 'google_markas']);
 });
 
 // --- GY-24: lepesenkenti tolcsermeres (gy_motor_stat) ----------------------------------------------------------------------------------------------------------
@@ -1026,4 +1032,50 @@ test('GY-24 admin ?tolcser=YYYY-MM: lepesenkenti darabszam eszkozonkent, kozelit
   // megorzes: 13 honap (396 nap) utan torlodik
   await takaritTeszt(env, MOST / 1000 + 397 * 86400);
   assert.equal((await mrows(env)).length, 0);
+});
+
+// --- GY-25: ELES 7 napos utolso fizetett kattintas (Meta / TikTok / Google), bizonyitek-forras, click-ID a foglalashoz -----------------------------------------
+const gySor = (env, uuid) => env.GY_DB.prepare('SELECT cimke, bizonyitek, bizonyitek_forras, lpc_platform, lpc_katt_tipus, lpc_katt_ertek, gads_katt_ertek, kesoi_fizetett, cimke_regi FROM gy_foglalas WHERE uuid = ?').bind(uuid).first();
+
+test('GY-25: Meta kattintas -> foglalas = meta (bizonyitek-forras suti, nyers fbclid a foglalason); organikus visszateres nem ir felul; ujabb TikTok igen; 8-30 nap csak kesoi jelzes', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, '?utm_source=facebook&utm_medium=paid_social&utm_campaign=1234567&fbclid=ABCDEFGH12345678');
+  const lpt = sutikBol(r);
+  // organikus belso ping 2 nappal kesobb: nem naplozodik, nem ir felul
+  await ping(env, 2 * NAPMP, '', `${lpt}; ${HJ_IGEN}`, 'https://www.google.com/');
+  const j = await foglal(env, 3 * NAPMP, `${lpt}; ${HJ_IGEN}`, 'mb_gy25a000000000001');
+  assert.equal(j.ok, true);
+  const a = await gySor(env, 'mb_gy25a000000000001');
+  assert.deepEqual([a.cimke, a.bizonyitek_forras, a.lpc_platform, a.lpc_katt_tipus, a.lpc_katt_ertek, a.gads_katt_ertek], ['meta', 'suti', 'meta', 'fbclid', 'ABCDEFGH12345678', null]);
+  // ujabb fizetett (TikTok) nyer
+  await ping(env, 4 * NAPMP, '?utm_source=tiktok&utm_medium=paid&utm_campaign=777&ttclid=TTCLID1234567890', `${lpt}; ${HJ_IGEN}`);
+  await foglal(env, 5 * NAPMP, `${lpt}; ${HJ_IGEN}`, 'mb_gy25b000000000001');
+  const b = await gySor(env, 'mb_gy25b000000000001');
+  assert.deepEqual([b.cimke, b.lpc_platform, b.lpc_katt_tipus, b.lpc_katt_ertek], ['tiktok', 'tiktok', 'ttclid', 'TTCLID1234567890']);
+  // 12 nappal a legutolso fizetett utan: nem 7 napos nyertes -> organikus_direkt + kesoi jelzes
+  await foglal(env, (4 + 12) * NAPMP, `${lpt}; ${HJ_IGEN}`, 'mb_gy25c000000000001');
+  const c = await gySor(env, 'mb_gy25c000000000001');
+  assert.equal(c.cimke, 'organikus_direkt');
+  assert.equal(c.kesoi_fizetett, 'tiktok');
+  assert.equal(c.lpc_katt_ertek, null);
+});
+
+test('GY-25: hirdetesi hozzajarulas nelkul nincs click-ID sehol (naplo, munkamenet, foglalas); a cimke a hozzajarulas nelkuli tartalekbol jon', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, '?utm_source=facebook&utm_medium=paid_social&utm_campaign=1234567&fbclid=ABCDEFGH12345678', HJ_NEM);
+  await foglal(env, 600, `${sutikBol(r)}; ${HJ_NEM}`, 'mb_gy25d000000000001');
+  for (const t of ['gy_erintes', 'gy_munkamenet', 'gy_foglalas']) assert.equal(JSON.stringify((await env.GY_DB.prepare(`SELECT * FROM ${t}`).all()).results).includes('ABCDEFGH12345678'), false, t);
+  assert.equal((await gySor(env, 'mb_gy25d000000000001')).lpc_katt_ertek, null);
+});
+
+test('GY-25 review: hozzajarulas visszavonasakor a foglalason tarolt nyers click-ID is torlodik; a ?foglalas= nem adja ki a nyers erteket', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, '?utm_source=facebook&utm_medium=paid_social&utm_campaign=1234567&fbclid=ABCDEFGH12345678');
+  const lpt = sutikBol(r);
+  await foglal(env, 600, `${lpt}; ${HJ_IGEN}`, 'mb_gy25e000000000001');
+  assert.equal((await gySor(env, 'mb_gy25e000000000001')).lpc_katt_ertek, 'ABCDEFGH12345678');
+  const f = await (await adminVegpont({ request: kerelem('/api/gy-admin?foglalas=mb_gy25e000000000001', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.equal(JSON.stringify(f).includes('ABCDEFGH12345678'), false);
+  await ping(env, 1200, '', `${lpt}; ${HJ_NEM}`); // visszavonas
+  assert.equal((await gySor(env, 'mb_gy25e000000000001')).lpc_katt_ertek, null);
 });
