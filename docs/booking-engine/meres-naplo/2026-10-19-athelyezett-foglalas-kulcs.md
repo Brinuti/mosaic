@@ -23,7 +23,7 @@ Kapcsolódó csomagok zölden: `test-meres`, `test-qa-nap`, `test-google-proba`,
 - `netlify/lib/meres/vegpontok.js` b5e3881fc7 -> b5e3881fc7 (változatlan)
 - `netlify/lib/meres/qa-nap.js` 2334390be3 -> 2334390be3 (változatlan)
 - `netlify/lib/meres/esemeny-modell.js` 4342e6f09b -> 4342e6f09b (változatlan); a `netlify/lib/meres` fa 488d8f699c -> 488d8f699c (változatlan)
-- `netlify/lib/foglalas-kulcs.js` e1448b4d13 -> HASH_FK (VÁLTOZIK: ez a PR tárgya, dokumentált); ezzel a `netlify` fa 1e6028d604 -> HASH_NETLIFY
+- `netlify/lib/foglalas-kulcs.js` e1448b4d13 -> 574f59b000 (VÁLTOZIK: ez a PR tárgya, dokumentált); ezzel a `netlify` fa 1e6028d604 -> 48fe1e0a93
 
 ## 6. Nyitott / korlát
 A két kiesett sor (`8accdc58`, `b39d2de4`) `ellentmondas` állapotban marad, amíg a párosítást (az eredeti e-mail-adatokkal) újra nem futtatják; az `egyeztet` az `ellentmondas` sort újrafuttatja (nem lezárt állapot). Ha A-t ugyanarra az időre, de másik munkatárshoz helyezik át, a kezdet egyezik: a (régi) hamis ellentmondás marad.
