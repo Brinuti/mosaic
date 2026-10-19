@@ -175,6 +175,22 @@ export async function foglalasAllapot({ host, uuid, fetchImpl }) {
   } catch (e) { return { allapot: 'ismeretlen', miert: 'lekeres-hiba: ' + String(e && e.message || e).slice(0, 80) }; }
 }
 
+/**
+ * Egy Salonic-foglalas AKTUALIS kezdete (csak olvasas: GET /booking/addToCalendar/<uuid>/ios -> "DTSTART:YYYYMMDDTHHMMSSZ"). Azert kell, mert a vendeg ATHELYEZHETI a foglalast
+ * ("Foglalas modositva vendeg altal"): az UUID aktiv marad, a kulcstabla viszont a REGI kezdetet orzi; az athelyezett foglalas megtekintes oldalan nincs gepi kezdet
+ * (nincs "Foglalas modositasa" link), a naptar-export viszont az aktualisat adja. -> { ok, startUnix, status, miert }
+ */
+export async function foglalasKezdet({ host, uuid, fetchImpl }) {
+  if (!HOSTOK[host]) return { ok: false, miert: 'ismeretlen host' };
+  if (!UUID_MINTA.test(String(uuid))) return { ok: false, miert: 'ervenytelen uuid' };
+  try {
+    const r = await lekerSzoveg(fetchImpl, `https://${host}/booking/addToCalendar/${uuid}/ios`);
+    const m = String(r.szoveg).match(/DTSTART:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/);
+    if (!m) return { ok: false, status: r.status, miert: 'a naptar-exportban nincs DTSTART' };
+    return { ok: true, status: r.status, startUnix: Math.round(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) / 1000) };
+  } catch (e) { return { ok: false, miert: 'lekeres-hiba: ' + String(e && e.message || e).slice(0, 80) }; }
+}
+
 // --- e-mail (a Salonic ertesito levele) ----------------------------------------------------------------------------------------------------
 const entitas = (s) => String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
 /**
@@ -520,9 +536,15 @@ export async function egyeztet(db, mezok, deps) {
     if (birtokosJelolt && birtokosJelolt.kuldve_uuid && birtokosJelolt.kuldve_uuid !== mezok.uuid) {
       const elo = await foglalasAllapot({ host: mezok.host, uuid: birtokosJelolt.kuldve_uuid, fetchImpl: deps.fetchImpl });
       nyom.birtokos_ellenorzes = { kulcs: k, birtokos_booking_id: birtokos.booking_id, birtokos_uuid: birtokosJelolt.kuldve_uuid, elo_allapot: elo.allapot, miert: elo.miert || null };
-      if (elo.allapot === 'aktiv') return { allapot: 'ellentmondas', kulcs: k, miert: 'a kulcsot mar mas, ELO Salonic-foglalas birtokolja (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + '): ket elo foglalas azonos kulccsal' };
-      if (elo.allapot !== 'torolve') return { allapot: 'varakozas', kulcs: k, miert: 'a kulcs birtokosa nem ellenorizheto: ' + (elo.miert || elo.allapot) };
-      atadas = { regi: birtokos.booking_id, ok: 'a birtokos Salonic-foglalas (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + ') torolve - elo ellenorzes' };
+      if (elo.allapot === 'aktiv') {
+        // aktiv, de a vendeg kozben ATHELYEZHETTE masik idopontra: a kulcs a REGI kezdetet orzi, a Salonic aktualis kezdete mas -> a kulcs felszabadult (nem ket elo foglalas azonos kulccsal)
+        const kez = await foglalasKezdet({ host: mezok.host, uuid: birtokosJelolt.kuldve_uuid, fetchImpl: deps.fetchImpl });
+        const kulcsKezdet = Number(String(k).split('|')[2]);
+        nyom.birtokos_ellenorzes.aktualis_kezdet = { ok: kez.ok, startUnix: kez.startUnix || null, kulcs_kezdet: kulcsKezdet, miert: kez.miert || null };
+        if (!(kez.ok && Number.isFinite(kulcsKezdet) && kez.startUnix !== kulcsKezdet)) return { allapot: 'ellentmondas', kulcs: k, miert: 'a kulcsot mar mas, ELO Salonic-foglalas birtokolja (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + '): ket elo foglalas azonos kulccsal' };
+        atadas = { regi: birtokos.booking_id, ok: 'a birtokos Salonic-foglalas (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + ') a vendeg altal athelyezve (aktualis kezdet: ' + new Date(kez.startUnix * 1000).toISOString() + ') - elo ellenorzes' };
+      } else if (elo.allapot !== 'torolve') return { allapot: 'varakozas', kulcs: k, miert: 'a kulcs birtokosa nem ellenorizheto: ' + (elo.miert || elo.allapot) };
+      else atadas = { regi: birtokos.booking_id, ok: 'a birtokos Salonic-foglalas (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + ') torolve - elo ellenorzes' };
     }
     const szabad = lista.filter((c) => !c.kuldve_uuid);
     if (!szabad.length) return { allapot: 'nincs', kulcs: k, miert: 'minden jelolt mar mas foglalasra kiment' };
