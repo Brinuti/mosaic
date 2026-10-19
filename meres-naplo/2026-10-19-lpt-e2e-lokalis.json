@@ -1,0 +1,139 @@
+{
+ "ido": "2026-10-19T21:11:33.437Z",
+ "leiras": "LPT E2E helyi futas (--lokalis): dist + valodi vegpont-kod memoria-D1-gyel, szintetikus azonositok, valodi foglalas nelkul (docs/booking-engine/FORRAS_LPT.md)",
+ "futtatas": "node tools/meres-proba/lpt-e2e.mjs --lokalis [--mobil 1]",
+ "modok": {
+  "asztali": {
+   "ossz": 465,
+   "hibas": 0,
+   "esetek": {
+    "headspa/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "headspa/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "headspa/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "hair/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "hair/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "hair/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "laser/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "laser/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "laser/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "oxygen/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "oxygen/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "oxygen/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "pmu/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "pmu/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "pmu/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    }
+   }
+  },
+  "mobil": {
+   "ossz": 465,
+   "hibas": 0,
+   "esetek": {
+    "headspa/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "headspa/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "headspa/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "hair/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "hair/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "hair/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "laser/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "laser/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "laser/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "oxygen/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "oxygen/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "oxygen/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "pmu/google": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "pmu/meta": {
+     "ellenorzes": 31,
+     "hibas": 0
+    },
+    "pmu/tiktok": {
+     "ellenorzes": 31,
+     "hibas": 0
+    }
+   }
+  }
+ }
+}
