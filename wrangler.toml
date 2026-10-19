@@ -113,6 +113,9 @@ GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"
 # az sd kuldesehez kell a D1-kapcsolo (meres_kapcsolo: salonic_direct / salonic_direct:<uzletag>; alapbol KI) ES a ket titok (SD_HMAC_KEY_V1, GUEST_HMAC_KEY_V1; Secret, Production); a kuldes tovabbra is csak ARNYEK-celokra mehet.
 # A ket titokkal egyutt a sor elinditja a vendeg-hash index irasat (foglalas_vendeg, kuldes nelkul). Kikapcsolas: a sor torlese (+ a D1-kapcsolo OFF). Az sd azonosito nevtere: prod (alapertelmezes, MERES_SD_NS nem kell).
 MERES_SALONIC_DIRECT = "1"
+# 7 NAPOS UTOLSO FIZETETT KATTINTAS (2026-10-19, lasd docs/booking-engine/FORRAS_LPT.md): a szerver irta HttpOnly mh_lpt suti (/api/mosaic-forras) + a koszonooldali forras-cimke (meres_forras, a KULCS_DB-ben). Alapbol BEKAPCSOLVA, a veszkapcsolok
+# (ide, a [vars]-ba kell oket irni, mert a felulet nem titkos valtozoit a wrangler.toml torli): MOSAIC_LPT_KI = "1" (a vegpont 503, a koszonooldali burok kimarad), MOSAIC_LPT_ATTR_POTLAS = "0" (a shadow-lanc attr-potlasa a sutibol kikapcsol),
+# MOSAIC_LPT_MEGORZES_NAP = "90" (a meres_forras megorzese napokban, alap 30).
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei

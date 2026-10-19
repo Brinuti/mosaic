@@ -330,10 +330,50 @@ export function fillGoogleIds(attribution, saved) {
   return attribution;
 }
 
-/** A koszonooldalra fuzendo kereses (withAttribution bemenete): a motor URL-jenek keresese + a kontextus Google-azonositoi, ha az URL-ben nincsenek. Ha nincs mit hozzaadni: valtozatlan. */
+// --- 7 napos utolso fizetett kattintas (2026-10-19, docs/booking-engine/FORRAS_LPT.md): az R1 altalanositasa mind az 5 kattintasazonositora -------------------------------------------------
+// A szerver altal irt HttpOnly "mh_lpt" sutibol visszanyert azonositok (window.mhAttribucio.klikkReszletes(): a bongeszobol jovo elsobbseget elvez; a GET a foglalo indulasakor elindul, az atadas a MAR MEGJOTT eredmenyt hasznalja)
+// a koszonooldal URL-jebe is bekerulnek, ha onnan hianyoznak: igy a bongeszobol indulo ELO esemenyek (GTM / pixel) az azonositot az oldal URL-jebol olvasva megkapjak. Csak TOBB adat (4/a szabaly), uj konverzio nincs.
+export const CLICK_KEYS = Object.freeze(['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid']);
+const CLICK_ID_RE = Object.freeze({ gclid: GOOGLE_ID_RE, gbraid: GOOGLE_ID_RE, wbraid: GOOGLE_ID_RE, fbclid: /^[A-Za-z0-9_-]{8,200}$/, ttclid: /^[A-Za-z0-9_.-]{8,200}$/ }); // = assets/js/attribucio.js MINTA = netlify/lib/meres/erkezes.js MINTA
+
+/**
+ * A kontextus attribution-jat kiegesziti a (sutibol is visszanyert) kattintasazonositokkal: csak a HIANYZO, ervenyes mintaju kulcsokat; az URL-bol jovo elsobbseget elvez; a Google egy azonositot fogad el
+ * (ha az attribution mar tartalmaz gclid / gbraid / wbraid kulcsot, a tobbi Google-kulcsot nem egesziti ki). Visszaadja ugyanazt az objektumot.
+ */
+export function fillClickIds(attribution, saved) {
+  if (!attribution || !saved || typeof saved !== 'object') return attribution;
+  let googleVan = GOOGLE_KEYS.some((k) => attribution[k]);
+  for (const k of CLICK_KEYS) {
+    if (attribution[k]) continue;
+    const google = GOOGLE_KEYS.includes(k);
+    if (google && googleVan) continue;
+    const v = saved[k];
+    if (typeof v === 'string' && CLICK_ID_RE[k].test(v)) { attribution[k] = v; if (google) googleVan = true; }
+  }
+  return attribution;
+}
+
+/**
+ * A koszonooldal-atadas elott: a kontextus attribution-jat kiegeszti a window.mhAttribucio.klikkReszletes() azonositoival (ha van; hozzajarulas nelkul ures), es jelzi (lptJelol), mely kulcsokat potolta a SUTI
+ * (a koszonooldali jelzes ezt viszi: meres_forras.klikk_potolt). Hiba / hianyzo mhAttribucio: semmi nem valtozik. -> a sutibol potolt kulcsok tombje.
+ */
+export function lptPotlas(attribution, mhAttribucio) {
+  try {
+    if (!attribution || !mhAttribucio || typeof mhAttribucio.klikkReszletes !== 'function') return [];
+    const r = mhAttribucio.klikkReszletes();
+    if (!r || typeof r !== 'object' || !r.ids) return [];
+    const elotte = { ...attribution };
+    fillClickIds(attribution, r.ids);
+    const potolt = (Array.isArray(r.lpt) ? r.lpt : []).filter((k) => CLICK_KEYS.includes(k) && !elotte[k] && attribution[k] === r.ids[k]);
+    if (typeof mhAttribucio.lptJelol === 'function') mhAttribucio.lptJelol(potolt);
+    return potolt;
+  } catch (e) { return []; }
+}
+
+/** A koszonooldalra fuzendo kereses (withAttribution bemenete): a motor URL-jenek keresese + a kontextus kattintasazonositoi (gclid / gbraid / wbraid / fbclid / ttclid), ha az URL-ben nincsenek. Ha nincs mit hozzaadni: valtozatlan. */
 export function handoffSearch(search = '', attribution = {}) {
   const q = new URLSearchParams(search);
-  const add = GOOGLE_KEYS.filter((k) => !q.get(k) && attribution && typeof attribution[k] === 'string' && GOOGLE_ID_RE.test(attribution[k]));
+  const add = CLICK_KEYS.filter((k) => !q.get(k) && attribution && typeof attribution[k] === 'string' && CLICK_ID_RE[k].test(attribution[k]));
   if (!add.length) return search;
   for (const k of add) q.set(k, attribution[k]);
   return '?' + q.toString();
