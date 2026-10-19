@@ -74,6 +74,7 @@ export function tiktokTorzs(sor, ktx = null) {
   // IP + user agent a foglalas pillanatabol (mp_kontextus, legfeljebb 48 ora): Feri dontese 2026-10-19 (max. adat, egeszsegugyi adat nelkul)
   if (ktx && ipJo(ktx.ip)) user.ip = ipJo(ktx.ip);
   if (ktx && ktx.ua) user.user_agent = String(ktx.ua).slice(0, 400);
+  if (ktx && ktx.ext && /^[0-9a-f]{64}$/.test(String(ktx.ext))) user.external_id = String(ktx.ext); // a veletlen latogato-azonosito SHA-256-ja
   if (sor.tiktok_ttclid) user.ttclid = String(sor.tiktok_ttclid);
   if (sor.tiktok_ttp) user.ttp = String(sor.tiktok_ttp);
   const ertek = Number(sor.ertek);
@@ -124,7 +125,7 @@ export async function tiktokLepes(db, sor, env = {}, host = '', { fetchImpl = fe
     if (van && !(mod === 'eles' && van.allapot === 'hiba')) return { kihagyva: 'mar_rogzitve' };
     let torzs;
     let ktx = null;
-    try { ktx = await db.prepare('SELECT ip, ua FROM mp_kontextus WHERE kulcs = ?').bind(sor.kulcs).first(); } catch (e) { /* nincs tabla */ }
+    try { ktx = await db.prepare('SELECT ip, ua, ext FROM mp_kontextus WHERE kulcs = ?').bind(sor.kulcs).first(); } catch (e) { /* nincs tabla */ }
     try { torzs = tiktokTorzs(sor, ktx); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
     const mtorzs = JSON.stringify(await maszkoltTorzs(torzs));
     let allapot = 'naplozva';
