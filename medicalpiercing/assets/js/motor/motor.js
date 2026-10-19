@@ -959,6 +959,17 @@ export function nyit(ctx) {
     all.expected = b.expected;
     const u = new URL(b.guestDataUrl);
     for (const [k, v] of tovabbi) if (!u.searchParams.has(k)) u.searchParams.set(k, v);
+    // Meta kattintas-azonosito a Salonic-adatlapnak (a Salonic sajat CAPI Schedule-je a fo Meta-konverzio): ha a kattintott link nem vitte,
+    // a sajat tartomany _fbc / _fbp sutijebol (a Meta-pixel irja) potoljuk: fbclid (az _fbc utolso tagja), fbc, fbp. Nem egeszsegugyi adat. (2026-10-19)
+    try {
+      const suti = (n) => { const m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : null; };
+      const fbc = suti('_fbc'), fbp = suti('_fbp');
+      if (fbc && /^fb\.\d\.\d+\.[A-Za-z0-9._-]{8,512}$/.test(fbc)) {
+        if (!u.searchParams.has('fbclid')) u.searchParams.set('fbclid', fbc.split('.').slice(3).join('.'));
+        u.searchParams.set('fbc', fbc);
+      }
+      if (fbp && /^fb\.\d\.\d+\.\d+$/.test(fbp)) u.searchParams.set('fbp', fbp);
+    } catch (e) { /* tiltott suti: marad a link parametere */ }
     foglalas.update({ business: 'mp', service_id: all.szolg.serviceId, slot_unix: all.slot.start_unix, staff_id: all.staffId || '-1', carrier: 'back', sent_at: Date.now() });
     let stilus = null;
     try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
