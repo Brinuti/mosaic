@@ -711,6 +711,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (!S.slots.length && !S.slotsFull) await S.fullP; // az elso 14 napban nincs idopont: megvarjuk a teljes listat, mielott "nincs idopont"-ot mondunk
       if (S.restoreDay && !S.slotsFull && S.restoreDay > F.dayKey(nowUnix() + 14 * 86400)) await S.fullP; // a korabban nezett nap az elso 14 napon tul van: megvarjuk a teljes listat
       if (S.restoreDay) { S.day = S.restoreDay; S.month = S.restoreMonth; S.restoreDay = null; S.restoreMonth = null; } // visszaallitott allapot: a korabban nezett nap
+      meter.c1(S.slots, S.staff, nowUnix()); // (#205 e) csak meres: a kovetkezo 7 nap szabad idopontjai + a legkorabbi szabad nap, a mar betoltott listabol
       if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'C1' }); meter.error('no_slots', 'C1'); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
       const hk = F.monthList(nowUnix(), NAPTAR_NAP);
       const track0 = { ...serviceParams(S.service), step: 'C1' };
@@ -760,7 +761,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       // Friss ellenorzes: az idopont meg szabad-e. (Az elkelt idopontnal a Salonic a SAJAT fooldalara dob, ami a keretben nem
       // latszik a motornak; a masik munkamenet altal tartott idopontot a naptar-API nem rejti el, ezt az alabbi segito sor kezeli.)
       const slotAtStart = S.slot; // az ellenorzes az adatlap betoltesevel parhuzamosan fut: elkelt idopontnal az eredmeny erkezesekor lep at az A2-re
-      if (!S.adapterSample) slotStillFree().then((szabad) => { if (!szabad && S.state === 'C4' && S.slot === slotAtStart) { S.a2Reason = 'taken'; go('A2', { replace: true }); } });
+      if (!S.adapterSample) slotStillFree().then((szabad) => { if (!szabad && S.state === 'C4' && S.slot === slotAtStart) { S.a2Reason = 'taken'; meter.a2Ok('taken'); go('A2', { replace: true }); } });
       // A sajat foglalas-azonosito az adatlap cimere kerul (a Salonic a "back" parametert megorzi, lasd salonic-adapter.js); ha az elozo foglalas mar lezarult, uj azonositot kap.
       const bookingId = bk.begin({ business: flow.business }).id; tracker.setBookingId(bookingId);
       const b = await adapter.beginBooking({ business: flow.business, serviceId: S.service.serviceId, startUnix: S.slot.start_unix, staffId: S.slotStaff ? S.slotStaff.id : -1, bookingId });
@@ -805,7 +806,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       const slow = win.setTimeout(() => { fallback.hidden = false; help.hidden = false; }, 6000);
       frame.addEventListener('load', () => { win.clearTimeout(slow); loading.hidden = true; frame.style.visibility = ''; win.setTimeout(() => { help.hidden = false; }, 2500); });
       // A Salonic 5 percig tartja fenn az idopontot, utana a sajat fooldalara dob: ezt mi is figyeljuk (4:50).
-      S.holdTimer = win.setTimeout(() => { if (S.state === 'C4') { S.a2Reason = 'expired'; go('A2', { replace: true }); } }, HOLD_MS);
+      S.holdTimer = win.setTimeout(() => { if (S.state === 'C4') { S.a2Reason = 'expired'; meter.a2Ok('expired'); go('A2', { replace: true }); } }, HOLD_MS);
       // Nem eles tartomanyon (elonezet / helyi) a Salonic az ELES koszonooldalra iranyit, ami a keretben nem ertesitheti a motort (idegen eredet), ezert itt a
       // vegen a Salonic / koszonooldal keretbeli tartalma latszik, nem a motor sikerkepernyoje; a foglalas ettol fuggetlenul VALODI.
       const box = h('div', { class: 'be-frame', 'data-styled': String(styled), style: `--visible:${geo.visible}px;--crop:${geo.crop}px` }, loading, frame);
@@ -1039,6 +1040,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   }
   function resolveRedirect(href) {
     const kind = F.classifyRedirect(href, { enginePath: flow.enginePath });
+    meter.a2Ok(kind === 'slot_lost' ? 'redirect' : null); // (#205 d) csak meres: az A2-t a Salonic elkelt-jelzese nyitja (nem a korabbi S.a2Reason)
     // a slot_lost hibat az A2 nezet szamolja (egyszer); itt nem, kulonben egy elkelt idopont ketszer szamolodna (C5 + C4)
     if (kind === 'slot_lost') return go('A2', { replace: true });
     if (kind === 'confirmation') {
@@ -1048,6 +1050,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       const v = S.expected ? adapter.verifyConfirmation(href, S.expected) : null;
       if (v && v.ok) confirmed(v);
       else meter.error('verify_failed', 'C5'); // nem igazolt visszateres: kulon szamolodik (a napi ellenorzes a success mellett kulon mutatja), sikernek nem
+      meter.unverified(v, S.slot && S.slot.slot_id); // (#205 a, b) csak meres: nem igazolt siker (success_unverified) + a buko ellenorzesek kodjai; igazolt (v.ok) eseten nem csinal semmit
       if (!(v && v.ok)) track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
         filter: v ? Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') : undefined });
       // (a Salonic URL-je valtozatlan marad; csak a motor sajat URL-jen erkezett hirdetesi azonositok kerulnek a vegere, ha a Salonic nem hozta oket)
