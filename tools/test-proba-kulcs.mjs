@@ -20,7 +20,7 @@ const PROBA_KULCS = 'proba-kulcs-' + 'a1b2c3d4'.repeat(6);
 const hash = (s) => crypto.createHash('sha256').update(s).digest('hex');
 const LEJAR = '2026-10-20T12:00:00Z';
 const WEBHOOK = 'https://hooks.zapier.com/hooks/catch/1/teszt/';
-const GCL = 'CjwKCAjwTESZTproba_' + 'a'.repeat(30); // egy valodi HeadSpa Google-feltoltes gclid-je (a google_proba ebbol valaszt, csak olvas)
+const GCL = 'CjwKCAjwTESZTproba_' + 'a'.repeat(30); // SZINTETIKUS gclid, egy valodi HeadSpa Google-feltoltes-sort utanzo (a google_proba ilyen sorbol valaszt, csak olvas)
 
 // a futas_id veletlen (a source_id / order_id benne): az osszehasonlitashoz kicserelve
 const norm = (r) => { const t = JSON.stringify(r), f = r.body && r.body.futas_id; return f ? t.split(f).join('FUTAS') : t; };
@@ -32,7 +32,7 @@ async function vilag({ env = {}, naploHiba = false } = {}) {
   // naploHiba: a proba_kulcs_naplo irasa hibat ad (a naplozhatatlan muvelet nem futhat)
   const db = naploHiba ? { ...raw, prepare: (sql) => { if (/proba_kulcs_naplo/.test(sql)) throw new Error('naplo-hiba'); return raw.prepare(sql); } } : raw;
   await sema(raw); await meresSema(raw);
-  const e = { KULCS_DB: db, EGYEZTETES_KULCS_HASH: hash(FO_KULCS), GOOGLE_PROBA_KULCS_HASH: hash(PROBA_KULCS), GOOGLE_PROBA_KULCS_LEJAR: LEJAR, GOOGLE_ARNYEK_WEBHOOK_URL: WEBHOOK, ...ENV_ALAP, ...env };
+  const e = { KULCS_DB: db, EGYEZTETES_KULCS_HASH: hash(FO_KULCS), GOOGLE_PROBA_KULCS_HASH: hash(PROBA_KULCS), GOOGLE_PROBA_KULCS_LEJAR: LEJAR, ...ENV_ALAP, GOOGLE_ARNYEK_WEBHOOK_URL: WEBHOOK, ...env };
   const sql = (q, ...a) => D.db.prepare(q).all(...a).map((r) => ({ ...r }));
   // egy valodi HeadSpa Google-feltoltes (FoglalasElso, elkuldve): a google_proba gclid-forrasa; enelkul minden google_proba 409-cel allna meg
   D.db.prepare('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, kerelem, letrehozva, frissitve, forras, ertek, penznem) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
@@ -64,10 +64,18 @@ test('a proba-kulcs a ket google_proba muveletre ugyanazt adja, mint a fo kulcs 
   const A = await vilag(), B = await vilag();
   const kuld = { muvelet: 'google_proba', kuld: true, megerosit: MEGEROSITES };
   const rp = await A.hiv('POST', { kulcs: PROBA_KULCS, body: kuld }), rf = await B.hiv('POST', { kulcs: FO_KULCS, body: kuld });
-  assert.equal(rp.status, 200, JSON.stringify(rp.body).slice(0, 200)); assert.equal(rp.status, rf.status);
+  assert.equal(rp.status, 200, JSON.stringify(rp.body).slice(0, 200)); assert.equal(norm(rp), norm(rf), 'a kuldes valasza szo szerint azonos');
+  const hivNorm = (W, futas) => JSON.stringify(W.hivasok.map((h) => h.body)).split(futas).join('FUTAS');
   assert.ok(A.hivasok.length > 0 && A.hivasok.length === B.hivasok.length, 'ugyanannyi kimeno hivas: ' + A.hivasok.length + ' / ' + B.hivasok.length);
+  assert.equal(hivNorm(A, rp.body.futas_id), hivNorm(B, rf.body.futas_id), 'a kimeno hivasok torzse azonos (a futas_id cseréje utan)');
   assert.equal(A.probaSorok(), B.probaSorok()); assert.ok(A.probaSorok() > 0);
-  assert.deepEqual(A.naplo().map((n) => [n.muvelet, n.kuld, n.eles, n.ido]), [['google_proba', 1, 0, MOST / 1000]], 'csak a proba-kulcsos hasznalat naplozott (a fo kulcsos nem), kuld jelzessel');
+  // visszavonas eles:true-val is: a GOOGLE_KORREKCIO_ELES kapu a proba-kulcsnal sem kerulheto meg (dry-run sor, 0 kimeno hivas), es ugyanazt adja, mint a fo kulcs
+  const hivElotte = A.hivasok.length;
+  const vp = await A.hiv('POST', { kulcs: PROBA_KULCS, body: { muvelet: 'google_proba_visszavon', futas_id: rp.body.futas_id, kuld: true, megerosit: MEGEROSITES, eles: true } });
+  const vf = await B.hiv('POST', { kulcs: FO_KULCS, body: { muvelet: 'google_proba_visszavon', futas_id: rf.body.futas_id, kuld: true, megerosit: MEGEROSITES, eles: true } });
+  assert.equal(vp.status, 200, JSON.stringify(vp.body).slice(0, 200)); assert.equal(norm(vp), norm(vf)); assert.equal(vp.body.dry_run, true, 'GOOGLE_KORREKCIO_ELES nelkul dry-run');
+  assert.equal(A.hivasok.length, hivElotte, 'a visszavonas nem ment ki sehova'); assert.equal(A.probaSorok(), B.probaSorok());
+  assert.deepEqual(A.naplo().map((n) => [n.muvelet, n.kuld, n.eles, n.ido]), [['google_proba', 1, 0, MOST / 1000], ['google_proba_visszavon', 1, 1, MOST / 1000]], 'csak a proba-kulcsos hasznalat naplozott (a fo kulcsos nem), kuld / eles jelzessel');
   assert.deepEqual(B.naplo(), []);
   assert.deepEqual(w.naplo().map((n) => [n.muvelet, n.kuld, n.eles]), [['google_proba', 0, 0], ['google_proba_visszavon', 1, 1], ['google_proba', 0, 0]], 'a szaraz / visszavonas hasznalatok is naplozva (eles jelzessel)');
 });
@@ -82,6 +90,7 @@ test('a proba-kulcs MINDEN mas muveletre 404, allapotvaltozas es naplo nelkul (i
     if (r.status === 400) assert.equal(r.body.miert, 'nem JSON', 'a 400 csak a nem-JSON torzsre (a kulcs mar belepett, a torzs nem olvashato): ' + JSON.stringify(body));
     else assert.deepEqual(r.body, { ok: false });
   }
+  const nagy = await w.hiv('POST', { kulcs: PROBA_KULCS, body: 'x'.repeat(20001) }); assert.equal(nagy.status, 413, 'a 20000 karakternel nagyobb torzs: 413 (a kulcs belepett, a torzs nem fut, nem naplozodik)');
   assert.equal(JSON.stringify([w.sql('SELECT * FROM meres_kapcsolo'), w.sql('SELECT COUNT(*) AS n FROM meres_kuldes')]), elotte, 'semmi nem valtozott');
   assert.deepEqual(w.naplo(), [], 'nem engedett muvelet nem naplozott (es nem is futott)');
 });
@@ -98,7 +107,7 @@ test('a proba-kulcs minden GET-re, a ?kulcs= query-re, rossz / hianyzo kulcsra e
   for (const q of ['?qa=nap&datum=2026-10-19', '?qa=t2start']) { // a qa-ag sajat (fo) kulcs-ellenorzesen akad el: a proba-kulcs ott 403 (GET); POST-ra a qa-ag 405-ot ad, a kulcs vizsgalata elott
     qaKorlatNullaz();
     assert.equal((await w.hiv('GET', { kulcs: PROBA_KULCS, url: 'https://x.pages.dev/api/meres-admin' + q })).status, 403, 'GET ' + q);
-    assert.notEqual((await w.hiv('POST', { kulcs: PROBA_KULCS, url: 'https://x.pages.dev/api/meres-admin' + q, body: { muvelet: 'google_proba' } })).status, 200, 'POST ' + q);
+    assert.equal((await w.hiv('POST', { kulcs: PROBA_KULCS, url: 'https://x.pages.dev/api/meres-admin' + q, body: { muvelet: 'google_proba' } })).status, 405, 'POST ' + q);
   }
   assert.deepEqual(w.naplo(), []);
 });
@@ -125,7 +134,7 @@ test('naplo nelkul nincs muvelet: ha a proba-kulcsos hasznalat nem naplozhato, 4
   for (const body of [{ muvelet: 'google_proba' }, { muvelet: 'google_proba', kuld: true, megerosit: MEGEROSITES }, { muvelet: 'google_proba_visszavon', kuld: true, megerosit: MEGEROSITES, eles: true }]) {
     assert.equal((await w.hiv('POST', { kulcs: PROBA_KULCS, body })).status, 404, JSON.stringify(body));
   }
-  assert.equal(w.hivasok.length, 0, 'nem ment ki semmi'); assert.equal(w.probaSorok(), 0, 'nem keletkezett proba-sor');
+  assert.equal(w.hivasok.length, 0, 'nem ment ki semmi'); assert.equal(w.probaSorok(), 0, 'nem keletkezett proba-sor'); assert.equal(w.sql('SELECT COUNT(*) AS n FROM meres_kuldes')[0].n, 1, 'nem irt semmit (csak a seedelt sor van)');
   assert.equal((await w.hiv('POST', { kulcs: FO_KULCS, body: { muvelet: 'google_proba' } })).status, 200, 'a fo kulcsos hivas nem naplozik, nem erinti');
 });
 
