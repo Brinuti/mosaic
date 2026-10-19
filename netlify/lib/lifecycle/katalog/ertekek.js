@@ -31,7 +31,7 @@ export const HELYORZOK = Object.freeze({
   'érkezés': { opcionalis: true, leiras: 'MP: hogyan talalsz meg minket (parkolas, villamos) - csak ismert helyszinnel' },
   'útvonal_link': { opcionalis: true, leiras: 'MP: Google Maps-utvonal a szalonhoz - csak ismert helyszinnel' },
   'munkatárs_fotó': { opcionalis: true, leiras: 'MP: a foglalt piercer fotoja (az alairas mellett); ismeretlen munkatarsnal nincs' },
-  'látogatás_hossza': { opcionalis: true, leiras: 'MP: "kb. 30–40 perc" (egy piercing) / "kb. 40–50 perc" (csomag) - a teljes latogatas, nem a Salonic-idotartam' },
+  'látogatás_hossza': { opcionalis: true, leiras: 'MP: a Salonic-idotartam + 10 perc, pl. "kb. 10–20 perc" (egy piercing), "kb. 15–25 perc" (3 piercing); ismeretlen szolgaltatasnal ures (a sor / mondat kimarad)' },
   'google_vélemények': { leiras: 'MP: a Google-velemenyek szama ("5 033"; a /api/ertekeles-bol, kulonben a legutobbi ismert kerek szam)' },
   'nem_találkoztunk': { leiras: 'no-show üzenethez: "Tegnap nem találkoztunk" / "Ma nem találkoztunk" / "A … időpontodon nem találkoztunk" (a küldés napja szerint)' },
 });
