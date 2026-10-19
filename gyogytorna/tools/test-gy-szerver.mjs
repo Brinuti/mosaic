@@ -945,3 +945,85 @@ test('GY-23: hozzajarulas nelkul / nem Google erintes / organikus nincs click-ID
   const t = await env3.GY_DB.prepare('SELECT gads_katt_ertek AS k, gads_katt_tipus AS t, cimke FROM gy_foglalas').first();
   assert.deepEqual([t.k, t.t, t.cimke], [null, null, 'google_brand']);
 });
+
+// --- GY-24: lepesenkenti tolcsermeres (gy_motor_stat) ----------------------------------------------------------------------------------------------------------
+import { motorStatVegpont, statKornyezet } from '../lib/motor-szerver.js';
+const mstat = (env, body, origin = 'https://www.gyogytornaszom.hu') => motorStatVegpont({ request: new Request(BASE + '/api/gy-motor-stat', { method: 'POST', headers: origin ? { origin } : {}, body: typeof body === 'string' ? body : JSON.stringify(body) }), env, deps: { most: () => MOST } });
+const mrows = async (env) => (await env.GY_DB.prepare('SELECT kornyezet, esemeny, lepes, kategoria, eszkoz, db FROM gy_motor_stat ORDER BY kornyezet, esemeny, lepes, kategoria, eszkoz').all()).results.map((x) => ({ ...x }));
+
+test('GY-24 statKornyezet: Origin / Referer alapjan eles | elonezet | teszt', () => {
+  const r = (h) => new Request(BASE + '/x', { method: 'POST', headers: h });
+  assert.equal(statKornyezet(r({ origin: 'https://www.gyogytornaszom.hu' })), 'eles');
+  assert.equal(statKornyezet(r({ origin: 'https://gyogytornaszom.hu' })), 'eles');
+  assert.equal(statKornyezet(r({ referer: 'https://www.gyogytornaszom.hu/online-gyogytorna/' })), 'eles');
+  assert.equal(statKornyezet(r({ origin: 'https://claude-ajandek-motor-vd7aof.gyogytorna.pages.dev' })), 'elonezet');
+  assert.equal(statKornyezet(r({ origin: 'https://gyogytorna.pages.dev' })), 'elonezet');
+  assert.equal(statKornyezet(r({ origin: 'https://evil.example/www.gyogytornaszom.hu' })), 'teszt');
+  assert.equal(statKornyezet(r({ origin: 'http://127.0.0.1:8080' })), 'teszt');
+  assert.equal(statKornyezet(r({})), 'teszt');
+});
+
+test('GY-24 /api/gy-motor-stat: csak fix esemeny / lepes / kategoria, a `kesz` kliensrol nem hamisithato, nincs szabad szoveg; eszkoz; kornyezet Origin szerint', async () => {
+  const env = await ujKornyezet();
+  assert.equal((await mstat(env, { e: 'nyit', m: 1 })).status, 204);
+  assert.equal((await mstat(env, { e: 'lepes', l: 'ido', m: 0 })).status, 204);
+  assert.equal((await mstat(env, { e: 'elakad', l: 'hivas', k: 'kotelezo_hianyzik', m: 1 })).status, 204);
+  assert.equal((await mstat(env, { e: 'elakad', l: 'hivas', k: 'Kiss Pista panasza: derekfajas', m: 1 })).status, 204); // szabad szoveg -> 'egyeb'
+  assert.equal((await mstat(env, { e: 'lepes', l: 'Kiss Pista', m: 0 })).status, 204); // ismeretlen lepes -> 'egyeb'
+  assert.equal((await mstat(env, { e: 'kesz', l: 'adatlap', m: 0 })).status, 400); // a kesz csak szerveroldalon
+  assert.equal((await mstat(env, { e: 'valami' })).status, 400);
+  assert.equal((await mstat(env, 'nem json')).status, 400);
+  assert.equal((await mstat(env, { e: 'nyit' }, 'https://claude-x.gyogytorna.pages.dev')).status, 204);
+  assert.equal((await mstat(env, { e: 'bezar_gomb', l: 'szakember', m: 1 }, null)).status, 204);
+  assert.equal((await motorStatVegpont({ request: new Request(BASE + '/api/gy-motor-stat', { method: 'GET' }), env })).status, 405);
+  const sorok = await mrows(env);
+  assert.deepEqual(sorok.map((x) => [x.kornyezet, x.esemeny, x.lepes, x.kategoria, x.eszkoz, x.db]).sort(), [
+    ['elonezet', 'nyit', '', '', 'ismeretlen', 1], ['eles', 'elakad', 'hivas', 'egyeb', 'mobil', 1], ['eles', 'elakad', 'hivas', 'kotelezo_hianyzik', 'mobil', 1],
+    ['eles', 'lepes', 'egyeb', '', 'asztali', 1], ['eles', 'lepes', 'ido', '', 'asztali', 1], ['eles', 'nyit', '', '', 'mobil', 1], ['teszt', 'bezar_gomb', 'szakember', '', 'mobil', 1],
+  ].sort());
+  assert.equal(JSON.stringify(sorok).match(/Kiss|derekfajas/i), null);
+});
+
+test('GY-24 kesz: szerveroldalon, csak tenyleges ELSO mentes utan (ismetles nem szamol ketszer); teszt foglalas = teszt kornyezet; visszahivas kesz lepes=hivas', async () => {
+  const env = await ujKornyezet();
+  const d = deps();
+  const kuld = (uuid, felul = {}) => foglalasVegpont({ request: new Request(BASE + '/api/gy-foglalas', { method: 'POST', headers: { 'content-type': 'application/json', origin: BASE }, body: JSON.stringify({ ...foglalasBody(), uuid, m: 1, ...felul }) }), env, deps: d });
+  // BASE (a teszt-eredet) nem eles: teszt kornyezet
+  assert.equal((await kuld('mb_tolcser000000001')).status, 200);
+  assert.equal((await kuld('mb_tolcser000000001')).status, 200); // ismetles / dupla kuldes
+  let k = (await mrows(env)).filter((x) => x.esemeny === 'kesz');
+  assert.deepEqual(k.map((x) => [x.kornyezet, x.lepes, x.eszkoz, x.db]), [['teszt', 'adatlap', 'mobil', 1]]);
+  // eles Origin-bol: eles kornyezet (GY_ORIGINS engedi)
+  env.GY_ORIGINS = 'https://www.gyogytornaszom.hu';
+  const r = await foglalasVegpont({ request: new Request(BASE + '/api/gy-foglalas', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://www.gyogytornaszom.hu' }, body: JSON.stringify({ ...foglalasBody(), uuid: 'mb_tolcser000000002' }) }), env, deps: d });
+  assert.equal(r.status, 200);
+  k = (await mrows(env)).filter((x) => x.esemeny === 'kesz' && x.kornyezet === 'eles');
+  assert.deepEqual(k.map((x) => [x.lepes, x.eszkoz, x.db]), [['adatlap', 'ismeretlen', 1]]);
+  // visszahivas
+  const vh = await visszahivasVegpont({ request: kerelem('/api/gy-visszahivas', { m: 0, nev: 'Proba Teszt', email: 'p@example.com', tel: '036 30 555 0199', rendelo: 'Oktogon', surgosseg: 'A lehető leggyorsabban!', hivhato: 'Bármikor', panasz: 'derekfajas', elfogad_info: true, elfogad_adatv: true, oldal: '/x/' }), env, deps: d });
+  assert.equal(vh.status, 200);
+  const hk = (await mrows(env)).filter((x) => x.esemeny === 'kesz' && x.lepes === 'hivas');
+  assert.deepEqual(hk.map((x) => [x.kornyezet, x.eszkoz, x.db]), [['teszt', 'asztali', 1]]);
+  assert.equal(JSON.stringify(await mrows(env)).match(/Proba|p@example|036|derekfajas/i), null);
+});
+
+test('GY-24 admin ?tolcser=YYYY-MM: lepesenkenti darabszam eszkozonkent, kozelito arany + megjegyzes; 13 honap utan torles', async () => {
+  const env = await ujKornyezet();
+  for (const [e, l, k, m, n] of [['nyit', '', '', 1, 4], ['lepes', 'szolg', '', 1, 4], ['lepes', 'ido', '', 1, 3], ['elakad', 'ido', 'nincs_szabad_ido', 1, 1], ['bezar_gomb', 'ido', '', 1, 1], ['elhagy_jelzes', 'szolg', '', 0, 1]]) for (let i = 0; i < n; i++) await mstat(env, { e, l, k, m });
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?tolcser=2026-10', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.equal(rap.ok, true);
+  assert.deepEqual([rap.kornyezet, rap.nyit], ['eles', 4]);
+  const ido = rap.lepesek.find((x) => x.lepes === 'ido');
+  assert.deepEqual([ido.megjelent, ido.elakad, ido.bezar_gomb, ido.eszkozonkent.mobil.megjelent], [3, 1, 1, 3]);
+  assert.equal(rap.lepesek.find((x) => x.lepes === 'szolg').elhagy_jelzes_becsles, 1);
+  assert.equal(rap.elakadasok['ido|nincs_szabad_ido'], 1);
+  assert.equal(rap.kozelito_arany.lepes_per_nyit_szazalek.ido, 75);
+  assert.match(rap.megjegyzes, /KOZELITO/);
+  assert.match(rap.megjegyzes, /BECSLES/);
+  // masik kornyezet kulon kerheto
+  const el = await (await adminVegpont({ request: kerelem('/api/gy-admin?tolcser=2026-10&kornyezet=elonezet', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.equal(el.nyit, 0);
+  // megorzes: 13 honap (396 nap) utan torlodik
+  await takaritTeszt(env, MOST / 1000 + 397 * 86400);
+  assert.equal((await mrows(env)).length, 0);
+});

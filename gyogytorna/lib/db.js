@@ -31,6 +31,9 @@ export const SEMA = [
   `CREATE TABLE IF NOT EXISTS gy_erintes (
     id INTEGER PRIMARY KEY AUTOINCREMENT, projekt TEXT NOT NULL DEFAULT 'gyogytorna', latogato TEXT NOT NULL, ido INTEGER NOT NULL, cimke TEXT NOT NULL, bizonyitek TEXT,
     kampany TEXT, hirdetescsoport TEXT, hirdetes TEXT, oldal TEXT, hozzajarulas TEXT, szabaly_verzio TEXT)`,
+  // GY-24: lepesenkenti tolcsermeres. CSAK napi aggregalt szamlalo (nap, kornyezet, esemeny, lepes, kategoria, eszkoz): suti, azonosito, IP, user-agent, URL, mezoertek, szabad szoveg NINCS.
+  `CREATE TABLE IF NOT EXISTS gy_motor_stat (nap TEXT NOT NULL, kornyezet TEXT NOT NULL, esemeny TEXT NOT NULL, lepes TEXT NOT NULL DEFAULT '', kategoria TEXT NOT NULL DEFAULT '', eszkoz TEXT NOT NULL, db INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (nap, kornyezet, esemeny, lepes, kategoria, eszkoz))`,
   `CREATE INDEX IF NOT EXISTS gy_erintes_latogato ON gy_erintes (latogato, ido)`,
   `CREATE INDEX IF NOT EXISTS gy_erintes_ido ON gy_erintes (ido)`,
 ];
@@ -62,6 +65,7 @@ export const IDOK = Object.freeze({
   foglalas: 396 * NAP,           // 13 honap
   riasztas: 90 * NAP,
   visszahivas: 60 * NAP,         // visszahivas-kerelem (nev + telefon): 60 nap
+  motorStat: 396 * NAP,         // GY-24: napi aggregalt tolcser-szamlalok, 13 honap
   gadsKatt: 60 * NAP,           // GY-23: a foglalashoz rendelt Google click-ID megorzese (a kattintas <= 7 nappal a foglalas elott -> <= 67 nap a 90 napos import-ablakbol; fedezi a kesobbi feltoltest, ujraprobalast, lemondas-kiigazitast)
   erintes: 37 * NAP,             // GY-22: fizetett erintesek naploja (7 nap hozzarendeles + 30 nap kesoi_fizetett + tartalek)
   kampanyFriss: 36 * 3600,       // a kampanylista "friss", ha az utolso sikeres frissites ennel nem regebbi
@@ -178,6 +182,7 @@ export async function takarit(db, most) {
     db.prepare('DELETE FROM gy_riasztas WHERE ido < ?').bind(most - IDOK.riasztas),
     db.prepare('DELETE FROM gy_visszahivas WHERE letrehozva < ?').bind(most - IDOK.visszahivas),
     db.prepare('DELETE FROM gy_erintes WHERE ido < ?').bind(most - IDOK.erintes),
+    db.prepare('DELETE FROM gy_motor_stat WHERE nap < ?').bind(budapestNap(most - IDOK.motorStat)),
     db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, gads_munkamenet = NULL WHERE gads_katt_ertek IS NOT NULL AND letrehozva < ?').bind(most - IDOK.gadsKatt),
   ]);
 }
@@ -202,4 +207,18 @@ export async function lpcHiba(db, most, kod) {
     await db.prepare("INSERT INTO gy_meta (kulcs, ertek) VALUES ('lpc_hiba', '1') ON CONFLICT(kulcs) DO UPDATE SET ertek = CAST(ertek AS INTEGER) + 1").run();
     await riaszt(db, 'lpc_hiba', { adat: kod, most });
   } catch (e) { /* semmi */ }
+}
+
+/** Unix -> Budapest naptari nap ("YYYY-MM-DD"). */
+export const budapestNap = (unix) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Budapest', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(unix * 1000));
+
+/** GY-24: egy tolcser-esemeny noveles (napi aggregalt). Hibaban NEM dob: a statisztika sosem akadalyozhatja a foglalast. */
+export async function motorStatNo(db, { most, kornyezet, esemeny, lepes = '', kategoria = '', eszkoz }) {
+  try {
+    await db.prepare(
+      `INSERT INTO gy_motor_stat (nap, kornyezet, esemeny, lepes, kategoria, eszkoz, db) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1)
+       ON CONFLICT(nap, kornyezet, esemeny, lepes, kategoria, eszkoz) DO UPDATE SET db = db + 1`,
+    ).bind(budapestNap(most), kornyezet, esemeny, lepes, kategoria, eszkoz).run();
+    return true;
+  } catch (e) { return false; }
 }
