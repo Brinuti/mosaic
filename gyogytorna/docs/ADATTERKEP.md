@@ -59,3 +59,11 @@ Hozzajarulas: megtagadas / visszavonas -> `gy_lpt` torlodik a kovetkezo hivasnal
 - **Riport:** `GET /api/gy-admin?tolcser=YYYY-MM[&kornyezet=eles|elonezet|teszt]` (x-gy-kulcs): lepesenkent megjelent / elakad / bezar_gomb / elhagy_jelzes_becsles, eszkozonkent, napi bontas; az arany KOZELITO (azonosito nelkul visszalepes / ujratoltes / tobbszori megnyitas torzithat; ez esemenytolcser, nem pacienskovetes).
 - **Megorzes:** 13 honap (396 nap), utana automatikus torles (a `takarit()` a forras- / foglalas-vegpont hivasain fut).
 - **Hibatures:** a kliens fire-and-forget (sendBeacon, tartalek: fetch keepalive, try/catch); a szerver a hibat elnyeli (204). A foglalasi folyamat es a UI nem valtozik.
+
+## GY-25 – ELES 7 napos "utolso fizetett kattintas" (Feri kerese, 2026-10-19)
+
+- A foglalas forras-cimkeje (`gy_foglalas.cimke`): `meta` | `tiktok` | `google_nem_markas` | `google_markas` | `organikus_direkt` | `ismeretlen`; a regi (munkamenet-alapu) cimke a `cimke_regi` / `bizonyitek_regi` oszlopban. Bizonyitek-forras: `bizonyitek_forras` = `suti` (erintes-naplo) | `munkamenet` (24 oras tartalek).
+- **Nyers click-ID tarolasa (valtozas a korabbi "csak gclid" szabalyhoz kepest, Feri 2026-10-19 kifejezett kerese):** gclid / gbraid / wbraid / fbclid / ttclid (formatum- es hosszellenorzessel; msclkid erteke tovabbra sem) a `gy_erintes.katt_ertek` es a nyertes a `gy_foglalas.lpc_katt_ertek` oszlopban, CSAK hirdetesi hozzajarulassal; a gclid tovabba `gads_katt_ertek`. 60 nap utan NULL. Hozzajarulas nelkul sehol (naplo, munkamenet, foglalas) nincs nyers ID.
+- Visszavonaskor a naplo es a foglalasokon tarolt nyers click-ID-k is torlodnek (`lpc_latogato` = a gy_lpt / gy_s hash eleje).
+- Megjegyzes: `GY_SAV_KI=1` mellett (Feri dontese, 2026-10-14) a hozzajarulas dontes nelkul "megadottnak" szamit; a D1-ben a vélelmezett es a kifejezett hozzajarulas nem kulonbozik.
+- A `?gads=` export nem tartalmaz latogato-hasht, nevet, e-mailt, telefont, kezelest; a `?foglalas=` a nyers click-ID helyett csak jelzest ad.
