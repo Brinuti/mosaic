@@ -8,10 +8,15 @@
 // mp_beallitas.tiktok_mod = 'eles' ES a TIKTOK_EVENTS_TOKEN Cloudflare-titok megadasa (mindketto kell). Leiras: docs/MERES_TIKTOK.md.
 //
 // Adatvedelem (MP-16 + adatminimalizalas): kifele CSAK esemeny, ido, esemeny_id, ttclid / ttp (hirdetesi hozzajarulassal
-// gyujtve), semleges URL, penznem + ertek. NINCS e-mail, telefon, external_id, IP, user agent, szolgaltatasnev, kategoria,
+// gyujtve), semleges URL, penznem + ertek. IP + user agent (Feri 2026-10-19, max. adat egeszsegugyi adat nelkul). NINCS e-mail, telefon, external_id, szolgaltatasnev, kategoria,
 // piercing-tipus, helyszin, uj/visszatero jeloles. A nem-azonosito mezokon a meres.js vedohaloja (vanErzekeny) fut: talalat -> semmi.
 import { esemenyId, vanErzekeny, SEMLEGES_URL } from './meres.js';
+import { ipJo } from './meta.js';
 import { maszk, kitakar, ELES_HOST } from './google-ads.js';
+// Elo konverzio javitasa (Feri 2026-10-19 19:50: "mehet es A"): a 7 elo adgroup a pixel SCHEDULE esemenyere optimalizal. Az URL-szabalyos
+// (event_id nelkuli) Schedule helyett a koszonooldal kodbol kuldi a 'Schedule'-t (suti.js), a szerver ugyanazzal az event_id-val -> dedup.
+// Kapcsolo: mp_beallitas.tiktok_schedule = 'be' (alapertelmezes: ki). Az URL-szabalyt a TikTok Esemenykezeloben egyszerre kell kikapcsolni.
+export const TIKTOK_ELO_ESEMENY = 'Schedule';
 export const TIKTOK_ESEMENY = 'SubmitForm'; // Feri dontese (2026-10-13 16:48): a split teszthez Leads -> Submit form; a Salonic-oldali GTM-cimke (68) ki, mi kuldjuk
 
 export const TIKTOK_VEGPONT = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
@@ -53,7 +58,7 @@ export function jogosult(sor, most) {
   if (sor.tipus === 'ful') return { ok: false, miert: 'divat_fulpiercing' }; // Feri dontese (2026-10-13): nem optimalizalunk ra
   if (sor.igazolas !== 'igazolt') return { ok: false, miert: 'nem_igazolt' };
   if (Number(sor.hozzajarulas_hirdetes) !== 1) return { ok: false, miert: 'nincs_hozzajarulas' };
-  if (!sor.tiktok_ttclid && !sor.tiktok_ttp) return { ok: false, miert: 'nincs_tiktok_azonosito' }; // ttclid VAGY _ttp (hozzajarulassal)
+  // ttclid / _ttp nelkul is mehet (Feri 2026-10-19: max. adat): ilyenkor az IP + UA + external_id azonosit (lent: ures user -> kihagyva)
   const ido = esemenyIdo(sor);
   if (!Number.isFinite(ido) || most - ido > TIKTOK_ABLAK || ido > most + 300) return { ok: false, miert: 'ablakon_kivul' };
   const k = Number(sor.tiktok_kattintas_ido);
@@ -68,24 +73,29 @@ export const esemenyIdo = (sor) => Number(sor.foglalas_ido || sor.letrehozva);
  * TikTok Events API 2.0 torzs (tiszta). A user objektumban CSAK ttclid (+ ttp, ha van). Ertek csak ismert osszegnel.
  * Dob, ha a nem-azonosito mezok barmelyike erzekeny adatot tartalmazna (vedohalo: inkabb semmi ne epuljon).
  */
-export function tiktokTorzs(sor) {
+export function tiktokTorzs(sor, ktx = null, { schedule = false } = {}) {
   const user = {};
+  // IP + user agent a foglalas pillanatabol (mp_kontextus, legfeljebb 48 ora): Feri dontese 2026-10-19 (max. adat, egeszsegugyi adat nelkul)
+  if (ktx && ipJo(ktx.ip)) user.ip = ipJo(ktx.ip);
+  if (ktx && ktx.ua) user.user_agent = String(ktx.ua).slice(0, 400);
+  if (ktx && ktx.ext && /^[0-9a-f]{64}$/.test(String(ktx.ext))) user.external_id = String(ktx.ext); // a veletlen latogato-azonosito SHA-256-ja
   if (sor.tiktok_ttclid) user.ttclid = String(sor.tiktok_ttclid);
   if (sor.tiktok_ttp) user.ttp = String(sor.tiktok_ttp);
   const ertek = Number(sor.ertek);
   const esemeny = { event: TIKTOK_ESEMENY, event_time: esemenyIdo(sor), event_id: esemenyId(sor.kulcs), page: { url: SEMLEGES_URL } };
   if (sor.ertek != null && Number.isFinite(ertek) && ertek > 0) esemeny.properties = { currency: 'HUF', value: Math.round(ertek) };
-  const torzs = { event_source: 'web', event_source_id: TIKTOK_PIXEL, data: [{ ...esemeny, user }] };
+  const data = [{ ...esemeny, user }];
+  if (schedule) data.push({ ...esemeny, event: TIKTOK_ELO_ESEMENY, user: { ...user } }); // azonos event_id: a bongeszos Schedule-lel dedup
+  const torzs = { event_source: 'web', event_source_id: TIKTOK_PIXEL, data };
   // a ttclid / ttp veletlen karaktersor: a tartalmi ellenorzes minden masra vonatkozik
-  if (vanErzekeny({ ...torzs, data: [esemeny] })) throw new Error('mp_tiktok_erzekeny_adat');
+  if (vanErzekeny({ ...torzs, data: data.map(({ user: _u, ...e }) => e) })) throw new Error('mp_tiktok_erzekeny_adat');
   return torzs;
 }
 
 /** A naplozhato valtozat: ttclid / ttp maszkolva (h:xxxxxxxx). */
 export async function maszkoltTorzs(torzs) {
   const m = JSON.parse(JSON.stringify(torzs));
-  const u = m.data[0].user;
-  for (const k of Object.keys(u)) u[k] = await maszk(u[k]);
+  for (const d of m.data) { const u = d.user; for (const k of Object.keys(u)) u[k] = await maszk(u[k]); }
   return m;
 }
 
@@ -119,13 +129,18 @@ export async function tiktokLepes(db, sor, env = {}, host = '', { fetchImpl = fe
     const van = await db.prepare('SELECT mod, allapot FROM mp_tiktok_feltoltes WHERE kulcs = ?').bind(sor.kulcs).first();
     if (van && !(mod === 'eles' && van.allapot === 'hiba')) return { kihagyva: 'mar_rogzitve' };
     let torzs;
-    try { torzs = tiktokTorzs(sor); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    let ktx = null;
+    try { ktx = await db.prepare('SELECT ip, ua, ext FROM mp_kontextus WHERE kulcs = ?').bind(sor.kulcs).first(); } catch (e) { /* nincs tabla */ }
+    const schedule = String((await beallitas(db, 'tiktok_schedule')) || '').trim().toLowerCase() === 'be';
+    try { torzs = tiktokTorzs(sor, ktx, { schedule }); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    if (!Object.keys(torzs.data[0].user).length) return { kihagyva: 'nincs_azonosito' };
     const mtorzs = JSON.stringify(await maszkoltTorzs(torzs));
     let allapot = 'naplozva';
     if (mod === 'eles') {
       // halozati hivas CSAK itt: kifejezett 'eles' mod + token + eles hoszt (hatalyosMod)
       const k = await elesKuldes(torzs, env, { fetchImpl });
       allapot = k.allapot;
+      if (allapot === 'elkuldve') { try { await db.prepare('DELETE FROM mp_kontextus WHERE kulcs = ?').bind(sor.kulcs).run(); } catch (e) { /* */ } }
     }
     await db.prepare(`INSERT INTO mp_tiktok_feltoltes (kulcs, mod, allapot, payload_maszkolt, ido) VALUES (?,?,?,?,?)
       ON CONFLICT (kulcs) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, payload_maszkolt = excluded.payload_maszkolt, ido = excluded.ido

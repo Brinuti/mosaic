@@ -90,7 +90,7 @@ test('jogosultsag: eles + igazolt + hozzajarulas + ttclid + 7 napos ablak', () =
   assert.equal(jogosult(alapSor({ igazolas: null }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ igazolas: 'nem_igazolt' }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ hozzajarulas_hirdetes: 0 }), MOST).miert, 'nincs_hozzajarulas');
-  assert.equal(jogosult(alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), MOST).miert, 'nincs_tiktok_azonosito');
+  assert.equal(jogosult(alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), MOST).ok, true); // 2026-10-19: IP/UA/external_id is azonosit
   assert.equal(jogosult(alapSor({ tiktok_ttclid: null }), MOST).ok, true); // _ttp eleg
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK - 1 }), MOST).miert, 'ablakon_kivul');
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK + 60 }), MOST).ok, true);
@@ -243,3 +243,38 @@ test('lanc: kesoi hozzajarulas (potlas) mar igazolt soron -> 1 naplosor, fetch n
   assert.equal(n.length, 1); assert.equal(n[0].allapot, 'naplozva');
   assert.ok(!hivasok.some((u) => u.includes('tiktok')));
 });
+
+// Feri 2026-10-19: IP + user agent a foglalas pillanatabol (mp_kontextus); egeszsegugyi / szemelyes adat tovabbra sem
+{
+  const { tiktokTorzs } = await import('../lib/meres/tiktok.js');
+  const t2 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: '84.1.2.3', ua: 'Mozilla/5.0 teszt' });
+  assert.equal(t2.data[0].user.ip, '84.1.2.3');
+  assert.equal(t2.data[0].user.user_agent, 'Mozilla/5.0 teszt');
+  const t3 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: 'nem-ip<script>', ua: null });
+  assert.ok(!('ip' in t3.data[0].user) && !('user_agent' in t3.data[0].user));
+  assert.ok(!/"email"|"phone"|"external_id"/.test(JSON.stringify(t2)));
+  console.log('OK ip + user agent (kontextus)');
+}
+
+{
+  const { tiktokTorzs } = await import('../lib/meres/tiktok.js');
+  const h = 'b'.repeat(64);
+  const t4 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: '84.1.2.3', ua: 'UA', ext: h });
+  assert.equal(t4.data[0].user.external_id, h);
+  assert.ok(!('external_id' in tiktokTorzs({ kulcs: '1|2|3', letrehozva: 1792300000 }, { ext: 'nem-hash' }).data[0].user));
+  console.log('OK external_id (tiktok)');
+}
+
+{
+  const { tiktokTorzs, maszkoltTorzs } = await import('../lib/meres/tiktok.js');
+  const sor = { kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' };
+  assert.equal(tiktokTorzs(sor).data.length, 1);
+  const t5 = tiktokTorzs(sor, { ip: '84.1.2.3', ua: 'UA' }, { schedule: true });
+  assert.deepEqual(t5.data.map((d) => d.event), ['SubmitForm', 'Schedule']);
+  assert.equal(t5.data[0].event_id, t5.data[1].event_id);
+  assert.equal(t5.data[1].event_id, 'Foglalas:1|2|3');
+  assert.equal(t5.data[1].user.ttclid, 'E.C.P.abcdefgh');
+  const m = await maszkoltTorzs(t5);
+  assert.ok(m.data.every((d) => String(d.user.ttclid).startsWith('h:')));
+  console.log('OK kodos Schedule (azonos event_id)');
+}

@@ -72,3 +72,25 @@ test('elonezet hoszton eles beallitas mellett sem kuld', async () => {
   assert.equal(r.mod, 'naplo');
   assert.equal(hivas, 0);
 });
+
+// Feri 2026-10-19: IP az ARNYEK-esemenyben; hibas IP nem megy at; egeszsegugyi / szemelyes adat nincs
+{
+  const { arnyekTorzs } = await import('../lib/meres/meta.js');
+  const sor = { kulcs: '1|2|3', letrehozva: 1792300000, ertek: 24900, meta_fbc: 'fb.1.1.IwAR', meta_fbp: 'fb.1.1.2' };
+  const a = arnyekTorzs(sor, 'Mozilla/5.0', '84.1.2.3');
+  assert.deepEqual(Object.keys(a.data[0].user_data).sort(), ['client_ip_address', 'client_user_agent', 'fbc', 'fbp']);
+  assert.equal(arnyekTorzs(sor, 'Mozilla/5.0', '2a02:ab88::1').data[0].user_data.client_ip_address, '2a02:ab88::1');
+  assert.ok(!('client_ip_address' in arnyekTorzs(sor, 'Mozilla/5.0', 'rossz').data[0].user_data));
+  assert.ok(!/"em"|"ph"|"fn"|"ln"/.test(JSON.stringify(a)));
+  console.log('OK ip az arnyek-esemenyben');
+}
+
+// Feri 2026-10-19: external_id = a veletlen latogato-azonosito SHA-256-ja; mas formatum nem megy at
+{
+  const { arnyekTorzs } = await import('../lib/meres/meta.js');
+  const sor = { kulcs: '1|2|3', letrehozva: 1792300000, ertek: 24900, meta_fbc: 'fb.1.1.IwAR', meta_fbp: 'fb.1.1.2' };
+  const h = 'a'.repeat(64);
+  assert.equal(arnyekTorzs(sor, 'UA', '84.1.2.3', h).data[0].user_data.external_id, h);
+  assert.ok(!('external_id' in arnyekTorzs(sor, 'UA', '84.1.2.3', 'vendeg@pelda.hu').data[0].user_data));
+  console.log('OK external_id');
+}
