@@ -1,15 +1,15 @@
 // QA-2 ARNYEK-ELOSZTO: egy foglalas / ajandekkartya forras-entitasbol az alap- es ernyoesemenyek eloallitasa, es kuldese a platformok ARNYEK-celpontjaira.
-//   - hozzajarulas: DECISION #202 szerint elfogadott hozzajarulas minden platformra (hozzajarulas.js; a rogzitett allapot a naploban latszik), hash-elt e-mail / telefon, ertek = tenyleges ar, penznem HUF
+//   - hozzajarulas: DECISION #202 szerint elfogadott hozzajarulas, ha nincs rogzitett elutasito dontes (hozzajarulas.js; a rogzitett allapot a naploban latszik); a felhasznaloi adat CSAK hash-elve megy (felhasznalo-hash.js: e-mail / telefon / nev / orszag / varos / iranyitoszam / user_id), a D1-naploban "[hash]"; ertek = tenyleges ar, penznem HUF
 //   - duplikacioszures: (esemeny_id, platform) egyedi -> egy esemeny egy platformra legfeljebb egyszer megy ki, ujrahivasra sem
 //   - veszkapcsolo uzletagankent ES platformonkent (meres_kapcsolo): "mind", "uzletag:<u>", "platform:<p>", "cella:<u>:<p>"
 //   - MINDEN kuldes naplozva (meres_kuldes): a kerelem (titok nelkul, IP maszkolva), a platform valasza, a hozzajarulas, az allapot
 //   - esemeny kuldese ELOTT elo allapot-ellenorzes (deps.eloEllenorzes): torolt foglalasra nem megy pozitiv konverzio; nem ellenorizheto -> halasztva
 // Csak ARNYEKMODBAN fut (MERES_ELOSZTO=1 es a platformok.js vedelmei); elo pixelre / property-re / akciora nem kuldhet.
 import { esemenyek, konzultacioTabla, SOURCE_ID_MINTA, UZLETAGAK } from './esemeny-modell.js';
-import { emailNormal, hashEmail, hashTelefon, hashAzonosito, kuponNelkul } from './hash.js';
+import { felhasznaloHash } from './felhasznalo-hash.js';
 import { erkezesTisztit } from './erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from './hozzajarulas.js';
-import { KEREM_EPITO, kuldes, PLATFORMOK } from './platformok.js';
+import { KEREM_EPITO, kuldes, PLATFORMOK, valaszMaszk } from './platformok.js';
 import { oszlopokBiztosit } from './sema-seged.js';
 
 const SEMA = [
@@ -89,7 +89,7 @@ export async function naploLeker(db, sourceId) {
 export async function kuldesMegerosit(db, { id, allapot, http_status, valasz, kuldo }, now = Date.now()) {
   await meresSema(db);
   if (!['elkuldve', 'hiba'].includes(allapot)) return { ok: false, miert: 'allapot: elkuldve | hiba' };
-  const r = await db.prepare("UPDATE meres_kuldes SET allapot = ?2, http_status = ?3, platform_valasz = ?4, kuldo = ?5, frissitve = ?6, probalkozas = probalkozas + 1 WHERE id = ?1 AND allapot IN ('nincs_hitelesites','hiba')").bind(id, allapot, http_status ?? null, String(valasz ?? '').slice(0, 2000), String(kuldo || 'kulso').slice(0, 60), sec(now)).run();
+  const r = await db.prepare("UPDATE meres_kuldes SET allapot = ?2, http_status = ?3, platform_valasz = ?4, kuldo = ?5, frissitve = ?6, probalkozas = probalkozas + 1 WHERE id = ?1 AND allapot IN ('nincs_hitelesites','hiba')").bind(id, allapot, http_status ?? null, valaszMaszk(String(valasz ?? '')).slice(0, 2000), String(kuldo || 'kulso').slice(0, 60), sec(now)).run();
   return { ok: !!(r.meta && r.meta.changes > 0) };
 }
 export async function fuggoKuldesek(db) {
@@ -125,7 +125,7 @@ export async function elosztas(db, fk, deps = {}) {
   const kapcsolok = await kapcsolokOlvas(db);
   const ctxAlap = { fk: { ...fk, ido: fk.ido || (erkRow ? erkRow.ido : t) }, erk, ua: erkRow ? erkRow.ua : null, ip: erkRow ? erkRow.ip : null, oldal: fk.oldal || (erkRow ? erkRow.oldal : null), hozz: { meta: platformSzabaly('meta', hozz, env), tiktok: platformSzabaly('tiktok', hozz, env), google: platformSzabaly('google', hozz, env), ga4: platformSzabaly('ga4', hozz, env) } };
   const v = fk.vendeg || {};
-  ctxAlap.hash = { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await hashAzonosito(v.g || emailNormal(v.email) || kuponNelkul(v.email)) };
+  ctxAlap.hash = await felhasznaloHash(env, v); // DECISION #202: em / ph / ext + fn / ln / country (Meta), Google / GA4 e-mail, GA4 user_id; nyers adat sehova
   const osszefoglalo = { allapot: 'kesz', source_id: fk.source_entity_id, erkezesi_adat: !!erkRow, esemenyek: [] };
 
   // minden (esemeny, platform) cella mar VEGLEGES (elkuldve / modell szerint kihagyva / lemondva): nincs teendo, elo lekeres sem kell (az ismetelt hivas olcso es nem kuld)
@@ -174,7 +174,7 @@ export async function elosztas(db, fk, deps = {}) {
         else if (e.nyitott) mezok = { allapot: 'nyitott', indok: e.nyitott_ok };
         else if (kerelem.tiltva) mezok = { allapot: 'tiltva', indok: kerelem.tiltva };
         else {
-          const naplo = { platform_nev: kerelem.platform_nev, kerelem: JSON.stringify({ url: kerelem.url, method: kerelem.method, fejlec_nevek: kerelem.fejlec_nevek, cel: kerelem.cel, body: env.MERES_NAPLO_TELJES === '1' ? kerelem.body : maszkolt(kerelem.body) }) }; // MERES_NAPLO_TELJES=1 (CSAK elonezet, sajat teszt-IP): a TELJES kikuldott payload a naploban; egyebkent a nyers IP maszkolt
+          const naplo = { platform_nev: kerelem.platform_nev, kerelem: JSON.stringify({ url: kerelem.url, method: kerelem.method, fejlec_nevek: kerelem.fejlec_nevek, cel: kerelem.cel, body: maszkolt(kerelem.body, env.MERES_NAPLO_TELJES === '1') }) }; // MERES_NAPLO_TELJES=1 (CSAK elonezet, sajat teszt-IP): a kikuldott payload a naploban a nev / varos / iranyitoszam hash kivetelevel teljes; egyebkent a nyers IP es minden hash maszkolt
           const foglal = await naploz(e, platform, { allapot: 'folyamatban', ...naplo });
           if (foglal.duplikalt) { sor.platformok[platform] = { allapot: foglal.allapot, duplikalt: true }; continue; }
           const eredmeny = await (deps.kuldo || kuldes)(kerelem, env, deps.fetchImpl || fetch);
@@ -190,7 +190,17 @@ export async function elosztas(db, fk, deps = {}) {
   }
   return osszefoglalo;
 }
-function maszkolt(body) { // a naplozott kerelemben a nyers IP maszkolt (a kuldott kerelemben valodi)
-  const s = JSON.stringify(body, (k, v) => (k === 'client_ip_address' || k === 'ip' ? maszkIp(v) : v));
+// DECISION #202 / 4. pont: nyers vendegadat SEHOVA (D1-naplo se): a kimeno kerelemben a hash megy, a NAPLOZOTT torzsben a hash-ertekek ("[hash]") es a nyers IP maszkoltak (a mezo megleten latszik, melyik adat ment ki).
+// A nev-hash (fn / ln) szotar-tamadassal trivialisan visszafejtheto, ezert nem marad a naploban. A gclid / fbc / fbp / ttclid / ttp NEM vendegadat (technikai azonosito): valtozatlan (a google_proba a naplobol valaszt gclid-et).
+const HASH_KULCSOK = new Set(['em', 'ph', 'fn', 'ln', 'ct', 'zp', 'country', 'external_id', 'email', 'phone', 'first_name', 'last_name', 'user_id', 'hashed_email', 'hashed_phone', 'hashed_phone_number', 'sha256_email_address', 'sha256_phone_number', 'sha256_first_name', 'sha256_last_name', 'sha256_street']);
+const maszkErtek = (x) => (typeof x === 'string' && x !== '' ? '[hash]' : x); // melyseg-vedelem: a HASH_KULCSOK alatt MINDEN nem ures szoveg maszkolt (ma csak hash jon ide; egy jovobeli hiba nyers erteket ne tudjon a D1-be vinni)
+// MERES_NAPLO_TELJES=1 (csak elonezet, sajat teszt-IP / teszt-vendeg): az IP es az e-mail / telefon hash a naploban valodi (a teszt ezt nezi), de a nev / varos / iranyitoszam hash (szotar-tamadassal visszafejtheto) ott sem marad.
+const NEV_HASH_KULCSOK = new Set(['fn', 'ln', 'ct', 'zp', 'first_name', 'last_name', 'sha256_first_name', 'sha256_last_name', 'sha256_street']);
+export function maszkolt(body, teljes = false) { // a naplozott kerelemben a nyers IP es a hash-ertekek maszkoltak (a kuldott kerelemben valodi)
+  const s = JSON.stringify(body, (k, v) => {
+    if (!teljes && (k === 'client_ip_address' || k === 'ip' || k === 'ip_address' || k === 'user_ip_address')) return maszkIp(v);
+    if ((teljes ? NEV_HASH_KULCSOK : HASH_KULCSOK).has(k)) return Array.isArray(v) ? v.map(maszkErtek) : maszkErtek(v);
+    return v;
+  });
   return JSON.parse(s);
 }

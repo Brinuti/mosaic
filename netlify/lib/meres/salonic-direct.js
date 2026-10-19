@@ -17,6 +17,7 @@ import { SALONIC_UZLETAG, foglalasJelleg, esemenyek, konzultacioTabla, kuponJelz
 import { emailNormal, telefonSzamjegy } from './hash.js';
 import { elosztas, meresSema, kapcsolokOlvas } from './elosztas.js';
 import { jellegRogzit } from './jelleg-rogzites.js';
+import { vendegNev } from './vendeg-nev.js';
 import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes, evKovetkeztet, isoUnix, nevtablaBetolt, nevtablaMent, norm, sema as parositasSema } from '../foglalas-kulcs.js';
 
 export const SD_MIN_KOR_MP = 20 * 60;          // legalabb ennyi ido a letrehozo level erkezese utan (a motoros 4 proba ~14-15 perc alatt lezarul)
@@ -285,7 +286,7 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
   const kapott = foglalasJelleg({ szolgaltatasNev: mezok.szolgaltatas || '', ujVendeg, kategoria: '' });
   const zar = szaraz ? { ...kapott, forras: 'szaraz' } : await jellegRogzit(db, sdId, kapott, most); // az elso kiertekeles jellege rogzul (mint a motornal, X1)
   const ar = await arFeloldas(db, { jelleg: zar.jelleg, mezok, bejovo, fuggosegek: szaraz ? null : fuggosegek }); // a SZARAZ terv irasmentes es halozatmentes: a nevtabla-frissites (hivas + nevtablaMent) csak az eles uton fut
-  const fk = { tipus: 'foglalas', uzletag, source_entity_id: sdId, jelleg: zar.jelleg, kupon: zar.kupon, ertek: ar.ertek, ido: t0, szolgaltatas: mezok.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: null }, oldal: null, uuid,
+  const fk = { tipus: 'foglalas', uzletag, source_entity_id: sdId, jelleg: zar.jelleg, kupon: zar.kupon, ertek: ar.ertek, ido: t0, szolgaltatas: mezok.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: null, nev: vendegNev(bejovo) }, oldal: null, uuid,
     forras: 'salonic_direct', attr_minoseg: 'C_salonic_direct', attr_jelek: attrJelek(v), ertek_minoseg: ar.minoseg, ertek_forras_jel: ar.forras };
   if (mod === 'confirmed' || mod === 'feloldva_confirmed') fk.fixAllapot = { allapot: 'kihagyva', indok: `reschedule_confirmed${mod === 'feloldva_confirmed' ? ' (feloldva)' : ''}: nincs uj konverzio (korabbi foglalas: ${String((csere && csere.regi_uuid) || '?').slice(0, 8)})` };
   else if (mod === 'suspected') fk.fixAllapot = { allapot: 'halasztva', indok: (csere && csere.hianyzo ? 'hianyzo_mezo' : 'reschedule_suspected') + ': HOLD, nincs automatikus kuldes (' + String((csere && csere.ok) || 'csere-gyanu').slice(0, 120) + ')' };

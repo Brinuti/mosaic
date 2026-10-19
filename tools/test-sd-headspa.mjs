@@ -162,7 +162,7 @@ test('HS-06 (F1 javitva, DECISION #192; DECISION #194: a kuponos foglalas nem ku
   // kontroll: a normal levelnel (egyetlen e-mail token)
   const kontroll = await jelolt(NORMAL[0].nev, { vendeg: { email: TISZTA, telefon: tel } });
   await kontroll.v.sd(kontroll.b);
-  assert.deepEqual(kulcsok(kontroll.v), ['em', 'ph', 'external_id']);
+  assert.deepEqual(kulcsok(kontroll.v), ['em', 'ph', 'external_id', 'fn', 'ln', 'country']); // DECISION #202: + fn / ln (a bejovo `nev`-bol, csak hash) + country
   const emH = await sha256hex(TISZTA);
   assert.ok(ud(kontroll.v, 'em').includes(emH) && ud(kontroll.v, 'external_id').includes(emH));
   const indexH = kontroll.v.sql('SELECT email_h FROM foglalas_vendeg')[0].email_h;

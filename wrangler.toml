@@ -103,6 +103,9 @@ GOOGLE_PROBA_KULCS_LEJAR = "2026-10-20T12:00:00Z"
 MERES_ELOSZTO = "1"
 # DECISION #202 visszagorgetes (kodvaltoztatas nelkul): a kovetkezo sor bekapcsolasa (+ deploy) a regi, valos-jel szerinti hozzajarulas-szabalyt allitja vissza (Google dontes nelkul DENIED). A preview szekciojaba is kell.
 # MERES_HOZZAJARULAS_VALOS = "1"
+# DECISION #202 (PR-B) visszagorgetes (kodvaltoztatas nelkul): a kovetkezo sor bekapcsolasa (+ deploy) kiveszi az OSSZES bovitett mezot (nev / orszag / varos / iranyitoszam / fbc-potlas, Google hash + IP / UA, GA4 user_id / user_data, TikTok nev):
+# a PR-B elotti torzs-alak all vissza. A preview szekciojaba is kell. (A feluleten megadott nem titkos valtozot a wrangler.toml torli: tartosan csak ez a sor vagy egy Secret tipusu valtozo mukodik.)
+# MERES_GAZDAGITAS = "0"
 META_TESZT_KOD = "TEST83939"
 TIKTOK_TESZT_KOD = "TEST83543"
 GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"
@@ -160,6 +163,7 @@ AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nin
 # Titok nelkul a kerelem elkeszul es naplozodik ("nincs_hitelesites"), kuldes nem tortenik.
 MERES_ELOSZTO = "1"
 # MERES_HOZZAJARULAS_VALOS = "1"        # DECISION #202 visszagorgetes (lasd fent, [vars])
+# MERES_GAZDAGITAS = "0"                # DECISION #202 (PR-B) visszagorgetes: a bovitett mezok kimaradnak (lasd fent, [vars])
 META_TESZT_KOD = "TEST83939"            # a Meta Esemenykezelo "Teszteszemenyek" kodja (dataset 28616665324611098, MOSAIC ARNYEK meres-teszt)
 TIKTOK_TESZT_KOD = "TEST83543"         # a TikTok Esemenykezelo "Teszteszemenyek" kodja (ARNYEK pixel DB2GTTJC77UE4D1NE4MG); a korabbi szintetikus TEST_MOSAIC_QA2 helyett (2026-10-06)
 GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"   # a GA4 TESZT-property (az elo G-H4206SQ0Q7 a kodban tiltott); a Measurement Protocol secret: GA4_TESZT_API_SECRET (titok)
