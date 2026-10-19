@@ -258,9 +258,11 @@ export async function koszonoVegpont({ request, env, deps = {} }) {
 }
 
 // --- kulcsos vegpontok ------------------------------------------------------------------------------------------------------------------
-async function kulcsOk(request, env, fejlec, hashVar) {
+async function kulcsOk(request, env, fejlec, hashVar, { csakMasodik = false } = {}) {
   const k = request.headers.get(fejlec);
-  const hashek = [env[hashVar], env[hashVar + '_2']].filter(Boolean); // kulcsrotacio: a `_2` valtozo a masodik, egyszerre ervenyes hash (csere utan a regit toroljuk)
+  // csakMasodik: ha a `_2` hash be van allitva, a REGI hash-t nem olvassuk (veglegesitett kulcscsere); vesz-visszaallitas: GY_ZAP_REGI_KULCS = "1" a regi hash-t is ervenyesiti
+  const regiIs = !csakMasodik || !env[hashVar + '_2'] || String(env.GY_ZAP_REGI_KULCS ?? '0') === '1';
+  const hashek = [regiIs ? env[hashVar] : null, env[hashVar + '_2']].filter(Boolean); // kulcsrotacio: a `_2` valtozo a masodik, egyszerre ervenyes hash (csere utan a regit toroljuk)
   if (!k || !hashek.length) return false;
   const h = await sha256Hex(k);
   let ok = false;
@@ -294,7 +296,7 @@ export async function kampanyokVegpont({ request, env, deps = {} }) {
 // onmagaban nem fogadjuk el). Idempotens: ugyanarra a salonic_id-ra az ujrakuldes nem hoz letre / nem modosit tobbet.
 export async function igazolasVegpont({ request, env, deps = {} }) {
   if (request.method !== 'POST') return valasz(405, { ok: false });
-  if (!(await kulcsOk(request, env, 'x-gy-zap-kulcs', 'GY_ZAP_KULCS_HASH'))) return valasz(401, { ok: false });
+  if (!(await kulcsOk(request, env, 'x-gy-zap-kulcs', 'GY_ZAP_KULCS_HASH', { csakMasodik: true }))) return valasz(401, { ok: false });
   const db = env.GY_DB;
   if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
   if (!env.GY_HMAC_KULCS) return valasz(503, { ok: false, hiba: 'nincs_titkos_kulcs' });

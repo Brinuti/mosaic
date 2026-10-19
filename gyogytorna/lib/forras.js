@@ -82,6 +82,9 @@ export function belepes({ search = '', referrer = '', path = '/', sajatHostok } 
       if (alias) { o.utm_campaign = alias; o.kampany_jel = 'alias'; } else { o.utm_campaign = kamp[0]; o.kampany_jel = 'szoveges'; }
     }
   }
+  // tartalek kampany-azonosito (Google auto-tagging): ha az utm_campaign EGYALTALAN nincs, a csak-szamjegyes gad_campaignid a kampany-ID (bizonyitek: gad_campaignid)
+  o.gad_campaignid = ads_id(p.get('gad_campaignid'));
+  if (!o.utm_campaign && o.gad_campaignid) { o.utm_campaign = o.gad_campaignid; o.kampany_jel = 'gad_campaignid'; }
   const tart = p.getAll('utm_content').map(utmTisztit).filter(Boolean);
   if (tart.length > 1) o.utm_content = tart.find((v) => ads_id(v)) || tart[0];
   for (const k of GOOGLE_KATT) {
@@ -148,13 +151,14 @@ export function cimkez(b, t = {}) {
   // ellentmondas: Google kattintas-azonosito, de egy masik platform jelzi magat az utm_source-ban (facebook / tiktok / bing ...)
   if (katt && MAS_PLATFORM.includes(src)) return { cimke: 'ismeretlen', bizonyitek: 'ellentmondas', elavult };
   if (katt && listas) {
-    return { cimke: lista.get(kid).brand ? 'google_brand' : 'google_nem_brand', bizonyitek: b.kampany_jel === 'alias' ? 'kampany_alias_es_katt' : 'kampany_es_katt', elavult };
+    return { cimke: lista.get(kid).brand ? 'google_brand' : 'google_nem_brand', bizonyitek: b.kampany_jel === 'alias' ? 'kampany_alias_es_katt' : b.kampany_jel === 'gad_campaignid' ? 'gad_campaignid' : 'kampany_es_katt', elavult };
   }
   if (katt || listas || (googleUtm && kid)) {
     // csak az egyik feltetel / ismeretlen kampany-ID / csak UTM: bizonytalan Google
     return { cimke: 'google_bizonytalan', bizonyitek: katt ? (kid ? 'ismeretlen_kampany' : b.kampany_jel === 'konfliktus' ? 'kampany_konfliktus' : b.kampany_jel === 'szoveges' ? 'utm_campaign_szoveges' : b.utm_campaign ? 'katt_kampany_nelkul' : 'utm_campaign_hianyzik') : listas ? 'kampany_katt_nelkul' : 'utm_onmagaban', elavult };
   }
   if (googleUtm && fizetett(b)) return { cimke: 'google_bizonytalan', bizonyitek: 'utm_onmagaban', elavult };
+  if (b.kattintas_param === 'fbclid' && !googleUtm) return { cimke: 'social_meta', bizonyitek: 'fbclid_fizetett_ismeretlen', elavult }; // a Meta-hirdetes KI: az fbclid onmagaban nem dont a fizetett statuszrol; NEM organikus, NEM Google
   if (fizetett(b)) return { cimke: 'ismeretlen', bizonyitek: 'nem_google_fizetett', elavult };
   if (b.ref_kat === 'search' || b.ref_kat === 'social') return { cimke: 'organikus', bizonyitek: 'referrer', elavult };
   if (b.ref_kat === 'egyeb') return { cimke: 'organikus', bizonyitek: 'referrer_egyeb', elavult };
