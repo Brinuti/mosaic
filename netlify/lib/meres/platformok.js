@@ -57,6 +57,9 @@ const tisztit = (o) => { for (const k of Object.keys(o)) { const v = o[k]; if (v
  * DECISION #202 tartalek-torzs: a kibovitett (nev / orszag / user_id / user_data ...) torzs mellett a REGI (bovites nelkuli) torzs, amellyel a szallito egyszer ujraprobal, ha a platform a kibovitett torzset
  * kifejezetten elutasitja (4xx / 200 + hibakod). Nem felsorolhato (non-enumerable): nem kerul a naploba, a golden-kepbe es a JSON-ba; csak a `kuldes()` olvassa.
  */
+/** DECISION #202 visszagorgetes deploy-kodvaltoztatas nelkul (env-bol): MERES_GAZDAGITAS=0 -> a bovitett mezok (nev / orszag / varos / iranyitoszam / fbc-potlas, Google hash + IP / UA, GA4 user_id / user_data, TikTok nev) kimaradnak; a regi mezok valtozatlanok. */
+const gazdagitas = (env) => String((env || {}).MERES_GAZDAGITAS) !== '0';
+
 function tartalekkal(kerelem, tartalekBody) {
   if (tartalekBody) Object.defineProperty(kerelem, 'tartalek_body', { value: tartalekBody, enumerable: false });
   return kerelem;
@@ -79,7 +82,7 @@ export function metaKerelem(e, ctx, env = {}) {
     external_id: ctx.hash.ext ? [ctx.hash.ext] : null, client_ip_address: ctx.ip, client_user_agent: ctx.ua, fbc: metaFbc(ctx.erk), fbp: ctx.erk.fbp,
   });
   // DECISION #202: maximalis (hash-elt) adatatadas - keresztnev / vezeteknev (csak ha van hasznalhato nev; hianyzo / null / ures nev = NINCS nev-hash, a tobbi mezo megy), orszag (hu), varos / iranyitoszam (ha van forras), fbc potlasa az fbclid-bol (az esemeny idejevel, ha nincs kattintas-idobelyeg)
-  const udBov = tisztit({
+  const udBov = !gazdagitas(env) ? {} : tisztit({
     fn: ctx.hash.fn && fh ? [ctx.hash.fn] : null, ln: ctx.hash.ln && fh ? [ctx.hash.ln] : null, country: ctx.hash.country && fh ? [ctx.hash.country] : null,
     ct: ctx.hash.ct && fh ? [ctx.hash.ct] : null, zp: ctx.hash.zp && fh ? [ctx.hash.zp] : null, // varos / iranyitoszam: csak az ajandekkartya-vasarlasnal van forras (a PI metadata); egyebkent kimarad
     fbc: metaFbc(ctx.erk, ctx.fk.ido * 1000),
@@ -112,7 +115,7 @@ export function tiktokKerelem(e, ctx, env = {}) {
   if (nev === 'CompletePayment' && ctx.fk.ertek_minoseg && ctx.fk.ertek_minoseg !== 'exact') return { kihagyva: `ertek_ismeretlen (${ctx.fk.ertek_minoseg}): az ertekhordozo CompletePayment csak ismert tenyleges arral megy` };
   const userAlap = tisztit({ email: ctx.hash.em && szab.felhasznaloi_adat ? ctx.hash.em : null, phone: ctx.hash.ph_e164 && szab.felhasznaloi_adat ? ctx.hash.ph_e164 : null, external_id: ctx.hash.ext, ttclid: ctx.erk.tiktok && ctx.erk.tiktok.ttclid && ctx.erk.tiktok.ttclid.ertek, ttp: ctx.erk.ttp, ip: ctx.ip, user_agent: ctx.ua });
   // DECISION #202 (Feri 2. szabaly): a TikTok nev-mezoi OPT-IN jelzo mogott (TIKTOK_NEV_MEZOK=1): a hivatalos Events API user-kulcsai (email, phone, external_id, ttclid, ttp, ip, user_agent) kozott a nev nem szerepel, ezert alapbol nem megy; ha a jelzo be van kapcsolva es a TikTok elutasitja, a tartalek-torzs (nev nelkul) egyszer ujraprobal. ct / zp: nincs forras, kimarad.
-  const userBov = String((env || {}).TIKTOK_NEV_MEZOK) === '1' && szab.felhasznaloi_adat ? tisztit({ first_name: ctx.hash.fn, last_name: ctx.hash.ln }) : {};
+  const userBov = gazdagitas(env) && String((env || {}).TIKTOK_NEV_MEZOK) === '1' && szab.felhasznaloi_adat ? tisztit({ first_name: ctx.hash.fn, last_name: ctx.hash.ln }) : {};
   const kod = platformKod(e, ctx); // adatminimalizalas: a nyers szolgaltatasnev (content_name) sem megy, fallback sincs
   const adatEpit = (user) => tisztit({
     event: nev, event_time: ctx.fk.ido, event_id: e.esemeny_id, user,
@@ -141,7 +144,7 @@ export function googleKerelem(e, ctx, env = {}) {
   const szab = ctx.hozz.google;
   // DECISION #202: felhasznaloi azonositok CSAK hash-elve (SHA-256, Google-normalizalt e-mail; telefon E.164) es csak ha a hozzajarulas-szabaly engedi (rogzitett elutasitasnal nem);
   // a Zap a hashed_email / hashed_phone_number mezoket (vagy a user_identifiers listat) kepezi az ARNYEK feltoltes user_identifiers-ebe. user_ip_address / user_agent: amit a motor rogzitett (erkezes-sor), kitalalni nem talaljuk ki.
-  const fh = szab.felhasznaloi_adat;
+  const fh = szab.felhasznaloi_adat && gazdagitas(env);
   const azon = fh ? tisztit({ hashed_email: ctx.hash.em_ads, hashed_phone_number: ctx.hash.ph_e164 }) : {};
   const body = tisztit({
     conversion_action_id: akcioId, [click.tipus]: click.ertek, conversion_date_time: googleIdo(ctx.fk.ido), value: egesz(e.ertek), currency: 'HUF', order_id: e.esemeny_id,
@@ -167,7 +170,7 @@ export function ga4Kerelem(e, ctx, env = {}) {
     source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, medium: ctx.erk.utm_utolso && ctx.erk.utm_utolso.medium, campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign });
   const consent = szab.jel.ad_user_data === 'UNSPECIFIED' ? null : { ad_user_data: szab.jel.ad_user_data, ad_personalization: szab.jel.ad_personalization };
   // DECISION #202: user_id (HMAC-alapu alvezetett azonosito, nem visszafejtheto) + user_data (SHA-256 e-mail, telefon E.164), csak ha a hozzajarulas-szabaly engedi; nev / cim nem megy (iranyitoszam / varos forras nincs)
-  const fh = szab.felhasznaloi_adat;
+  const fh = szab.felhasznaloi_adat && gazdagitas(env);
   const userData = fh ? tisztit({ sha256_email_address: ctx.hash.em_ga4 ? [ctx.hash.em_ga4] : null, sha256_phone_number: ctx.hash.ph_e164 ? [ctx.hash.ph_e164] : null }) : {};
   const userId = fh ? ctx.hash.uid : null;
   const alap = { client_id: ga.client_id, timestamp_micros: String(ctx.fk.ido * 1_000_000), consent, events: [{ name: GA4_NEV[e.nev], params }] };
@@ -186,12 +189,14 @@ const ZAPIER_HOOK_RE = /^(https:\/\/hooks\.zapier\.com\/hooks\/catch\/\d+\/[A-Za
  * a szallito EGYSZER ujraprobal a regi torzzsel (az esemeny nem kerult feldolgozasra; az event_id / order_id azonos, a platform dedup-ja ugyanugy vedi); a hiba szovege a platform_valaszban marad.
  */
 export async function kuldes(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
-  const elso = await kuldesEgy(kerelem, env, fetchImpl, ms);
+  const elso = hibaMaszk(await kuldesEgy(kerelem, env, fetchImpl, ms));
   if (elso.allapot !== 'hiba' || !kerelem.tartalek_body || elso.http_status === null || elso.http_status >= 500) return elso;
-  const masodik = await kuldesEgy({ ...kerelem, body: kerelem.tartalek_body }, env, fetchImpl, ms);
-  const elsoHiba = String(elso.valasz || '').slice(0, 600);
-  return { ...masodik, valasz: JSON.stringify({ tartalek_ujraprobalas: true, elso_kiserlet: { http_status: elso.http_status, valasz: elsoHiba }, masodik_kiserlet: { http_status: masodik.http_status, allapot: masodik.allapot, valasz: String(masodik.valasz || '').slice(0, 1200) } }).slice(0, 2000) };
+  const masodik = hibaMaszk(await kuldesEgy({ ...kerelem, body: kerelem.tartalek_body }, env, fetchImpl, ms));
+  const elsoHiba = String(elso.valasz || '').slice(0, 250);
+  return { ...masodik, valasz: JSON.stringify({ tartalek_ujraprobalas: true, elso_kiserlet: { http_status: elso.http_status, valasz: elsoHiba }, masodik_kiserlet: { http_status: masodik.http_status, allapot: masodik.allapot, valasz: String(masodik.valasz || '').slice(0, 600) } }) }; // 250 + 600 karakter: az escape-elessel is 2000 alatt (ervenyes JSON marad)
 }
+/** DECISION #202: hiba eseten a platform valaszszovege a D1-be kerul; ha a platform visszhangozza a mezoertekeket, a hash-szeru (32-64 hexa) ertekek maszkoltak. */
+const hibaMaszk = (r) => (r.allapot === 'hiba' && typeof r.valasz === 'string' ? { ...r, valasz: r.valasz.replace(/\b[0-9a-f]{32,64}\b/gi, '[hash]') } : r);
 
 async function kuldesEgy(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
   const titkos = { meta: env.META_CAPI_TOKEN, tiktok: env.TIKTOK_EVENTS_TOKEN, google: env.GOOGLE_ARNYEK_WEBHOOK_URL, ga4: env.GA4_TESZT_API_SECRET };

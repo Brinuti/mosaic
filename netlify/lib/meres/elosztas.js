@@ -174,7 +174,7 @@ export async function elosztas(db, fk, deps = {}) {
         else if (e.nyitott) mezok = { allapot: 'nyitott', indok: e.nyitott_ok };
         else if (kerelem.tiltva) mezok = { allapot: 'tiltva', indok: kerelem.tiltva };
         else {
-          const naplo = { platform_nev: kerelem.platform_nev, kerelem: JSON.stringify({ url: kerelem.url, method: kerelem.method, fejlec_nevek: kerelem.fejlec_nevek, cel: kerelem.cel, body: env.MERES_NAPLO_TELJES === '1' ? kerelem.body : maszkolt(kerelem.body) }) }; // MERES_NAPLO_TELJES=1 (CSAK elonezet, sajat teszt-IP): a TELJES kikuldott payload a naploban; egyebkent a nyers IP maszkolt
+          const naplo = { platform_nev: kerelem.platform_nev, kerelem: JSON.stringify({ url: kerelem.url, method: kerelem.method, fejlec_nevek: kerelem.fejlec_nevek, cel: kerelem.cel, body: maszkolt(kerelem.body, env.MERES_NAPLO_TELJES === '1') }) }; // MERES_NAPLO_TELJES=1 (CSAK elonezet, sajat teszt-IP): a kikuldott payload a naploban a nev / varos / iranyitoszam hash kivetelevel teljes; egyebkent a nyers IP es minden hash maszkolt
           const foglal = await naploz(e, platform, { allapot: 'folyamatban', ...naplo });
           if (foglal.duplikalt) { sor.platformok[platform] = { allapot: foglal.allapot, duplikalt: true }; continue; }
           const eredmeny = await (deps.kuldo || kuldes)(kerelem, env, deps.fetchImpl || fetch);
@@ -195,10 +195,12 @@ export async function elosztas(db, fk, deps = {}) {
 const HASH_KULCSOK = new Set(['em', 'ph', 'fn', 'ln', 'ct', 'zp', 'country', 'external_id', 'email', 'phone', 'first_name', 'last_name', 'user_id', 'hashed_email', 'hashed_phone', 'hashed_phone_number', 'sha256_email_address', 'sha256_phone_number', 'sha256_first_name', 'sha256_last_name', 'sha256_street']);
 const HASH_ALAK = /^[0-9a-f]{32,64}$/;
 const maszkErtek = (x) => (typeof x === 'string' && HASH_ALAK.test(x) ? '[hash]' : x);
-function maszkolt(body) { // a naplozott kerelemben a nyers IP es a hash-ertekek maszkoltak (a kuldott kerelemben valodi)
+// MERES_NAPLO_TELJES=1 (csak elonezet, sajat teszt-IP / teszt-vendeg): az IP es az e-mail / telefon hash a naploban valodi (a teszt ezt nezi), de a nev / varos / iranyitoszam hash (szotar-tamadassal visszafejtheto) ott sem marad.
+const NEV_HASH_KULCSOK = new Set(['fn', 'ln', 'ct', 'zp', 'first_name', 'last_name', 'sha256_first_name', 'sha256_last_name', 'sha256_street']);
+function maszkolt(body, teljes = false) { // a naplozott kerelemben a nyers IP es a hash-ertekek maszkoltak (a kuldott kerelemben valodi)
   const s = JSON.stringify(body, (k, v) => {
-    if (k === 'client_ip_address' || k === 'ip' || k === 'ip_address' || k === 'user_ip_address') return maszkIp(v);
-    if (HASH_KULCSOK.has(k)) return Array.isArray(v) ? v.map(maszkErtek) : maszkErtek(v);
+    if (!teljes && (k === 'client_ip_address' || k === 'ip' || k === 'ip_address' || k === 'user_ip_address')) return maszkIp(v);
+    if ((teljes ? NEV_HASH_KULCSOK : HASH_KULCSOK).has(k)) return Array.isArray(v) ? v.map(maszkErtek) : maszkErtek(v);
     return v;
   });
   return JSON.parse(s);

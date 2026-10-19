@@ -405,7 +405,7 @@ test('elosztas: ROGZITETT elutasitas (adv:false) - Meta / TikTok valtozatlanul k
     await erkezesMent(db, erkBe({ hozz: { ana: false, adv: false, fun: false } }), NOW);
     await elosztas(db, FK(), { env, fetchImpl: f, now: () => NOW });
     const m = hivasok.find((h) => h.kulcs === 'meta').body.data[0].user_data; assert.ok(m.em && m.ph);
-    const g = hivasok.find((h) => h.kulcs === 'google').body; assert.deepEqual([g.hashed_email, g.hashed_phone, g.ad_user_data, g.ad_personalization], [undefined, undefined, 'DENIED', 'DENIED']);
+    const g = hivasok.find((h) => h.kulcs === 'google').body; assert.deepEqual([g.hashed_email, g.hashed_phone_number, g.ad_user_data, g.ad_personalization], [undefined, undefined, 'DENIED', 'DENIED']);
     const kuldesek = (await naploLeker(db, BID)).kuldesek;
     const h = kuldesek.find((k) => k.platform === 'google').hozzajarulas; assert.equal(h.allapot.adv, false); assert.equal(h.szabaly.jel.ad_user_data, 'DENIED'); if (env.MERES_HOZZAJARULAS_VALOS !== '1') assert.match(h.szabaly.megjegyzes, /rogzitett dontes/);
     const ga = hivasok.find((x) => x.kulcs === 'ga4'); assert.deepEqual(ga.body.consent, { ad_user_data: 'DENIED', ad_personalization: 'DENIED' }, 'GA4: a rogzitett elutasitas DENIED');
