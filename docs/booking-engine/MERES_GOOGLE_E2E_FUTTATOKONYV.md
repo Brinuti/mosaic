@@ -10,7 +10,7 @@
 | Elfogadja-e a Google a feltoltest a 8 nem-EXCELLENT akcion? | **B. backend proba-feltoltes** (`google_proba` admin-muvelet) | VALODI HeadSpa gclid a D1-bol (szerveroldalon valasztva, nem latszik) |
 
 Amit ez a csomag NEM tesz: nem ker captcha-kivetelt (a reCAPTCHA a Salonic sajat urlapjaban van, nem a Mosaicban; a `--mod valodi` kihivasnal MEGALL → ember kell);
-nem kapcsol be elo konverziot; nem valtoztat a foglalasi folyamaton; nem nyul futo hirdeteshez; vendegadatot sehova nem ir; a suti-elutasitas felulirasahoz nem nyul.
+nem kapcsol be elo konverziot; nem valtoztat a foglalasi folyamaton; nem nyul futo hirdeteshez; vendegadatot sehova nem ir; a vendegek tarolt suti-elutasitasat nem irja felul (a B. resz probaja a valodi gclid-et olyan sorbol valasztja, amelynek NINCS rogzitett elutasito donteset; a proba jele maga fix `GRANTED`, DECISION #202).
 
 ## 0. Elofeltetelek (mindegyik kulon pipa; ami hianyzik, azt jelezd a #167-ben)
 1. A **R1–R3 gclid-javitas** (claude/meres-gclid-r1r3) mergelve ES deployolva, KULONBEN a gclid a foglaloban elveszhet (a #403 proba R1–R3 reseit mutatta) – az A. resz hamis negativot adhat.
@@ -58,8 +58,8 @@ Szintetikus gclid: uzletagankent KULON, `MERES_GCLID=E2E<uzletag><datum><veletle
    Hogy az elutasitas ne zavarja a fiok feltoltesi osszegzojet, a javasolt sorrend: elobb az A., utana a B. (a legutolso feltoltes akciokent a B. valodi gclid-es proba legyen).
 
 ## B. Backend proba-feltoltes (`google_proba`), valodi gclid-del, 8 ARNYEK-akcio
-Vedelmek (kodban, fail-closed): csak a 6088874770 fiok es a 8 felsorolt akcio (HeadSpa 7825199989/7825199992 es minden elo akcio kizarva); a torzs zart lista (7 mezo, nincs vendegadat / hash);
-`ad_user_data` mindig `DENIED`; a gclid csak a kuldott torzsben van (valasz, D1, naplo: `gclid#1` + `gclid_hash8`); `order_id` = `Proba:<futas>:<akcio>` (egyedi); a Zap NYERS valasz-torzse SOHA nem tarolodik / nem kerul a valaszba (a gclid modositott / csonkolt / kisbetus / base64 visszhangja ellen is): csak a http-status + a Zap `status` / `id` mezoje (biztonsagos karakterek, legfeljebb 64 hossz, a gclid-visszhangot kiszurve), pl. `{"http":200,"status":"success","id":"…"}`.
+Vedelmek (kodban, fail-closed): csak a 6088874770 fiok es a 8 felsorolt akcio (HeadSpa 7825199989/7825199992 es minden elo akcio kizarva); a torzs zart lista (8 mezo, nincs vendegadat / hash);
+`ad_user_data` es `ad_personalization` mindig `GRANTED` (DECISION #202 javitas, Feri 2026-10-18: nincs sutisav, elfogadott hozzajarulas; vendegadat / hash tovabbra sincs a probaban); a gclid csak a kuldott torzsben van (valasz, D1, naplo: `gclid#1` + `gclid_hash8`); `order_id` = `Proba:<futas>:<akcio>` (egyedi); a Zap NYERS valasz-torzse SOHA nem tarolodik / nem kerul a valaszba (a gclid modositott / csonkolt / kisbetus / base64 visszhangja ellen is): csak a http-status + a Zap `status` / `id` mezoje (biztonsagos karakterek, legfeljebb 64 hossz, a gclid-visszhangot kiszurve), pl. `{"http":200,"status":"success","id":"…"}`.
 Plafon: legfeljebb 40 KIMENO kiserlet-sor (elkuldve / hiba / folyamatban) 24 oran belul; a `kihagyva` sorok (dry-run, veszkapcsolo) nem szamitanak, az idempotens ujrafuttatas es az ujraprobalas nem uj sor (nem 429-ezik); max. 3 probalkozas soronkent; a 120 s-nel frissebb `folyamatban` sor nem megy ujra; egyideju azonos `futas_id`-s hivasok nem duplazhatnak (INSERT-verseny + compare-and-swap).
 
 ```
@@ -71,8 +71,8 @@ curl -sS -X POST "$BASE" -H "x-egyeztetes-kulcs: $KULCS" -H 'content-type: appli
   -d '{"muvelet":"google_proba","futas_id":"<a szaraz valaszbol>","kuld":true,"megerosit":"ARNYEK-6088874770-PROBA"}'
 ```
 
-Mezok (`google_proba`): `futas_id` (8 kisbetus hexa; elhagyva veletlen), `akciok` (a 8 ARNYEK-akcio ID-jabol 1–8 elemu lista; elhagyva mind a 8), `gclid_sorszam` (a valodi HeadSpa Google-feltoltesek sorrendje: ELOBB az osszes `FoglalasElso` gclid-je, ujabb → regebbi (1., 2., …), UTANA az osszes `Ajandekkartya` (ujabb → regebbi); az n-edik elem; alap 1 = a legfrissebb FoglalasElso; a valaszban `gclid_forras.esemeny` / `kor_nap` mutatja, melyik), `kuld` (csak `true` kuld), `megerosit`.
-Valasz (200): `ok`, `futas_id`, `source_id` (`gp_<futas>`), `ugyfel`, `gclid:"gclid#1"`, `gclid_hash8`, `gclid_hossz`, `gclid_forras{meres_kuldes_id,esemeny,kor_nap}`, `kuldes_feltetelei{meres_elosztas_be,webhook_beallitva}`, `terv[8]` (akcio, `order_id`, `conversion_date_time`, `value`, `currency`, `ad_user_data`, `body_mezok`),
+Mezok (`google_proba`): `futas_id` (8 kisbetus hexa; elhagyva veletlen), `akciok` (a 8 ARNYEK-akcio ID-jabol 1–8 elemu lista; elhagyva mind a 8), `gclid_sorszam` (a valodi HeadSpa Google-feltoltesek sorrendje: ELOBB az osszes `FoglalasElso` gclid-je, ujabb → regebbi (1., 2., …), UTANA az osszes `Ajandekkartya` (ujabb → regebbi); az n-edik elem; alap 1 = a legfrissebb FoglalasElso; a rogzitett elutasito donteses (vagy olvashatatlan hozzajarulas-JSON-u) sorok KIMARADNAK a szamozasbol (DECISION #202 review); a valaszban `gclid_forras.esemeny` / `kor_nap` mutatja, melyik), `kuld` (csak `true` kuld), `megerosit`.
+Valasz (200): `ok`, `futas_id`, `source_id` (`gp_<futas>`), `ugyfel`, `gclid:"gclid#1"`, `gclid_hash8`, `gclid_hossz`, `gclid_forras{meres_kuldes_id,esemeny,kor_nap}`, `kuldes_feltetelei{meres_elosztas_be,webhook_beallitva}`, `terv[8]` (akcio, `order_id`, `conversion_date_time`, `value`, `currency`, `ad_user_data`, `ad_personalization`, `body_mezok`),
 `mod` (`szaraz`|`kuldes`), kuldeskor `eredmenyek[8]` (`allapot` elkuldve/hiba/kihagyva/tiltva, `http_status`, `valasz_roviden` = a fenti kompakt JSON) es `kuldve`.
 Hibak: 400 (rossz mezo / akcio / `megerosit`), 409 (nincs valodi HeadSpa gclid 80 napon belul; vagy a `GOOGLE_ARNYEK_WEBHOOK_URL` hianyzik), 429 (24 oras plafon), 503 (iras-veszkapcsolo), 404 (rossz kulcs).
 Ujrafuttatas ugyanazzal a `futas_id`-vel nem duplaz (az elkuldott sor nem megy ketszer; a hibas max. 3-szor). `futas_id` nelkul minden hivas KULONBOZO, veletlen azonositot kap.
@@ -105,7 +105,7 @@ Az adjustment a feltoltes utan LEHET, hogy csak a Google feldolgozasa utan fogad
 - A proba D1-sorai (`forras='google_proba'`) auditnyomok, nem torlendok; a T2-bol kizartak.
 
 ## Nyitott kerdesek a meresi oldalnak
-1. A B. resz **valodi vendeg-kattintasu gclid-et** hasznal (a D1-bol, szerveroldalon valasztva; a hivon kivul sehol nem latszik, `ad_user_data=DENIED`). Elfogadhato-e a „vendegadat sehova nem kerul” feltetel szerint (a gclid nem szemelyes azonosito, de a valodi kattintashoz kotheto)? Ha nem, a hetfoi kapuhoz Feri egy valodi, sajat kattintasu gclid-je kell.
+1. A B. resz **valodi vendeg-kattintasu gclid-et** hasznal (a D1-bol, szerveroldalon valasztva; a hivon kivul sehol nem latszik, `ad_user_data=GRANTED` a DECISION #202 javitas szerint). Elfogadhato-e a „vendegadat sehova nem kerul” feltetel szerint (a gclid nem szemelyes azonosito, de a valodi kattintashoz kotheto)? Ha nem, a hetfoi kapuhoz Feri egy valodi, sajat kattintasu gclid-je kell.
 2. A korrekcio-Zap (`GOOGLE_KORREKCIO_WEBHOOK_URL`) letezik-e? Nelkule a C. resz csak a tervig megy; a visszavonas a Google Ads API-n at a meresi oldalon is vegrehajthato.
 3. Az `claude/mosaic-meres-eletut` ag nincs mergelve: a `googleKorrekcioKerelem` formajat itt tukrozzuk (nem importaljuk).
 4. Napi 1 merge a `main`-re: ez a PR + az R1–R3 PR ugyanarra a napra eshet – a sorrendet a fo munkamenet dönti el (Feri kerese az R1–R3, a DECISION a proba).
