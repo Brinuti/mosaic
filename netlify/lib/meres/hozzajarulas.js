@@ -1,8 +1,11 @@
 // QA-2 hozzajarulas (SZ-38, DECISION-LOG #96 / SZ-16): a hozzájárulási állapot (suti.js mh_cc: { ana, adv, fun, dontes? }) a naplóban mindig látszik.
 // DECISION #202 javitas (Feri, 2026-10-18: NINCS sutisav, minden platform ELFOGADOTT hozzajarulassal kapja az adatot; a #167 6273378563 szerint, 2026-10-19):
-//   MINDEN platformra (Meta, TikTok, Google, GA4) felhasznaloi_adat = true es ad_user_data = ad_personalization = GRANTED, a rogzitett dontestol FUGGETLENUL (dontes nelkul is).
-//   A korabbi szabaly (Google / GA4: a valos jel, dontes nelkul DENIED, hash nelkul) a HeadSpa Google-feltoltesek 0 konverzios eredmenyet okozta (fix DENIED).
-//   Visszagorgetes env-bol, kodvaltoztatas nelkul: MERES_HOZZAJARULAS_VALOS=1 -> a regi, valos-jel szerinti szabaly (valosSzabaly).
+//   MINDEN platformra (Meta, TikTok, Google, GA4) felhasznaloi_adat = true es ad_user_data = ad_personalization = GRANTED, ha NINCS rogzitett dontes ("akkor is, ha nincs rogzitett dontes" - Feri).
+//   KIVETEL (Google / GA4 fele; a DECISION a "valos hozzajarulas szerint" szoveget es a "tarolt sutielutasitasok maradnak" szabalyt nem irja felul, a dontes tartalmara szol, nem tobbre):
+//   ha a vendeg bongeszojeben ROGZITETT dontes van, amely a hirdetesi hozzajarulast nem adja meg (adv !== true: elutasitas / visszavonas / reszleges), a regi, valos-jel szabaly marad (DENIED, hash nelkul).
+//   Meta / TikTok: valtozatlan (SZ-38: hozzajarulas nelkul is kapnak azonositot).
+//   A korabbi szabaly (Google: dontes nelkul fix DENIED, hash nelkul; GA4: dontes nelkul nincs consent) a HeadSpa Google-feltoltesek 0 konverzios eredmenyet okozta (fix DENIED).
+//   Visszagorgetes env-bol, kodvaltoztatas nelkul: MERES_HOZZAJARULAS_VALOS=1 -> a regi, valos-jel szerinti szabaly minden esetre (valosSzabaly); GA4: a regi szabaly dontes nelkul NEM kuldott consent-et (UNSPECIFIED).
 
 export function hozzajarulasTisztit(h) {
   if (!h || typeof h !== 'object') return { ana: null, adv: null, fun: null, dontes: false };
@@ -27,9 +30,11 @@ export function valosSzabaly(platform, hozz) {
   }
 }
 
-/** -> { kuldheto, felhasznaloi_adat, jel: { ad_user_data, ad_personalization }, megjegyzes } az adott platformra (DECISION #202: elfogadott hozzajarulas minden platformra; env.MERES_HOZZAJARULAS_VALOS=1 = regi szabaly). */
+/** -> { kuldheto, felhasznaloi_adat, jel: { ad_user_data, ad_personalization }, megjegyzes } az adott platformra (DECISION #202: elfogadott hozzajarulas, ha nincs rogzitett elutasito dontes; env.MERES_HOZZAJARULAS_VALOS=1 = regi szabaly). */
 export function platformSzabaly(platform, hozz, env = {}) {
   const valos = valosSzabaly(platform, hozz);
   if (!valos.kuldheto || String((env || {}).MERES_HOZZAJARULAS_VALOS) === '1') return valos;
-  return { kuldheto: true, felhasznaloi_adat: true, jel: { ad_user_data: 'GRANTED', ad_personalization: 'GRANTED' }, megjegyzes: 'DECISION #202: nincs sutisav, elfogadott hozzajarulas (ad_user_data / ad_personalization = GRANTED, a rogzitett dontestol fuggetlenul)' };
+  const h = hozzajarulasTisztit(hozz);
+  if ((platform === 'google' || platform === 'ga4') && h.dontes && h.adv !== true) return { ...valos, megjegyzes: 'rogzitett dontes (adv != igen): a valos jel marad (DENIED), hash-elt azonosito nelkul - ' + valos.megjegyzes };
+  return { kuldheto: true, felhasznaloi_adat: true, jel: { ad_user_data: 'GRANTED', ad_personalization: 'GRANTED' }, megjegyzes: 'DECISION #202: nincs sutisav, elfogadott hozzajarulas (ad_user_data / ad_personalization = GRANTED)' };
 }
