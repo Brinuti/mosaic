@@ -10,6 +10,7 @@
 // minden proba-sor forras = 'google_proba', source_id = 'gp_<futas>' (a QA-nap / T2 / lampa / egyeztetosor szamlalok kizarjak), order_id = 'Proba:<futas>:<akcio>' (egyedi).
 import { ARNYEK, ELO_CELOK, googleIdo, kuldes } from './platformok.js';
 import { kapcsolokOlvas, kikapcsolva, meresSema } from './elosztas.js';
+import { hozzajarulasTisztit } from './hozzajarulas.js';
 import { irasKi } from './iras-kapcsolo.js';
 
 export const PROBA_FORRAS = 'google_proba';
@@ -68,8 +69,8 @@ export async function probaGclid(db, { sorszam = 1, nowSec }) {
   const jeloltek = [];
   for (const r of results || []) {
     let k; try { k = JSON.parse(r.kerelem); } catch (e) { continue; }
-    let allapot = null; try { allapot = r.hozzajarulas ? JSON.parse(r.hozzajarulas).allapot : null; } catch (e) { /* nincs / hibas hozzajarulas-JSON: dontes nelkulinek vesszuk */ }
-    if (allapot && allapot.dontes && allapot.adv !== true) continue;
+    // a rogzitett dontes az ana / adv ertekekbol ujraszamolva (nem a tarolt `dontes` jelzore tamaszkodva); nem ures, de olvashatatlan hozzajarulas-JSON = KIHAGYVA (fail-closed); nincs hozzajarulas-oszlop = regi sor, valaszthato
+    if (r.hozzajarulas) { let h; try { h = hozzajarulasTisztit(JSON.parse(r.hozzajarulas).allapot); } catch (e) { continue; } if (h.dontes && h.adv !== true) continue; }
     const g = k && k.body && k.body.gclid;
     if (typeof g === 'string' && GCLID_MINTA.test(g)) jeloltek.push({ gclid: g, sor_id: r.id, esemeny_nev: r.esemeny_nev, kor_nap: Math.floor((nowSec - r.letrehozva) / 86400), elso: r.esemeny_nev === 'FoglalasElso' ? 0 : 1 });
   }

@@ -35,6 +35,7 @@ export function platformSzabaly(platform, hozz, env = {}) {
   const valos = valosSzabaly(platform, hozz);
   if (!valos.kuldheto || String((env || {}).MERES_HOZZAJARULAS_VALOS) === '1') return valos;
   const h = hozzajarulasTisztit(hozz);
-  if ((platform === 'google' || platform === 'ga4') && h.dontes && h.adv !== true) return { ...valos, megjegyzes: 'rogzitett dontes (adv != igen): a valos jel marad (DENIED), hash-elt azonosito nelkul - ' + valos.megjegyzes };
+  // rogzitett dontes, amely a hirdetesi hozzajarulast nem adja meg: minden platformra a valos szabaly (Meta / TikTok: valtozatlanul kap azonositot SZ-38 szerint - a torzs nem valtozik, de a naploban a valos jel latszik; Google / GA4: DENIED, hash nelkul)
+  if (h.dontes && h.adv !== true) return { ...valos, megjegyzes: 'rogzitett dontes (adv != igen): ' + valos.megjegyzes };
   return { kuldheto: true, felhasznaloi_adat: true, jel: { ad_user_data: 'GRANTED', ad_personalization: 'GRANTED' }, megjegyzes: 'DECISION #202: nincs sutisav, elfogadott hozzajarulas (ad_user_data / ad_personalization = GRANTED)' };
 }

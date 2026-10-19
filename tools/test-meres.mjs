@@ -392,7 +392,10 @@ test('elosztas: ROGZITETT elutasitas (adv:false) - Meta / TikTok valtozatlanul k
     await elosztas(db, FK(), { env, fetchImpl: f, now: () => NOW });
     const m = hivasok.find((h) => h.kulcs === 'meta').body.data[0].user_data; assert.ok(m.em && m.ph);
     const g = hivasok.find((h) => h.kulcs === 'google').body; assert.deepEqual([g.hashed_email, g.hashed_phone, g.ad_user_data, g.ad_personalization], [undefined, undefined, 'DENIED', 'DENIED']);
-    const h = (await naploLeker(db, BID)).kuldesek.find((k) => k.platform === 'google').hozzajarulas; assert.equal(h.allapot.adv, false); assert.equal(h.szabaly.jel.ad_user_data, 'DENIED');
+    const kuldesek = (await naploLeker(db, BID)).kuldesek;
+    const h = kuldesek.find((k) => k.platform === 'google').hozzajarulas; assert.equal(h.allapot.adv, false); assert.equal(h.szabaly.jel.ad_user_data, 'DENIED'); if (env.MERES_HOZZAJARULAS_VALOS !== '1') assert.match(h.szabaly.megjegyzes, /rogzitett dontes/);
+    const ga = hivasok.find((x) => x.kulcs === 'ga4'); assert.deepEqual(ga.body.consent, { ad_user_data: 'DENIED', ad_personalization: 'DENIED' }, 'GA4: a rogzitett elutasitas DENIED');
+    if (env.MERES_HOZZAJARULAS_VALOS !== '1') for (const p of ['meta', 'tiktok']) assert.match(kuldesek.find((k) => k.platform === p).hozzajarulas.szabaly.megjegyzes, /rogzitett dontes/, p + ': a naploban a valos szabaly latszik (a torzs valtozatlan)');
   }
 });
 test('elosztas: NINCS rogzitett dontes (DECISION #202: nincs sutisav) - Google / GA4 GRANTED, a naploban a dontes nelkuli allapot es a szabaly latszik; MERES_HOZZAJARULAS_VALOS=1 = a regi szabaly (Google DENIED, GA4 consent nelkul)', async () => {
