@@ -168,9 +168,9 @@ export async function foglalasAllapot({ host, uuid, fetchImpl }) {
   try {
     const r = await lekerSzoveg(fetchImpl, `https://${host}/booking/bookingDetails/${uuid}`);
     const d = reszletekOldalElemzes(r.szoveg);
-    if (d.uuid === uuid && d.startUnix) return { allapot: 'aktiv', status: r.status, uuid };
+    if (d.uuid === uuid && d.startUnix) return { allapot: 'aktiv', status: r.status, uuid, startUnix: d.startUnix }; // startUnix: a "Foglalas modositasa" link kezdete (additiv mezo)
     if (d.allapot === 'torolve') return { allapot: 'torolve', status: r.status, uuid };
-    if (d.allapot === 'visszaigazolt') return { allapot: 'aktiv', status: r.status, uuid };
+    if (d.allapot === 'visszaigazolt') return { allapot: 'aktiv', status: r.status, uuid, startUnix: null }; // link nelkul (pl. athelyezett foglalas): a kezdet a naptar-exportbol (foglalasKezdet)
     return { allapot: 'ismeretlen', status: r.status, miert: 'a megtekintes oldal sem aktiv, sem torolt' };
   } catch (e) { return { allapot: 'ismeretlen', miert: 'lekeres-hiba: ' + String(e && e.message || e).slice(0, 80) }; }
 }
@@ -185,9 +185,17 @@ export async function foglalasKezdet({ host, uuid, fetchImpl }) {
   if (!UUID_MINTA.test(String(uuid))) return { ok: false, miert: 'ervenytelen uuid' };
   try {
     const r = await lekerSzoveg(fetchImpl, `https://${host}/booking/addToCalendar/${uuid}/ios`);
-    const m = String(r.szoveg).match(/DTSTART:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/);
-    if (!m) return { ok: false, status: r.status, miert: 'a naptar-exportban nincs DTSTART' };
-    return { ok: true, status: r.status, startUnix: Math.round(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) / 1000) };
+    if (!(r.status >= 200 && r.status < 300)) return { ok: false, status: r.status, miert: 'http ' + r.status };
+    // pontosan EGY, UTC ("Z") DTSTART kell (TZID-s / Z nelkuli / tobb esemenyes export: nem dontunk), ervenyes datum-ido, ertelmes tartomany
+    const t = [...String(r.szoveg).matchAll(/^DTSTART:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z\r?$/gm)];
+    if (t.length !== 1) return { ok: false, status: r.status, miert: t.length ? 'a naptar-exportban tobb DTSTART van' : 'a naptar-exportban nincs (UTC) DTSTART' };
+    const [, ev, ho, nap, ora, perc, mp] = t[0];
+    const ms = Date.UTC(+ev, +ho - 1, +nap, +ora, +perc, +mp);
+    const iso = new Date(ms).toISOString();
+    if (iso.slice(0, 19).replace(/[-:]/g, '') !== `${ev}${ho}${nap}T${ora}${perc}${mp}`) return { ok: false, status: r.status, miert: 'ervenytelen DTSTART' }; // a Date.UTC a hibas erteket csendben normalizalna
+    const startUnix = Math.round(ms / 1000);
+    if (startUnix < KEZDES_MIN || startUnix > KEZDES_MAX) return { ok: false, status: r.status, miert: 'a DTSTART tartomanyon kivul' };
+    return { ok: true, status: r.status, startUnix };
   } catch (e) { return { ok: false, miert: 'lekeres-hiba: ' + String(e && e.message || e).slice(0, 80) }; }
 }
 
@@ -537,12 +545,15 @@ export async function egyeztet(db, mezok, deps) {
       const elo = await foglalasAllapot({ host: mezok.host, uuid: birtokosJelolt.kuldve_uuid, fetchImpl: deps.fetchImpl });
       nyom.birtokos_ellenorzes = { kulcs: k, birtokos_booking_id: birtokos.booking_id, birtokos_uuid: birtokosJelolt.kuldve_uuid, elo_allapot: elo.allapot, miert: elo.miert || null };
       if (elo.allapot === 'aktiv') {
-        // aktiv, de a vendeg kozben ATHELYEZHETTE masik idopontra: a kulcs a REGI kezdetet orzi, a Salonic aktualis kezdete mas -> a kulcs felszabadult (nem ket elo foglalas azonos kulccsal)
-        const kez = await foglalasKezdet({ host: mezok.host, uuid: birtokosJelolt.kuldve_uuid, fetchImpl: deps.fetchImpl });
+        // aktiv, de a vendeg kozben ATHELYEZHETTE masik idopontra: a kulcs a REGI kezdetet orzi, a Salonic aktualis kezdete mas -> a kulcs felszabadult (nem ket elo foglalas azonos kulccsal).
+        // Az aktualis kezdet: 1. a megtekintes oldal "Foglalas modositasa" linkje (nem athelyezett foglalas; az UTC-kezelestol fuggetlen), 2. ha nincs link (athelyezett): a naptar-export DTSTART-ja (UTC).
         const kulcsKezdet = Number(String(k).split('|')[2]);
-        nyom.birtokos_ellenorzes.aktualis_kezdet = { ok: kez.ok, startUnix: kez.startUnix || null, kulcs_kezdet: kulcsKezdet, miert: kez.miert || null };
-        if (!(kez.ok && Number.isFinite(kulcsKezdet) && kez.startUnix !== kulcsKezdet)) return { allapot: 'ellentmondas', kulcs: k, miert: 'a kulcsot mar mas, ELO Salonic-foglalas birtokolja (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + '): ket elo foglalas azonos kulccsal' };
-        atadas = { regi: birtokos.booking_id, ok: 'a birtokos Salonic-foglalas (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + ') a vendeg altal athelyezve (aktualis kezdet: ' + new Date(kez.startUnix * 1000).toISOString() + ') - elo ellenorzes' };
+        let kezdet = elo.startUnix || null, kezForras = kezdet ? 'oldal' : null, kez = null;
+        if (!kezdet) { kez = await foglalasKezdet({ host: mezok.host, uuid: birtokosJelolt.kuldve_uuid, fetchImpl: deps.fetchImpl }); if (kez.ok) { kezdet = kez.startUnix; kezForras = 'naptar-export'; } }
+        nyom.birtokos_ellenorzes.aktualis_kezdet = { ok: !!kezdet, startUnix: kezdet, forras: kezForras, kulcs_kezdet: kulcsKezdet, status: kez ? (kez.status || null) : null, miert: kez && !kez.ok ? kez.miert : null };
+        if (!kezdet && kez && (/lekeres-hiba/.test(kez.miert || '') || kez.status >= 500)) return { allapot: 'varakozas', kulcs: k, miert: 'a kulcs birtokosanak aktualis kezdete nem olvashato (atmeneti hiba): ' + kez.miert }; // ujraprobalas, nem dont
+        if (!kezdet || !Number.isFinite(kulcsKezdet) || kezdet === kulcsKezdet) return { allapot: 'ellentmondas', kulcs: k, miert: 'a kulcsot mar mas, ELO Salonic-foglalas birtokolja (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + '): ket elo foglalas azonos kulccsal' };
+        atadas = { regi: birtokos.booking_id, ok: 'a birtokos Salonic-foglalas (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + ') a vendeg altal athelyezve (aktualis kezdet: ' + new Date(kezdet * 1000).toISOString() + ', forras: ' + kezForras + ') - elo ellenorzes' };
       } else if (elo.allapot !== 'torolve') return { allapot: 'varakozas', kulcs: k, miert: 'a kulcs birtokosa nem ellenorizheto: ' + (elo.miert || elo.allapot) };
       else atadas = { regi: birtokos.booking_id, ok: 'a birtokos Salonic-foglalas (' + birtokosJelolt.kuldve_uuid.slice(0, 8) + ') torolve - elo ellenorzes' };
     }
