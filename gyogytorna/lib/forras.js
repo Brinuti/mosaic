@@ -199,7 +199,7 @@ export function lpcHozzarendel({ erintesek = [], most, lista, azonositoVan = fal
   const kesoiCimke = kesoi ? felold(kesoi).cimke : null;
   if (nyertes) {
     const f = felold(nyertes);
-    return { cimke: f.cimke, bizonyitek: f.bizonyitek, kampany: nyertes.kampany || null, hirdetescsoport: nyertes.hirdetescsoport || null, hirdetes: nyertes.hirdetes || null, kora_nap: Math.floor(kor(nyertes) / 86400), kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
+    return { cimke: f.cimke, bizonyitek: f.bizonyitek, kampany: nyertes.kampany || null, hirdetescsoport: nyertes.hirdetescsoport || null, hirdetes: nyertes.hirdetes || null, kora_nap: Math.floor(kor(nyertes) / 86400), ido: nyertes.ido, kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
   }
   return { cimke: azonositoVan ? 'organikus_direkt' : 'ismeretlen', bizonyitek: azonositoVan ? 'nincs_fizetett_7_napon_belul' : 'nincs_azonosito', kampany: null, hirdetescsoport: null, hirdetes: null, kora_nap: null, kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
 }

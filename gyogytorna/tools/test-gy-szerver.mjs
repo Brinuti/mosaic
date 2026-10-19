@@ -880,3 +880,68 @@ test('gad_campaignid: tartalek kampany-ID csak ha az utm_campaign nincs; brand /
   assert.deepEqual([cimkez(f, { lista: LISTA }).cimke, cimkez(f, { lista: LISTA }).bizonyitek], ['social_meta', 'fbclid_fizetett_ismeretlen']);
   assert.equal(cimkez(q(`?fbclid=ABCDEFGH12345&gclid=ABCDEFGH12345&utm_campaign=${BRAND}`), { lista: LISTA }).cimke, 'google_brand');
 });
+
+// --- GY-23: szerveres Google Ads import - click-ID a foglalashoz + admin lista -------------------------------------------------------------------------------
+import { budapestIdo } from '../lib/motor-szerver.js';
+const GADS = (env, q = '') => adminVegpont({ request: kerelem('/api/gy-admin?gads=1' + q, null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() }).then((r) => r.json());
+async function gadsFoglalas(env, { search, ms = 0, uuid, cookie = HJ_IGEN }) {
+  const r = await ping(env, ms, search, cookie);
+  const c = `${sutikBol(r)}; ${HJ_IGEN}`;
+  const j = await foglal(env, ms + 600000, c, uuid);
+  assert.equal(j.ok, true);
+  return c;
+}
+
+test('budapestIdo: Google Ads import formatum, nyari / teli eltolas', () => {
+  assert.equal(budapestIdo(Date.UTC(2026, 9, 14, 10, 0, 0) / 1000), '2026-10-14 12:00:00+02:00'); // nyari ido
+  assert.equal(budapestIdo(Date.UTC(2026, 11, 14, 10, 0, 0) / 1000), '2026-12-14 11:00:00+01:00'); // teli ido
+  assert.equal(budapestIdo(null), null);
+});
+
+test('GY-23: a 7 napos last paid click Google click-ID-ja a foglalashoz kerul (tipus + kattintas ideje + munkamenet + szabalyverzio); az admin lista CSAK igazolt, teszt nelkuli, Google-forrasu allapotfelmeres', async () => {
+  const env = await lpcKornyezet();
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gbraid=GBRAIDTESZT12345`, uuid: 'mb_gads00000000000001' });
+  let l = await GADS(env);
+  assert.equal(l.db, 0); // meg nincs Salonic-igazolas -> nem kerul a listara
+  const sor = await env.GY_DB.prepare('SELECT gads_katt_tipus, gads_katt_ertek, gads_katt_ido, gads_szabaly, ertek FROM gy_foglalas').first();
+  assert.deepEqual([sor.gads_katt_tipus, sor.gads_katt_ertek, sor.gads_katt_ido, sor.gads_szabaly, sor.ertek], ['gbraid', 'GBRAIDTESZT12345', Math.floor(MOST / 1000), 'gads1+lpc1', 23500]);
+  // Salonic-igazolas utan a listara kerul
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  const ig = await igazolasVegpont({ request: zapKerelem(be), env, deps: elo(deps(), { [SID]: { startUnix: START } }) });
+  assert.equal((await ig.json()).igazolt, true);
+  l = await GADS(env);
+  assert.equal(l.db, 1);
+  const x = l.aktiv[0];
+  assert.deepEqual([x.click_id, x.click_tipus, x.ertek, x.penznem, x.allapot], ['GBRAIDTESZT12345', 'gbraid', 23500, 'HUF', 'aktiv']);
+  assert.match(x.konverzio_ido, /^2026-10-14 \d\d:\d\d:\d\d\+02:00$/);
+  assert.match(x.click_ido, /^2026-10-14 \d\d:\d\d:\d\d\+02:00$/);
+  assert.equal(x.order_id, await tranzakcioId('mb_gads00000000000001', KULCS)); // ugyanaz, mint a dataLayer tranzakcio_id (deduplikalashoz)
+  assert.equal(x.forras.szabaly, 'gads1+lpc1');
+  assert.match(x.forras.munkamenet, /^[0-9a-f]{16}$/);
+  const mind = JSON.stringify(l);
+  for (const tilos of ['nev', 'email', 'telefon', 'kezeles', 'salonic_id', SID, 'mb_gads']) assert.equal(mind.includes(tilos), false, tilos);
+  // lemondas: a lista lemondott agaban jelenik meg (kesobbi kiigazitashoz)
+  await igazolasVegpont({ request: zapKerelem({ esemeny: 'lemondas', salonic_id: SID }), env, deps: elo(deps(), { [SID]: { startUnix: START, torolve: true } }) });
+  l = await GADS(env);
+  assert.deepEqual([l.aktiv.length, l.lemondott.length, l.lemondott[0].allapot], [0, 1, 'lemondott']);
+  assert.match(l.lemondott[0].lemondva_ido, /^2026-10-14 /);
+});
+
+test('GY-23: hozzajarulas nelkul / nem Google erintes / organikus nincs click-ID; 60 nap utan a click-ID torlodik; teszt foglalas nincs a listan', async () => {
+  const env = await lpcKornyezet();
+  const NEM = `gy_suti=v1-s0-m0-t${ts()}`;
+  // hozzajarulas nelkul: nincs mentes
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345`, uuid: 'mb_gads00000000000002', cookie: NEM });
+  assert.equal((await env.GY_DB.prepare("SELECT gads_katt_ertek AS k FROM gy_foglalas WHERE uuid = 'mb_gads00000000000002'").first()).k, null);
+  // organikus / direkt visszateres (nincs 7 napos fizetett): nincs click-ID
+  const env2 = await lpcKornyezet();
+  await foglal(env2, 5000, HJ_IGEN, 'mb_gads00000000000003');
+  assert.equal((await env2.GY_DB.prepare("SELECT gads_katt_ertek AS k FROM gy_foglalas WHERE uuid = 'mb_gads00000000000003'").first()).k, null);
+  // 60 nap utan torles (a foglalas-rekord marad, a click-ID nem)
+  const env3 = await lpcKornyezet();
+  await gadsFoglalas(env3, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ABCDEFGH12345`, uuid: 'mb_gads00000000000004' });
+  assert.equal((await env3.GY_DB.prepare('SELECT gads_katt_ertek AS k FROM gy_foglalas').first()).k, 'ABCDEFGH12345');
+  await takaritTeszt(env3, MOST / 1000 + 61 * 86400);
+  const t = await env3.GY_DB.prepare('SELECT gads_katt_ertek AS k, gads_katt_tipus AS t, cimke FROM gy_foglalas').first();
+  assert.deepEqual([t.k, t.t, t.cimke], [null, null, 'google_brand']);
+});
