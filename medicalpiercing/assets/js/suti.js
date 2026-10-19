@@ -124,6 +124,7 @@
   window.gtag('set', 'ads_data_redaction', true);
   if (dontes) window.gtag('consent', 'update', jelek(dontes));
 
+  var TIKTOK_KODOS_SCHEDULE = false; // ATALLASKOR true (egyszerre a TikTok URL-szabaly kikapcsolasaval + mp_beallitas.tiktok_schedule=be); Feri 2026-10-19 19:50 "mehet es A"
   var tiktokFoglalas = null; // a koszonooldali TikTok SubmitForm adatai (lent: tiktokSubmitForm)
   // Igazolhato foglalas (Google Ads "Időpontfoglalás - igazolt", orderId = foglalasi kulcs): a kulcs ugyanaz, mint a szerveren
   // (lib/meres/meres.js foglalasKulcs: placeId|employeeId|startUnix), igy a szerver a Salonic-igazolas alapjan
@@ -156,6 +157,8 @@
       if (window.ttq && typeof window.ttq.track === 'function' && window.ttq._i) {
         var tul = tiktokFoglalas.ertek ? { value: tiktokFoglalas.ertek, currency: 'HUF' } : {};
         try { window.ttq.track('SubmitForm', tul, { event_id: tiktokFoglalas.id }); } catch (e) { /* */ }
+        // Elo konverzio (Feri 2026-10-19): kodos Schedule azonos event_id-val (a szerver is kuldi) -> dedup; az URL-szabaly ki
+        if (TIKTOK_KODOS_SCHEDULE) { try { window.ttq.track('Schedule', tul, { event_id: tiktokFoglalas.id }); } catch (e) { /* */ } }
         tiktokFoglalas = null;
       } else if (++probak < 40) setTimeout(kuld, 250);
     };
