@@ -19,6 +19,12 @@ nem kapcsol be elo konverziot; nem valtoztat a foglalasi folyamaton; nem nyul fu
 3. Kornyezet (Cloudflare Pages `mosaic`, Production): `MERES_ELOSZTO=1` (mar elo), `GOOGLE_ARNYEK_WEBHOOK_URL` (a relay-Zap; a szaraz valasz `kuldes_feltetelei.webhook_beallitva` mutatja igen/nem),
    a visszavonashoz `GOOGLE_KORREKCIO_WEBHOOK_URL` (a korrekcio-Zap a meresi oldal dolga; az `claude/mosaic-meres-eletut` ag `googleKorrekcioKerelem`-je meg nincs mergelve).
 4. `EGYEZTETES_KULCS` (a meresi oldale): **CSAK** az `x-egyeztetes-kulcs` fejlecben. A `?kulcs=` query-kulcs a ket uj muvelet-nel NEM fogadhato el (404; a query a naplokba / elozmenyekbe kerulhet; a `qa=nap` is igy van). A kulcsot sehova ne irjad ki (a parancsok `$KULCS` kornyezeti valtozot hasznalnak).
+4b. **Celhoz kotott, lejarato proba-kulcs** (DECISION #199 / #200, 2026-10-19; `netlify/lib/meres/proba-kulcs.js`): a fo kulcs a Zapier Storage-ban van, a fejleszto nem kapja meg; a fejleszto sajat, veletlen kulcsot general, amelynek CSAK a SHA-256-ja van a kodban (`wrangler.toml` [vars]: `GOOGLE_PROBA_KULCS_HASH`, `GOOGLE_PROBA_KULCS_LEJAR`). Tulajdonsagai:
+   - KIZAROLAG `POST /api/meres-admin` `{muvelet: 'google_proba' | 'google_proba_visszavon'}`-ra jo; minden mas muvelet, minden GET, a `?kulcs=` query, a `?qa=nap` ag: 404 / nincs belepes (tesztelve: `node --test tools/test-proba-kulcs.mjs`);
+   - lejar: `GOOGLE_PROBA_KULCS_LEJAR` utan, de legkesobb a kodban rogzitett plafonig (2026-10-21 00:00Z, <= 48 ora a kiadastol) – egy meghosszabbitott valtozo sem teheti tartossa;
+   - minden hasznalata naplozva a D1 `proba_kulcs_naplo` tablaba (ido, muvelet, kuld, eles; kulcs / gclid / vendegadat nelkul), a muvelet ELOTT: naplo nelkul nincs muvelet;
+   - a kuldesi kapuk (kuld:true + megerosit + webhook-env + MERES_ELOSZTO=1 + iras-kapcsolo; a RETRACTION elesben csak eles:true + GOOGLE_KORREKCIO_ELES=1) a `google-proba.js`-ben valtozatlanok.
+   A futas utan a ket `wrangler.toml` sor torlendo (kulon, kis PR; a lejarat addig is inertte teszi), a kulcs fajlja a fejleszto munkafajljabol torlendo.
 5. Az iras-veszkapcsolo be van kapcsolva (`GET /api/meres-admin?kapcsolok=1`: nincs `iras` ki-sor); kulonben a kuldes 503.
 
 ## A. Bongeszos E2E, 4 uzletag (tesztfoglalas + lemondas)
