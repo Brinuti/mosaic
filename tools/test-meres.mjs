@@ -116,16 +116,23 @@ test('googleKattintas: a legfrissebb a gclid / wbraid / gbraid kozul; metaFbc: s
 });
 
 // --- hozzajarulas (SZ-38) ------------------------------------------------------------------------------------------------------------------
-test('hozzajarulas SZ-38: Meta / TikTok hozzajarulas nelkul is kuld (azonositokkal), Google hozzajarulas nelkul hash nelkul + valos DENIED jel, GA4 sosem kap hash-t', () => {
+test('hozzajarulas (DECISION #202, Feri 2026-10-18: nincs sutisav): MINDEN platform elfogadott hozzajarulassal kapja az adatot - GRANTED, elutasitott / dontes nelkuli allapotban is; MERES_HOZZAJARULAS_VALOS=1 = a regi (SZ-38 / SZ-16), valos-jel szerinti szabaly', () => {
   const nincs = hozzajarulasTisztit({ ana: false, adv: false });
-  assert.deepEqual([platformSzabaly('meta', nincs).kuldheto, platformSzabaly('meta', nincs).felhasznaloi_adat, platformSzabaly('tiktok', nincs).felhasznaloi_adat], [true, true, true]);
-  assert.deepEqual([platformSzabaly('google', nincs).felhasznaloi_adat, platformSzabaly('google', nincs).jel.ad_user_data], [false, 'DENIED']);
-  assert.equal(platformSzabaly('ga4', hozzajarulasTisztit({ ana: true, adv: true })).felhasznaloi_adat, false);
   const igen = hozzajarulasTisztit({ ana: true, adv: true, fun: true });
-  assert.deepEqual([platformSzabaly('google', igen).felhasznaloi_adat, platformSzabaly('google', igen).jel.ad_personalization], [true, 'GRANTED']);
   const dontesNelkul = hozzajarulasTisztit(null);
-  assert.equal(platformSzabaly('google', dontesNelkul).jel.ad_user_data, 'UNSPECIFIED'); assert.equal(dontesNelkul.dontes, false);
-  assert.equal(platformSzabaly('x', igen).kuldheto, false);
+  for (const p of ['meta', 'tiktok', 'google', 'ga4']) for (const h of [nincs, igen, dontesNelkul]) {
+    const s = platformSzabaly(p, h);
+    assert.deepEqual([s.kuldheto, s.felhasznaloi_adat, s.jel.ad_user_data, s.jel.ad_personalization], [true, true, 'GRANTED', 'GRANTED'], p);
+  }
+  assert.equal(dontesNelkul.dontes, false);
+  assert.equal(platformSzabaly('x', igen).kuldheto, false); assert.equal(platformSzabaly('x', igen, { MERES_HOZZAJARULAS_VALOS: '1' }).kuldheto, false);
+  // visszagorgetes env-bol: a regi, valos-jel szerinti szabaly
+  const VALOS = { MERES_HOZZAJARULAS_VALOS: '1' };
+  assert.deepEqual([platformSzabaly('meta', nincs, VALOS).kuldheto, platformSzabaly('meta', nincs, VALOS).felhasznaloi_adat, platformSzabaly('tiktok', nincs, VALOS).felhasznaloi_adat], [true, true, true]);
+  assert.deepEqual([platformSzabaly('google', nincs, VALOS).felhasznaloi_adat, platformSzabaly('google', nincs, VALOS).jel.ad_user_data], [false, 'DENIED']);
+  assert.equal(platformSzabaly('ga4', igen, VALOS).felhasznaloi_adat, false);
+  assert.deepEqual([platformSzabaly('google', igen, VALOS).felhasznaloi_adat, platformSzabaly('google', igen, VALOS).jel.ad_personalization], [true, 'GRANTED']);
+  assert.equal(platformSzabaly('google', dontesNelkul, VALOS).jel.ad_user_data, 'UNSPECIFIED');
 });
 
 // --- platform-kerelmek ---------------------------------------------------------------------------------------------------------------------
@@ -191,15 +198,18 @@ test('Google kerelem (Zapier-webhook): csak alapesemeny, csak az "ARNYEK" masodl
   assert.match(k.url, /zapier-webhook/); assert.ok(!/hooks\.zapier\.com/.test(k.url), 'a webhook-cim titok: nem kerul a naploba');
   assert.deepEqual([c.conversion_action_id, c.wbraid, c.gclid, c.conversion_date_time, c.value, c.currency, c.order_id], ['7825199989', 'CoMKCQ_wbraid_TESZT_0123', undefined, googleIdo(ctx.fk.ido), 26900, 'HUF', `FoglalasElso:${BID}`]);
   assert.equal(c.order_id, alap.esemeny_id, 'order_id = event_id');
-  assert.equal(c.ad_user_data, 'GRANTED');
-  assert.deepEqual(Object.keys(c).sort(), ['ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'order_id', 'value', 'wbraid'], 'csak a Zap mezoi: nincs hash, ad_personalization, event_id');
+  assert.deepEqual([c.ad_user_data, c.ad_personalization], ['GRANTED', 'GRANTED']);
+  assert.deepEqual(Object.keys(c).sort(), ['ad_personalization', 'ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'order_id', 'value', 'wbraid'], 'a Zap mezoi + ad_personalization: nincs hash (PR-B hozza), event_id');
   assert.ok(!('conversions' in c) && !('validateOnly' in c) && !('userIdentifiers' in c), 'nincs kozvetlen Google Ads API-keres: az access token 1 ora utan lejarna');
   assert.match(googleKerelem(ernyo, ctx, {}).kihagyva, /alapesemeny/);
   assert.match(googleKerelem(esemenyek(await ctxEpit({ jelleg: 'visszajaro' }).then((x) => x.fk))[0], ctx, {}).kihagyva, /alapesemeny/);
   const nincsHozz = await ctxEpit({}, { ana: false, adv: false });
   const k2 = googleKerelem(alap, nincsHozz, {}).body;
-  assert.deepEqual([k2.hashed_email, k2.hashed_phone, k2.ad_user_data], [undefined, undefined, 'DENIED']);
-  assert.equal(googleKerelem(alap, await ctxEpit({}, {}), {}).body.ad_user_data, 'DENIED', 'dontes nelkul nincs hozzajarulas: DENIED (a Zap csak GRANTED / DENIED-et kap)');
+  assert.deepEqual([k2.hashed_email, k2.hashed_phone, k2.ad_user_data, k2.ad_personalization], [undefined, undefined, 'GRANTED', 'GRANTED'], 'DECISION #202: elutasitott allapotban is GRANTED (nincs sutisav)');
+  assert.deepEqual([googleKerelem(alap, await ctxEpit({}, {}), {}).body.ad_user_data, googleKerelem(alap, await ctxEpit({}, {}), {}).body.ad_personalization], ['GRANTED', 'GRANTED'], 'dontes nelkul is GRANTED (DECISION #202)');
+  const valosCtx = (hozz) => ({ ...nincsHozz, hozz: { ...nincsHozz.hozz, google: platformSzabaly('google', hozzajarulasTisztit(hozz), { MERES_HOZZAJARULAS_VALOS: '1' }) } });
+  assert.equal(googleKerelem(alap, valosCtx({ ana: false, adv: false }), {}).body.ad_user_data, 'DENIED', 'MERES_HOZZAJARULAS_VALOS=1: a regi szabaly (elutasitva = DENIED)');
+  assert.equal(googleKerelem(alap, valosCtx(null), {}).body.ad_user_data, 'DENIED', 'MERES_HOZZAJARULAS_VALOS=1: dontes nelkul DENIED (a Zap csak GRANTED / DENIED-et kap)');
   assert.match(googleKerelem(alap, await ctxEpit({}, undefined, { fbp: ctx.erk.fbp }), {}).kihagyva, /kattintasazonosito/, 'kattintasazonosito nelkul nincs feltoltes');
   // minden uzletag / alapesemeny az ARNYEK akciora mutat, soha az elo (elsodleges) akciora
   for (const [uzletag, akciok] of Object.entries(ARNYEK.google.akciok)) for (const nev of Object.keys(akciok)) {
@@ -361,13 +371,15 @@ test('erkezesMent: ervenytelen source_id / uzletag elutasitva; a bongeszo ujraku
   assert.deepEqual([b.ok, b.frissitve], [true, false]);
   assert.equal(maszkIp('203.0.113.7'), '203.0.113.xxx'); assert.equal(maszkIp('2001:db8:1:2::1'), '2001:db8:1:xxxx'); assert.equal(maszkIp(''), null);
 });
-test('elosztas: hozzajarulas nelkul - Meta / TikTok megy (azonositokkal), Google hash nelkul DENIED jellel, a naploban a hozzajarulasi allapot latszik', async () => {
-  const db = d1(); const { f, hivasok } = hamis();
-  await erkezesMent(db, erkBe({ hozz: { ana: false, adv: false, fun: false } }), NOW);
-  await elosztas(db, FK(), { env: TELJES_ENV, fetchImpl: f, now: () => NOW });
-  const m = hivasok.find((h) => h.kulcs === 'meta').body.data[0].user_data; assert.ok(m.em && m.ph);
-  const g = hivasok.find((h) => h.kulcs === 'google').body; assert.deepEqual([g.hashed_email, g.hashed_phone, g.ad_user_data], [undefined, undefined, 'DENIED']);
-  const h = (await naploLeker(db, BID)).kuldesek.find((k) => k.platform === 'google').hozzajarulas; assert.equal(h.allapot.adv, false); assert.equal(h.szabaly.jel.ad_user_data, 'DENIED');
+test('elosztas: hozzajarulas nelkul (DECISION #202: nincs sutisav) - minden platform elfogadott hozzajarulassal: Google GRANTED, a naploban a ROGZITETT allapot (adv:false) es a szabaly is latszik; MERES_HOZZAJARULAS_VALOS=1 = a regi szabaly (Google DENIED)', async () => {
+  for (const [env, vart] of [[TELJES_ENV, 'GRANTED'], [{ ...TELJES_ENV, MERES_HOZZAJARULAS_VALOS: '1' }, 'DENIED']]) {
+    const db = d1(); const { f, hivasok } = hamis();
+    await erkezesMent(db, erkBe({ hozz: { ana: false, adv: false, fun: false } }), NOW);
+    await elosztas(db, FK(), { env, fetchImpl: f, now: () => NOW });
+    const m = hivasok.find((h) => h.kulcs === 'meta').body.data[0].user_data; assert.ok(m.em && m.ph);
+    const g = hivasok.find((h) => h.kulcs === 'google').body; assert.deepEqual([g.hashed_email, g.hashed_phone, g.ad_user_data, g.ad_personalization], [undefined, undefined, vart, vart], vart);
+    const h = (await naploLeker(db, BID)).kuldesek.find((k) => k.platform === 'google').hozzajarulas; assert.equal(h.allapot.adv, false); assert.equal(h.szabaly.jel.ad_user_data, vart);
+  }
 });
 
 // --- vegponttol vegpontig (HTTP + parositas + elosztas) -------------------------------------------------------------------------------------------

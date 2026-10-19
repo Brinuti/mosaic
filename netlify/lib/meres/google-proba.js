@@ -6,7 +6,7 @@
 //                             ALAPBOL SZARAZ (a terv: order_id + akcio + idopont, a meresi oldal a Google Ads API-n at is vegrehajthatja). kuld:true + megerosit, DE eles:true + GOOGLE_KORREKCIO_ELES=1 NELKUL is csak a dry-run SOR
 //                             kerul a D1-be (kihagyva / dry_run), a korrekcio-Zapra NEM megy POST; eles POST KIZAROLAG eles:true ES GOOGLE_KORREKCIO_ELES=1 mellett (+ megerosit + GOOGLE_KORREKCIO_WEBHOOK_URL).
 // VEDELMEK (fail-closed, a kodban): csak a Google ARNYEK fiok (6088874770) es a 8 felsorolt ARNYEK akcio (HeadSpa kimarad: mar EXCELLENT; elo akcio SOHA); a torzs mezoi egy zart lista (nincs vendegadat, nincs hash-elt azonosito);
-// a gclid CSAK a kuldendo torzsben van, SEHOL mashol (valasz, naplo, D1-kerelem): ott "gclid#1"; a Zap nyers valasz-torzse SEHOL nem tarolodik (csak http-status + a Zap status / id mezoje, biztonsagos karakterekkel); ad_user_data MINDIG DENIED (a probanak nincs vendegi hozzajarulasa: GRANTED-et nem allitunk);
+// a gclid CSAK a kuldendo torzsben van, SEHOL mashol (valasz, naplo, D1-kerelem): ott "gclid#1"; a Zap nyers valasz-torzse SEHOL nem tarolodik (csak http-status + a Zap status / id mezoje, biztonsagos karakterekkel); ad_user_data / ad_personalization MINDIG GRANTED (DECISION #202 javitas, Feri 2026-10-18: nincs sutisav, elfogadott hozzajarulas; a proba ugyanazt a jelet kuldi, mint a valos feltoltes: a fix DENIED miatt lett a HeadSpa-feltoltesekbol 0 konverzio);
 // minden proba-sor forras = 'google_proba', source_id = 'gp_<futas>' (a QA-nap / T2 / lampa / egyeztetosor szamlalok kizarjak), order_id = 'Proba:<futas>:<akcio>' (egyedi).
 import { ARNYEK, ELO_CELOK, googleIdo, kuldes } from './platformok.js';
 import { kapcsolokOlvas, kikapcsolva, meresSema } from './elosztas.js';
@@ -22,7 +22,7 @@ const GCLID_MINTA = /^[A-Za-z0-9_-]{20,200}$/;
 const ORDER_MINTA = /^Proba:[0-9a-f]{8}:\d{10}$/;
 const FUTAS_MINTA = /^[0-9a-f]{8}$/;
 const IDO_MINTA = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/;
-const ENGEDETT_MEZOK = Object.freeze(['conversion_action_id', 'gclid', 'conversion_date_time', 'value', 'currency', 'order_id', 'ad_user_data']);
+const ENGEDETT_MEZOK = Object.freeze(['conversion_action_id', 'gclid', 'conversion_date_time', 'value', 'currency', 'order_id', 'ad_user_data', 'ad_personalization']);
 // a Zapier-webhook cim-formatuma (platformok.js ZAPIER_HOOK_RE; a loopback csak a tesztekhez)
 const ZAPIER_HOOK_RE = /^(https:\/\/hooks\.zapier\.com\/hooks\/catch\/\d+\/[A-Za-z0-9_-]+\/?|http:\/\/127\.0\.0\.1:\d+\/.*)$/;
 
@@ -76,10 +76,10 @@ export async function probaGclid(db, { sorszam = 1, nowSec }) {
 
 /**
  * Egy probafeltoltes kerese (a Zap mezoi: platformok.js googleKerelem torzse). -> { platform, platform_nev, url, method, fejlec_nevek, cel, body (KULDENDO, a gclid-del), naplo_body (gclid#1) }
- * ad_user_data MINDIG 'DENIED' (nincs vendegi hozzajarulas; a valos feltoltesek is DENIED-del mentek: dontes nelkul).
+ * ad_user_data / ad_personalization MINDIG 'GRANTED' (DECISION #202 javitas: nincs sutisav, elfogadott hozzajarulas; ugyanaz a jel, mint a valos feltolteseknel; vendegadat / hash-elt azonosito tovabbra sincs).
  */
 export function probaKerelem(akcio, { gclid, futasId, nowSec }) {
-  const body = { conversion_action_id: akcio.id, gclid, conversion_date_time: googleIdo(nowSec - 120), value: PROBA_ERTEK, currency: 'HUF', order_id: `Proba:${futasId}:${akcio.id}`, ad_user_data: 'DENIED' };
+  const body = { conversion_action_id: akcio.id, gclid, conversion_date_time: googleIdo(nowSec - 120), value: PROBA_ERTEK, currency: 'HUF', order_id: `Proba:${futasId}:${akcio.id}`, ad_user_data: 'GRANTED', ad_personalization: 'GRANTED' };
   return { platform: 'google', platform_nev: `ARNYEK-${akcio.id}`, url: 'zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)', method: 'POST', fejlec_nevek: ['content-type'],
     cel: { customer_id: ARNYEK.google.customerId, conversion_action_id: akcio.id, athidalas: 'zapier-webhook', proba: true }, body, naplo_body: { ...body, gclid: 'gclid#1' }, akcio };
 }
@@ -99,12 +99,12 @@ export function probaEllenorzes(k) {
   if (!IDO_MINTA.test(String(b.conversion_date_time))) return 'ervenytelen conversion_date_time';
   if (b.value !== PROBA_ERTEK || b.currency !== 'HUF') return 'ertek / penznem nem a proba-ertek';
   if (!ORDER_MINTA.test(String(b.order_id)) || !String(b.order_id).endsWith(`:${id}`)) return 'order_id nem proba-azonosito';
-  if (b.ad_user_data !== 'DENIED') return 'ad_user_data csak DENIED lehet (a probanak nincs vendegi hozzajarulasa)';
+  if (b.ad_user_data !== 'GRANTED' || b.ad_personalization !== 'GRANTED') return 'ad_user_data / ad_personalization csak GRANTED lehet (DECISION #202: elfogadott hozzajarulas; a proba nem kuld vendegadatot)';
   return null;
 }
 
 const SOR_BESZUR = "INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, indok, ertek, penznem, hozzajarulas, kerelem, http_status, platform_valasz, kuldo, probalkozas, letrehozva, frissitve, forras, attr_minoseg, attr_jelek, salonic_uuid, ertek_minoseg) VALUES (?1, ?2, ?3, 'google', ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?17, 'google_proba', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING";
-const HOZZAJARULAS_JSON = JSON.stringify({ proba: true, ad_user_data: 'DENIED', megjegyzes: 'proba: nincs vendegi hozzajarulas' });
+const HOZZAJARULAS_JSON = JSON.stringify({ proba: true, ad_user_data: 'GRANTED', ad_personalization: 'GRANTED', megjegyzes: 'proba: DECISION #202 elfogadott hozzajarulas (nincs sutisav); vendegadat nincs' });
 
 // A 24 oras plafon a tenyleges KIMENO KISERLETEKET szamolja (elkuldve / hiba / folyamatban); a kihagyva sorok (veszkapcsolo, dry-run) nem POST-oltak, nem szamitanak.
 // Az uj sorok szama pontos (tervDb = a meg NEM letezo order_id-k): az idempotens ujrafuttatas / az ujraprobalas (UPDATE) nem uj sor, igy a plafon nem 429-ezi.
@@ -147,7 +147,7 @@ export async function googleProba(db, env, o, { now = Date.now(), fetchImpl = fe
   if (!g) return valasz(409, { ok: false, miert: 'nincs hasznalhato valodi HeadSpa gclid a D1-ben (elkuldott Google-sor, 80 napon belul)' });
   const gclidHash8 = await sha8(g.gclid);
   const kerelmek = v.akciok.map((a) => probaKerelem(a, { gclid: g.gclid, futasId, nowSec }));
-  const terv = kerelmek.map((k, i) => ({ sorszam: i + 1, uzletag: k.akcio.uzletag, esemeny: k.akcio.esemeny, cimke: k.akcio.cimke, conversion_action_id: k.akcio.id, order_id: k.body.order_id, conversion_date_time: k.body.conversion_date_time, value: k.body.value, currency: k.body.currency, ad_user_data: k.body.ad_user_data, body_mezok: Object.keys(k.body) }));
+  const terv = kerelmek.map((k, i) => ({ sorszam: i + 1, uzletag: k.akcio.uzletag, esemeny: k.akcio.esemeny, cimke: k.akcio.cimke, conversion_action_id: k.akcio.id, order_id: k.body.order_id, conversion_date_time: k.body.conversion_date_time, value: k.body.value, currency: k.body.currency, ad_user_data: k.body.ad_user_data, ad_personalization: k.body.ad_personalization, body_mezok: Object.keys(k.body) }));
   const alap = { ok: true, futas_id: futasId, source_id: `gp_${futasId}`, ugyfel: ARNYEK.google.customerId, gclid: 'gclid#1', gclid_hash8: gclidHash8, gclid_hossz: g.gclid.length, gclid_forras: { meres_kuldes_id: g.sor_id, esemeny: g.esemeny_nev, kor_nap: g.kor_nap }, kuldes_feltetelei: { meres_elosztas_be: String(env.MERES_ELOSZTO) === '1', webhook_beallitva: !!env.GOOGLE_ARNYEK_WEBHOOK_URL && ZAPIER_HOOK_RE.test(String(env.GOOGLE_ARNYEK_WEBHOOK_URL).trim()) }, terv };
   if (o.kuld !== true) return valasz(200, { ...alap, mod: 'szaraz', kuldes: 'nem tortent (kuld:true + megerosit kell)', visszavonas: `google_proba_visszavon {futas_id:"${futasId}"}` });
 

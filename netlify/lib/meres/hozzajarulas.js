@@ -1,6 +1,8 @@
-// QA-2 hozzajarulas (SZ-38, DECISION-LOG #96 / SZ-16): Meta es TikTok felé hozzájárulás nélkül is küldünk (a hozzájárulási állapot a naplóban látszik);
-// Google Ads es GA4 felé a hozzájárulásjel MINDIG a valóság (GRANTED / DENIED, döntés nélkül: UNSPECIFIED / nem küldjük), és a Google felé hozzájárulás nélkül nincs hash-elt azonosító.
-// A hozzájárulás a suti.js mh_cc objektumából jön: { ana, adv, fun, dontes? } (true / false / undefined).
+// QA-2 hozzajarulas (SZ-38, DECISION-LOG #96 / SZ-16): a hozzájárulási állapot (suti.js mh_cc: { ana, adv, fun, dontes? }) a naplóban mindig látszik.
+// DECISION #202 javitas (Feri, 2026-10-18: NINCS sutisav, minden platform ELFOGADOTT hozzajarulassal kapja az adatot; a #167 6273378563 szerint, 2026-10-19):
+//   MINDEN platformra (Meta, TikTok, Google, GA4) felhasznaloi_adat = true es ad_user_data = ad_personalization = GRANTED, a rogzitett dontestol FUGGETLENUL (dontes nelkul is).
+//   A korabbi szabaly (Google / GA4: a valos jel, dontes nelkul DENIED, hash nelkul) a HeadSpa Google-feltoltesek 0 konverzios eredmenyet okozta (fix DENIED).
+//   Visszagorgetes env-bol, kodvaltoztatas nelkul: MERES_HOZZAJARULAS_VALOS=1 -> a regi, valos-jel szerinti szabaly (valosSzabaly).
 
 export function hozzajarulasTisztit(h) {
   if (!h || typeof h !== 'object') return { ana: null, adv: null, fun: null, dontes: false };
@@ -10,8 +12,8 @@ export function hozzajarulasTisztit(h) {
 }
 const jel = (v, dontes) => (v === true ? 'GRANTED' : v === false ? 'DENIED' : dontes ? 'DENIED' : 'UNSPECIFIED');
 
-/** -> { kuldheto, felhasznaloi_adat, fogyasztoi_jel, megjegyzes } az adott platformra. */
-export function platformSzabaly(platform, hozz) {
+/** A REGI szabaly (SZ-38 / SZ-16): Meta / TikTok mindig kap azonositot, Google / GA4 a valos jelet (dontes nelkul UNSPECIFIED / DENIED), Google hash-t csak adv-hozzajarulassal, GA4 sosem. */
+export function valosSzabaly(platform, hozz) {
   const h = hozzajarulasTisztit(hozz);
   const adJel = jel(h.adv, h.dontes);
   switch (platform) {
@@ -23,4 +25,11 @@ export function platformSzabaly(platform, hozz) {
       return { kuldheto: true, felhasznaloi_adat: false, jel: { ad_user_data: adJel, ad_personalization: adJel }, megjegyzes: 'valos jel (' + adJel + '); a GA4 felé nincs hash-elt azonosito' };
     default: return { kuldheto: false, felhasznaloi_adat: false, jel: {}, megjegyzes: 'ismeretlen platform' };
   }
+}
+
+/** -> { kuldheto, felhasznaloi_adat, jel: { ad_user_data, ad_personalization }, megjegyzes } az adott platformra (DECISION #202: elfogadott hozzajarulas minden platformra; env.MERES_HOZZAJARULAS_VALOS=1 = regi szabaly). */
+export function platformSzabaly(platform, hozz, env = {}) {
+  const valos = valosSzabaly(platform, hozz);
+  if (!valos.kuldheto || String((env || {}).MERES_HOZZAJARULAS_VALOS) === '1') return valos;
+  return { kuldheto: true, felhasznaloi_adat: true, jel: { ad_user_data: 'GRANTED', ad_personalization: 'GRANTED' }, megjegyzes: 'DECISION #202: nincs sutisav, elfogadott hozzajarulas (ad_user_data / ad_personalization = GRANTED, a rogzitett dontestol fuggetlenul)' };
 }

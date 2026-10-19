@@ -109,8 +109,8 @@ test('A2 SZARAZ alapertelmezes: halozat es iras nelkul; a gclid szerveroldalon v
   assert.deepEqual(r.body.terv.map((t) => t.conversion_action_id), ELVART_8);
   assert.equal(new Set(r.body.terv.map((t) => t.order_id)).size, 8, 'order_id egyedi');
   for (const t of r.body.terv) {
-    assert.match(t.order_id, /^Proba:[0-9a-f]{8}:\d{10}$/); assert.equal(t.ad_user_data, 'DENIED'); assert.equal(t.value, 1); assert.equal(t.currency, 'HUF');
-    assert.deepEqual([...t.body_mezok].sort(), ['ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'gclid', 'order_id', 'value']);
+    assert.match(t.order_id, /^Proba:[0-9a-f]{8}:\d{10}$/); assert.equal(t.ad_user_data, 'GRANTED'); assert.equal(t.ad_personalization, 'GRANTED'); assert.equal(t.value, 1); assert.equal(t.currency, 'HUF');
+    assert.deepEqual([...t.body_mezok].sort(), ['ad_personalization', 'ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'gclid', 'order_id', 'value']);
     assert.match(t.conversion_date_time, /^2026-10-18 13:5\d:\d\d\+02:00$/, 'a kuldes elott 2 perccel (Budapest), nem a jovoben');
   }
   assert.match(r.body.futas_id, /^[0-9a-f]{8}$/); assert.equal(r.body.ugyfel, '6088874770');
@@ -153,8 +153,8 @@ test('A5 KULDES: 8 POST a relay-Zapra, zart torzs, a D1-sorok forras=google_prob
   assert.deepEqual(net.hivasok.map((h) => h.body.conversion_action_id), ELVART_8);
   for (const h of net.hivasok) {
     assert.equal(h.url, WEBHOOK);
-    assert.deepEqual(Object.keys(h.body).sort(), ['ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'gclid', 'order_id', 'value']);
-    assert.equal(h.body.gclid, GCL_FOGL, 'a kuldott torzsben a valodi gclid van'); assert.equal(h.body.ad_user_data, 'DENIED'); assert.equal(h.body.value, 1);
+    assert.deepEqual(Object.keys(h.body).sort(), ['ad_personalization', 'ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'gclid', 'order_id', 'value']);
+    assert.equal(h.body.gclid, GCL_FOGL, 'a kuldott torzsben a valodi gclid van'); assert.equal(h.body.ad_user_data, 'GRANTED'); assert.equal(h.body.ad_personalization, 'GRANTED'); assert.equal(h.body.value, 1);
     assert.equal(h.body.order_id, `Proba:0a1b2c3d:${h.body.conversion_action_id}`);
     assert.ok(!/@|\+36|email|telefon|nev/i.test(JSON.stringify(h.body)), 'nincs vendegadat');
   }
@@ -194,7 +194,7 @@ test('A7 veszkapcsolo: platform:google / uzletag:pmu / mind kikapcsolva -> az er
   const n3 = halozat(); await w3.post(kuld(), { net: n3 }); assert.equal(n3.hivasok.length, 0);
 });
 
-test('A8 VEDELMEK: a HeadSpa / elo / ismeretlen akcio nem kerheto; a manipulalt kerelmet a probaEllenorzes fail-closed megfogja (idegen mezo, vendegadat, GRANTED, ertek, fiok, order_id, gclid)', async () => {
+test('A8 VEDELMEK: a HeadSpa / elo / ismeretlen akcio nem kerheto; a manipulalt kerelmet a probaEllenorzes fail-closed megfogja (idegen mezo, vendegadat, DENIED jel, ertek, fiok, order_id, gclid)', async () => {
   const w = await vilag(); const net = halozat();
   for (const rossz of [HEADSPA_ID[0], HEADSPA_ID[1], ...ELO_CELOK.google_primary, '123', '']) {
     const r = await w.post({ muvelet: 'google_proba', akciok: [rossz] }, { net }); assert.equal(r.status, 400, rossz); assert.match(r.body.miert, /probalhato/);
@@ -214,7 +214,9 @@ test('A8 VEDELMEK: a HeadSpa / elo / ismeretlen akcio nem kerheto; a manipulalt 
   assert.match(valtoztat((k) => { k.cel.conversion_action_id = ELO_CELOK.google_primary[0]; k.body.conversion_action_id = ELO_CELOK.google_primary[0]; }), /elo konverzios/);
   assert.match(valtoztat((k) => { k.cel.conversion_action_id = HEADSPA_ID[0]; k.body.conversion_action_id = HEADSPA_ID[0]; }), /8 probalhato/);
   assert.match(valtoztat((k) => { k.body.conversion_action_id = '7825200916'; }), /eltero/);
-  assert.match(valtoztat((k) => { k.body.ad_user_data = 'GRANTED'; }), /DENIED/);
+  assert.match(valtoztat((k) => { k.body.ad_user_data = 'DENIED'; }), /GRANTED/);
+  assert.match(valtoztat((k) => { k.body.ad_personalization = 'DENIED'; }), /GRANTED/);
+  assert.match(valtoztat((k) => { delete k.body.ad_personalization; k.body.email = 'a@b.hu'; }), /zart lista/);
   assert.match(valtoztat((k) => { k.body.value = 99000; }), /proba-ertek/);
   assert.match(valtoztat((k) => { k.body.currency = 'EUR'; }), /proba-ertek/);
   assert.match(valtoztat((k) => { k.body.order_id = 'FoglalasElso:mb_0abc'; }), /order_id/);

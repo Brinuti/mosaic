@@ -1,5 +1,5 @@
 // QA-2 ARNYEK-ELOSZTO: egy foglalas / ajandekkartya forras-entitasbol az alap- es ernyoesemenyek eloallitasa, es kuldese a platformok ARNYEK-celpontjaira.
-//   - hozzajarulas az SZ-38 szerint (hozzajarulas.js), hash-elt e-mail / telefon (GA4-be nem), ertek = tenyleges ar, penznem HUF
+//   - hozzajarulas: DECISION #202 szerint elfogadott hozzajarulas minden platformra (hozzajarulas.js; a rogzitett allapot a naploban latszik), hash-elt e-mail / telefon, ertek = tenyleges ar, penznem HUF
 //   - duplikacioszures: (esemeny_id, platform) egyedi -> egy esemeny egy platformra legfeljebb egyszer megy ki, ujrahivasra sem
 //   - veszkapcsolo uzletagankent ES platformonkent (meres_kapcsolo): "mind", "uzletag:<u>", "platform:<p>", "cella:<u>:<p>"
 //   - MINDEN kuldes naplozva (meres_kuldes): a kerelem (titok nelkul, IP maszkolva), a platform valasza, a hozzajarulas, az allapot
@@ -123,7 +123,7 @@ export async function elosztas(db, fk, deps = {}) {
   const erk = erkRow ? erkRow.attr : {};
   const hozz = hozzajarulasTisztit(erkRow ? erkRow.hozz : null);
   const kapcsolok = await kapcsolokOlvas(db);
-  const ctxAlap = { fk: { ...fk, ido: fk.ido || (erkRow ? erkRow.ido : t) }, erk, ua: erkRow ? erkRow.ua : null, ip: erkRow ? erkRow.ip : null, oldal: fk.oldal || (erkRow ? erkRow.oldal : null), hozz: { meta: platformSzabaly('meta', hozz), tiktok: platformSzabaly('tiktok', hozz), google: platformSzabaly('google', hozz), ga4: platformSzabaly('ga4', hozz) } };
+  const ctxAlap = { fk: { ...fk, ido: fk.ido || (erkRow ? erkRow.ido : t) }, erk, ua: erkRow ? erkRow.ua : null, ip: erkRow ? erkRow.ip : null, oldal: fk.oldal || (erkRow ? erkRow.oldal : null), hozz: { meta: platformSzabaly('meta', hozz, env), tiktok: platformSzabaly('tiktok', hozz, env), google: platformSzabaly('google', hozz, env), ga4: platformSzabaly('ga4', hozz, env) } };
   const v = fk.vendeg || {};
   ctxAlap.hash = { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await hashAzonosito(v.g || emailNormal(v.email) || kuponNelkul(v.email)) };
   const osszefoglalo = { allapot: 'kesz', source_id: fk.source_entity_id, erkezesi_adat: !!erkRow, esemenyek: [] };
