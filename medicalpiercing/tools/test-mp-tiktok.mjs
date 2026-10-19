@@ -255,3 +255,12 @@ test('lanc: kesoi hozzajarulas (potlas) mar igazolt soron -> 1 naplosor, fetch n
   assert.ok(!/"email"|"phone"|"external_id"/.test(JSON.stringify(t2)));
   console.log('OK ip + user agent (kontextus)');
 }
+
+{
+  const { tiktokTorzs } = await import('../lib/meres/tiktok.js');
+  const h = 'b'.repeat(64);
+  const t4 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: '84.1.2.3', ua: 'UA', ext: h });
+  assert.equal(t4.data[0].user.external_id, h);
+  assert.ok(!('external_id' in tiktokTorzs({ kulcs: '1|2|3', letrehozva: 1792300000 }, { ext: 'nem-hash' }).data[0].user));
+  console.log('OK external_id (tiktok)');
+}

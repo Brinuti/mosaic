@@ -417,6 +417,20 @@
   // TikTok SubmitForm a koszonooldalon: csak marketing-hozzajarulassal (a TikTok-pixelt a GTM tolti)
   marketingKor(tiktokSubmitForm);
 
+  // Sajat, veletlen latogato-azonosito (external_id; Feri 2026-10-19: max. adat, egeszsegugyi adat es PII nelkul): nem e-mailbol /
+  // telefonbol kepzett UUID, elso feles suti (mp_vid, 1 ev). A Meta-pixel maga hash-eli; a foglalasi meres a sajat szervernek
+  // kuldi, ott csak a SHA-256 lenyomata kerul a Meta ARNYEK- es a TikTok-esemenybe.
+  var latogatoAzon = function () {
+    try {
+      var m = document.cookie.match(/(?:^|; )mp_vid=([0-9a-f-]{36})(?:;|$)/);
+      if (m) return m[1];
+      var v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+      document.cookie = 'mp_vid=' + v + '; path=/; max-age=' + 365 * 86400 + (eles ? '; domain=medicalpiercing.hu' : '') + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+      return v;
+    } catch (e) { return undefined; }
+  };
+  window.mpLatogatoAzon = latogatoAzon;
+
   // Convertize es Meta-pixel: CSAK marketing-hozzajarulassal (ha a vendeg kesobb fogad el, akkor abban a pillanatban)
   marketingKor(function () {
     // Convertize
@@ -431,7 +445,7 @@
       t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
       document,'script','https://connect.facebook.net/en_US/fbevents.js');
       /* eslint-enable */
-      window.fbq('init', '2177829632420786');
+      window.fbq('init', '2177829632420786', { external_id: latogatoAzon() });
       window.fbq('track', 'PageView');
     }
   });

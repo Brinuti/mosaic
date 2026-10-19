@@ -250,6 +250,8 @@
     torzs.forras_v = V2;
     if (window.top !== window) torzs.keret = true;
     if (potlas) torzs.potlas = true;
+    // sajat latogato-azonosito (external_id, suti.js mp_vid): veletlen UUID, nem szemelyes adatbol kepzett (Feri 2026-10-19)
+    try { var vid = (document.cookie.match(/(?:^|; )mp_vid=([0-9a-f-]{36})(?:;|$)/) || [])[1] || (typeof window.mpLatogatoAzon === 'function' ? window.mpLatogatoAzon() : null); if (vid) torzs.vid = vid; } catch (e) { /* */ }
     try {
       fetch('/api/mp-foglalas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })
         .catch(function () { /* a vendeg folyamatat nem zavarja */ });
