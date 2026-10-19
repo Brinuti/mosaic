@@ -1079,3 +1079,14 @@ test('GY-25 review: hozzajarulas visszavonasakor a foglalason tarolt nyers click
   await ping(env, 1200, '', `${lpt}; ${HJ_NEM}`); // visszavonas
   assert.equal((await gySor(env, 'mb_gy25e000000000001')).lpc_katt_ertek, null);
 });
+
+test('GY-25: ?megtalalt= riport: platform / kampany / hirdetes, db, atlag nap; csak a >= 1 napos visszatero; nincs click-ID', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, '?utm_source=facebook&utm_medium=paid_social&utm_campaign=1234567&fbclid=ABCDEFGH12345678');
+  await foglal(env, 3 * NAPMP, `${sutikBol(r)}; ${HJ_IGEN}`, 'mb_gy25f000000000001');
+  const ho = new Date(MOST).toISOString().slice(0, 7);
+  const rap = await (await adminVegpont({ request: kerelem(`/api/gy-admin?megtalalt=${ho}`, null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.equal(rap.ok, true);
+  assert.deepEqual(rap.sorok.map((x) => [x.platform, x.kampany, x.db, x.atlag_nap]), [['meta', '1234567', 1, 3]]);
+  assert.equal(JSON.stringify(rap).includes('ABCDEFGH'), false);
+});

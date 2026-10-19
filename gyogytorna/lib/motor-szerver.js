@@ -496,6 +496,17 @@ export async function adminVegpont({ request, env, deps = {} }) {
       napi: sorok,
     });
   }
+  const mho = u.searchParams.get('megtalalt'); // GY-25: "Megtalalt foglalasok (kesobb visszatérők)" - platform > kampany > hirdetes, db, kattintas-foglalas napok; csak aggregalt szamok
+  if (mho && /^\d{4}-\d{2}$/.test(mho)) {
+    const [ev, m] = mho.split('-').map(Number);
+    const tol = Date.UTC(ev, m - 1, 1) / 1000, ig = Date.UTC(ev, m, 1) / 1000;
+    const sorok = (await db.prepare(
+      `SELECT lpc_platform AS platform, lpc_kampany AS kampany, lpc_hirdetescsoport AS hirdetescsoport, lpc_hirdetes AS hirdetes, cimke, COUNT(*) AS db, ROUND(AVG(lpc_kora_nap), 1) AS atlag_nap, MIN(lpc_kora_nap) AS min_nap, MAX(lpc_kora_nap) AS max_nap
+       FROM gy_foglalas WHERE letrehozva >= ?1 AND letrehozva < ?2 AND teszt = 0 AND allapot NOT IN ('lemondott','bizonytalan') AND lpc_platform IS NOT NULL AND lpc_kora_nap >= 1
+       GROUP BY lpc_platform, lpc_kampany, lpc_hirdetescsoport, lpc_hirdetes, cimke ORDER BY db DESC LIMIT 200`,
+    ).bind(tol, ig).all()).results || [];
+    return valasz(200, { ok: true, honap: mho, szabaly_verzio: LPC_VERZIO, leiras: 'kesobb visszatero (>= 1 nap) foglalasok a 7 napos utolso fizetett kattintas szerint', sorok });
+  }
   const lho = u.searchParams.get('lpc');
   if (lho && /^\d{4}-\d{2}$/.test(lho)) { // GY-22 ellenorzes: csak aggregalt szamok
     const [ev, m] = lho.split('-').map(Number);
