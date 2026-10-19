@@ -9,12 +9,21 @@
 //   GET/POST /api/gy-suti-config  a sav-teszt konfigja (GET: nyilvanos, rovid cache; POST: kulcsos csere, deploy nelkul)
 //   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes, visszahivasok
 // Hibaban a vendeg foglalasa NEM akad el: ezek a vegpontok csak a merest szolgaljak, a foglalast a Salonic rogziti.
-import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok, lpcFizetett, lpcCimke, lpcHozzarendel, LPC_VERZIO } from './forras.js';
+import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok, GOOGLE_KATT, lpcFizetett, lpcCimke, lpcHozzarendel, LPC_VERZIO } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesek, erintesTorol, lpcHiba } from './db.js';
 import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot, UUID_RE } from './salonic-szerver.js';
+/** Unix -> Budapest helyi ido, Google Ads import formatum: "yyyy-mm-dd hh:mm:ss+hh:mm" (a nyari / teli ido szerinti eltolassal). */
+export function budapestIdo(unix) {
+  if (!Number.isInteger(unix)) return null;
+  const d = new Date(unix * 1000);
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Budapest', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(d).map((x) => [x.type, x.value]));
+  const off = Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - d.getTime()) / 60000);
+  const a = Math.abs(off);
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}${off >= 0 ? '+' : '-'}${String(Math.floor(a / 60)).padStart(2, '0')}:${String(a % 60).padStart(2, '0')}`;
+}
 const nevNorm = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 import { foglalasTipus, HELYSZINEK, HOST } from '../public/assets/js/motor/salonic-adapter.js';
 
@@ -217,11 +226,24 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
       lpc = lpcHozzarendel({ erintesek: lista, most, lista: t.lista, azonositoVan });
     }
   } catch (err) { await lpcHiba(db, most, 'hozzarendeles'); lpc = {}; }
+  // GY-23: a 7 napos last paid click Google click-ID-ja a foglalashoz (szerveres Google Ads import). CSAK hirdetesi hozzajarulassal, Google-forrasu nyertes erintesnel; a nyers ID 60 nap utan torlodik.
+  let gads = {};
+  try {
+    if (hj.marketing && lpc && lpc.ido && String(lpc.cimke || '').startsWith('google_')) {
+      const lptC = s[SUTI_LPT] && /^[A-Za-z0-9_-]{43}$/.test(s[SUTI_LPT]) ? s[SUTI_LPT] : null;
+      if (lptC) {
+        const lh = await sha256Hex(lptC);
+        const rec = await munkamenetOlvas(db, lh, most);
+        const kb = rec && rec.belepes;
+        if (kb && GOOGLE_KATT.includes(kb.kattintas_param) && kb.kattintas_ertek) gads = { gads_katt_tipus: kb.kattintas_param, gads_katt_ertek: kb.kattintas_ertek, gads_katt_ido: lpc.ido, gads_munkamenet: lh.slice(0, 16), gads_szabaly: 'gads1+' + LPC_VERZIO };
+      }
+    }
+  } catch (err) { await lpcHiba(db, most, 'gads'); gads = {}; }
   const parosito = e.employeeId ? await hmacHex(env.GY_HMAC_KULCS, `gy-parosito|${kert.startUnix}|${e.employeeId}`) : null;
   const parositoHely = await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${kert.startUnix}|${kert.placeId}`); // a Salonic-igazolas parositasahoz (hely + idopont)
 
   const letrejott = await foglalasLetrehoz(db, { uuid, tipus, uj_vendeg: e.ujVendeg, cimke: c.cimke, bizonyitek: c.bizonyitek + (c.elavult ? '+elavult_lista' : ''), hozzajarulas: hj.allapot, allapot, teszt, parosito, parosito_hely: parositoHely, ...hirdetes,
-    lpc_cimke: lpc.cimke, lpc_bizonyitek: lpc.bizonyitek, lpc_kampany: lpc.kampany, lpc_hirdetescsoport: lpc.hirdetescsoport, lpc_hirdetes: lpc.hirdetes, lpc_kora_nap: lpc.kora_nap, kesoi_fizetett: lpc.kesoi_fizetett, lpc_verzio: lpc.verzio }, most);
+    lpc_cimke: lpc.cimke, lpc_bizonyitek: lpc.bizonyitek, lpc_kampany: lpc.kampany, lpc_hirdetescsoport: lpc.hirdetescsoport, lpc_hirdetes: lpc.hirdetes, lpc_kora_nap: lpc.kora_nap, kesoi_fizetett: lpc.kesoi_fizetett, lpc_verzio: lpc.verzio, ...gads, ertek }, most);
   if (!letrejott) return valasz(200, { ok: true, ismetles: true }); // versenyhelyzet: egy masik kerelem mar letrehozta
   if (allapot !== 'aktiv') await riaszt(db, 'bizonytalan_foglalas', { uuid, adat: miert, most });
   let token = null;
@@ -413,6 +435,23 @@ export async function adminVegpont({ request, env, deps = {} }) {
   if (f && BOOKING_ID.test(f)) {
     const r = await foglalasOlvas(db, f);
     return valasz(200, { ok: true, foglalas: r ? { ...r, parosito: undefined } : null });
+  }
+  if (u.searchParams.get('gads')) { // GY-23: a szerveres Google Ads import listaja (kulcsos). CSAK Salonic-igazolt, nem teszt, Google click-ID-s allapotfelmeresek; nev / e-mail / telefon / kezeles NINCS benne.
+    const tolNap = /^\d{4}-\d{2}-\d{2}$/.test(u.searchParams.get('tol') || '') ? Date.parse(u.searchParams.get('tol') + 'T00:00:00Z') / 1000 : most - 70 * 86400;
+    const sorok = (await db.prepare(
+      `SELECT uuid, letrehozva, frissitve, allapot, hozzajarulas, gads_katt_tipus, gads_katt_ertek, gads_katt_ido, gads_munkamenet, gads_szabaly, ertek, cimke FROM gy_foglalas
+       WHERE tipus = 'allapotfelmeres' AND teszt = 0 AND igazolt = 1 AND gads_katt_ertek IS NOT NULL AND letrehozva >= ?1 AND allapot IN ('aktiv','modositott','lemondott') ORDER BY letrehozva LIMIT 1000`,
+    ).bind(tolNap).all()).results || [];
+    const kimenet = [];
+    for (const r of sorok) {
+      kimenet.push({
+        click_id: r.gads_katt_ertek, click_tipus: r.gads_katt_tipus, click_ido: budapestIdo(r.gads_katt_ido), click_ido_unix: r.gads_katt_ido,
+        konverzio_ido: budapestIdo(r.letrehozva), konverzio_ido_unix: r.letrehozva, order_id: await tranzakcioId(r.uuid, env.GY_HMAC_KULCS),
+        ertek: r.ertek, penznem: 'HUF', allapot: r.allapot === 'lemondott' ? 'lemondott' : 'aktiv', lemondva_ido: r.allapot === 'lemondott' ? budapestIdo(r.frissitve) : null,
+        forras: { cimke: r.cimke, munkamenet: r.gads_munkamenet, szabaly: r.gads_szabaly, hozzajarulas: r.hozzajarulas },
+      });
+    }
+    return valasz(200, { ok: true, db: kimenet.length, aktiv: kimenet.filter((x) => x.allapot === 'aktiv'), lemondott: kimenet.filter((x) => x.allapot === 'lemondott') });
   }
   const lho = u.searchParams.get('lpc');
   if (lho && /^\d{4}-\d{2}$/.test(lho)) { // GY-22 ellenorzes: csak aggregalt szamok
