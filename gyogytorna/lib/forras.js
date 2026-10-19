@@ -7,8 +7,8 @@
 //   - Prioritas: (kampany-ID + click-ID) > referrer. Az UTM onmagaban nem bizonyitek.
 //   - organikus: kereso / kozossegi referrer-domain, fizetett jel nelkul. direkt: nincs referrer es nincs jel. ismeretlen: hianyzo / ellentmondo adat.
 //   - A foglalasra a foglalas pillanataig az utolso FIZETETT forras kerul; direkt / organikus nem irja felul a fizetettet.
-// Meta es TikTok nincs (egeszsegugyi kategoria): fbclid / ttclid / utm_source=facebook stb. sehova nem megy, csak "nem Google fizetett jel"-kent
-// tekintjuk (ellentmondas-vizsgalathoz), az erteke sehol nem tarolodik.
+// GY-25 (Feri kerese, 2026-10-19): a Meta / TikTok fizetett erkezes is forras-cimke (meta | tiktok), a nyers fbclid / ttclid csak hirdetesi hozzajarulassal a naploba kerul;
+// platformnak semmi nem megy ki (egeszsegugyi kategoria: nev / e-mail / telefon / kezeles soha).
 
 export const CIMKEK = Object.freeze(['google_brand', 'google_nem_brand', 'google_bizonytalan', 'organikus', 'direkt', 'ismeretlen']);
 export const GOOGLE_KATT = Object.freeze(['gclid', 'gbraid', 'wbraid']);
