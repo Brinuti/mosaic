@@ -90,7 +90,7 @@ test('jogosultsag: eles + igazolt + hozzajarulas + ttclid + 7 napos ablak', () =
   assert.equal(jogosult(alapSor({ igazolas: null }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ igazolas: 'nem_igazolt' }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ hozzajarulas_hirdetes: 0 }), MOST).miert, 'nincs_hozzajarulas');
-  assert.equal(jogosult(alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), MOST).miert, 'nincs_tiktok_azonosito');
+  assert.equal(jogosult(alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), MOST).ok, true); // 2026-10-19: IP/UA/external_id is azonosit
   assert.equal(jogosult(alapSor({ tiktok_ttclid: null }), MOST).ok, true); // _ttp eleg
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK - 1 }), MOST).miert, 'ablakon_kivul');
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK + 60 }), MOST).ok, true);

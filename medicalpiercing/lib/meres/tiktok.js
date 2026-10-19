@@ -58,7 +58,7 @@ export function jogosult(sor, most) {
   if (sor.tipus === 'ful') return { ok: false, miert: 'divat_fulpiercing' }; // Feri dontese (2026-10-13): nem optimalizalunk ra
   if (sor.igazolas !== 'igazolt') return { ok: false, miert: 'nem_igazolt' };
   if (Number(sor.hozzajarulas_hirdetes) !== 1) return { ok: false, miert: 'nincs_hozzajarulas' };
-  if (!sor.tiktok_ttclid && !sor.tiktok_ttp) return { ok: false, miert: 'nincs_tiktok_azonosito' }; // ttclid VAGY _ttp (hozzajarulassal)
+  // ttclid / _ttp nelkul is mehet (Feri 2026-10-19: max. adat): ilyenkor az IP + UA + external_id azonosit (lent: ures user -> kihagyva)
   const ido = esemenyIdo(sor);
   if (!Number.isFinite(ido) || most - ido > TIKTOK_ABLAK || ido > most + 300) return { ok: false, miert: 'ablakon_kivul' };
   const k = Number(sor.tiktok_kattintas_ido);
@@ -133,6 +133,7 @@ export async function tiktokLepes(db, sor, env = {}, host = '', { fetchImpl = fe
     try { ktx = await db.prepare('SELECT ip, ua, ext FROM mp_kontextus WHERE kulcs = ?').bind(sor.kulcs).first(); } catch (e) { /* nincs tabla */ }
     const schedule = String((await beallitas(db, 'tiktok_schedule')) || '').trim().toLowerCase() === 'be';
     try { torzs = tiktokTorzs(sor, ktx, { schedule }); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    if (!Object.keys(torzs.data[0].user).length) return { kihagyva: 'nincs_azonosito' };
     const mtorzs = JSON.stringify(await maszkoltTorzs(torzs));
     let allapot = 'naplozva';
     if (mod === 'eles') {
