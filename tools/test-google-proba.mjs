@@ -49,9 +49,11 @@ async function vilag({ env = {}, valos = true } = {}) {
   const e = { KULCS_DB: db, EGYEZTETES_KULCS_HASH: KULCS_HASH, ...ENV_ALAP, GOOGLE_ARNYEK_WEBHOOK_URL: WEBHOOK, GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001', ...env };
   const sql = (q, ...a) => D.db.prepare(q).all(...a).map((r) => ({ ...r }));
   const futtat = (q, ...a) => D.db.prepare(q).run(...a);
-  const beszur = (o) => futtat('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, kerelem, letrehozva, frissitve, forras, indok, ertek, penznem) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+  const beszur = (o) => futtat('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, kerelem, letrehozva, frissitve, forras, indok, ertek, penznem, hozzajarulas) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
     o.esemeny_id, o.nev || 'FoglalasElso', o.tipus || 'alap', o.platform || 'google', o.platform_nev || 'ARNYEK-7825199989', o.uzletag || 'headspa', o.source_id || 's_' + o.esemeny_id, o.allapot || 'elkuldve',
-    o.kerelem === undefined ? null : o.kerelem === null ? null : JSON.stringify(o.kerelem), o.t ?? NOW_SEC - 3600, o.t ?? NOW_SEC - 3600, o.forras || 'motor', o.indok || null, o.ertek ?? 26900, 'HUF');
+    o.kerelem === undefined ? null : o.kerelem === null ? null : JSON.stringify(o.kerelem), o.t ?? NOW_SEC - 3600, o.t ?? NOW_SEC - 3600, o.forras || 'motor', o.indok || null, o.ertek ?? 26900, 'HUF',
+    o.hozz === undefined ? null : JSON.stringify({ allapot: o.hozz }));
+  // a regi (DECISION #202 elotti) elo sorok a body-ban DENIED-et hordoznak (dontes nelkul fix DENIED volt): ez a seed szandekosan regi alak
   const googleKerelem = (akcio, gclid) => ({ url: 'zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)', method: 'POST', fejlec_nevek: ['content-type'], cel: { customer_id: ARNYEK.google.customerId, conversion_action_id: akcio, athidalas: 'zapier-webhook' }, body: { conversion_action_id: akcio, gclid, conversion_date_time: '2026-10-17 12:00:00+02:00', value: 26900, currency: 'HUF', order_id: 'x', ad_user_data: 'DENIED' } });
   if (valos) { // 4 valodi HeadSpa Google-feltoltes: regi FoglalasElso, frissebb FoglalasElso, meg frissebb Ajandekkartya (kartya), + egy NEM HeadSpa / nem elkuldott sor (nem valaszthato)
     beszur({ esemeny_id: 'FoglalasElso:mb_regi', nev: 'FoglalasElso', platform_nev: 'ARNYEK-7825199989', kerelem: googleKerelem('7825199989', GCL_REGI), t: NOW_SEC - 5 * 86400, forras: 'motor' });
@@ -128,6 +130,17 @@ test('A3 gclid_sorszam: ELOBB az osszes FoglalasElso (ujabb -> regebbi: 1., 2.),
   ures.beszur({ esemeny_id: 'FoglalasElso:mb_meta', platform: 'meta', kerelem: { cel: {}, body: { gclid: 'CjwKCAjwTESZTmeta_' + 'g'.repeat(30) } } });
   const r = await ures.post({ muvelet: 'google_proba' });
   assert.equal(r.status, 409); assert.match(r.body.miert, /nincs hasznalhato valodi HeadSpa gclid/);
+});
+test('A3b a proba GRANTED-del megy, ezert NEM valaszt olyan sor gclid-jet, amelynek a ROGZITETT dontese a hirdetesi hozzajarulast nem adja meg (DECISION #202 review); dontes nelkuli / elfogadott / regi (hozzajarulas nelkuli) sor valaszthato', async () => {
+  const w = await vilag({ valos: false });
+  const GCL_ELUT = 'CjwKCAjwTESZTelutasito_' + 'h'.repeat(30), GCL_DONTES_NELKUL = 'CjwKCAjwTESZTdontesnelkul_' + 'i'.repeat(30), GCL_IGEN = 'CjwKCAjwTESZTelfogadott_' + 'j'.repeat(30);
+  w.beszur({ esemeny_id: 'FoglalasElso:mb_igen', kerelem: w.googleKerelem('7825199989', GCL_IGEN), t: NOW_SEC - 3 * 86400, hozz: { ana: true, adv: true, fun: true, dontes: true } });
+  w.beszur({ esemeny_id: 'FoglalasElso:mb_nelkul', kerelem: w.googleKerelem('7825199989', GCL_DONTES_NELKUL), t: NOW_SEC - 2 * 86400, hozz: { ana: null, adv: null, fun: null, dontes: false } });
+  w.beszur({ esemeny_id: 'FoglalasElso:mb_elut', kerelem: w.googleKerelem('7825199989', GCL_ELUT), t: NOW_SEC - 86400, hozz: { ana: false, adv: false, fun: false, dontes: true } });
+  w.beszur({ esemeny_id: 'FoglalasElso:mb_reszleges', kerelem: w.googleKerelem('7825199989', 'CjwKCAjwTESZTreszleges_' + 'k'.repeat(30)), t: NOW_SEC - 3600, hozz: { ana: true, adv: null, fun: null, dontes: true } });
+  const h = async (n) => (await w.post({ muvelet: 'google_proba', gclid_sorszam: n })).body.gclid_hash8;
+  assert.equal(await h(1), sha8(GCL_DONTES_NELKUL), 'a legfrissebb NEM elutasito sor: a dontes nelkuli (az elutasito es a reszleges kimarad)');
+  assert.equal(await h(2), sha8(GCL_IGEN)); assert.equal((await w.post({ muvelet: 'google_proba', gclid_sorszam: 3 })).status, 409, 'csak 2 valaszthato sor van');
 });
 
 test('A4 a KULDES kapui: megerosites, MERES_ELOSZTO, webhook, iras-veszkapcsolo, 24 oras plafon - mindegyiknel 0 halozat, 0 iras', async () => {

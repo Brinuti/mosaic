@@ -61,12 +61,15 @@ export function akciokValasztas(kert) {
   return { akciok: PROBA_AKCIOK.filter((a) => ids.includes(a.id)) };
 }
 
-/** Egy megfelelo, valodi HeadSpa-feltoltes gclid-je a D1-bol (CSAK OLVAS). A sorrend: ELOBB az osszes FoglalasElso (ujabb -> regebbi), UTANA az osszes Ajandekkartya (ujabb -> regebbi); sorszam az n-edik elem (1 = a legfrissebb FoglalasElso). -> { gclid, sor_id, esemeny_nev, kor_nap } | null. A gclid a hivon kivul SEHOVA nem kerul. */
+/** Egy megfelelo, valodi HeadSpa-feltoltes gclid-je a D1-bol (CSAK OLVAS). A sorrend: ELOBB az osszes FoglalasElso (ujabb -> regebbi), UTANA az osszes Ajandekkartya (ujabb -> regebbi); sorszam az n-edik elem (1 = a legfrissebb FoglalasElso). -> { gclid, sor_id, esemeny_nev, kor_nap } | null. A gclid a hivon kivul SEHOVA nem kerul.
+ *  A probaGclid kihagyja azt a sort, amelynek a ROGZITETT dontese a hirdetesi hozzajarulast nem adja meg (hozzajarulas.allapot: dontes igaz es adv != true): a proba GRANTED-del megy, ezert nem egy elutasito vendeg gclid-jevel (DECISION #202 review). */
 export async function probaGclid(db, { sorszam = 1, nowSec }) {
-  const { results } = await db.prepare("SELECT id, esemeny_nev, letrehozva, kerelem FROM meres_kuldes WHERE platform = 'google' AND allapot = 'elkuldve' AND uzletag = 'headspa' AND forras IN ('motor', 'kartya') AND letrehozva >= ?1 ORDER BY id DESC").bind(nowSec - GCLID_MAX_KOR_MP).all();
+  const { results } = await db.prepare("SELECT id, esemeny_nev, letrehozva, kerelem, hozzajarulas FROM meres_kuldes WHERE platform = 'google' AND allapot = 'elkuldve' AND uzletag = 'headspa' AND forras IN ('motor', 'kartya') AND letrehozva >= ?1 ORDER BY id DESC").bind(nowSec - GCLID_MAX_KOR_MP).all();
   const jeloltek = [];
   for (const r of results || []) {
     let k; try { k = JSON.parse(r.kerelem); } catch (e) { continue; }
+    let allapot = null; try { allapot = r.hozzajarulas ? JSON.parse(r.hozzajarulas).allapot : null; } catch (e) { /* nincs / hibas hozzajarulas-JSON: dontes nelkulinek vesszuk */ }
+    if (allapot && allapot.dontes && allapot.adv !== true) continue;
     const g = k && k.body && k.body.gclid;
     if (typeof g === 'string' && GCLID_MINTA.test(g)) jeloltek.push({ gclid: g, sor_id: r.id, esemeny_nev: r.esemeny_nev, kor_nap: Math.floor((nowSec - r.letrehozva) / 86400), elso: r.esemeny_nev === 'FoglalasElso' ? 0 : 1 });
   }
