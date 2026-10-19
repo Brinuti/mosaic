@@ -14,6 +14,7 @@
 //   --masodik 1    az utolso elotti szabad napot valasztja (ket valodi foglalas egymas utan ugyanabban a Salonic-fiokban: a Salonic 5 percig tartja a megnyitott idopontot)
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
+import { sajatIras } from './tilt.mjs';
 import path from 'node:path';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
@@ -99,7 +100,7 @@ const ENGEDETT_GET = [
 ];
 // a Salonic maga (naptar-API, oldalak) barmilyen metodussal engedett: szimulalt modban az adatlap ugyis ki van valtva, a foglalas nem jon letre;
 // a valodi foglalashoz a Salonic-urlap reCAPTCHA-ja is kell (nem meres, a Salonic sajat vedelme): barmilyen metodussal engedett
-const engedett = (url, method) => /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url) || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url) || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
+const engedett = (url, method) => sajatIras(url, method) || /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url) || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url) || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
 const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
 const naplo = [], idovonal = [], harmadik = new Map();
