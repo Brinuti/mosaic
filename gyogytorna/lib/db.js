@@ -190,7 +190,7 @@ export async function takarit(db, most) {
     db.prepare('DELETE FROM gy_visszahivas WHERE letrehozva < ?').bind(most - IDOK.visszahivas),
     db.prepare('DELETE FROM gy_erintes WHERE ido < ?').bind(most - IDOK.erintes),
     db.prepare('DELETE FROM gy_motor_stat WHERE nap < ?').bind(budapestNap(most - IDOK.motorStat)),
-    db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, gads_munkamenet = NULL, lpc_latogato = NULL, lpc_katt_ertek = NULL, lpc_katt_tipus = NULL WHERE (gads_katt_ertek IS NOT NULL OR lpc_katt_ertek IS NOT NULL) AND letrehozva < ?').bind(most - IDOK.gadsKatt),
+    db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, gads_munkamenet = NULL, lpc_latogato = NULL, lpc_katt_ertek = NULL, lpc_katt_tipus = NULL WHERE (gads_katt_ertek IS NOT NULL OR lpc_katt_ertek IS NOT NULL OR lpc_latogato IS NOT NULL OR gads_munkamenet IS NOT NULL) AND letrehozva < ?').bind(most - IDOK.gadsKatt),
   ]);
 }
 
@@ -209,7 +209,7 @@ export async function erintesek(db, latogato, tol) {
 }
 /** Visszavont hirdetesi hozzajarulas: a foglalasokon tarolt nyers click-ID-k is torlodnek (latogato-hash eleje alapjan). */
 export async function kattintasTorol(db, hashok) {
-  for (const h of hashok) await db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, lpc_katt_ertek = NULL, lpc_katt_tipus = NULL WHERE lpc_latogato = ?').bind(h.slice(0, 16)).run();
+  for (const h of hashok) await db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, gads_munkamenet = NULL, lpc_katt_ertek = NULL, lpc_katt_tipus = NULL, lpc_latogato = NULL WHERE lpc_latogato = ?').bind(h.slice(0, 16)).run();
 }
 export const erintesTorol = (db, latogato) => db.prepare('DELETE FROM gy_erintes WHERE latogato = ?').bind(latogato).run();
 /** Hibaszamlalo (fail-open): a naplo hibaja nem allithatja meg a foglalast; a szamlalo + riasztas jelzi. */
