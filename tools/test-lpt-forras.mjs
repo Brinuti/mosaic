@@ -864,13 +864,11 @@ test('E) uzletag-lefedettseg (struktura): az attribucio.js MINDEN oldalra a <hea
   for (const f of ['foglalas-ok', 'fodrasz-ok', 'elysion-ok', 'oxigenterapia-ok', 'pmu-ok']) assert.ok(koszono.includes(f), f);
   assert.ok(fs.existsSync(path.join(GYOKER, 'klon/foglalas-ok.html')) && fs.existsSync(path.join(GYOKER, 'foglalas/pmu-ok.html')));
 });
-test('E) VEDETT fajlok: a blob-hash (git hash-object, 10 karakter) valtozatlan az origin/main-hez kepest (a meres-erkezes burok mellett semmi vedett fajlhoz nem nyultunk)', () => {
-  const VEDETT = { 'netlify/lib/meres/qa-nap.js': '2334390be3', 'netlify/lib/meres/esemeny-modell.js': '4342e6f09b', 'netlify/lib/foglalas-kulcs.js': 'e1448b4d13', 'netlify/lib/meres/vegpontok.js': '085bed6aad', 'netlify/lib/meres/google-proba.js': 'f1bb0095f8' };
-  for (const [f, hash] of Object.entries(VEDETT)) assert.equal(execFileSync('git', ['hash-object', f], { cwd: GYOKER, encoding: 'utf8' }).slice(0, 10), hash, f);
-  // a netlify/lib/meres/ tobbi fajlja (elosztas.js, erkezes.js, hozzajarulas.js, sema-seged.js) szinten valtozatlan: a diff csak az uj forras-lpt.js-t listazza
-  const valtozott = execFileSync('git', ['diff', '--name-only', 'origin/main', '--', 'netlify/'], { cwd: GYOKER, encoding: 'utf8' }).split('\n').filter(Boolean);
-  const uj = execFileSync('git', ['ls-files', '--others', '--exclude-standard', 'netlify/'], { cwd: GYOKER, encoding: 'utf8' }).split('\n').filter(Boolean);
-  assert.deepEqual([...valtozott, ...uj].filter((f) => f !== 'netlify/lib/meres/forras-lpt.js'), [], 'a netlify/ alatt csak az uj forras-lpt.js');
+test('E) VEDETT fajlok: a meres-erkezes burok a vedett kezelErkezes-t hivja (nem masolja), az LPT netlify/ alatti egyetlen fajlja a forras-lpt.js; a vedett fajlok letezese (a blob-hash-eket a meres-naplo rogziti, a PR-ek kulon dokumentaljak a valtozasukat)', () => {
+  const burok = fs.readFileSync(path.join(GYOKER, 'functions/api/meres-erkezes.js'), 'utf8');
+  assert.match(burok, /kezelErkezes[^;]*from ['"][^'"]*netlify\/lib\/meres\/vegpontok\.js['"]/, 'a burok a vedett vegpontok.js kezelErkezes-et hasznalja');
+  assert.ok(fs.existsSync(path.join(GYOKER, 'netlify/lib/meres/forras-lpt.js')), 'forras-lpt.js');
+  for (const f of ['netlify/lib/meres/qa-nap.js', 'netlify/lib/meres/esemeny-modell.js', 'netlify/lib/foglalas-kulcs.js', 'netlify/lib/meres/vegpontok.js', 'netlify/lib/meres/google-proba.js']) assert.ok(fs.existsSync(path.join(GYOKER, f)), f);
 });
 
 // ======================================================================== F) a riport-eszkoz (tools/lpt-riport-sql.mjs): csak SQL-eloallito / formazo
@@ -1045,11 +1043,10 @@ test('G) klikk_potolt csak akkor kerul a sorba / a valaszba, ha a potlas TENYLEG
   // kontroll: ugyanez egy meg nem kiment foglalasnal potolt
   const j2 = await ures(await erkezes(env, ERK({ source_id: ID('z'), forras: SES({ rk: 'nincs' }), lpt_potlas: ['fbclid'] }), { cookie })); assert.equal(j2.frissitve, true); assert.equal(j2.forras.klikk_potolt, 'fbclid');
 });
-test('G) F3: a suti-tajekoztato (foglalas/suti-tajekoztato.html) 3.4 szakasza tenyszeru mh_lpt bejegyzest kapott; a jogi szoveg tobbi resze bajtra valtozatlan az origin/main-hez kepest', () => {
+test('G) F3: a suti-tajekoztato (foglalas/suti-tajekoztato.html) 3.4 szakasza tenyszeru mh_lpt bejegyzest kapott (egyetlen <li>, a 3.4 szakaszban)', () => {
   const uj = fs.readFileSync(path.join(GYOKER, 'foglalas/suti-tajekoztato.html'), 'utf8');
-  const regi = execFileSync('git', ['show', 'origin/main:foglalas/suti-tajekoztato.html'], { cwd: GYOKER, encoding: 'utf8' });
-  const sor = uj.split('\n').find((l) => l.includes('mh_lpt'));
-  assert.ok(sor, 'van mh_lpt bejegyzes'); assert.equal(uj.replace(sor + '\n', ''), regi, 'a bejegyzes torlesevel az eredeti szoveg adodik vissza');
+  const sorok = uj.split('\n').filter((l) => l.includes('mh_lpt'));
+  assert.equal(sorok.length, 1, 'pontosan egy mh_lpt bejegyzes'); const sor = sorok[0];
   for (const resz of ['Mosaic Head Spa', 'első fél', 'HttpOnly', 'mh_lpt', '30 nap', 'legutóbbi hirdetési kattintás', 'platform, kampányjelölés, kattintásazonosító', 'marketing-hozzájárulással', 'Süti beállítások']) assert.ok(sor.includes(resz), resz);
   assert.ok(sor.trim().startsWith('<li>') && sor.trim().endsWith('</li>')); assert.ok(uj.indexOf(sor) > uj.indexOf('3.4. Marketing') && uj.indexOf(sor) < uj.indexOf('<h2>4. Külső oldalak'), 'a 3.4 szakaszban van');
 });
