@@ -1,0 +1,2271 @@
+{
+ "ido": "2026-10-19T21:20:05.016Z",
+ "bazis": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev",
+ "uzletagok": [
+  "headspa",
+  "hair",
+  "laser",
+  "oxygen",
+  "pmu"
+ ],
+ "platformok": [
+  "google",
+  "meta",
+  "tiktok"
+ ],
+ "mobil": true,
+ "ossz": 450,
+ "hibas": 0,
+ "eredmenyek": [
+  {
+   "cimke": "[headspa/google] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[headspa/google] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoiZ29vZ2xlIiwidXMiO..."
+  },
+  {
+   "cimke": "[headspa/google] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[headspa/google] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444711,\\\"us\\\":\\\"google\\\",\\\"um\\\":\\\"cpc\\\",\\\"uc\\\":\\\"2027707852\\\",\\\"gc\\\":\\\"2345678901\\\",\\\"ag\\\":\\\"3456789012\\\",\\\"ad\\\":\\\"456789012\\\",\\\"kp\\\":\\\"gclid\\\",\\\"rk\\\":\\\"nincs\\\"}"
+  },
+  {
+   "cimke": "[headspa/google] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444711,\"us\":\"google\",\"um\":\"cpc\",\"uc\":\"2027707852\",\"gc\":\"2345678901\",\"ag\":\"3456789012\",\"ad\":\"456789012\",\"kp\":\"gclid\",\"kv\":\"Cj0KCQjw_LPTE"
+  },
+  {
+   "cimke": "[headspa/google] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[headspa/google] 3. klikkReszletes: a sutibol potolt kulcs = gclid",
+   "rendben": true,
+   "reszlet": "[\"gclid\"]"
+  },
+  {
+   "cimke": "[headspa/google] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[headspa/google] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[headspa/google] 4. a foglalo-atadas a koszonooldalra navigalt (/foglalas-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/foglalas-ok?first_booking=true&service=LPT%20E2E%20proba&price"
+  },
+  {
+   "cimke": "[headspa/google] 4. a koszonooldal URL-je tartalmazza a visszanyert gclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,gclid"
+  },
+  {
+   "cimke": "[headspa/google] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"google\"],\"forras\":{\"cimke\":\"google_nem_markas\",\"bizonyitek_forras\":\"sut"
+  },
+  {
+   "cimke": "[headspa/google] 5. forras.cimke = google_nem_markas | google_markas",
+   "rendben": true,
+   "reszlet": "google_nem_markas"
+  },
+  {
+   "cimke": "[headspa/google] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[headspa/google] 5. forras.klikk_potolt tartalmazza: gclid",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[headspa/google] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"gclid\"]}"
+  },
+  {
+   "cimke": "[headspa/google] 5. uzletag a koszonooldalon: headspa (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "headspa"
+  },
+  {
+   "cimke": "[headspa/google] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[headspa/google] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[headspa/google] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/google] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[headspa/meta] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoibWV0YSIsInVzIjoib..."
+  },
+  {
+   "cimke": "[headspa/meta] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[headspa/meta] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444717,\\\"us\\\":\\\"meta\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"LPT_E2E_teszt_headspa\\\",\\\"ut\\\":\\\"csoport\\\",\\\"uco\\\":\\\"hirdetes\\\",\\\"gc\\\":\\\"23850123456\\\",\\\"ad\\\":\\\"6001234567"
+  },
+  {
+   "cimke": "[headspa/meta] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444717,\"us\":\"meta\",\"um\":\"paid_social\",\"uc\":\"LPT_E2E_teszt_headspa\",\"ut\":\"csoport\",\"uco\":\"hirdetes\",\"gc\":\"23850123456\",\"ad\":\"6001234567\""
+  },
+  {
+   "cimke": "[headspa/meta] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[headspa/meta] 3. klikkReszletes: a sutibol potolt kulcs = fbclid",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[headspa/meta] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[headspa/meta] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[headspa/meta] 4. a foglalo-atadas a koszonooldalra navigalt (/foglalas-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/foglalas-ok?first_booking=true&service=LPT%20E2E%20proba&price"
+  },
+  {
+   "cimke": "[headspa/meta] 4. a koszonooldal URL-je tartalmazza a visszanyert fbclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,fbclid"
+  },
+  {
+   "cimke": "[headspa/meta] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"meta\"],\"forras\":{\"cimke\":\"meta\",\"bizonyitek_forras\":\"suti\",\"klikk_potol"
+  },
+  {
+   "cimke": "[headspa/meta] 5. forras.cimke = meta",
+   "rendben": true,
+   "reszlet": "meta"
+  },
+  {
+   "cimke": "[headspa/meta] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[headspa/meta] 5. forras.klikk_potolt tartalmazza: fbclid",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[headspa/meta] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"fbclid\"]}"
+  },
+  {
+   "cimke": "[headspa/meta] 5. uzletag a koszonooldalon: headspa (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "headspa"
+  },
+  {
+   "cimke": "[headspa/meta] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 6b. ujabb fizetett kattintas (tiktok) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 6b. a visszanyeres mar az UJ (ttclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[headspa/meta] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[headspa/meta] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/meta] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[headspa/tiktok] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoidGlrdG9rIiwidXMiO..."
+  },
+  {
+   "cimke": "[headspa/tiktok] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[headspa/tiktok] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444723,\\\"us\\\":\\\"tiktok\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"lpt_e2e_headspa\\\",\\\"kp\\\":\\\"ttclid\\\",\\\"rk\\\":\\\"nincs\\\"}\"},\"ls\":{\"mh_forras_l\":\"{\\\"e\\\":{\\\"v\\\":1,\\\"t\\\":17924"
+  },
+  {
+   "cimke": "[headspa/tiktok] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444723,\"us\":\"tiktok\",\"um\":\"paid_social\",\"uc\":\"lpt_e2e_headspa\",\"kp\":\"ttclid\",\"kv\":\"E.C.P.LPTE2E_MVFRATU2_HEADSPA_TTCLID\"},\"hozz\":{\"ana\""
+  },
+  {
+   "cimke": "[headspa/tiktok] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[headspa/tiktok] 3. klikkReszletes: a sutibol potolt kulcs = ttclid",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[headspa/tiktok] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[headspa/tiktok] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[headspa/tiktok] 4. a foglalo-atadas a koszonooldalra navigalt (/foglalas-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/foglalas-ok?first_booking=true&service=LPT%20E2E%20proba&price"
+  },
+  {
+   "cimke": "[headspa/tiktok] 4. a koszonooldal URL-je tartalmazza a visszanyert ttclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,ttclid"
+  },
+  {
+   "cimke": "[headspa/tiktok] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"tiktok\"],\"forras\":{\"cimke\":\"tiktok\",\"bizonyitek_forras\":\"suti\",\"klikk_p"
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. forras.cimke = tiktok",
+   "rendben": true,
+   "reszlet": "tiktok"
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. forras.klikk_potolt tartalmazza: ttclid",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"ttclid\"]}"
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. uzletag a koszonooldalon: headspa (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "headspa"
+  },
+  {
+   "cimke": "[headspa/tiktok] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[headspa/tiktok] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[headspa/tiktok] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[headspa/tiktok] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[hair/google] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoiZ29vZ2xlIiwidXMiO..."
+  },
+  {
+   "cimke": "[hair/google] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[hair/google] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444730,\\\"us\\\":\\\"google\\\",\\\"um\\\":\\\"cpc\\\",\\\"uc\\\":\\\"1034983403\\\",\\\"gc\\\":\\\"2345678901\\\",\\\"ag\\\":\\\"3456789012\\\",\\\"ad\\\":\\\"456789012\\\",\\\"kp\\\":\\\"gclid\\\",\\\"rk\\\":\\\"nincs\\\"}"
+  },
+  {
+   "cimke": "[hair/google] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444730,\"us\":\"google\",\"um\":\"cpc\",\"uc\":\"1034983403\",\"gc\":\"2345678901\",\"ag\":\"3456789012\",\"ad\":\"456789012\",\"kp\":\"gclid\",\"kv\":\"Cj0KCQjw_LPTE"
+  },
+  {
+   "cimke": "[hair/google] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[hair/google] 3. klikkReszletes: a sutibol potolt kulcs = gclid",
+   "rendben": true,
+   "reszlet": "[\"gclid\"]"
+  },
+  {
+   "cimke": "[hair/google] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[hair/google] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[hair/google] 4. a foglalo-atadas a koszonooldalra navigalt (/fodrasz-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/fodrasz-ok?first_booking=true&service=LPT%20E2E%20proba&price="
+  },
+  {
+   "cimke": "[hair/google] 4. a koszonooldal URL-je tartalmazza a visszanyert gclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,gclid"
+  },
+  {
+   "cimke": "[hair/google] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"google\"],\"forras\":{\"cimke\":\"google_nem_markas\",\"bizonyitek_forras\":\"sut"
+  },
+  {
+   "cimke": "[hair/google] 5. forras.cimke = google_nem_markas | google_markas",
+   "rendben": true,
+   "reszlet": "google_nem_markas"
+  },
+  {
+   "cimke": "[hair/google] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[hair/google] 5. forras.klikk_potolt tartalmazza: gclid",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[hair/google] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"gclid\"]}"
+  },
+  {
+   "cimke": "[hair/google] 5. uzletag a koszonooldalon: fodrasz (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "fodrasz"
+  },
+  {
+   "cimke": "[hair/google] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[hair/google] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[hair/google] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/google] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[hair/meta] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoibWV0YSIsInVzIjoib..."
+  },
+  {
+   "cimke": "[hair/meta] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[hair/meta] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444736,\\\"us\\\":\\\"meta\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"LPT_E2E_teszt_hair\\\",\\\"ut\\\":\\\"csoport\\\",\\\"uco\\\":\\\"hirdetes\\\",\\\"gc\\\":\\\"23850123456\\\",\\\"ad\\\":\\\"6001234567\\\","
+  },
+  {
+   "cimke": "[hair/meta] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444736,\"us\":\"meta\",\"um\":\"paid_social\",\"uc\":\"LPT_E2E_teszt_hair\",\"ut\":\"csoport\",\"uco\":\"hirdetes\",\"gc\":\"23850123456\",\"ad\":\"6001234567\",\"k"
+  },
+  {
+   "cimke": "[hair/meta] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[hair/meta] 3. klikkReszletes: a sutibol potolt kulcs = fbclid",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[hair/meta] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[hair/meta] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[hair/meta] 4. a foglalo-atadas a koszonooldalra navigalt (/fodrasz-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/fodrasz-ok?first_booking=true&service=LPT%20E2E%20proba&price="
+  },
+  {
+   "cimke": "[hair/meta] 4. a koszonooldal URL-je tartalmazza a visszanyert fbclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,fbclid"
+  },
+  {
+   "cimke": "[hair/meta] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"meta\"],\"forras\":{\"cimke\":\"meta\",\"bizonyitek_forras\":\"suti\",\"klikk_potol"
+  },
+  {
+   "cimke": "[hair/meta] 5. forras.cimke = meta",
+   "rendben": true,
+   "reszlet": "meta"
+  },
+  {
+   "cimke": "[hair/meta] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[hair/meta] 5. forras.klikk_potolt tartalmazza: fbclid",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[hair/meta] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"fbclid\"]}"
+  },
+  {
+   "cimke": "[hair/meta] 5. uzletag a koszonooldalon: fodrasz (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "fodrasz"
+  },
+  {
+   "cimke": "[hair/meta] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 6b. ujabb fizetett kattintas (tiktok) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 6b. a visszanyeres mar az UJ (ttclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[hair/meta] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[hair/meta] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/meta] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[hair/tiktok] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoidGlrdG9rIiwidXMiO..."
+  },
+  {
+   "cimke": "[hair/tiktok] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[hair/tiktok] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444742,\\\"us\\\":\\\"tiktok\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"lpt_e2e_hair\\\",\\\"kp\\\":\\\"ttclid\\\",\\\"rk\\\":\\\"nincs\\\"}\"},\"ls\":{\"mh_forras_l\":\"{\\\"e\\\":{\\\"v\\\":1,\\\"t\\\":17924447"
+  },
+  {
+   "cimke": "[hair/tiktok] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444742,\"us\":\"tiktok\",\"um\":\"paid_social\",\"uc\":\"lpt_e2e_hair\",\"kp\":\"ttclid\",\"kv\":\"E.C.P.LPTE2E_MVFRATU2_HAIR_TTCLID\"},\"hozz\":{\"ana\":true,"
+  },
+  {
+   "cimke": "[hair/tiktok] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[hair/tiktok] 3. klikkReszletes: a sutibol potolt kulcs = ttclid",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[hair/tiktok] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[hair/tiktok] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[hair/tiktok] 4. a foglalo-atadas a koszonooldalra navigalt (/fodrasz-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/fodrasz-ok?first_booking=true&service=LPT%20E2E%20proba&price="
+  },
+  {
+   "cimke": "[hair/tiktok] 4. a koszonooldal URL-je tartalmazza a visszanyert ttclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,ttclid"
+  },
+  {
+   "cimke": "[hair/tiktok] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"tiktok\"],\"forras\":{\"cimke\":\"tiktok\",\"bizonyitek_forras\":\"suti\",\"klikk_p"
+  },
+  {
+   "cimke": "[hair/tiktok] 5. forras.cimke = tiktok",
+   "rendben": true,
+   "reszlet": "tiktok"
+  },
+  {
+   "cimke": "[hair/tiktok] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[hair/tiktok] 5. forras.klikk_potolt tartalmazza: ttclid",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[hair/tiktok] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"ttclid\"]}"
+  },
+  {
+   "cimke": "[hair/tiktok] 5. uzletag a koszonooldalon: fodrasz (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "fodrasz"
+  },
+  {
+   "cimke": "[hair/tiktok] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[hair/tiktok] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[hair/tiktok] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[hair/tiktok] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[laser/google] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoiZ29vZ2xlIiwidXMiO..."
+  },
+  {
+   "cimke": "[laser/google] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[laser/google] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444748,\\\"us\\\":\\\"google\\\",\\\"um\\\":\\\"cpc\\\",\\\"uc\\\":\\\"8169800733\\\",\\\"gc\\\":\\\"2345678901\\\",\\\"ag\\\":\\\"3456789012\\\",\\\"ad\\\":\\\"456789012\\\",\\\"kp\\\":\\\"gclid\\\",\\\"rk\\\":\\\"nincs\\\"}"
+  },
+  {
+   "cimke": "[laser/google] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444748,\"us\":\"google\",\"um\":\"cpc\",\"uc\":\"8169800733\",\"gc\":\"2345678901\",\"ag\":\"3456789012\",\"ad\":\"456789012\",\"kp\":\"gclid\",\"kv\":\"Cj0KCQjw_LPTE"
+  },
+  {
+   "cimke": "[laser/google] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[laser/google] 3. klikkReszletes: a sutibol potolt kulcs = gclid",
+   "rendben": true,
+   "reszlet": "[\"gclid\"]"
+  },
+  {
+   "cimke": "[laser/google] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[laser/google] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[laser/google] 4. a foglalo-atadas a koszonooldalra navigalt (/elysion-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/elysion-ok?first_booking=true&service=LPT%20E2E%20proba&price="
+  },
+  {
+   "cimke": "[laser/google] 4. a koszonooldal URL-je tartalmazza a visszanyert gclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,gclid"
+  },
+  {
+   "cimke": "[laser/google] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"google\"],\"forras\":{\"cimke\":\"google_nem_markas\",\"bizonyitek_forras\":\"sut"
+  },
+  {
+   "cimke": "[laser/google] 5. forras.cimke = google_nem_markas | google_markas",
+   "rendben": true,
+   "reszlet": "google_nem_markas"
+  },
+  {
+   "cimke": "[laser/google] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[laser/google] 5. forras.klikk_potolt tartalmazza: gclid",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[laser/google] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"gclid\"]}"
+  },
+  {
+   "cimke": "[laser/google] 5. uzletag a koszonooldalon: szor (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "szor"
+  },
+  {
+   "cimke": "[laser/google] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[laser/google] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[laser/google] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/google] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[laser/meta] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoibWV0YSIsInVzIjoib..."
+  },
+  {
+   "cimke": "[laser/meta] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[laser/meta] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444755,\\\"us\\\":\\\"meta\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"LPT_E2E_teszt_laser\\\",\\\"ut\\\":\\\"csoport\\\",\\\"uco\\\":\\\"hirdetes\\\",\\\"gc\\\":\\\"23850123456\\\",\\\"ad\\\":\\\"6001234567\\\""
+  },
+  {
+   "cimke": "[laser/meta] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444755,\"us\":\"meta\",\"um\":\"paid_social\",\"uc\":\"LPT_E2E_teszt_laser\",\"ut\":\"csoport\",\"uco\":\"hirdetes\",\"gc\":\"23850123456\",\"ad\":\"6001234567\",\""
+  },
+  {
+   "cimke": "[laser/meta] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[laser/meta] 3. klikkReszletes: a sutibol potolt kulcs = fbclid",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[laser/meta] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[laser/meta] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[laser/meta] 4. a foglalo-atadas a koszonooldalra navigalt (/elysion-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/elysion-ok?first_booking=true&service=LPT%20E2E%20proba&price="
+  },
+  {
+   "cimke": "[laser/meta] 4. a koszonooldal URL-je tartalmazza a visszanyert fbclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,fbclid"
+  },
+  {
+   "cimke": "[laser/meta] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"meta\"],\"forras\":{\"cimke\":\"meta\",\"bizonyitek_forras\":\"suti\",\"klikk_potol"
+  },
+  {
+   "cimke": "[laser/meta] 5. forras.cimke = meta",
+   "rendben": true,
+   "reszlet": "meta"
+  },
+  {
+   "cimke": "[laser/meta] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[laser/meta] 5. forras.klikk_potolt tartalmazza: fbclid",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[laser/meta] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"fbclid\"]}"
+  },
+  {
+   "cimke": "[laser/meta] 5. uzletag a koszonooldalon: szor (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "szor"
+  },
+  {
+   "cimke": "[laser/meta] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 6b. ujabb fizetett kattintas (tiktok) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 6b. a visszanyeres mar az UJ (ttclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[laser/meta] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[laser/meta] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/meta] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[laser/tiktok] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoidGlrdG9rIiwidXMiO..."
+  },
+  {
+   "cimke": "[laser/tiktok] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[laser/tiktok] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444762,\\\"us\\\":\\\"tiktok\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"lpt_e2e_laser\\\",\\\"kp\\\":\\\"ttclid\\\",\\\"rk\\\":\\\"nincs\\\"}\"},\"ls\":{\"mh_forras_l\":\"{\\\"e\\\":{\\\"v\\\":1,\\\"t\\\":1792444"
+  },
+  {
+   "cimke": "[laser/tiktok] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444762,\"us\":\"tiktok\",\"um\":\"paid_social\",\"uc\":\"lpt_e2e_laser\",\"kp\":\"ttclid\",\"kv\":\"E.C.P.LPTE2E_MVFRATU2_LASER_TTCLID\"},\"hozz\":{\"ana\":tru"
+  },
+  {
+   "cimke": "[laser/tiktok] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[laser/tiktok] 3. klikkReszletes: a sutibol potolt kulcs = ttclid",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[laser/tiktok] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[laser/tiktok] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[laser/tiktok] 4. a foglalo-atadas a koszonooldalra navigalt (/elysion-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/elysion-ok?first_booking=true&service=LPT%20E2E%20proba&price="
+  },
+  {
+   "cimke": "[laser/tiktok] 4. a koszonooldal URL-je tartalmazza a visszanyert ttclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,ttclid"
+  },
+  {
+   "cimke": "[laser/tiktok] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"tiktok\"],\"forras\":{\"cimke\":\"tiktok\",\"bizonyitek_forras\":\"suti\",\"klikk_p"
+  },
+  {
+   "cimke": "[laser/tiktok] 5. forras.cimke = tiktok",
+   "rendben": true,
+   "reszlet": "tiktok"
+  },
+  {
+   "cimke": "[laser/tiktok] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[laser/tiktok] 5. forras.klikk_potolt tartalmazza: ttclid",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[laser/tiktok] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"ttclid\"]}"
+  },
+  {
+   "cimke": "[laser/tiktok] 5. uzletag a koszonooldalon: szor (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "szor"
+  },
+  {
+   "cimke": "[laser/tiktok] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[laser/tiktok] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[laser/tiktok] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[laser/tiktok] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[oxygen/google] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoiZ29vZ2xlIiwidXMiO..."
+  },
+  {
+   "cimke": "[oxygen/google] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[oxygen/google] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444768,\\\"us\\\":\\\"google\\\",\\\"um\\\":\\\"cpc\\\",\\\"uc\\\":\\\"1300700972\\\",\\\"gc\\\":\\\"2345678901\\\",\\\"ag\\\":\\\"3456789012\\\",\\\"ad\\\":\\\"456789012\\\",\\\"kp\\\":\\\"gclid\\\",\\\"rk\\\":\\\"nincs\\\"}"
+  },
+  {
+   "cimke": "[oxygen/google] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444768,\"us\":\"google\",\"um\":\"cpc\",\"uc\":\"1300700972\",\"gc\":\"2345678901\",\"ag\":\"3456789012\",\"ad\":\"456789012\",\"kp\":\"gclid\",\"kv\":\"Cj0KCQjw_LPTE"
+  },
+  {
+   "cimke": "[oxygen/google] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[oxygen/google] 3. klikkReszletes: a sutibol potolt kulcs = gclid",
+   "rendben": true,
+   "reszlet": "[\"gclid\"]"
+  },
+  {
+   "cimke": "[oxygen/google] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[oxygen/google] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[oxygen/google] 4. a foglalo-atadas a koszonooldalra navigalt (/oxigenterapia-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/oxigenterapia-ok?first_booking=true&service=LPT%20E2E%20proba&"
+  },
+  {
+   "cimke": "[oxygen/google] 4. a koszonooldal URL-je tartalmazza a visszanyert gclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,gclid"
+  },
+  {
+   "cimke": "[oxygen/google] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"google\"],\"forras\":{\"cimke\":\"google_nem_markas\",\"bizonyitek_forras\":\"sut"
+  },
+  {
+   "cimke": "[oxygen/google] 5. forras.cimke = google_nem_markas | google_markas",
+   "rendben": true,
+   "reszlet": "google_nem_markas"
+  },
+  {
+   "cimke": "[oxygen/google] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[oxygen/google] 5. forras.klikk_potolt tartalmazza: gclid",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[oxygen/google] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"gclid\"]}"
+  },
+  {
+   "cimke": "[oxygen/google] 5. uzletag a koszonooldalon: oxigen (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "oxigen"
+  },
+  {
+   "cimke": "[oxygen/google] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[oxygen/google] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[oxygen/google] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/google] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[oxygen/meta] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoibWV0YSIsInVzIjoib..."
+  },
+  {
+   "cimke": "[oxygen/meta] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[oxygen/meta] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444775,\\\"us\\\":\\\"meta\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"LPT_E2E_teszt_oxygen\\\",\\\"ut\\\":\\\"csoport\\\",\\\"uco\\\":\\\"hirdetes\\\",\\\"gc\\\":\\\"23850123456\\\",\\\"ad\\\":\\\"6001234567\\"
+  },
+  {
+   "cimke": "[oxygen/meta] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444775,\"us\":\"meta\",\"um\":\"paid_social\",\"uc\":\"LPT_E2E_teszt_oxygen\",\"ut\":\"csoport\",\"uco\":\"hirdetes\",\"gc\":\"23850123456\",\"ad\":\"6001234567\","
+  },
+  {
+   "cimke": "[oxygen/meta] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[oxygen/meta] 3. klikkReszletes: a sutibol potolt kulcs = fbclid",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[oxygen/meta] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[oxygen/meta] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[oxygen/meta] 4. a foglalo-atadas a koszonooldalra navigalt (/oxigenterapia-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/oxigenterapia-ok?first_booking=true&service=LPT%20E2E%20proba&"
+  },
+  {
+   "cimke": "[oxygen/meta] 4. a koszonooldal URL-je tartalmazza a visszanyert fbclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,fbclid"
+  },
+  {
+   "cimke": "[oxygen/meta] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"meta\"],\"forras\":{\"cimke\":\"meta\",\"bizonyitek_forras\":\"suti\",\"klikk_potol"
+  },
+  {
+   "cimke": "[oxygen/meta] 5. forras.cimke = meta",
+   "rendben": true,
+   "reszlet": "meta"
+  },
+  {
+   "cimke": "[oxygen/meta] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[oxygen/meta] 5. forras.klikk_potolt tartalmazza: fbclid",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[oxygen/meta] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"fbclid\"]}"
+  },
+  {
+   "cimke": "[oxygen/meta] 5. uzletag a koszonooldalon: oxigen (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "oxigen"
+  },
+  {
+   "cimke": "[oxygen/meta] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 6b. ujabb fizetett kattintas (tiktok) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 6b. a visszanyeres mar az UJ (ttclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[oxygen/meta] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[oxygen/meta] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/meta] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoidGlrdG9rIiwidXMiO..."
+  },
+  {
+   "cimke": "[oxygen/tiktok] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444781,\\\"us\\\":\\\"tiktok\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"lpt_e2e_oxygen\\\",\\\"kp\\\":\\\"ttclid\\\",\\\"rk\\\":\\\"nincs\\\"}\"},\"ls\":{\"mh_forras_l\":\"{\\\"e\\\":{\\\"v\\\":1,\\\"t\\\":179244"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444781,\"us\":\"tiktok\",\"um\":\"paid_social\",\"uc\":\"lpt_e2e_oxygen\",\"kp\":\"ttclid\",\"kv\":\"E.C.P.LPTE2E_MVFRATU2_OXYGEN_TTCLID\"},\"hozz\":{\"ana\":t"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 3. klikkReszletes: a sutibol potolt kulcs = ttclid",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 4. a foglalo-atadas a koszonooldalra navigalt (/oxigenterapia-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/oxigenterapia-ok?first_booking=true&service=LPT%20E2E%20proba&"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 4. a koszonooldal URL-je tartalmazza a visszanyert ttclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,ttclid"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"tiktok\"],\"forras\":{\"cimke\":\"tiktok\",\"bizonyitek_forras\":\"suti\",\"klikk_p"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. forras.cimke = tiktok",
+   "rendben": true,
+   "reszlet": "tiktok"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. forras.klikk_potolt tartalmazza: ttclid",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"ttclid\"]}"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. uzletag a koszonooldalon: oxigen (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "oxigen"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[oxygen/tiktok] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[oxygen/tiktok] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[pmu/google] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoiZ29vZ2xlIiwidXMiO..."
+  },
+  {
+   "cimke": "[pmu/google] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[pmu/google] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444788,\\\"us\\\":\\\"google\\\",\\\"um\\\":\\\"cpc\\\",\\\"uc\\\":\\\"7464455429\\\",\\\"gc\\\":\\\"2345678901\\\",\\\"ag\\\":\\\"3456789012\\\",\\\"ad\\\":\\\"456789012\\\",\\\"kp\\\":\\\"gclid\\\",\\\"rk\\\":\\\"nincs\\\"}"
+  },
+  {
+   "cimke": "[pmu/google] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444788,\"us\":\"google\",\"um\":\"cpc\",\"uc\":\"7464455429\",\"gc\":\"2345678901\",\"ag\":\"3456789012\",\"ad\":\"456789012\",\"kp\":\"gclid\",\"kv\":\"Cj0KCQjw_LPTE"
+  },
+  {
+   "cimke": "[pmu/google] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[pmu/google] 3. klikkReszletes: a sutibol potolt kulcs = gclid",
+   "rendben": true,
+   "reszlet": "[\"gclid\"]"
+  },
+  {
+   "cimke": "[pmu/google] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[pmu/google] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[pmu/google] 4. a foglalo-atadas a koszonooldalra navigalt (/pmu-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/pmu-ok?first_booking=true&service=LPT+E2E+proba&price=0&locati"
+  },
+  {
+   "cimke": "[pmu/google] 4. a koszonooldal URL-je tartalmazza a visszanyert gclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,mh_proba,gclid"
+  },
+  {
+   "cimke": "[pmu/google] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"google\"],\"forras\":{\"cimke\":\"google_nem_markas\",\"bizonyitek_forras\":\"sut"
+  },
+  {
+   "cimke": "[pmu/google] 5. forras.cimke = google_nem_markas | google_markas",
+   "rendben": true,
+   "reszlet": "google_nem_markas"
+  },
+  {
+   "cimke": "[pmu/google] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[pmu/google] 5. forras.klikk_potolt tartalmazza: gclid",
+   "rendben": true,
+   "reszlet": "gclid"
+  },
+  {
+   "cimke": "[pmu/google] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"gclid\"]}"
+  },
+  {
+   "cimke": "[pmu/google] 5. uzletag a koszonooldalon: pmu (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "pmu"
+  },
+  {
+   "cimke": "[pmu/google] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[pmu/google] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[pmu/google] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/google] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[pmu/meta] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoibWV0YSIsInVzIjoib..."
+  },
+  {
+   "cimke": "[pmu/meta] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[pmu/meta] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444792,\\\"us\\\":\\\"meta\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"LPT_E2E_teszt_pmu\\\",\\\"ut\\\":\\\"csoport\\\",\\\"uco\\\":\\\"hirdetes\\\",\\\"gc\\\":\\\"23850123456\\\",\\\"ad\\\":\\\"6001234567\\\",\\"
+  },
+  {
+   "cimke": "[pmu/meta] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444792,\"us\":\"meta\",\"um\":\"paid_social\",\"uc\":\"LPT_E2E_teszt_pmu\",\"ut\":\"csoport\",\"uco\":\"hirdetes\",\"gc\":\"23850123456\",\"ad\":\"6001234567\",\"kp"
+  },
+  {
+   "cimke": "[pmu/meta] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[pmu/meta] 3. klikkReszletes: a sutibol potolt kulcs = fbclid",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[pmu/meta] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[pmu/meta] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[pmu/meta] 4. a foglalo-atadas a koszonooldalra navigalt (/pmu-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/pmu-ok?first_booking=true&service=LPT+E2E+proba&price=0&locati"
+  },
+  {
+   "cimke": "[pmu/meta] 4. a koszonooldal URL-je tartalmazza a visszanyert fbclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,mh_proba,fbclid"
+  },
+  {
+   "cimke": "[pmu/meta] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"meta\"],\"forras\":{\"cimke\":\"meta\",\"bizonyitek_forras\":\"suti\",\"klikk_potol"
+  },
+  {
+   "cimke": "[pmu/meta] 5. forras.cimke = meta",
+   "rendben": true,
+   "reszlet": "meta"
+  },
+  {
+   "cimke": "[pmu/meta] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[pmu/meta] 5. forras.klikk_potolt tartalmazza: fbclid",
+   "rendben": true,
+   "reszlet": "fbclid"
+  },
+  {
+   "cimke": "[pmu/meta] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"fbclid\"]}"
+  },
+  {
+   "cimke": "[pmu/meta] 5. uzletag a koszonooldalon: pmu (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "pmu"
+  },
+  {
+   "cimke": "[pmu/meta] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 6b. ujabb fizetett kattintas (tiktok) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 6b. a visszanyeres mar az UJ (ttclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[pmu/meta] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[pmu/meta] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/meta] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 1. fizetett erkezes: POST /api/mosaic-forras 200",
+   "rendben": true,
+   "reszlet": "200"
+  },
+  {
+   "cimke": "[pmu/tiktok] 1. Set-Cookie: mh_lpt; Max-Age=2592000; Path=/; HttpOnly; Secure; SameSite=Lax",
+   "rendben": true,
+   "reszlet": "mh_lpt=eyJ2IjoxLCJwIjoidGlrdG9rIiwidXMiO..."
+  },
+  {
+   "cimke": "[pmu/tiktok] 1. a suti a bongeszoben: HttpOnly, Secure, SameSite=Lax, ~30 nap",
+   "rendben": true,
+   "reszlet": "{\"httpOnly\":true,\"secure\":true,\"sameSite\":\"Lax\",\"nap\":30}"
+  },
+  {
+   "cimke": "[pmu/tiktok] 1. JS-bol (document.cookie) nem olvashato",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 1. a munkamenet / latogatas-tarolo tisztitott erintest tarol, nyers azonosito nelkul",
+   "rendben": true,
+   "reszlet": "{\"ss\":{\"mh_forras\":\"{\\\"v\\\":1,\\\"t\\\":1792444797,\\\"us\\\":\\\"tiktok\\\",\\\"um\\\":\\\"paid_social\\\",\\\"uc\\\":\\\"lpt_e2e_pmu\\\",\\\"kp\\\":\\\"ttclid\\\",\\\"rk\\\":\\\"nincs\\\"}\"},\"ls\":{\"mh_forras_l\":\"{\\\"e\\\":{\\\"v\\\":1,\\\"t\\\":179244479"
+  },
+  {
+   "cimke": "[pmu/tiktok] 1. az azonositot CSAK a sutit iro POST viszi (kv), hozzajarulassal",
+   "rendben": true,
+   "reszlet": "{\"forras\":{\"v\":1,\"t\":1792444797,\"us\":\"tiktok\",\"um\":\"paid_social\",\"uc\":\"lpt_e2e_pmu\",\"kp\":\"ttclid\",\"kv\":\"E.C.P.LPTE2E_MVFRATU2_PMU_TTCLID\"},\"hozz\":{\"ana\":true,\"a"
+  },
+  {
+   "cimke": "[pmu/tiktok] 2. a tarolok torlese utan a suti megvan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 3. GET /api/mosaic-forras: a sutibol visszanyert azonosito (a tarolok ures)",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[pmu/tiktok] 3. klikkReszletes: a sutibol potolt kulcs = ttclid",
+   "rendben": true,
+   "reszlet": "[\"ttclid\"]"
+  },
+  {
+   "cimke": "[pmu/tiktok] 3. a lekeres egyszer megy (memoria)",
+   "rendben": true,
+   "reszlet": "1"
+  },
+  {
+   "cimke": "[pmu/tiktok] 3. a foglalo atiranyitasi kapuja (mhKeretbenOldal) elerheto",
+   "rendben": true,
+   "reszlet": "function"
+  },
+  {
+   "cimke": "[pmu/tiktok] 4. a foglalo-atadas a koszonooldalra navigalt (/pmu-ok), az ELONEZETI oldalunkra",
+   "rendben": true,
+   "reszlet": "https://claude-mosaic-lpt-7nap-katti.mosaic-d77.pages.dev/pmu-ok?first_booking=true&service=LPT+E2E+proba&price=0&locati"
+  },
+  {
+   "cimke": "[pmu/tiktok] 4. a koszonooldal URL-je tartalmazza a visszanyert ttclid-t",
+   "rendben": true,
+   "reszlet": "first_booking,service,price,location,employee,g,bookingUrl,mh_proba,ttclid"
+  },
+  {
+   "cimke": "[pmu/tiktok] 4. a tobbi parameter (bookingUrl, first_booking, ...) valtozatlan",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. a koszonooldali jelzes (POST /api/meres-erkezes) 200, ok:true",
+   "rendben": true,
+   "reszlet": "200 {\"ok\":true,\"frissitve\":true,\"hibak\":[],\"mezok\":[\"tiktok\"],\"forras\":{\"cimke\":\"tiktok\",\"bizonyitek_forras\":\"suti\",\"klikk_p"
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. forras.cimke = tiktok",
+   "rendben": true,
+   "reszlet": "tiktok"
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. forras.bizonyitek_forras = 'suti'",
+   "rendben": true,
+   "reszlet": "suti"
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. forras.klikk_potolt tartalmazza: ttclid",
+   "rendben": true,
+   "reszlet": "ttclid"
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. forras.kesei_fizetett = false",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. a kuldott torzs: forras_tarolo + lpt_potlas; a forras-jelzesben nincs nyers azonosito",
+   "rendben": true,
+   "reszlet": "{\"tarolo\":\"munkamenet\",\"potlas\":[\"ttclid\"]}"
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. uzletag a koszonooldalon: pmu (a Salonic-host szerint)",
+   "rendben": true,
+   "reszlet": "pmu"
+  },
+  {
+   "cimke": "[pmu/tiktok] 5. a koszonooldal NEM hozott uj fizetett erintest (a visszanyert azonosito az URL-ben nem \"uj kattintas\")",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 6a. organikus / direkt visszateres: a suti valtozatlan, nincs uj POST",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 6b. ujabb fizetett kattintas (meta) felulirja a sutit",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 6b. a visszanyeres mar az UJ (fbclid) kattintast adja",
+   "rendben": true,
+   "reszlet": "[\"fbclid\"]"
+  },
+  {
+   "cimke": "[pmu/tiktok] 6c. kifejezett elutasitas: torlo POST megy (azonosito nelkul)",
+   "rendben": true,
+   "reszlet": "{\"hozz\":{\"adv\":false}}"
+  },
+  {
+   "cimke": "[pmu/tiktok] 6c. a suti torolve",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] 6c. elutasitas utan a kapu zarva: lptKlikk / klikkAzonositok ures",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] nincs JS-hiba az oldalakon",
+   "rendben": true,
+   "reszlet": ""
+  },
+  {
+   "cimke": "[pmu/tiktok] nincs tiltott kimeno meres (a kimeno kereseket a tilt.mjs blokkolja, az eles domain nem erintett)",
+   "rendben": true,
+   "reszlet": ""
+  }
+ ]
+}
