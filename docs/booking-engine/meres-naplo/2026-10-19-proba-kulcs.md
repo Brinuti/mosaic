@@ -21,7 +21,7 @@ A `google_proba` / `google_proba_visszavon` muveleteket (PR #409) a fo `EGYEZTET
 - Uj: `netlify/lib/meres/proba-kulcs.js`, `tools/test-proba-kulcs.mjs`; `wrangler.toml` (ket valtozo a Production [vars]-ban), futtatokonyv.
 
 ## 3b. Tovabbi fajlok (main -> PR)
-- `wrangler.toml` ce5e69f0 -> 50c93708 (ket uj Production [vars] sor); `docs/booking-engine/MERES_GOOGLE_E2E_FUTTATOKONYV.md` c3c1f8e4 -> fdd055c3.
+- `wrangler.toml` ce5e69f063 -> 50c9370849 (ket uj Production [vars] sor); `docs/booking-engine/MERES_GOOGLE_E2E_FUTTATOKONYV.md` c3c1f8e481 -> 8246379d33 (a 4b pont). A hash-tablazat a `main` 393909ef allapotara szamolva (a 2026-10-19-i main-beolvasas utan: #416, #419); az eredeti, korabbi tablazat `fdd055c3` runbook-erteke a delta-review nit-ek elotti allapot volt.
 
 ## 4. Regresszio
 `test-google-proba` 25/25, `test-meres` 48/48, `test-qa-nap` 43/43, `test-salonic-direct` 75/75 zold.
