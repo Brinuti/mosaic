@@ -13,7 +13,7 @@ import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok, GOOGLE_KATT, l
 import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
-import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesek, erintesTorol, lpcHiba } from './db.js';
+import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesek, erintesTorol, lpcHiba, motorStatNo } from './db.js';
 import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot, UUID_RE } from './salonic-szerver.js';
 /** Unix -> Budapest helyi ido, Google Ads import formatum: "yyyy-mm-dd hh:mm:ss+hh:mm" (a nyari / teli ido szerinti eltolassal). */
 export function budapestIdo(unix) {
@@ -245,6 +245,8 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
   const letrejott = await foglalasLetrehoz(db, { uuid, tipus, uj_vendeg: e.ujVendeg, cimke: c.cimke, bizonyitek: c.bizonyitek + (c.elavult ? '+elavult_lista' : ''), hozzajarulas: hj.allapot, allapot, teszt, parosito, parosito_hely: parositoHely, ...hirdetes,
     lpc_cimke: lpc.cimke, lpc_bizonyitek: lpc.bizonyitek, lpc_kampany: lpc.kampany, lpc_hirdetescsoport: lpc.hirdetescsoport, lpc_hirdetes: lpc.hirdetes, lpc_kora_nap: lpc.kora_nap, kesoi_fizetett: lpc.kesoi_fizetett, lpc_verzio: lpc.verzio, ...gads, ertek }, most);
   if (!letrejott) return valasz(200, { ok: true, ismetles: true }); // versenyhelyzet: egy masik kerelem mar letrehozta
+  // GY-24: `kesz` CSAK tenyleges, ELSO mentes utan (ismetelt kerelem / dupla kuldes fent mar visszater, nem szamol ketszer); teszt foglalas kulon kornyezet-ertek
+  await motorStatNo(db, { most, kornyezet: teszt ? 'teszt' : statKornyezet(request), esemeny: 'kesz', lepes: 'adatlap', eszkoz: statEszkoz(be.m) });
   if (allapot !== 'aktiv') await riaszt(db, 'bizonytalan_foglalas', { uuid, adat: miert, most });
   let token = null;
   if (allapot === 'aktiv' && !teszt && ertek !== null) token = await tokenKiadas(db, uuid, tipus, ertek, most);
@@ -453,6 +455,31 @@ export async function adminVegpont({ request, env, deps = {} }) {
     }
     return valasz(200, { ok: true, db: kimenet.length, aktiv: kimenet.filter((x) => x.allapot === 'aktiv'), lemondott: kimenet.filter((x) => x.allapot === 'lemondott') });
   }
+  const tho = u.searchParams.get('tolcser');
+  if (tho && /^\d{4}-\d{2}$/.test(tho)) { // GY-24: lepesenkenti tolcser (csak napi aggregalt szamok)
+    const kornyezet = ['eles', 'elonezet', 'teszt'].includes(u.searchParams.get('kornyezet')) ? u.searchParams.get('kornyezet') : 'eles';
+    const sorok = (await db.prepare(
+      `SELECT nap, esemeny, lepes, kategoria, eszkoz, db FROM gy_motor_stat WHERE kornyezet = ?1 AND nap >= ?2 AND nap < ?3 ORDER BY nap, esemeny, lepes, kategoria, eszkoz`,
+    ).bind(kornyezet, tho + '-01', (() => { const [y, m] = tho.split('-').map(Number); return m === 12 ? `${y + 1}-01-01` : `${y}-${String(m + 1).padStart(2, '0')}-01`; })()).all()).results || [];
+    const osszegez = (szuro) => sorok.filter(szuro).reduce((a, x) => a + x.db, 0);
+    const lepesSorrend = ['szolg', 'valt', 'hely', 'szakember', 'ido', 'adatlap', 'hivas'];
+    const eszkozok = ['mobil', 'asztali', 'ismeretlen'];
+    const lepesek = lepesSorrend.map((l) => ({
+      lepes: l, megjelent: osszegez((x) => x.esemeny === 'lepes' && x.lepes === l), elakad: osszegez((x) => x.esemeny === 'elakad' && x.lepes === l),
+      bezar_gomb: osszegez((x) => x.esemeny === 'bezar_gomb' && x.lepes === l), elhagy_jelzes_becsles: osszegez((x) => x.esemeny === 'elhagy_jelzes' && x.lepes === l),
+      eszkozonkent: Object.fromEntries(eszkozok.map((e) => [e, { megjelent: osszegez((x) => x.esemeny === 'lepes' && x.lepes === l && x.eszkoz === e), elakad: osszegez((x) => x.esemeny === 'elakad' && x.lepes === l && x.eszkoz === e), bezar_gomb: osszegez((x) => x.esemeny === 'bezar_gomb' && x.lepes === l && x.eszkoz === e), elhagy_jelzes_becsles: osszegez((x) => x.esemeny === 'elhagy_jelzes' && x.lepes === l && x.eszkoz === e) }])),
+    }));
+    const nyit = osszegez((x) => x.esemeny === 'nyit');
+    const kesz = osszegez((x) => x.esemeny === 'kesz' && x.lepes === 'adatlap'), keszHivas = osszegez((x) => x.esemeny === 'kesz' && x.lepes === 'hivas');
+    const arany = (a, b) => (b ? Math.round((1000 * a) / b) / 10 : null);
+    return valasz(200, {
+      ok: true, honap: tho, kornyezet, nyit, kesz_foglalas: kesz, kesz_visszahivas: keszHivas, lepesek,
+      elakadasok: sorok.filter((x) => x.esemeny === 'elakad').reduce((a, x) => { const k = `${x.lepes}|${x.kategoria}`; a[k] = (a[k] || 0) + x.db; return a; }, {}),
+      kozelito_arany: { kesz_foglalas_per_nyit_szazalek: arany(kesz, nyit), kesz_visszahivas_per_nyit_szazalek: arany(keszHivas, nyit), lepes_per_nyit_szazalek: Object.fromEntries(lepesek.map((l) => [l.lepes, arany(l.megjelent, nyit)])) },
+      megjegyzes: 'KOZELITO: azonosito nelkuli esemenytolcser, nem pacienskovetes. Visszalepes / ujratoltes / tobbszori megnyitas torzithat; a lepes-megjelenes megnyitasonkent legfeljebb egyszer szamol. Az elhagy_jelzes (pagehide / visibilitychange) csak BECSLES, nem azonos az elhagyassal.',
+      napi: sorok,
+    });
+  }
   const lho = u.searchParams.get('lpc');
   if (lho && /^\d{4}-\d{2}$/.test(lho)) { // GY-22 ellenorzes: csak aggregalt szamok
     const [ev, m] = lho.split('-').map(Number);
@@ -496,6 +523,34 @@ export async function adminVegpont({ request, env, deps = {} }) {
   return nincsKerelem('ismeretlen_muvelet');
 }
 
+// --- /api/gy-motor-stat (GY-24: lepesenkenti tolcsermeres) -------------------------------------------------------------------------------------
+// NEVTELEN napi szamlalo: esemeny + lepes + (elakadasnal) FIX kategoria + eszkoz. Suti / azonosito / IP / user-agent / URL / mezoertek / szabad szoveg NINCS. A `kesz` esemenyt CSAK a szerver
+// irja (a foglalas / visszahivas mentese utan), a kliens nem hamisithatja. A statisztika hibaja soha nem akadalyozza a foglalast.
+export const STAT_ESEMENYEK = Object.freeze(['nyit', 'lepes', 'elakad', 'bezar_gomb', 'elhagy_jelzes']);
+export const STAT_LEPESEK = Object.freeze(['szolg', 'valt', 'hely', 'szakember', 'ido', 'adatlap', 'hivas']);
+export const STAT_KATEGORIAK = Object.freeze(['kotelezo_hianyzik', 'formatum', 'nincs_szabad_ido', 'szerverhiba']);
+/** A kornyezet az Origin (tartalekul a Referer) alapjan: eles | elonezet | teszt (a proxy a pages.dev hostot mutatja, ezert nem a request.url). */
+export function statKornyezet(request) {
+  const eredet = request.headers.get('origin') || request.headers.get('referer') || '';
+  if (/^https:\/\/(www\.)?gyogytornaszom\.hu(\/|$)/.test(eredet)) return 'eles';
+  if (/^https:\/\/([a-z0-9-]+\.)?gyogytorna\.pages\.dev(\/|$)/.test(eredet)) return 'elonezet';
+  return 'teszt';
+}
+const statEszkoz = (m) => (m === 1 || m === '1' ? 'mobil' : m === 0 || m === '0' ? 'asztali' : 'ismeretlen');
+
+export async function motorStatVegpont({ request, env, deps = {} }) {
+  if (request.method !== 'POST') return new Response(null, { status: 405 });
+  let b = {};
+  try { b = JSON.parse((await request.text()).slice(0, 200)) || {}; } catch (e) { return new Response(null, { status: 400 }); }
+  if (!STAT_ESEMENYEK.includes(b.e)) return new Response(null, { status: 400 });
+  const lepes = STAT_LEPESEK.includes(b.l) ? b.l : (b.l ? 'egyeb' : '');
+  const kategoria = b.e === 'elakad' ? (STAT_KATEGORIAK.includes(b.k) ? b.k : 'egyeb') : '';
+  try {
+    if (env.GY_DB) { await sema(env.GY_DB); await motorStatNo(env.GY_DB, { most: mostUnix(deps), kornyezet: statKornyezet(request), esemeny: b.e, lepes, kategoria, eszkoz: statEszkoz(b.m) }); }
+  } catch (e) { /* a statisztika hibaja nem hiba a latogatonak */ }
+  return new Response(null, { status: 204 });
+}
+
 // --- /api/gy-visszahivas ------------------------------------------------------------------------------------------------------
 // Az ELO "Telefonos Idopont" urlap (gyogytornaszom.hu/online-gyogytorna/, 123FormBuilder) mezoi, szo szerint: a valasztolistak ertekei az elo urlap szovegei.
 export const SURGOSSEG = Object.freeze(['A lehető leggyorsabban!', '1-2 héten belül!', '1 hónapon belül.']);
@@ -536,6 +591,7 @@ export async function visszahivasVegpont({ request, env, deps = {} }) {
   const mar = await db.prepare('SELECT id FROM gy_visszahivas WHERE tel = ? AND letrehozva > ?').bind(tel, most - 600).first();
   if (mar) return valasz(200, { ok: true });
   const r = await db.prepare('INSERT INTO gy_visszahivas (letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal) VALUES (?,?,?,?,?,?,?,?)').bind(most, nev, email, tel, be.rendelo, be.surgosseg, be.hivhato, oldal).run();
+  await motorStatNo(db, { most, kornyezet: statKornyezet(request), esemeny: 'kesz', lepes: 'hivas', eszkoz: statEszkoz(be.m) }); // GY-24
   const id = r && r.meta ? r.meta.last_row_id : null;
   if (Math.random() < 0.05) takarit(db, most).catch(() => {}); // 60 napos torles
   // ertesites: a klinikanak szolo webhook (pl. Zapier -> e-mail). A vendeg valasza ettol fuggetlen.
