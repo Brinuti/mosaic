@@ -89,7 +89,7 @@ export async function naploLeker(db, sourceId) {
 export async function kuldesMegerosit(db, { id, allapot, http_status, valasz, kuldo }, now = Date.now()) {
   await meresSema(db);
   if (!['elkuldve', 'hiba'].includes(allapot)) return { ok: false, miert: 'allapot: elkuldve | hiba' };
-  const r = await db.prepare("UPDATE meres_kuldes SET allapot = ?2, http_status = ?3, platform_valasz = ?4, kuldo = ?5, frissitve = ?6, probalkozas = probalkozas + 1 WHERE id = ?1 AND allapot IN ('nincs_hitelesites','hiba')").bind(id, allapot, http_status ?? null, valaszMaszk(String(valasz ?? '').slice(0, 2000)), String(kuldo || 'kulso').slice(0, 60), sec(now)).run();
+  const r = await db.prepare("UPDATE meres_kuldes SET allapot = ?2, http_status = ?3, platform_valasz = ?4, kuldo = ?5, frissitve = ?6, probalkozas = probalkozas + 1 WHERE id = ?1 AND allapot IN ('nincs_hitelesites','hiba')").bind(id, allapot, http_status ?? null, valaszMaszk(String(valasz ?? '')).slice(0, 2000), String(kuldo || 'kulso').slice(0, 60), sec(now)).run();
   return { ok: !!(r.meta && r.meta.changes > 0) };
 }
 export async function fuggoKuldesek(db) {

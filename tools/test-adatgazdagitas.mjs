@@ -311,10 +311,14 @@ test('valaszMaszk / hibaMaszk: a hash-szeru (32+ hexa) futamok maszkoltak, korny
   assert.equal(valaszMaszk(`fn=${x}`), 'fn=[hash]'); assert.equal(valaszMaszk(`hash_${x}`), 'hash_[hash]'); assert.equal(valaszMaszk(`x${x}y`), 'x[hash]y'); assert.equal(valaszMaszk(hosszu), '[hash]'); assert.equal(valaszMaszk(x.toUpperCase()), '[hash]');
   assert.equal(valaszMaszk(x.slice(0, 31)), x.slice(0, 31), '31 karakter nem hash'); assert.equal(valaszMaszk('Invalid parameter'), 'Invalid parameter'); assert.equal(valaszMaszk(null), null); assert.equal(valaszMaszk(12), 12);
   const db = d1(); const { f } = hamis(); await erkezesMent(db, erkBe(), NOW);
-  await elosztas(db, FK(), { env: { ...TELJES_ENV, META_CAPI_TOKEN: undefined }, fetchImpl: f, now: () => NOW });
+  await elosztas(db, FK(), { env: { ...TELJES_ENV, META_CAPI_TOKEN: undefined, TIKTOK_EVENTS_TOKEN: undefined }, fetchImpl: f, now: () => NOW });
   const sor = db.db.prepare("SELECT id FROM meres_kuldes WHERE platform = 'meta' AND allapot = 'nincs_hitelesites'").get(); assert.ok(sor, 'van hitelesites nelkuli Meta-sor');
   const r = await kuldesMegerosit(db, { id: sor.id, allapot: 'hiba', http_status: 400, valasz: `bad fn=${h('anna')} em_${h('teszt.claude@example.com')}`, kuldo: 'kulso' }); assert.equal(r.ok, true);
   const mentett = db.db.prepare('SELECT platform_valasz FROM meres_kuldes WHERE id = ?').get(sor.id).platform_valasz; assert.equal(mentett, 'bad fn=[hash] em_[hash]');
+  // a hash a 2000. karakternel: ELOBB maszkolunk, aztan vagunk (nem marad nyers toredek)
+  const sor2 = db.db.prepare("SELECT id FROM meres_kuldes WHERE platform = 'tiktok' AND allapot = 'nincs_hitelesites'").get(); assert.ok(sor2);
+  await kuldesMegerosit(db, { id: sor2.id, allapot: 'hiba', http_status: 400, valasz: 'z'.repeat(1979) + ' ' + h('anna') + ' vege', kuldo: 'kulso' });
+  const csonk = db.db.prepare('SELECT platform_valasz FROM meres_kuldes WHERE id = ?').get(sor2.id).platform_valasz; assert.ok(!/[0-9a-f]{16}/.test(csonk) && csonk.includes('[hash]'), csonk.slice(1975)); // a hash a 1980. karaktertol indul: a vagas-elozo sorrend 20 nyers hexa karaktert hagyna
 });
 test('kuldes(): a tartalek-ujraprobalas CSAK kifejezett elutasitasra fut (Meta error / 4xx a 408 es 429 kivetelevel, TikTok 4xxxx kod, GA4 validacio); csonkolt / nem-JSON 200, 429, 5xx, halozati hiba: NEM (az esemeny feldolgozodhatott)', async () => {
   const ctx = await ctxEpit(); const meta = metaKerelem(esemenyek(ctx.fk)[0], ctx, ENV); assert.ok(meta.tartalek_body);
@@ -338,6 +342,9 @@ test('kuldes(): a tartalek-ujraprobalas CSAK kifejezett elutasitasra fut (Meta e
   const ga = ga4Kerelem(esemenyek(ctx.fk)[0], ctx, ENV); assert.ok(ga.tartalek_body); const GE = { ...ENV, GA4_TESZT_API_SECRET: 's' };
   assert.equal((await hivasSzam(ga, GE, V(503, 'unavailable'))).n, 1, 'GA4 debug 5xx: nincs ujraprobalas');
   assert.equal((await hivasSzam(ga, GE, V(400, { validationMessages: [] }))).n, 2, 'GA4 debug 4xx: kifejezett');
+  assert.equal((await hivasSzam(ga, GE, V(503, { validationMessages: [{ fieldPath: 'x', description: 'y', validationCode: 'VALUE_INVALID' }] }))).n, 1, 'GA4 debug 5xx + uzenet sem kifejezett');
+  assert.equal((await hivasSzam(ga, GE, V(429, { validationMessages: [{ fieldPath: 'x', description: 'y', validationCode: 'VALUE_INVALID' }] }))).n, 1, 'GA4 debug 429 sem');
+  assert.equal((await hivasSzam(ga, GE, V(200, { validationMessages: [{ fieldPath: 'x', description: 'y', validationCode: 'VALUE_INVALID' }] }))).n, 2, 'GA4 debug 200 + validacios uzenet: kifejezett');
   // a naplozott kerelem nem fedi fel a tartalek-ujraprobalast, ezert a valasz jelzi: ervenyes JSON, a hash maszkolt
   const { r } = await hivasSzam(meta, ME, V(400, { error: { message: `fn=${h('anna')}` } })); const j = JSON.parse(r.valasz); assert.equal(j.tartalek_ujraprobalas, true); assert.ok(!r.valasz.includes(h('anna')));
 });

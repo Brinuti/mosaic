@@ -218,7 +218,7 @@ async function kuldesEgy(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
     if (kerelem.platform === 'ga4' && String(env.GA4_VALIDALAS) !== '0') {
       const dr = await fetchImpl(url.replace('/mp/collect', '/debug/mp/collect'), { method: 'POST', headers: fejlec, body: JSON.stringify(kerelem.body), signal: ab.signal });
       const dszoveg = (await dr.text()).slice(0, 1500); let dj = null; try { dj = JSON.parse(dszoveg); } catch (x) { /* nem JSON */ }
-      if (!(dr.status >= 200 && dr.status < 300) || !dj || (dj.validationMessages || []).length) return { allapot: 'hiba', http_status: dr.status, valasz: 'GA4 validacio (/debug/mp/collect): ' + dszoveg, kuldo, ...(KIFEJEZETT_HTTP(dr.status) || (dj && (dj.validationMessages || []).length) ? { kifejezett_elutasitas: true } : {}) };
+      if (!(dr.status >= 200 && dr.status < 300) || !dj || (dj.validationMessages || []).length) return { allapot: 'hiba', http_status: dr.status, valasz: 'GA4 validacio (/debug/mp/collect): ' + dszoveg, kuldo, ...(KIFEJEZETT_HTTP(dr.status) || (dr.status < 500 && dr.status !== 408 && dr.status !== 429 && dj && (dj.validationMessages || []).length) ? { kifejezett_elutasitas: true } : {}) };
       elozo = { ga4_validacio: { vegpont: '/debug/mp/collect', validationMessages: dj.validationMessages || [] } };
     }
     const r = await fetchImpl(url, { method: kerelem.method, headers: fejlec, body: JSON.stringify(kerelem.body), signal: ab.signal });
