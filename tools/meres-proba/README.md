@@ -105,3 +105,15 @@ Lásd `docs/booking-engine/QA2_ARNYEK.md`. Csak PR-előnézeten futnak. `qa2-ese
 ## PMU gclid-átadás a valódi függvénnyel: `pmu-gclid-valodi.mjs` (DECISION #196 / 1., R3)
 
 Lásd `docs/booking-engine/GCLID_R1_R3.md`. `node tools/meres-proba/pmu-gclid-valodi.mjs --dist <abszolút dist> --elvart be|ki [--out naplo.json]`: a PMU-landing beágyazott foglaló-keretét (a `[data-foglalo]` gomb kattintására, mint a vendég) megnyitja, majd a keret **valódi** `mhKeretbenOldal` függvényét hívja egy szimulált `/pmu-ok` visszairányítással, és a top ablak URL-jében a `gclid` / `gbraid` / `wbraid` meglétét ellenőrzi **7 hozzájárulási esetben**: nincs döntés + URL; nincs döntés + mentett állapot; `adv:true` + tárolt `mh_attr` + `_gcl_aw`/`_gcl_gb` süti (azonosító nélküli landing); `adv:true` kontroll (tárolt + süti + URL); és három `adv:false` (kifejezett elutasítás) eset: URL, tárolt + süti, mind egyszerre – ezekben a `/pmu-ok` URL-je **nem** hordozhat azonosítót (a `main`-nel azonos). **Foglalás nem jön létre**, kimenő mérés és minden POST letiltva (`tilt.mjs`), az adatok teszt-azonosítók. `--elvart be`: a javított kódon, `--elvart ki`: a javítás előtti kódon (ott egyik eset sem hordoz azonosítót). Kilépési kód 1, ha az elvárás nem teljesül.
+
+## 7 napos utolsó fizetett kattintás: `lpt-e2e.mjs`
+
+Üzletáganként (headspa, hair, laser, oxygen, pmu) × platformonként (Google, Meta, TikTok) végigjárja a forrásmérést **szintetikus** azonosítókkal, **valódi foglalás nélkül** (docs/booking-engine/FORRAS_LPT.md): fizetett érkezés → `mh_lpt` süti (HttpOnly, Secure, SameSite=Lax, 30 nap) → a JS-tárolók törlése (a Safari 7 napos vágása) → közvetlen visszatérés a foglalóra → a sütiből visszanyert azonosító a foglaló-átadással a köszönőoldal URL-jébe kerül → köszönőoldali jelzés → `valasz.forras = { cimke, bizonyitek_forras: 'suti', klikk_potolt, kesei_fizetett }`; továbbá organikus visszatérés nem ír felül, újabb fizetett kattintás felülír, kifejezett elutasítás töröl.
+
+```
+node tools/meres-proba/lpt-e2e.mjs --bazis https://<ág>.mosaic-d77.pages.dev [--uzletag headspa|hair|laser|oxygen|pmu|mind] [--platform google|meta|tiktok|mind] [--mobil 1] [--ki naplo.json]
+BAZIS=https://<ág>.mosaic-d77.pages.dev node tools/meres-proba/lpt-e2e.mjs
+node tools/meres-proba/lpt-e2e.mjs --lokalis [--dist dist]     # helyi kipróbálás: a dist/ + a valódi végpont-kód memória-D1-gyel (előtte: node tools/netlify-build.mjs)
+```
+
+Az éles domainen **nem** fut (a `--bazis` csak `*.mosaic-d77.pages.dev` lehet; az éles `www.mosaicheadspa.hu`-ra történő navigációt a szkript megszakítja). A kimenő mérés tiltott (`tilt.mjs`), a Salonic csak olvasás (naptár-API). Az előnézeti D1-be szintetikus `mb_lpte2e…` azonosítójú `meres_erkezes` / `meres_forras` sor kerül.

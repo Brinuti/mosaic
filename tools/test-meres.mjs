@@ -521,7 +521,8 @@ test('attribucio.js (GPT-dontes, 2026-10-10): hozzajarulas nelkul / elutasitva 0
     const p = JSON.parse(JSON.stringify(b.win.mhAttribucio.pillanatkep()));
     assert.equal(p.google.gclid.ertek, GCLID, nev + ': a memoriabeli adat megvan'); assert.ok(p.meta.fbclid && p.tiktok.ttclid && p.utm_elso.campaign === 'elso');
     await b.win.mhAttribucio.kuld({ source_id: BID, uzletag: 'headspa', tipus: 'foglalas' });
-    assert.equal(b.hivasok.length, 1); assert.equal(b.hivasok[0].body.attr.google.gclid.ertek, GCLID, nev + ': a szerver megkapja (SZ-38)');
+    // (2026-10-19: kifejezett elutasitasnal a 7 napos forras-meres munkamenetenkent egyszer a /api/mosaic-forras-ra is kuld egy torlo kerest: itt csak az erkezesi jelzest szamoljuk)
+    const erk = b.hivasok.filter((h) => h.u === '/api/meres-erkezes'); assert.equal(erk.length, 1); assert.equal(erk[0].body.attr.google.gclid.ertek, GCLID, nev + ': a szerver megkapja (SZ-38)');
     assert.equal(attrIras(ls), 0, nev + ': a kuldes sem ir a tarolora');
   }
   // engedellyel: az iras megtortenik

@@ -7,6 +7,10 @@
 // TAROLAS (GPT-dontes, 2026-10-10, QA-5 elotti higienia): a kattintasazonositok es az UTM CSAK a marketing-hozzajarulas (mh_cc.adv, suti.js) utan kerulnek a localStorage-ba ('mh_attr').
 //   Hozzajarulas elott / nelkul az adat csak MEMORIABAN (az aktualis oldal URL-jebol) van, ez megy a foglalas kuldesekor a szervernek (SZ-38 valtozatlan); localStorage-iras nincs.
 //   A hozzajarulas pillanataban a memoriabeli pillanatkep kiirodik; visszavonaskor / elutasitasnal a tarolt 'mh_attr' torlodik.
+// 7 NAPOS UTOLSO FIZETETT KATTINTAS (2026-10-19, Feri kifejezett kerese; docs/booking-engine/FORRAS_LPT.md): a fizetett erkezes (gclid / gbraid / wbraid / fbclid / ttclid VAGY fizetett utm_medium) tisztitott erintese a munkamenetben
+//   (sessionStorage 'mh_forras') + 2 oras latogatas-tarolo (localStorage 'mh_forras_l'; csak utm, a kattintasi parameter TIPUSA, a hivatkozo KATEGORIAJA - azonosito-ERTEK nem); a fizetett erkezeskor a sajat /api/mosaic-forras vegpontra
+//   megy egy POST (a kattintasazonosito ERTEKET CSAK ez viszi, a szerver altal irt HttpOnly 'mh_lpt' sutihez); a koszonooldali jelzes (kuld) az erintest + a tarolo tipusat is viszi; lptKlikk() / klikkAzonositok(): a sutibol a szerverrol
+//   visszanyert azonositok (a foglalo koszonooldal-atadasa fuzi az URL-hez). MINDEN csak marketing-engedellyel (engedely()), csak a felso ablakban; a hiba SOSEM akadalyozza az oldalt / a foglalast.
 // ARNYEKMOD: az eles domainen (mosaicheadspa.hu) QA-4 (DECISION-LOG #120) ota fut (ELES_ENGEDELYEZVE = true): csak a sajat /api/meres-erkezes vegpontra ir, a kuldes kizarolag ARNYEK-celpontokra megy (docs/booking-engine/QA4_ELESITES.md). Vészkapcsolo: meres_kapcsolo 'iras' / MERES_IRAS_KI.
 (function () {
   'use strict';
@@ -57,7 +61,10 @@
   ment(allapot); // engedely nelkul nem ir (csak memoria)
   // a hozzajarulas valtozasa (suti.js): megadva -> a memoriabeli pillanatkep kiirodik; visszavonva / elutasitva -> a tarolt adat torlodik
   var figyeloKotve = false;
-  function valtozott() { try { if (engedely()) ment(allapot); else torol(); } catch (e) { /* nem baj */ } }
+  function valtozott() {
+    try { if (engedely()) ment(allapot); else torol(); } catch (e) { /* nem baj */ }
+    try { lptValtozott(); } catch (e) { /* nem baj */ }
+  }
   function figyeloKot() {
     if (figyeloKotve) return true;
     try { if (w.mhSuti && typeof w.mhSuti.figyel === 'function') { w.mhSuti.figyel(valtozott); figyeloKotve = true; } } catch (e) { /* nem baj */ }
@@ -106,12 +113,17 @@
       var jel = 'mhAttrKuldve:' + o.source_id;
       try { if (sessionStorage.getItem(jel)) return Promise.resolve({ allapot: 'mar_kuldve' }); } catch (e) { /* privat mod */ }
       var body = Object.assign({}, o, { attr: pillanatkep(), hozz: hozzajarulas(), oldal: location.origin + location.pathname });
+      try { // 7 napos utolso fizetett kattintas: a latogatas erintese (tisztitva, azonosito-ertek nelkul) + a tarolo tipusa + a foglalo-atadasnal a sutibol potolt kattintasi parameterek (csak tipusok)
+        var fo = forrasOlvas();
+        if (fo) { body.forras = tiszta(fo); body.forras_tarolo = fo.b === 'l' ? 'latogatas' : 'munkamenet'; }
+        var pot = lptPotlasOlvas(); if (pot.length) body.lpt_potlas = pot;
+      } catch (e) { /* a forras-jelzes hibaja nem akadalyozhatja a foglalast */ }
       w.mhAttribucioEredmeny = { source_id: o.source_id, allapot: 'kuldve', kuldott: body };
       return fetch('/api/meres-erkezes', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(body) })
         .then(function (r) {
           return r.json().catch(function () { return null; }).then(function (j) {
             w.mhAttribucioEredmeny = { source_id: o.source_id, allapot: 'valasz', status: r.status, valasz: j, kuldott: body };
-            if (r.ok) { try { sessionStorage.setItem(jel, '1'); } catch (e) { /* nem baj */ } }
+            if (r.ok) { try { sessionStorage.setItem(jel, '1'); sessionStorage.removeItem(F_POTLAS); } catch (e) { /* nem baj */ } }
             return w.mhAttribucioEredmeny;
           });
         }).catch(function (e) { w.mhAttribucioEredmeny = { source_id: o.source_id, allapot: 'hiba', hiba: String(e && e.message || e).slice(0, 80) }; return w.mhAttribucioEredmeny; });
@@ -138,5 +150,188 @@
     } catch (e) { /* nincs mentett azonosito */ }
     return o;
   }
-  w.mhAttribucio = { pillanatkep: pillanatkep, hozzajarulas: hozzajarulas, kuld: kuld, googleAzonositok: googleAzonositok };
+  // ===================== 7 NAPOS UTOLSO FIZETETT KATTINTAS (forras-meres) =====================
+  var LPT_HOST = /^(www\.)?mosaicheadspa\.hu$/.test(location.hostname) || /\.pages\.dev$/.test(location.hostname) || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  var F_SESS = 'mh_forras', F_LATOG = 'mh_forras_l', F_POTLAS = 'mh_lpt_potlas', F_TOROLVE = 'mh_lpt_torolve', LATOG_MP = 2 * 3600, F_V = 1;
+  var KP = ['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid'];
+  var FIZ_MEDIUM = ['cpc', 'ppc', 'paid', 'paid_social', 'paidsocial', 'paid_search', 'cpm'];
+  // a Salonic-foglalas utani koszonooldalak (assets/js/foglalas-kulcs.js, tools/netlify-build.mjs FOGLALAS_KOSZONO): ezek NEM erkezesek, ott nem keletkezik uj erintes
+  var KOSZONO_UT = /^\/(success-foglalas[a-z0-9-]*|oxigenterapia-masodik|ajikartya-ok|eltavolitas-ok|elysion-ok|fodrasz-ok|foglalas-ok|korrekcio-ok|oxigenterapia-ok|pmu-ok|szor-konzi-ok|szortelenites-ok|pmu-vh|pmu-lead-ok)\/?$/;
+  function utmT(v) { v = String(v == null ? '' : v).trim().replace(/[^A-Za-z0-9._~:+-]+/g, '_').slice(0, 100).replace(/^_+|_+$/g, ''); return v || null; }
+  function szamT(v) { v = String(v == null ? '' : v).trim(); return /^\d{1,20}$/.test(v) ? v : null; }
+  function refKat() { // a hivatkozo KATEGORIAJA (URL nincs): belso | search | social | egyeb | nincs
+    var r = d.referrer; if (!r) return 'nincs';
+    var h; try { h = new URL(r).hostname.toLowerCase(); } catch (e) { return 'nincs'; }
+    if (h === location.hostname || /(^|\.)mosaicheadspa\.hu$/.test(h) || /(^|\.)salonic\.hu$/.test(h)) return 'belso';
+    if (/(^|\.)(google|bing|yahoo|duckduckgo|yandex|ecosia|baidu|seznam|startpage|qwant|search\.brave|aol|ask)\.[a-z.]+$/.test(h) || /(^|\.)(search|kereso)\./.test(h)) return 'search';
+    if (/(^|\.)(facebook|fb|instagram|tiktok|youtube|twitter|x|linkedin|pinterest|reddit|threads|snapchat|messenger|whatsapp)\.(com|net|me)$/.test(h) || h === 't.co' || /(^|\.)lnkd\.in$/.test(h)) return 'social';
+    return 'egyeb';
+  }
+  function navTipus() {
+    try {
+      var n = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if (n && n.type) return n.type;
+      var r = performance.navigation && performance.navigation.type;
+      return r === 1 ? 'reload' : r === 2 ? 'back_forward' : 'navigate';
+    } catch (e) { return 'navigate'; }
+  }
+  function fizetett(o) { return !!o && (KP.indexOf(o.kp) >= 0 || FIZ_MEDIUM.indexOf(String(o.um || '').toLowerCase()) >= 0); }
+  function jel(o) { return !!(o.kp || o.us || o.um || o.uc || o.rk === 'search' || o.rk === 'social' || o.rk === 'egyeb'); }
+  function azonos(a, b) { return ['kp', 'us', 'um', 'uc', 'ut', 'uco', 'gc', 'ag', 'ad'].every(function (k) { return (a[k] || null) === (b[k] || null); }); }
+  /** Az URL-bol az erkezes erintese ({ touch, kv }): touch = tisztitott (azonosito-ERTEK nelkul), kv = a nyers kattintasazonosito (CSAK a sutit iro POST viszi). */
+  function erintes(uq, rk) {
+    var o = { v: F_V, t: ma(), rk: rk }, kv = null, m = { us: 'utm_source', um: 'utm_medium', uc: 'utm_campaign', ut: 'utm_term', uco: 'utm_content' };
+    for (var k in m) { var x = utmT(uq.get(m[k])); if (x) o[k] = x; }
+    for (var i = 0; i < KP.length; i++) { var v = uq.get(KP[i]); if (v) { o.kp = KP[i]; if (MINTA[KP[i]].test(v)) kv = v; break; } } // a TIPUS (az ertek csak a POST-ban)
+    var gc = szamT(uq.get('gad_campaignid')) || szamT(uq.get('campaignid')) || szamT(uq.get('utm_id')), ag = szamT(uq.get('adgroupid')), ad = szamT(uq.get('adid')) || szamT(uq.get('ad_id'));
+    if (gc) o.gc = gc; if (ag) o.ag = ag; if (ad) o.ad = ad;
+    return { touch: o, kv: kv };
+  }
+  function tiszta(o) { var f = {}; ['v', 't', 'us', 'um', 'uc', 'ut', 'uco', 'gc', 'ag', 'ad', 'kp', 'rk'].forEach(function (k) { if (o[k] != null) f[k] = o[k]; }); return f; }
+  function ervenyes(o) { return o && typeof o === 'object' && o.v === F_V && /^\d+$/.test(String(o.t)) ? o : null; }
+  function mOlvas() { try { return ervenyes(JSON.parse(sessionStorage.getItem(F_SESS) || 'null')); } catch (e) { return null; } }
+  function mIr(o) { try { var f = tiszta(o); if (o.b === 'l') f.b = 'l'; sessionStorage.setItem(F_SESS, JSON.stringify(f)); } catch (e) { /* tiltott tarolo */ } } // a 'b: l' jelzes (latogatas-tarolobol visszaallitva) megmarad
+  function lOlvas() {
+    try {
+      var x = JSON.parse(localStorage.getItem(F_LATOG) || 'null');
+      if (!x || typeof x !== 'object' || !(Number(x.lej) > ma())) { if (x) localStorage.removeItem(F_LATOG); return null; }
+      var o = ervenyes(x.e); if (o) return o;
+      localStorage.removeItem(F_LATOG); return null; // hibas / idegen tartalom
+    } catch (e) { try { localStorage.removeItem(F_LATOG); } catch (x2) { /* tiltott tarolo */ } return null; }
+  }
+  function lIr(o) { if (!ervenyes(o)) return; try { localStorage.setItem(F_LATOG, JSON.stringify({ e: tiszta(o), lej: ma() + LATOG_MP })); } catch (e) { /* tiltott tarolo */ } }
+  function forrasTorol() { try { sessionStorage.removeItem(F_SESS); sessionStorage.removeItem(F_POTLAS); } catch (e) { /* nem baj */ } try { localStorage.removeItem(F_LATOG); } catch (e2) { /* nem baj */ } }
+  /** A hatalyos erintes a ket tarolobol (engedely nelkul null): sessionStorage; ha ures, a 2 oras latogatas-tarolo ('b: l' jelzessel, a szerver 'latogatas'-kent tarolja); ujabb fizetett a latogatas-taroloban nyer. */
+  function forrasOlvas() {
+    if (!engedely()) return null;
+    var s = mOlvas(), l = lOlvas();
+    if (l && (!s || (fizetett(l) && (!fizetett(s) || Number(l.t) > Number(s.t))))) { var o = tiszta(l); o.b = 'l'; mIr(o); return o; }
+    return s;
+  }
+  // KIFEJEZETT elutasitas (nem csak "nincs engedely"): a suti.js hatalyos dontese; suti.js nelkuli oldalon (pl. /foglalo-motor) a tarolt, nem reszleges mh_cc elutasitas. Dontes nelkul NEM elutasitas (DECISION #170: alapertek granted).
+  function elutasitva() {
+    try {
+      if (w.mhSuti && typeof w.mhSuti.engedely === 'function') return !w.mhSuti.engedely('adv');
+      var c = JSON.parse(localStorage.getItem('mh_cc'));
+      return !!(c && c.v === 1 && !c.reszleges && !c.adv);
+    } catch (e) { return false; }
+  }
+  function hozzPost() { var h = hozzajarulas(); if (engedely()) h.adv = true; return h; } // a HATALYOS allapot (a reszleges / dontes nelkuli bejegyzes nem "elutasitas")
+  function lptPost(torzs) {
+    try {
+      if (!LPT_HOST || typeof fetch !== 'function') return;
+      fetch('/api/mosaic-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) }).catch(function () { /* nem zavar */ });
+    } catch (e) { /* regi bongeszo */ }
+  }
+  /** Fizetett erkezes: a szerver iras HttpOnly sutit (mh_lpt). A kattintasazonosito ERTEKE csak ebben a keresben megy, marketing-engedellyel. */
+  function lptKuld(t, kv) {
+    if (!engedely() || !fizetett(t)) return;
+    var f = tiszta(t); delete f.rk;
+    if (kv && f.kp && MINTA[f.kp] && MINTA[f.kp].test(kv)) f.kv = kv;
+    lptPost({ forras: f, hozz: hozzPost() });
+  }
+  function lptTorolKuld() { lptPost({ hozz: { adv: false } }); } // kifejezett elutasitas / visszavonas: a szerver torli a sutit
+  function erkezesFeldolgoz() {
+    if (!LPT_HOST) return;
+    if (!engedely()) { // nincs engedely: nincs erzekeles. KIFEJEZETT elutasitasnal a tarolt erintes torolve, a korabban irt suti torlese (munkamenetenkent egyszer); dontes / suti.js nelkul semmi nem torlodik
+      if (!elutasitva()) return;
+      forrasTorol();
+      var mar = null; try { mar = sessionStorage.getItem(F_TOROLVE); } catch (e) { /* nem baj */ }
+      if (!mar) { try { sessionStorage.setItem(F_TOROLVE, '1'); } catch (e2) { /* nem baj */ } lptTorolKuld(); }
+      return;
+    }
+    if (KOSZONO_UT.test(location.pathname) || /(?:^|[?&])bookingUrl=/.test(location.search)) { latogatasFrissit(); return; } // koszonooldal: nem erkezes
+    var rk = refKat(), regi = forrasOlvas(), er = erintes(new URLSearchParams(location.search), rk === 'belso' ? 'nincs' : rk), uj = er.touch, csere = false;
+    if (!regi) csere = rk !== 'belso' || jel(uj); // elso erkezes (belso hivatkozoval csak ha van jel)
+    else if (rk === 'belso') csere = false; // belso navigacio / tovabbvitt parameterek: nem valtoztat
+    else if (fizetett(uj)) csere = !(fizetett(regi) && azonos(regi, uj)); // uj fizetett kattintas nyer
+    else if (!fizetett(regi)) csere = jel(uj); // nem fizetett: csak nem fizetettet ir felul, es nem direktet; fizetettet SOHA
+    if (csere) mIr(uj);
+    var nt = navTipus();
+    if (fizetett(uj) && rk !== 'belso' && nt !== 'reload' && nt !== 'back_forward') lptKuld(uj, er.kv); // a szerver ugyanazt a kattintast nem frissiti ujra
+    latogatasFrissit();
+  }
+  function latogatasFrissit() { var o = forrasOlvas(); if (o) lIr(o); } // minden oldalmegtekintes, amig van erintes, 2 orara megujitja a latogatas-tarolot
+  // a hozzajarulas valtozasa: megadva -> a jelenlegi oldal erkezese most kerul rogzitesre; visszavonva / elutasitva -> a tarolt erintes torlodik, a szerver torli a sutit
+  function lptValtozott() {
+    if (!LPT_HOST) return;
+    if (engedely()) { erkezesFeldolgoz(); return; }
+    if (elutasitva()) { forrasTorol(); lptTorolKuld(); }
+  }
+  // a foglalo-atadasnal a sutibol potolt kattintasi parameterek TIPUSAI (sessionStorage, ugyanaz a lap-munkamenet): a koszonooldali jelzes viszi (klikk_potolt)
+  function lptJelol(kulcsok) {
+    try {
+      if (!engedely()) return;
+      var l = []; (kulcsok || []).forEach(function (k) { if (KP.indexOf(k) >= 0 && l.indexOf(k) < 0) l.push(k); });
+      if (l.length) sessionStorage.setItem(F_POTLAS, l.join(',')); else sessionStorage.removeItem(F_POTLAS);
+    } catch (e) { /* nem baj */ }
+  }
+  function lptPotlasOlvas() {
+    var o = [];
+    try { if (!engedely()) return o; String(sessionStorage.getItem(F_POTLAS) || '').split(',').forEach(function (k) { if (KP.indexOf(k) >= 0 && o.indexOf(k) < 0) o.push(k); }); } catch (e) { /* nem baj */ }
+    return o;
+  }
+
+  // --- a sutibol (a szerverrol, GET) visszanyert kattintasazonositok: egyszer kerjuk le (a foglalo megnyitasakor), a memoriaban tartjuk; az atadas (handoff) a MAR MEGJOTT eredmenyt hasznalja, nem var ra ---
+  var lpt = { inditva: false, kesz: false, klikk: {}, ig: null };
+  function lptInditas() {
+    if (lpt.inditva) return lpt.ig;
+    lpt.inditva = true;
+    lpt.ig = new Promise(function (ok) {
+      var vege = function (k) { lpt.klikk = k || {}; lpt.kesz = true; ok(lpt.klikk); };
+      try {
+        if (!LPT_HOST || typeof fetch !== 'function') { vege({}); return; }
+        setTimeout(function () { if (!lpt.kesz) vege({}); }, 6000);
+        fetch('/api/mosaic-forras', { method: 'GET', credentials: 'same-origin', cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (j) {
+            var k = {}, s = j && j.ok === true && j.klikk && typeof j.klikk === 'object' ? j.klikk : {};
+            KP.forEach(function (p) { if (typeof s[p] === 'string' && MINTA[p].test(s[p])) k[p] = s[p]; });
+            vege(k);
+          }).catch(function () { vege({}); });
+      } catch (e) { vege({}); }
+    });
+    return lpt.ig;
+  }
+  /** A sutibol visszanyert azonositok ({gclid?, gbraid?, wbraid?, fbclid?, ttclid?} vagy {}). Az elso hivas inditja a lekerest; marketing-engedely nelkul / elutasitas utan {} (nem is keri le). */
+  function lptKlikk() {
+    var o = {};
+    try { if (!engedely()) return o; lptInditas(); for (var k in lpt.klikk) o[k] = lpt.klikk[k]; } catch (e) { /* nincs adat */ }
+    return o;
+  }
+  /** Promise: a lekeres eredmenye (legfeljebb 6 mp utan {}); tesztekhez es ellenorzesekhez. */
+  function lptKlikkVar() {
+    try { if (!engedely()) return Promise.resolve({}); return lptInditas().then(function () { return lptKlikk(); }); } catch (e) { return Promise.resolve({}); }
+  }
+  /**
+   * Az osszevont kattintasazonositok a foglalo koszonooldal-atadasahoz: a BONGESZOBOL jovo elsobbseget elvez (Google: az URL / mh_attr / _gcl_aw / _gcl_gb = googleAzonositok(); Meta: az URL / mh_attr fbclid, tartalekban a
+   * _fbc suti; TikTok: az URL / mh_attr ttclid), a sutibol (lptKlikk) csak az a platform potlodik, amelyikhez a bongeszobol NEM jott azonosito. -> { ids: { gclid?.. ttclid? }, lpt: [a sutibol potolt kulcsok] }
+   * Hozzajarulas nelkul / elutasitas utan ures (ugyanaz a kapu, mint a googleAzonositok()-nal). Csak olvas.
+   */
+  function klikkReszletes() {
+    var ids = {}, lp = [];
+    try {
+      if (!engedely()) return { ids: ids, lpt: lp };
+      var g = googleAzonositok(), most = ma();
+      for (var gk in g) ids[gk] = g[gk];
+      var mt = allapot.meta, fb = mt && mt.fbclid;
+      if (fb && MINTA.fbclid.test(fb) && (!mt.ts || most - mt.ts <= TTL)) ids.fbclid = fb;
+      else { var fbc = suti('_fbc'), fm = fbc && fbc.match(/^fb\.[0-2]\.\d{10,13}\.([A-Za-z0-9_-]{8,200})$/); if (fm) ids.fbclid = fm[1]; }
+      var tk = allapot.tiktok && allapot.tiktok.ttclid;
+      if (tk && tk.ertek && MINTA.ttclid.test(tk.ertek) && (!tk.ts || most - tk.ts <= TTL)) ids.ttclid = tk.ertek;
+      var s = lptKlikk(), googleVan = !!(ids.gclid || ids.gbraid || ids.wbraid);
+      KP.forEach(function (k) {
+        if (!s[k] || ids[k]) return;
+        if ((k === 'gclid' || k === 'gbraid' || k === 'wbraid') && googleVan) return; // a Google egy azonositot fogad el: a bongeszobol jovo elsobbseget elvez
+        ids[k] = s[k]; lp.push(k);
+        if (k === 'gclid' || k === 'gbraid' || k === 'wbraid') googleVan = true;
+      });
+    } catch (e) { /* nincs adat */ }
+    return { ids: ids, lpt: lp };
+  }
+  function klikkAzonositok() { return klikkReszletes().ids; }
+
+  try { erkezesFeldolgoz(); } catch (e) { /* a forras-meres hibaja sosem akadalyozhatja az oldalt */ }
+
+  w.mhAttribucio = { pillanatkep: pillanatkep, hozzajarulas: hozzajarulas, kuld: kuld, googleAzonositok: googleAzonositok, lptKlikk: lptKlikk, lptKlikkVar: lptKlikkVar, klikkAzonositok: klikkAzonositok, klikkReszletes: klikkReszletes, lptJelol: lptJelol };
 })();
