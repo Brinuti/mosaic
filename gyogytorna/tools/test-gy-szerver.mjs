@@ -923,7 +923,7 @@ test('GY-23: a 7 napos last paid click Google click-ID-ja a foglalashoz kerul (t
   assert.match(x.click_ido, /^2026-10-14 \d\d:\d\d:\d\d\+02:00$/);
   assert.equal(x.order_id, await tranzakcioId('mb_gads00000000000001', KULCS)); // ugyanaz, mint a dataLayer tranzakcio_id (deduplikalashoz)
   assert.equal(x.forras.szabaly, 'gads1+lpc1');
-  assert.match(x.forras.munkamenet, /^[0-9a-f]{16}$/);
+  assert.equal(x.forras.munkamenet, undefined); // GY-25 review: a latogato-hash nem megy ki az exportban
   const mind = JSON.stringify(l);
   for (const tilos of ['nev', 'email', 'telefon', 'kezeles', 'salonic_id', SID, 'mb_gads']) assert.equal(mind.includes(tilos), false, tilos);
   // lemondas: a lista lemondott agaban jelenik meg (kesobbi kiigazitashoz)
@@ -1066,4 +1066,16 @@ test('GY-25: hirdetesi hozzajarulas nelkul nincs click-ID sehol (naplo, munkamen
   await foglal(env, 600, `${sutikBol(r)}; ${HJ_NEM}`, 'mb_gy25d000000000001');
   for (const t of ['gy_erintes', 'gy_munkamenet', 'gy_foglalas']) assert.equal(JSON.stringify((await env.GY_DB.prepare(`SELECT * FROM ${t}`).all()).results).includes('ABCDEFGH12345678'), false, t);
   assert.equal((await gySor(env, 'mb_gy25d000000000001')).lpc_katt_ertek, null);
+});
+
+test('GY-25 review: hozzajarulas visszavonasakor a foglalason tarolt nyers click-ID is torlodik; a ?foglalas= nem adja ki a nyers erteket', async () => {
+  const env = await lpcKornyezet();
+  const r = await ping(env, 0, '?utm_source=facebook&utm_medium=paid_social&utm_campaign=1234567&fbclid=ABCDEFGH12345678');
+  const lpt = sutikBol(r);
+  await foglal(env, 600, `${lpt}; ${HJ_IGEN}`, 'mb_gy25e000000000001');
+  assert.equal((await gySor(env, 'mb_gy25e000000000001')).lpc_katt_ertek, 'ABCDEFGH12345678');
+  const f = await (await adminVegpont({ request: kerelem('/api/gy-admin?foglalas=mb_gy25e000000000001', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.equal(JSON.stringify(f).includes('ABCDEFGH12345678'), false);
+  await ping(env, 1200, '', `${lpt}; ${HJ_NEM}`); // visszavonas
+  assert.equal((await gySor(env, 'mb_gy25e000000000001')).lpc_katt_ertek, null);
 });

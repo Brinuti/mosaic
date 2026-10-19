@@ -95,7 +95,7 @@ export function belepes({ search = '', referrer = '', path = '/', sajatHostok } 
     if (v && KATT_ERTEK.test(v)) { o.kattintas_param = k; o.kattintas_ertek = v; break; }
   }
   // fbclid / ttclid / msclkid: a TIPUS mindig; az ERTEK (formatum- es hosszellenorzessel) a Meta / TikTok erintes-naplohoz (GY-25), csak hozzajarulassal kerul a naploba
-  if (!o.kattintas_param) for (const k of MAS_KATT) { const v = p.get(k); if (v) { o.kattintas_param = k; if (KATT_ERTEK.test(v)) o.kattintas_ertek = v; break; } }
+  if (!o.kattintas_param) for (const k of MAS_KATT) { const v = p.get(k); if (v) { o.kattintas_param = k; if (KATT_ERTEK.test(v) && k !== 'msclkid') o.kattintas_ertek = v; break; } }
   o.landing = typeof path === 'string' && /^\/[A-Za-z0-9/_\-.%]{0,200}$/.test(path) ? path.slice(0, 200) : '/';
   o.ref_domain = referrerDomain(referrer);
   o.ref_kat = referrerKategoria(o.ref_domain, sajatHostok);

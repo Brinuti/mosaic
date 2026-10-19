@@ -13,7 +13,7 @@ import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok, GOOGLE_KATT, l
 import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
-import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesek, erintesTorol, lpcHiba, motorStatNo } from './db.js';
+import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesek, erintesTorol, kattintasTorol, lpcHiba, motorStatNo } from './db.js';
 import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot, UUID_RE } from './salonic-szerver.js';
 /** Unix -> Budapest helyi ido, Google Ads import formatum: "yyyy-mm-dd hh:mm:ss+hh:mm" (a nyari / teli ido szerinti eltolassal). */
 export function budapestIdo(unix) {
@@ -104,8 +104,9 @@ export async function forrasVegpont({ request, env, deps = {} }) {
     if (fizetett(uj) || lRec) {
       const egy = osszevon(lRec && lRec.belepes ? { belepes: lRec.belepes, fizetett: lRec.fizetett } : null, uj);
       if (egy.fizetett) {
+        if (lRec && fizetett(uj) && s[SUTI_LPT]) extra.cookies.push(suti(SUTI_LPT, s[SUTI_LPT], { maxAge: IDOK.hozzajarulasMax })); // uj fizetett kattintas: a 30 napos ablak ujraindul
         if (!lRec) { const t = ujToken(); lHash = await sha256Hex(t); extra.cookies.push(suti(SUTI_LPT, t, { maxAge: IDOK.hozzajarulasMax })); }
-        await munkamenetIr(db, { idHash: lHash, fajta: 'l', letrehozva: lRec ? lRec.letrehozva : most, utolso: most, lejar: lRec ? lRec.lejar : most + IDOK.hozzajarulasMax, hozzajarulas: 'igen', fizetett: true, belepes: egy.belepes });
+        await munkamenetIr(db, { idHash: lHash, fajta: 'l', letrehozva: lRec ? lRec.letrehozva : most, utolso: most, lejar: lRec && !fizetett(uj) ? lRec.lejar : most + IDOK.hozzajarulasMax, hozzajarulas: 'igen', fizetett: true, belepes: egy.belepes });
       }
     }
     // GY-22 (ARNYEK): a fizetett erintes a naploba is (csak D1; a foglalasi folyamatot nem valtoztatja). Fail-open: hibaban a vendeg semmit nem erez.
@@ -115,8 +116,10 @@ export async function forrasVegpont({ request, env, deps = {} }) {
         if (!lh) { const t = ujToken(); lh = await sha256Hex(t); extra.cookies.push(suti(SUTI_LPT, t, { maxAge: IDOK.hozzajarulasMax })); await munkamenetIr(db, { idHash: lh, fajta: 'l', letrehozva: most, utolso: most, lejar: most + IDOK.hozzajarulasMax, hozzajarulas: 'igen', fizetett: true, belepes: uj }); }
         const azon = hirdetesAzonositok(uj);
         const oldal = uj.landing || '/';
+        const t0 = await kampanyLista(db, most);
+        const ea0 = erintesAdatok(uj, { lista: t0.lista, friss: t0.friss });
         const elozo = await erintesUtolso(db, lh);
-        const ugyanaz = elozo && most - elozo.ido < 1800 && (elozo.kampany || null) === azon.kampany && (elozo.hirdetescsoport || null) === azon.hirdetescsoport && (elozo.hirdetes || null) === azon.hirdetes && elozo.oldal === oldal;
+        const ugyanaz = elozo && most - elozo.ido < 1800 && (elozo.kampany || null) === azon.kampany && (elozo.hirdetescsoport || null) === azon.hirdetescsoport && (elozo.hirdetes || null) === azon.hirdetes && elozo.oldal === oldal && (elozo.platform || null) === (ea0.platform || null) && (elozo.katt_ertek || null) === (ea0.katt_ertek || null);
         if (!ugyanaz) { // ujratoltes / ismetelt ping: nem uj erintes
           const t2 = await kampanyLista(db, most);
           const ea = erintesAdatok(uj, { lista: t2.lista, friss: t2.friss });
@@ -128,6 +131,7 @@ export async function forrasVegpont({ request, env, deps = {} }) {
     if (/^[A-Za-z0-9_-]{43}$/.test(s[SUTI_LPT])) {
       const lh = await sha256Hex(s[SUTI_LPT]);
       await munkamenetTorol(db, lh);
+      try { const hs = [lh]; if (s[SUTI_MUNKAMENET] && /^[A-Za-z0-9_-]{43}$/.test(s[SUTI_MUNKAMENET])) hs.push(await sha256Hex(s[SUTI_MUNKAMENET])); await kattintasTorol(db, hs); } catch (e) { await lpcHiba(db, most, 'torles'); }
       try { await erintesTorol(db, lh); } catch (e) { await lpcHiba(db, most, 'torles'); } // visszavont hozzajarulas: a naplo is torlodik
     }
     extra.cookies.push(suti(SUTI_LPT, '', { torol: true }));
@@ -234,11 +238,11 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
       lpc = w;
     } else lpc = { cimke: 'ismeretlen', bizonyitek: 'nincs_hozzajarulas', verzio: LPC_VERZIO };
     if (w && w.ido) {
-      forras = { munkamenet: lptHash.slice(0, 16), cimke: w.cimke, bizonyitek: w.bizonyitek, forras: 'suti', platform: w.platform, katt_tipus: w.katt_tipus, katt_ertek: w.katt_ertek, katt_ido: w.ido, kampany: w.kampany, hirdetescsoport: w.hirdetescsoport, hirdetes: w.hirdetes, kora_nap: w.kora_nap, kesoi_fizetett: w.kesoi_fizetett };
+      forras = { munkamenet: lptHash.slice(0, 16), latogato: lptHash, cimke: w.cimke, bizonyitek: w.bizonyitek, forras: 'suti', platform: w.platform, katt_tipus: w.katt_tipus, katt_ertek: w.katt_ertek, katt_ido: w.ido, kampany: w.kampany, hirdetescsoport: w.hirdetescsoport, hirdetes: w.hirdetes, kora_nap: w.kora_nap, kesoi_fizetett: w.kesoi_fizetett };
     } else if (mb && fizetett(mb)) { // tartalek: a 24 oras munkamenet fizetett erintese (hozzajarulas nelkul, vagy ha a naplo hianyzik)
       const ea = erintesAdatok(mb, { lista: t.lista, friss: t.friss });
       const az = hirdetesAzonositok(mb);
-      forras = { munkamenet: (await sha256Hex(mSuti)).slice(0, 16), cimke: ea.cimke, bizonyitek: ea.bizonyitek, forras: 'munkamenet', platform: ea.platform, katt_tipus: ea.katt_tipus, katt_ertek: ea.katt_ertek, katt_ido: mRec.letrehozva, kampany: az.kampany, hirdetescsoport: az.hirdetescsoport, hirdetes: az.hirdetes, kora_nap: 0, kesoi_fizetett: w ? w.kesoi_fizetett : null };
+      forras = { munkamenet: (await sha256Hex(mSuti)).slice(0, 16), latogato: await sha256Hex(mSuti), cimke: ea.cimke, bizonyitek: ea.bizonyitek, forras: 'munkamenet', platform: ea.platform, katt_tipus: ea.katt_tipus, katt_ertek: ea.katt_ertek, katt_ido: mRec.letrehozva, kampany: az.kampany, hirdetescsoport: az.hirdetescsoport, hirdetes: az.hirdetes, kora_nap: 0, kesoi_fizetett: w ? w.kesoi_fizetett : null };
     } else if (mb) { // nem fizetett munkamenet: organikus / direkt / ismeretlen a regi, finom bizonyitekkal
       const cm = cimkez(mb, { lista: t.lista, friss: t.friss });
       forras = { ...forras, cimke: nemFizetettCimke(cm.cimke), bizonyitek: cm.bizonyitek, forras: 'munkamenet', kesoi_fizetett: w ? w.kesoi_fizetett : null };
@@ -248,7 +252,7 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
   } catch (err) { await lpcHiba(db, most, 'hozzarendeles'); lpc = {}; forras = { ...forras, cimke: nemFizetettCimke(c.cimke) === 'ismeretlen' ? lpcCimke(c.cimke) : nemFizetettCimke(c.cimke), bizonyitek: c.bizonyitek, forras: 'munkamenet' }; }
   const hirdetes = { kampany: forras.kampany || null, hirdetescsoport: forras.hirdetescsoport || null, hirdetes: forras.hirdetes || null }; // szam-azonositok, nem szemelyes adat
   // GY-23 / GY-25: a nyertes erintes nyers click-ID-ja a foglalashoz (szerveres platform-feltoltes), CSAK hirdetesi hozzajarulassal; 60 nap utan torlodik
-  const katt = hj.marketing && forras.katt_ertek ? { lpc_platform: forras.platform, lpc_katt_tipus: forras.katt_tipus, lpc_katt_ertek: forras.katt_ertek, lpc_katt_ido: forras.katt_ido } : {};
+  const katt = hj.marketing && forras.katt_ertek ? { lpc_platform: forras.platform, lpc_katt_tipus: forras.katt_tipus, lpc_katt_ertek: forras.katt_ertek, lpc_katt_ido: forras.katt_ido, lpc_latogato: forras.latogato ? forras.latogato.slice(0, 16) : null } : {};
   const gads = hj.marketing && forras.platform === 'google' && GOOGLE_KATT.includes(forras.katt_tipus) && forras.katt_ertek
     ? { gads_katt_tipus: forras.katt_tipus, gads_katt_ertek: forras.katt_ertek, gads_katt_ido: forras.katt_ido, gads_munkamenet: forras.munkamenet || null, gads_szabaly: 'gads1+' + LPC_VERZIO } : {};
   const parosito = e.employeeId ? await hmacHex(env.GY_HMAC_KULCS, `gy-parosito|${kert.startUnix}|${e.employeeId}`) : null;
@@ -448,7 +452,7 @@ export async function adminVegpont({ request, env, deps = {} }) {
   const f = u.searchParams.get('foglalas');
   if (f && BOOKING_ID.test(f)) {
     const r = await foglalasOlvas(db, f);
-    return valasz(200, { ok: true, foglalas: r ? { ...r, parosito: undefined } : null });
+    return valasz(200, { ok: true, foglalas: r ? { ...r, parosito: undefined, lpc_katt_ertek: r.lpc_katt_ertek ? '[van]' : null, gads_katt_ertek: r.gads_katt_ertek ? '[van]' : null } : null });
   }
   if (u.searchParams.get('gads')) { // GY-23: a szerveres Google Ads import listaja (kulcsos). CSAK Salonic-igazolt, nem teszt, Google click-ID-s allapotfelmeresek; nev / e-mail / telefon / kezeles NINCS benne.
     const tolNap = /^\d{4}-\d{2}-\d{2}$/.test(u.searchParams.get('tol') || '') ? Date.parse(u.searchParams.get('tol') + 'T00:00:00Z') / 1000 : most - 70 * 86400;
@@ -462,7 +466,7 @@ export async function adminVegpont({ request, env, deps = {} }) {
         click_id: r.gads_katt_ertek, click_tipus: r.gads_katt_tipus, click_ido: budapestIdo(r.gads_katt_ido), click_ido_unix: r.gads_katt_ido,
         konverzio_ido: budapestIdo(r.letrehozva), konverzio_ido_unix: r.letrehozva, order_id: await tranzakcioId(r.uuid, env.GY_HMAC_KULCS),
         ertek: r.ertek, penznem: 'HUF', allapot: r.allapot === 'lemondott' ? 'lemondott' : 'aktiv', lemondva_ido: r.allapot === 'lemondott' ? budapestIdo(r.frissitve) : null,
-        forras: { cimke: r.cimke, munkamenet: r.gads_munkamenet, szabaly: r.gads_szabaly, hozzajarulas: r.hozzajarulas },
+        forras: { cimke: r.cimke, szabaly: r.gads_szabaly, hozzajarulas: r.hozzajarulas },
       });
     }
     return valasz(200, { ok: true, db: kimenet.length, aktiv: kimenet.filter((x) => x.allapot === 'aktiv'), lemondott: kimenet.filter((x) => x.allapot === 'lemondott') });
