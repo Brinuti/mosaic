@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { esemenyek } from '../../netlify/lib/meres/esemeny-modell.js';
-import { hashEmail, hashTelefon, sha256hex } from '../../netlify/lib/meres/hash.js';
+import { felhasznaloHash } from '../../netlify/lib/meres/felhasznalo-hash.js';
 import { erkezesTisztit } from '../../netlify/lib/meres/erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from '../../netlify/lib/meres/hozzajarulas.js';
 import { KEREM_EPITO, PLATFORMOK } from '../../netlify/lib/meres/platformok.js';
@@ -34,7 +34,7 @@ export const FK = (o = {}) => ({ tipus: 'foglalas', uzletag: 'headspa', source_e
 export async function ctxEpit(fkMod, hozz, erk) {
   const fk = FK(fkMod); const v = fk.vendeg; const h = hozzajarulasTisztit(hozz);
   return { fk, erk, ua: 'Mozilla/5.0 TESZT', ip: '203.0.113.7', oldal: 'https://www.mosaicheadspa.hu/koszonjuk', hozz: { meta: platformSzabaly('meta', h), tiktok: platformSzabaly('tiktok', h), google: platformSzabaly('google', h), ga4: platformSzabaly('ga4', h) },
-    hash: { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await sha256hex(v.email.toLowerCase()) } };
+    hash: await felhasznaloHash({ GUEST_HMAC_KEY_V1: 'golden-teszt-guest-hmac-kulcs-0123456789' }, v) }; // DECISION #202: ugyanaz a hash-bemenet, mint az elosztas()-ban (em / ph / ext + em_ads / em_ga4 / country / uid; nev nincs a fixture-vendegnek)
 }
 export function d1() {
   const db = new DatabaseSync(':memory:');
