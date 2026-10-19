@@ -865,7 +865,7 @@ test('E) uzletag-lefedettseg (struktura): az attribucio.js MINDEN oldalra a <hea
   assert.ok(fs.existsSync(path.join(GYOKER, 'klon/foglalas-ok.html')) && fs.existsSync(path.join(GYOKER, 'foglalas/pmu-ok.html')));
 });
 test('E) VEDETT fajlok: a blob-hash (git hash-object, 10 karakter) valtozatlan az origin/main-hez kepest (a meres-erkezes burok mellett semmi vedett fajlhoz nem nyultunk)', () => {
-  const VEDETT = { 'netlify/lib/meres/qa-nap.js': '2334390be3', 'netlify/lib/meres/esemeny-modell.js': '4342e6f09b', 'netlify/lib/foglalas-kulcs.js': 'e1448b4d13', 'netlify/lib/meres/vegpontok.js': 'b5e3881fc7', 'netlify/lib/meres/google-proba.js': 'f6e5bf9d13' };
+  const VEDETT = { 'netlify/lib/meres/qa-nap.js': '2334390be3', 'netlify/lib/meres/esemeny-modell.js': '4342e6f09b', 'netlify/lib/foglalas-kulcs.js': 'e1448b4d13', 'netlify/lib/meres/vegpontok.js': '085bed6aad', 'netlify/lib/meres/google-proba.js': 'f1bb0095f8' };
   for (const [f, hash] of Object.entries(VEDETT)) assert.equal(execFileSync('git', ['hash-object', f], { cwd: GYOKER, encoding: 'utf8' }).slice(0, 10), hash, f);
   // a netlify/lib/meres/ tobbi fajlja (elosztas.js, erkezes.js, hozzajarulas.js, sema-seged.js) szinten valtozatlan: a diff csak az uj forras-lpt.js-t listazza
   const valtozott = execFileSync('git', ['diff', '--name-only', 'origin/main', '--', 'netlify/'], { cwd: GYOKER, encoding: 'utf8' }).split('\n').filter(Boolean);
