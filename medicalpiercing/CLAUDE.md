@@ -25,3 +25,6 @@ Ezen felül:
   A leképezés: `B_ALAP` a `tools/uj-oldalak/kategoria.mjs`-ben, a kiírás `tools/uj-fooldal.mjs` (`ujOldalak`); a stílus az `assets/css/uj-kategoria.css` végén (B szakasz). Az első galériakép „Lapozz jobbra”
   jelzését a `tools/uj-b-hos-kep.py` rajzolja (`assets/img/uj-hos-01.webp`), a „Miért a Medical Piercinget válaszd?” ikonjait a `tools/uj-b-ikonok.py` színezi a főoldal palettájára (`assets/img/uj-biz-*.webp`).
   A `tools/uj-oldalak-teszt.mjs` ezekre az oldalakra az eredeti `-b` oldalhoz hasonlít. A `/uj/…-b` tükör-oldalak (az eredeti `-b` oldalak általános sablonnal készült másolatai) megmaradnak.
+- **A hos „Garancia »” linkje nem visz át a garancia oldalra** (a tulajdonos döntése, 2026-10-19): kis infodobozt nyit („Ha 6 héten belül nem segít, az új ékszer áráért megerősítő piercinget szúrunk.”). Az új főoldalon és az összes
+  kategóriaoldalon (`GARANCIA_INFO` a `tools/uj-oldalak/kategoria.mjs`-ben, `uj-fooldal/index.html`); viselkedés: `assets/js/uj-fooldal.js` 6., stílus: `.info-doboz` az `assets/css/uj-fooldal.css`-ben. A fejléc / lábléc „Garancia” menüpontja és a főoldali
+  „Garancia részletei” gomb továbbra is a garancia oldalra visz.

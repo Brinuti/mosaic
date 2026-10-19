@@ -25,6 +25,9 @@ export const B_ALAP = new Map([
 ]);
 export const KATEGORIA_B_UTAK = new Set(B_ALAP.values());
 
+// A hos "Garancia »" linkje NEM visz at a garancia oldalra: kis infodobozt nyit a garancia lenyegevel (tulajdonosi dontes, 2026-10-19). A viselkedes: assets/js/uj-fooldal.js 6.
+export const GARANCIA_INFO = '<li class="info-elem"><button type="button" class="info-link" aria-expanded="false" aria-controls="garancia-info">Garancia »</button><span class="info-doboz" id="garancia-info" role="note" hidden><b>Garancia</b>Ha 6 héten belül nem segít, az új ékszer áráért megerősítő piercinget szúrunk.</span></li>';
+
 // A hosszu szoveg fo-cimeinek helye (csomopont-indexek): h (1-2. szint), a szamozott cimek ("10. ...": a Wixen neha csak bekezdes, vagy 3. szintu cim) akkor,
 // ha a szamuk folytatja a sort (az "a) ..." / "1. 2. 3." alpontok nem fo-cimek)
 const foCimIndexek = (nodes, T) => {
@@ -275,7 +278,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     let cim = szovegLink(h.h1.html);
     if (!/</.test(cim)) cim = cim.replace(/(garanci.*|egészségügyi tapasztalattal\.?)$/i, '<em>$1</em>');
     const gomb = h.gomb ? h.gomb : { szoveg: 'Időpontot foglalok', href: '/idopontfoglalas' };
-    const linkek = [`<li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li>`];
+    const linkek = [GARANCIA_INFO];
     if (van.has('helyszin')) linkek.push('<li><a href="#helyszinek">Helyszíneink »</a></li>');
     for (const e of h.extra) linkek.push(`<li>${szovegLink(e.html)}</li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
@@ -317,7 +320,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     let cim = szovegLink(h.h1.html).replace(diszRe, '');
     if (!/</.test(cim)) cim = cim.replace(/(garanci.*)$/i, '<em>$1</em>');
     const gomb = h.gomb ? h.gomb : { szoveg: 'Időpontot foglalok', href: '/idopontfoglalas' };
-    const linkek = [`<li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li>`];
+    const linkek = [GARANCIA_INFO];
     if (van.has('helyszin')) linkek.push('<li><a href="#helyszinek">Helyszíneink »</a></li>');
     // az eredeti "Mutasd az ekszereket es az arakat >>" link az oldal sajat reszere mutat: a lapon belul az ekszerekhez ugrik
     // mobilon a hosszu szoveg helyett a rovid ("Ekszerek es arak") latszik, hogy a 3 link egy sorba ferjen

@@ -102,6 +102,14 @@ h1 em{font-style:normal;color:var(--rose)}
 .hos-bevezeto{font-size:1.04rem;max-width:36em;margin:0}
 .hos-linkek{display:flex;flex-wrap:nowrap;gap:6px 22px;margin:20px 0 0;font-size:.88rem}
 .hos-linkek a{color:var(--slate);font-weight:600;text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px}
+.info-elem{position:relative}
+.info-link{padding:0;border:0;background:none;font:inherit;font-weight:600;color:var(--slate);white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px}
+.info-link:focus-visible{outline:2px solid var(--slate);outline-offset:3px;border-radius:4px}
+/* kis infodoboz a link alatt (a hos "Garancia »" linkje: nem visz at az oldalra, csak a lenyeget mutatja; assets/js/uj-fooldal.js 6.) */
+.info-doboz{--nyil:20px;position:absolute;left:0;top:calc(100% + 10px);z-index:30;box-sizing:border-box;width:min(300px,calc(100vw - 32px));padding:12px 14px;border-radius:14px;background:var(--slate);color:#fff;font-size:.86rem;font-weight:500;line-height:1.45;text-align:left;text-transform:none;box-shadow:var(--sh)}
+.info-doboz[hidden]{display:none}
+.info-doboz::before{content:"";position:absolute;left:var(--nyil);top:-6px;width:12px;height:12px;border-radius:2px;background:var(--slate);transform:rotate(45deg)}
+.info-doboz b{display:block;margin-bottom:2px;font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
 .bizalom{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0 0}
 .bizalom li{display:flex;align-items:center;gap:10px;font-size:.78rem;line-height:1.3;color:var(--mut)}
 .bizalom .ik{width:34px;height:34px;padding:7px;border-radius:50%;background:#fff;border:1px solid var(--rose);color:var(--rose-i);flex:none}

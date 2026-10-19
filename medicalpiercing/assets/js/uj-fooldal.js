@@ -181,6 +181,32 @@
     }).catch(() => { /* marad a build idejen beirt allapot */ });
   }
 
+  // --- 6. info-doboz: a hos "Garancia »" linkje nem visz at a garancia oldalra, hanem kis dobozt nyit a garancia lenyegevel; ujabb kattintas, masik hely, Esc: zar ---
+  const infoElemek = $$('.info-elem');
+  const infoZar = (kiveve) => infoElemek.forEach((el) => {
+    if (el === kiveve) return;
+    const d = $('.info-doboz', el), g = $('.info-link', el);
+    if (d && !d.hidden) { d.hidden = true; g.setAttribute('aria-expanded', 'false'); }
+  });
+  infoElemek.forEach((el) => {
+    const gomb = $('.info-link', el), doboz = $('.info-doboz', el);
+    if (!gomb || !doboz) return;
+    gomb.addEventListener('click', () => {
+      const nyit = doboz.hidden;
+      infoZar(el);
+      doboz.hidden = !nyit;
+      gomb.setAttribute('aria-expanded', String(nyit));
+      if (!nyit) return;
+      // a doboz ne logjon ki a kepernyorol: szukseg eseten balra tolodik (a nyil a linkre mutat tovabb)
+      doboz.style.left = '0px';
+      doboz.style.setProperty('--nyil', '20px');
+      const tul = doboz.getBoundingClientRect().right - (document.documentElement.clientWidth - 12);
+      if (tul > 0) { doboz.style.left = -tul + 'px'; doboz.style.setProperty('--nyil', 20 + tul + 'px'); }
+    });
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.info-elem')) infoZar(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') infoZar(); });
+
   // --- 5. URL-parameterek megorzese es a foglalasi linkek (klon.js 8.) --------------------------------------
   const MENTETT = 'savedQueryParams';
   const GK = /^(gclid|gbraid|wbraid)$/i;
