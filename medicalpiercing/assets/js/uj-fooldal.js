@@ -207,6 +207,29 @@
   document.addEventListener('click', (e) => { if (!e.target.closest('.info-elem')) infoZar(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') infoZar(); });
 
+  // --- 7. videokartyak (A mediaban): ahol oldalra gorgethetok (kategoria-oldalak, mobil), bal / jobb nyil lapoz; a nyil a miniatur kozepere kerul ---
+  $$('.videok-sav').forEach((sav) => {
+    const lista = $('.videok', sav), elozo = $('.videok-elozo', sav), kovetkezo = $('.videok-kov', sav);
+    const kartyak = $$('li', lista);
+    if (!lista || !elozo || !kovetkezo || !kartyak.length) return;
+    const lepes = () => (kartyak[1] ? kartyak[1].offsetLeft - kartyak[0].offsetLeft : lista.clientWidth);
+    const frissit = () => {
+      const gorgetheto = lista.scrollWidth > lista.clientWidth + 2;
+      sav.classList.toggle('videok-nincs-gorg', !gorgetheto);
+      elozo.disabled = lista.scrollLeft <= 8;   // (a lista 4 px-es belso kozzel indul)
+      kovetkezo.disabled = lista.scrollLeft + lista.clientWidth >= lista.scrollWidth - 8;
+      const kep = $('.video-kep', lista);
+      if (kep) sav.style.setProperty('--nyil-top', Math.round(kep.getBoundingClientRect().top - sav.getBoundingClientRect().top + kep.offsetHeight / 2) + 'px');
+    };
+    const lapoz = (irany) => lista.scrollBy({ left: irany * lepes(), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    elozo.addEventListener('click', () => lapoz(-1));
+    kovetkezo.addEventListener('click', () => lapoz(1));
+    lista.addEventListener('scroll', () => window.requestAnimationFrame(frissit), { passive: true });
+    window.addEventListener('resize', frissit);
+    window.addEventListener('load', frissit);
+    frissit();
+  });
+
   // --- 5. URL-parameterek megorzese es a foglalasi linkek (klon.js 8.) --------------------------------------
   const MENTETT = 'savedQueryParams';
   const GK = /^(gclid|gbraid|wbraid)$/i;

@@ -281,6 +281,8 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .logok img{height:30px;width:auto;object-fit:contain}
 .logok img:nth-child(2){height:38px}
 .videok{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.videok-sav{position:relative}
+.videok-sav .kar-gomb{display:none}   /* a nyilak csak ott latszanak, ahol a videok oldalra gorgethetok (kategoria-oldalak, mobil: uj-kategoria.css) */
 .video{display:block;color:var(--navy);text-decoration:none}
 .video-kep{position:relative;display:block;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#d9ccc8}
 .video-kep img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .3s}
@@ -330,11 +332,11 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .szerzoi{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;margin-top:14px;font-size:.78rem;color:var(--mut)}
 
 /* videoablak */
-.videoablak{width:min(920px,94vw);padding:0;border:0;border-radius:16px;background:#000;overflow:visible}
+.videoablak{width:min(920px,94vw,calc((100vh - 24px) * 16 / 9),calc((100dvh - 24px) * 16 / 9));padding:0;border:0;border-radius:16px;background:#000;overflow:visible}
 .videoablak::backdrop{background:rgba(30,30,40,.78)}
 .videoablak-keret{aspect-ratio:16/9;border-radius:16px;overflow:hidden}
 .videoablak-keret iframe{display:block;width:100%;height:100%;border:0}
-.videoablak-zar{position:absolute;right:0;top:-48px;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--navy);cursor:pointer}
+.videoablak-zar{position:fixed;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));z-index:5;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:var(--navy);cursor:pointer}
 .videoablak-zar .ik{width:20px;height:20px}
 
 /* ---------- tablet ---------- */
@@ -520,14 +522,15 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
 
-/* nagyito (lightbox) */
-.nagyito{width:min(96vw,1100px);max-height:96vh;padding:0;border:0;border-radius:18px;background:#e9e6e4;overflow:visible}
+/* nagyito (lightbox): az egesz kepernyo; a kep a lehetseges legnagyobb (a kepernyo rovidebb oldalahoz igazodik: allo es fekvo telefonon is), a bezaras, a nyilak es a
+   szamlalo mindig a kepernyon BELUL vannak (korabban a bezaro gomb a doboz folott lógott ki, fekvo kijelzon nem lehetett bezarni). A hatterre kattintas / Esc is zar. */
+.nagyito{position:fixed;inset:0;width:100%;max-width:none;height:100vh;height:100dvh;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:transparent;overflow:hidden}
 .nagyito[open]{display:grid;place-items:center}
-.nagyito::backdrop{background:rgba(30,30,40,.85)}
-.nagyito-kep{display:block;width:auto;height:auto;max-width:100%;max-height:92vh;border-radius:18px;object-fit:contain}
-.nagyito-zar{position:absolute;right:6px;top:-48px;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--navy);cursor:pointer}
-.nagyito-zar .ik{width:20px;height:20px}
-.nagyito .galeria-gomb{z-index:2}
-.nagyito-elozo{left:10px}.nagyito-elozo .ik{transform:scaleX(-1)}
-.nagyito-kov{right:10px}
-.nagyito-szam{z-index:2}
+.nagyito::backdrop{background:rgba(20,20,30,.92)}
+.nagyito-kep{display:block;width:auto;height:auto;max-width:calc(100vw - 12px);max-height:calc(100vh - 12px);max-height:calc(100dvh - 12px);border-radius:12px;object-fit:contain}
+.nagyito-zar{position:absolute;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));z-index:5;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:var(--navy);box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer}
+.nagyito-zar .ik{width:22px;height:22px;stroke-width:2.2}
+.nagyito .galeria-gomb{z-index:3}
+.nagyito-elozo{left:max(8px,env(safe-area-inset-left))}.nagyito-elozo .ik{transform:scaleX(-1)}
+.nagyito-kov{right:max(8px,env(safe-area-inset-right))}
+.nagyito-szam{left:50%;right:auto;bottom:max(12px,env(safe-area-inset-bottom));z-index:3;transform:translateX(-50%)}

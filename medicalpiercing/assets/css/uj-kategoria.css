@@ -211,7 +211,13 @@
   .oldal-kategoria .elonyok .kor{width:36px;height:36px}
   .oldal-kategoria .elonyok .kor .ik{width:18px;height:18px}
   .oldal-kategoria .videok{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin-inline:-4px;padding:0 4px 6px;-webkit-overflow-scrolling:touch}
-  .oldal-kategoria .videok li{flex:0 0 74%;scroll-snap-align:start}
+  /* a videokartyak nagyobbak (a szelesseg ~88%-a, kozte a kovetkezo kepe kikandikal), bal / jobb nyil jelzi, hogy lapozhato */
+  .oldal-kategoria .videok li{flex:0 0 88%;scroll-snap-align:start}
+  .oldal-kategoria .videok .video-cim{font-size:.88rem}
+  .oldal-kategoria .videok-sav .kar-gomb{display:grid;top:var(--nyil-top,30%);width:42px;height:42px;margin-top:0;transform:translateY(-50%);box-shadow:0 3px 12px rgba(0,0,0,.3)}
+  .oldal-kategoria .videok-sav .kar-elozo{left:2px}
+  .oldal-kategoria .videok-sav .kar-kov{right:2px}
+  .oldal-kategoria .videok-sav.videok-nincs-gorg .kar-gomb{display:none}
   .oldal-kategoria .media{padding:16px 14px;gap:10px}
   .oldal-kategoria .csapat>img{height:130px}
   .oldal-kategoria .csapat-szoveg{padding:16px 14px 2px}
