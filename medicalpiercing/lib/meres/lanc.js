@@ -15,6 +15,8 @@ import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, e
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
 import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
 import { metaArnyekLepes, ARNYEK_SEMA } from './meta.js';
+/** IP + user agent a foglalas pillanatabol, legfeljebb 48 oraig (TikTok-kuldeshez). Vendegnev / e-mail / telefon NINCS. */
+export const KONTEXTUS_SEMA = 'CREATE TABLE IF NOT EXISTS mp_kontextus (kulcs TEXT PRIMARY KEY, ip TEXT, ua TEXT, ido INTEGER NOT NULL)';
 import { tipusSzamlal } from './tipus-stat.js';
 import { lemondasErtelmezes, lemondasRogzites } from './lemondas.js';
 import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
@@ -229,7 +231,14 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     // Meta arnyekmeres (meta.js, Feri 2026-10-14): az uj foglalasrol azonnal, a bongeszo user agentjevel (NEM taroljuk),
     // a kampanyban nem hasznalt ARNYEK adathalmazba. Fuggetlen, sajat hibakezelessel; a lancot nem allithatja meg.
     try {
-      const pa = metaArnyekLepes(db, sor, request.headers.get('user-agent') || '', env, host, { fetchImpl, most })
+      const ip = request.headers.get('cf-connecting-ip') || '';
+      // a TikTok-kuldes az igazolaskor tortenik (a Zapierbol, a vendeg IP-je nelkul): az IP + user agent legfeljebb 48 orara
+      // ide kerul, kuldes utan torlodik (Feri dontese 2026-10-19: max. adat, egeszsegugyi adat nelkul)
+      try {
+        await db.prepare(KONTEXTUS_SEMA).run();
+        await db.prepare('INSERT OR IGNORE INTO mp_kontextus (kulcs, ip, ua, ido) VALUES (?,?,?,?)').bind(sor.kulcs, ip.slice(0, 45) || null, (request.headers.get('user-agent') || '').slice(0, 400) || null, most).run();
+      } catch (e) { /* nem allithatja meg */ }
+      const pa = metaArnyekLepes(db, sor, request.headers.get('user-agent') || '', env, host, { fetchImpl, most, ip })
         .catch((e) => console.error('mp-meres: meta arnyek hiba', String(e && e.message || e).slice(0, 200)));
       if (typeof waitUntil === 'function') waitUntil(pa); else await pa;
     } catch (e) { /* nem allithatja meg */ }
@@ -249,6 +258,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       db.prepare('DELETE FROM mp_tiktok_feltoltes WHERE ido < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare(ARNYEK_SEMA),
       db.prepare("DELETE FROM mp_meta_arnyek WHERE ido < ?").bind(most - MEGORZES_NAP * 86400),
+      db.prepare(KONTEXTUS_SEMA),
+      db.prepare('DELETE FROM mp_kontextus WHERE ido < ?').bind(most - 48 * 3600),
       db.prepare('UPDATE mp_foglalas SET kattintas_ertek = NULL WHERE kattintas_ertek IS NOT NULL AND letrehozva < ?').bind(most - 90 * 86400),
       db.prepare(`UPDATE mp_foglalas SET ${PLATFORM_ID_OSZLOPOK.map((o) => `${o} = NULL`).join(', ')}
         WHERE (${PLATFORM_ID_OSZLOPOK.map((o) => `${o} IS NOT NULL`).join(' OR ')}) AND letrehozva < ?`).bind(most - 90 * 86400),

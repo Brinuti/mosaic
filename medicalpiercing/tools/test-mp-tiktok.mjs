@@ -243,3 +243,15 @@ test('lanc: kesoi hozzajarulas (potlas) mar igazolt soron -> 1 naplosor, fetch n
   assert.equal(n.length, 1); assert.equal(n[0].allapot, 'naplozva');
   assert.ok(!hivasok.some((u) => u.includes('tiktok')));
 });
+
+// Feri 2026-10-19: IP + user agent a foglalas pillanatabol (mp_kontextus); egeszsegugyi / szemelyes adat tovabbra sem
+{
+  const { tiktokTorzs } = await import('../lib/meres/tiktok.js');
+  const t2 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: '84.1.2.3', ua: 'Mozilla/5.0 teszt' });
+  assert.equal(t2.data[0].user.ip, '84.1.2.3');
+  assert.equal(t2.data[0].user.user_agent, 'Mozilla/5.0 teszt');
+  const t3 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: 'nem-ip<script>', ua: null });
+  assert.ok(!('ip' in t3.data[0].user) && !('user_agent' in t3.data[0].user));
+  assert.ok(!/"email"|"phone"|"external_id"/.test(JSON.stringify(t2)));
+  console.log('OK ip + user agent (kontextus)');
+}
