@@ -208,6 +208,16 @@ test('Google address_info (2026-10-20): Google-normalizalt nev (kisbetu, kotojel
     assert.deepEqual([m.country_code, ai.country_code], ['HU', 'HU']);
     assert.ok(!JSON.stringify(m).includes(b1.hashed_first_name) && !JSON.stringify(m).includes('1051'), 'a naploban nincs nev-hash / iranyitoszam');
   }
+  // tipografiai aposztrof / kotojel egysegesitve; 40 karakternel hosszabb token (kotojelekkel) = nem nev
+  assert.deepEqual(nevReszekGoogle('O\u2019Brien Zolt\u00e1n'), nevReszekGoogle("O'Brien Zolt\u00e1n")); assert.deepEqual(nevReszekGoogle('Kov\u00e1cs\u2013Nagy Anna'), { fn: 'anna', ln: 'kov\u00e1cs-nagy' });
+  assert.equal(nevReszekGoogle('Kov\u00e1cs ' + 'a-'.repeat(25) + 'b'), null);
+  // iranyitoszam: csak pontosan 4 szamjegy megy ki nyersen
+  for (const rossz of ['10511', '105', 'AB1 2CD', '1 0 5 1x', '']) { const k = await ctxKartya({ ...v1, iranyitoszam: rossz }); const b = googleKerelem(esemenyek(k.fk)[0], k, {}).body; assert.equal(b.postal_code, undefined, rossz); assert.ok(b.hashed_first_name, 'a nev-hash igy is megy'); }
+  { const k = await ctxKartya({ ...v1, iranyitoszam: '1 051' }); assert.equal(googleKerelem(esemenyek(k.fk)[0], k, {}).body.postal_code, '1051', 'szokoz / kotojel normalizalva'); }
+  // zart kulcslista a nevvel + iranyitoszammal epult torzsre (uj kulcs csak szandekosan kerulhet be)
+  assert.deepEqual(Object.keys(b1).sort(), ['ad_personalization', 'ad_user_data', 'conversion_action_id', 'conversion_date_time', 'country_code', 'currency', 'gclid', 'hashed_email', 'hashed_first_name', 'hashed_last_name', 'hashed_phone_number', 'order_id', 'postal_code', 'user_agent', 'user_identifiers', 'user_ip_address', 'value'].sort());
+  // reszleges dontes (analitika igen, hirdetes nem): az address_info pontosan akkor van, amikor a hashed_email is (ugyanaz a hozzajarulas-szabaly)
+  for (const hozz of [{ ana: true, adv: false }, { ana: false, adv: true }, { ana: true, adv: true }, { ana: false, adv: false }]) { const k = await ctxEpit({ vendeg: { ...v1 } }, hozz); k.hash = await felhasznaloHash({}, v1); const b = googleKerelem(esemenyek(k.fk)[0], k, {}).body; assert.equal(!!(b.user_identifiers || []).some((x) => x.address_info), !!b.hashed_email, JSON.stringify(hozz)); assert.equal(b.hashed_first_name !== undefined, b.hashed_email !== undefined, JSON.stringify(hozz)); }
   // egy nev / nev nelkul / kulfoldi telefon / kapcsolo: nincs address_info (a tobbi mezo megy)
   const nincs = (b) => assert.deepEqual([b.hashed_first_name, b.hashed_last_name, b.country_code, b.postal_code, (b.user_identifiers || []).some((x) => x.address_info)], [undefined, undefined, undefined, undefined, false]);
   for (const v of [{ ...v1, nev: 'Anna' }, { ...v1, nev: '' }, { ...v1, nev: null }, { ...v1, telefon: '+44 20 7946 0958' }]) { const k = await ctxKartya(v); const b = googleKerelem(esemenyek(k.fk)[0], k, {}).body; nincs(b); assert.ok(b.hashed_email, 'az e-mail megy'); }

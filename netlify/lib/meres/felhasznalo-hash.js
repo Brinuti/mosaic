@@ -1,5 +1,6 @@
 // DECISION #202 (maximalis adatatadas, Feri 2026-10-19): a vendeg azonosito-adatai KIZAROLAG hash-elve (SHA-256, normalizalva) hagyjak el a rendszert; nyers e-mail / telefon / nev SOHA nem kerul kimeno kerelembe, naploba, D1-be.
 // Egy helyen allitja elo a platformok kerelem-epitoinek (platformok.js) hash-bemenetet; az elosztas() es a tesztek / a golden-kep is ezt hasznalja.
+// Minden mezo hex-string vagy null, KIVEVE: orszag_kod (konstans "HU") es postal (a Google address_info.postal_code NEM hash-elt: 4 szamjegyu magyar iranyitoszam, csak ajandekkartyanal van forras; a naplozott torzsben maszkolt).
 //   em / ph_meta / ph_e164 / ext : a korabbi (Meta, TikTok) azonositok, valtozatlan szamitas
 //   em_ads / em_ga4              : Google Ads / GA4 e-mail-normalizalas (gmail pontok; Ads: a "+" utani resz is)
 //   fn / ln / country            : Meta: keresztnev / vezeteknev (csak ha van hasznalhato nev: hianyzo / null / ures nev = NINCS nev-hash, a tobbi mezo megy), orszag "hu" (csak ha van mas azonosito)
@@ -32,7 +33,7 @@ export async function felhasznaloHash(env, v = {}) {
     fn, ln, ct: ct ? await sha256hex(ct) : null, zp: zp ? await sha256hex(zp) : null,
     country: magyar && (em || ph_meta || fn || ln) ? await sha256hex('hu') : null,
     fn_g: nevekG && nevekG.fn ? await sha256hex(nevekG.fn) : null, ln_g: nevekG && nevekG.ln ? await sha256hex(nevekG.ln) : null,
-    orszag_kod: magyar && (em || ph_meta || fn || ln) ? 'HU' : null, postal: zp,
+    orszag_kod: magyar && (em || ph_meta || fn || ln) ? 'HU' : null, postal: zp && /^\d{4}$/.test(zp) ? zp : null,   // magyar iranyitoszam: pontosan 4 szamjegy (elirt / kulfoldi ertek nem megy ki nyersen)
     uid: titokOk(e.GUEST_HMAC_KEY_V1) && azon ? (await hmacSha256Hex(e.GUEST_HMAC_KEY_V1, `v1|ga4uid|${azon}`)).slice(0, 32) : null,
   };
 }

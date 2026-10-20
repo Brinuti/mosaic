@@ -66,7 +66,7 @@ function tartalekkal(kerelem, tartalekBody) {
 }
 
 /**
- * ctx: { fk, erk (tisztitott erkezes), hash: { em, ph_meta, ph_e164, ext, em_ads, em_ga4, fn, ln, country, uid }, hozz (platformSzabaly eredmenye platformonkent), ua, ip, oldal, teszt: { meta, tiktok } }
+ * ctx: { fk, erk (tisztitott erkezes), hash: { em, ph_meta, ph_e164, ext, em_ads, em_ga4, fn, ln, ct, zp, country, uid, fn_g, ln_g, orszag_kod, postal }, hozz (platformSzabaly eredmenye platformonkent), ua, ip, oldal, teszt: { meta, tiktok } }
  * -> { platform, platform_nev, url, method, fejlec_nevek, body, cel } | { tiltva: 'ok' } (vedelem fogta meg) | { kihagyva: 'ok' } (a modell szerint ide nem megy)
  */
 export function metaKerelem(e, ctx, env = {}) {
