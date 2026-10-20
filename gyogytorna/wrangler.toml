@@ -11,6 +11,7 @@ GY_ATTR_NELKUL = "1"        # hozzajarulas nelkuli (24 oras) munkamenet-forras; 
 GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
 GY_ZAP_KULCS_HASH_2 = "7d34e0e8c5127b878a8e24017b800d5f91736f899b762cf0fe774b4a0006d5be"  # Zap-kulcs rotacio: a MASODIK egyszerre ervenyes kulcs SHA-256 hash-e (nem titok); csere utan a regi GY_ZAP_KULCS_HASH torolheto
 GY_SAV_KI = "1"             # sutisav KI: dontes nelkul az alapertelmezes "megadott" (Feri dontese, 2026-10-14); vesz-kikapcsolas: "0" (a suti.js-ben is SAV_KI = false)
+GY_GADS_FELTOLTES = "dry"        # GY-25: szerveres Google Ads feltoltes: ki | dry (csak naplo, a Google-nek semmi) | eles (meg nincs bekotve)
 
 # A titkok a Cloudflare felueleten, Secret tipussal, kornyezetenkent: GY_HMAC_KULCS (tranzakcio_id es parosito), GY_ADMIN_KULCS_HASH (a /api/gy-admin es
 # /api/gy-kampanyok kulcsanak SHA-256 hash-e).
@@ -27,6 +28,7 @@ database_id = "68a1b80e-ab8e-48ac-9ef7-5fc02c07326e"
 GY_ATTR_NELKUL = "1"
 GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
 GY_SAV_KI = "1"
+GY_GADS_FELTOLTES = "dry"        # GY-25: szerveres Google Ads feltoltes: ki | dry (csak naplo, a Google-nek semmi) | eles (meg nincs bekotve)
 GY_ZAP_KULCS_HASH_2 = "7d34e0e8c5127b878a8e24017b800d5f91736f899b762cf0fe774b4a0006d5be"
 GY_TESZT_G = "g:pw-proba"
 

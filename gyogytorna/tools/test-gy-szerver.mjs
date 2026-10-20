@@ -1090,3 +1090,39 @@ test('GY-25: ?megtalalt= riport: platform / kampany / hirdetes, db, atlag nap; c
   assert.deepEqual(rap.sorok.map((x) => [x.platform, x.kampany, x.db, x.atlag_nap]), [['meta', '1234567', 1, 3]]);
   assert.equal(JSON.stringify(rap).includes('ABCDEFGH'), false);
 });
+
+// --- GY-25: szerveres Google Ads feltoltes DRY-RUN naplo ---------------------------------------------------------------------------------------------------------
+import { gfeltoltesFut, gfeltoltesPayload, maszk } from '../lib/gfeltoltes.js';
+test('GY-25 feltoltes: payload csak a megengedett mezokkel, consent nelkul; maszk; dry-run naplo idempotens, csak igazolt Google allapotfelmeres', async () => {
+  const p = gfeltoltesPayload({ kattTipus: 'gbraid', kattErtek: 'ABCDEFGH12345', konverzioIdo: '2026-10-20 10:00:00+02:00', orderId: 'x'.repeat(64) });
+  assert.deepEqual(Object.keys(p).sort(), ['conversionAction', 'conversionDateTime', 'conversionValue', 'currencyCode', 'gbraid', 'orderId']);
+  assert.equal(p.conversionAction, 'customers/2596120588/conversionActions/7858300772');
+  assert.equal(p.conversionValue, 19000);
+  assert.equal(JSON.stringify(p).includes('consent'), false);
+  assert.equal(gfeltoltesPayload({ kattTipus: 'fbclid', kattErtek: 'ABCDEFGH12345' }), null);
+  assert.equal(maszk('ABCDEFGH12345'), '*** (13)'); assert.equal(maszk('A'.repeat(24)), 'AAAA…AAA (24)');
+
+  const env = await lpcKornyezet();
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345`, uuid: 'mb_gfel0000000000001' });
+  const futas = () => gfeltoltesFut({ db: env.GY_DB, env, most: MOST / 1000, budapestIdo });
+  assert.deepEqual(await futas(), { mod: 'dry', uj: 0 }); // meg nincs Salonic-igazolas
+  await env.GY_DB.prepare("UPDATE gy_foglalas SET igazolt = 1 WHERE uuid = 'mb_gfel0000000000001'").run();
+  assert.deepEqual(await futas(), { mod: 'dry', uj: 1 });
+  assert.deepEqual(await futas(), { mod: 'dry', uj: 0 }); // idempotens
+  const sor = await env.GY_DB.prepare('SELECT * FROM gy_feltoltes').first();
+  assert.deepEqual([sor.mod, sor.allapot, sor.katt_tipus, sor.katt_maszk, sor.ertek, sor.consent, sor.hiba], ['dry', 'kesz', 'gclid', '*** (13)', 19000, 'nem_ismert', null]);
+  assert.equal(JSON.stringify(sor).includes('ABCDEFGH12345'), false);
+  assert.match(sor.order_id, /^[0-9a-f]{64}$/);
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
+  assert.equal(rap.ok, true);
+  assert.equal(JSON.stringify(rap).includes('ABCDEFGH12345'), false);
+  assert.equal(JSON.stringify(rap).includes('mb_gfel'), false);
+  // ki mod: semmi; eles mod: nincs halozati hivas, `eles_nincs_bekotve`
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: { ...env, GY_GADS_FELTOLTES: 'ki' }, most: MOST / 1000, budapestIdo }), { mod: 'ki', uj: 0 });
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: { ...env, GY_GADS_FELTOLTES: 'eles' }, most: MOST / 1000, budapestIdo }), { mod: 'eles', uj: 1 });
+  assert.equal((await env.GY_DB.prepare("SELECT allapot FROM gy_feltoltes WHERE mod = 'eles'").first()).allapot, 'eles_nincs_bekotve');
+  // lemondott foglalas nem kerul be
+  await env.GY_DB.prepare("UPDATE gy_foglalas SET allapot = 'lemondott'").run();
+  await env.GY_DB.prepare('DELETE FROM gy_feltoltes').run();
+  assert.deepEqual(await futas(), { mod: 'dry', uj: 0 });
+});

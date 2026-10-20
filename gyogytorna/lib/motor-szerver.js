@@ -11,6 +11,7 @@
 // Hibaban a vendeg foglalasa NEM akad el: ezek a vegpontok csak a merest szolgaljak, a foglalast a Salonic rogziti.
 import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok, GOOGLE_KATT, lpcFizetett, lpcCimke, lpcHozzarendel, erintesAdatok, nemFizetettCimke, LPC_VERZIO } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
+import { gfeltoltesFut, gfeltoltesRiport, gfeltoltesMod } from './gfeltoltes.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesek, erintesTorol, kattintasTorol, lpcHiba, motorStatNo } from './db.js';
@@ -390,6 +391,7 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   }
   if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length};${tobbOkkod};${oldalDiag}`.slice(0, 190), most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
+  try { await gfeltoltesFut({ db, env, most, budapestIdo, uuid: jeloltek[0].uuid }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); } // GY-25: dry-run (csak az igazolt foglalas; a visszameno feldolgozas az admin vegponton) napló; hiba SOHA nem erinti az igazolast
   return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
 }
 
@@ -432,6 +434,11 @@ export async function adminVegpont({ request, env, deps = {} }) {
   await sema(db);
   const u = new URL(request.url);
   const most = mostUnix(deps);
+  if (u.searchParams.get('gfeltoltes')) { // GY-25: szerveres Google Ads feltoltes (dry-run) naploja; a hianyzo (visszameno) sorokat felveszi, majd riportol
+    let fut = null;
+    try { fut = await gfeltoltesFut({ db, env, most, budapestIdo }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); fut = { mod: gfeltoltesMod(env), hiba: 'futasi_hiba' }; }
+    return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, ...(await gfeltoltesRiport(db)) });
+  }
   if (u.searchParams.get('visszahivasok')) {
     const r = (await db.prepare('SELECT id, letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
     return valasz(200, { ok: true, visszahivasok: r });

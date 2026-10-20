@@ -67,3 +67,10 @@ Hozzajarulas: megtagadas / visszavonas -> `gy_lpt` torlodik a kovetkezo hivasnal
 - Visszavonaskor a naplo es a foglalasokon tarolt nyers click-ID-k is torlodnek (`lpc_latogato` = a gy_lpt / gy_s hash eleje).
 - Megjegyzes: `GY_SAV_KI=1` mellett (Feri dontese, 2026-10-14) a hozzajarulas dontes nelkul "megadottnak" szamit; a D1-ben a vélelmezett es a kifejezett hozzajarulas nem kulonbozik.
 - A `?gads=` export nem tartalmaz latogato-hasht, nevet, e-mailt, telefont, kezelest; a `?foglalas=` a nyers click-ID helyett csak jelzest ad.
+
+## GY-25 – szerveres Google Ads feltoltes (DRY-RUN, Feri 2026-10-20)
+
+- Tabla: `gy_feltoltes` (uuid+mod egyedi): allapot, katt_tipus, **maszkolt** click-ID (`ABCD…xyz (24)`; 20 karakter alatt csak `*** (hossz)`), order_id (tartos HMAC hash), konverzio_ido (Europe/Budapest), ertek (19000), consent (`nem_ismert`), a foglalas hozzajarulas-erteke, payload_hash. Megorzes 90 nap. Teljes click-ID nem kerul a naploba (az `gy_foglalas.gads_katt_ertek` 60 nap utan torlodik).
+- Jogosult: igazolt=1, allapotfelmeres, nem teszt, nem lemondott, van gclid / gbraid / wbraid. A sorok az igazolaskor es a `GET /api/gy-admin?gfeltoltes=1` hivaskor (visszamenoleg is) keszulnek.
+- Kapcsolo `GY_GADS_FELTOLTES` = `ki` | `dry` (alap) | `eles` (meg nincs bekotve: nincs OAuth / kuldo, halozati hivas nincs). A Google-nek jelenleg semmi nem megy ki.
+- Kuldendo mezok (leendo eles): click-ID, conversionDateTime, conversionValue 19000 HUF, orderId; consent mezo NINCS kitoltve (UNSPECIFIED; Feri 2026-10-20). Nev / e-mail / telefon / panasz / enhanced conversion nincs.

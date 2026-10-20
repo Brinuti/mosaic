@@ -32,6 +32,7 @@ export const SEMA = [
     id INTEGER PRIMARY KEY AUTOINCREMENT, projekt TEXT NOT NULL DEFAULT 'gyogytorna', latogato TEXT NOT NULL, ido INTEGER NOT NULL, cimke TEXT NOT NULL, bizonyitek TEXT,
     kampany TEXT, hirdetescsoport TEXT, hirdetes TEXT, oldal TEXT, hozzajarulas TEXT, szabaly_verzio TEXT)`,
   // GY-24: lepesenkenti tolcsermeres. CSAK napi aggregalt szamlalo (nap, kornyezet, esemeny, lepes, kategoria, eszkoz): suti, azonosito, IP, user-agent, URL, mezoertek, szabad szoveg NINCS.
+  `CREATE TABLE IF NOT EXISTS gy_feltoltes (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT NOT NULL, mod TEXT NOT NULL, letrehozva INTEGER NOT NULL, allapot TEXT NOT NULL, katt_tipus TEXT, katt_maszk TEXT, order_id TEXT, konverzio_ido TEXT, ertek INTEGER, consent TEXT, hozzajarulas TEXT, payload_hash TEXT, hiba TEXT, UNIQUE (uuid, mod))`,
   `CREATE TABLE IF NOT EXISTS gy_motor_stat (nap TEXT NOT NULL, kornyezet TEXT NOT NULL, esemeny TEXT NOT NULL, lepes TEXT NOT NULL DEFAULT '', kategoria TEXT NOT NULL DEFAULT '', eszkoz TEXT NOT NULL, db INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (nap, kornyezet, esemeny, lepes, kategoria, eszkoz))`,
   `CREATE INDEX IF NOT EXISTS gy_erintes_latogato ON gy_erintes (latogato, ido)`,
@@ -189,6 +190,7 @@ export async function takarit(db, most) {
     db.prepare('DELETE FROM gy_riasztas WHERE ido < ?').bind(most - IDOK.riasztas),
     db.prepare('DELETE FROM gy_visszahivas WHERE letrehozva < ?').bind(most - IDOK.visszahivas),
     db.prepare('DELETE FROM gy_erintes WHERE ido < ?').bind(most - IDOK.erintes),
+    db.prepare('DELETE FROM gy_feltoltes WHERE letrehozva < ?').bind(most - 90 * NAP),
     db.prepare('DELETE FROM gy_motor_stat WHERE nap < ?').bind(budapestNap(most - IDOK.motorStat)),
     db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, gads_munkamenet = NULL, lpc_latogato = NULL, lpc_katt_ertek = NULL, lpc_katt_tipus = NULL WHERE (gads_katt_ertek IS NOT NULL OR lpc_katt_ertek IS NOT NULL OR lpc_latogato IS NOT NULL OR gads_munkamenet IS NOT NULL) AND letrehozva < ?').bind(most - IDOK.gadsKatt),
   ]);
@@ -209,6 +211,7 @@ export async function erintesek(db, latogato, tol) {
 }
 /** Visszavont hirdetesi hozzajarulas: a foglalasokon tarolt nyers click-ID-k is torlodnek (latogato-hash eleje alapjan). */
 export async function kattintasTorol(db, hashok) {
+  for (const h of hashok) await db.prepare('DELETE FROM gy_feltoltes WHERE uuid IN (SELECT uuid FROM gy_foglalas WHERE lpc_latogato = ?)').bind(h.slice(0, 16)).run(); // GY-25: a feltoltesi naplo sorai is
   for (const h of hashok) await db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, gads_munkamenet = NULL, lpc_katt_ertek = NULL, lpc_katt_tipus = NULL, lpc_latogato = NULL WHERE lpc_latogato = ?').bind(h.slice(0, 16)).run();
 }
 export const erintesTorol = (db, latogato) => db.prepare('DELETE FROM gy_erintes WHERE latogato = ?').bind(latogato).run();
