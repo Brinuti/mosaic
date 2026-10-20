@@ -107,7 +107,7 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   await motorKattint(p, '[data-hely="6029"]');
   ok('Budapest: a kezelesek betoltodnek', await varMotor(p, '[data-szolg]'));
   const szolg = await p.evaluate(() => [...document.querySelector('[data-mp-motor]').shadowRoot.querySelectorAll('[data-szolg]')].map((x) => x.querySelector('.nev').textContent));
-  ok('a kezelesek magyarul, a migren-oldalon a migren-piercing az elso', /Migrén/.test(szolg[0] || '') && szolg.length >= 9, szolg.slice(0, 2).join(' | '));
+  ok('a kezelesek magyarul: elol a 3 es a 2 piercing, utana a migren-oldalon a migren-piercing', /^3 piercing/.test(szolg[0] || '') && /^2 piercing/.test(szolg[1] || '') && /Migrén/.test(szolg[2] || '') && szolg.length >= 11, szolg.slice(0, 3).join(' | '));
   await motorKattint(p, '[data-szolg]');
   ok('naptar: van szabad idopont', await varMotor(p, '[data-slot]'));
   const szakemberek = await p.evaluate(() => document.querySelector('[data-mp-motor]').shadowRoot.querySelectorAll('[data-staff]').length);

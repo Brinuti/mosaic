@@ -118,10 +118,10 @@ async function gombProba(p, cim, sel, idx, ut) {
     if (!GYORS && g.csomag && hely) {
       await sr(p, 'r.querySelector(\'[data-hely="6029"]\').click()');
       await varj(p, '.pk', 15000); await p.waitForTimeout(400);
-      const m = await sr(p, 'return {elso:((r.querySelector(".pk .pk-cim b")||{}).textContent||"").trim(), nyitott:!!r.querySelector(".pk.nyitva")}');
+      const m = await sr(p, 'return {elso:((r.querySelector(".pk .pk-cim b")||{}).textContent||"").trim(), elsoEgy:(([...r.querySelectorAll(".pk .pk-cim b")].map(x=>x.textContent.trim()).find(x=>!/^(\\d|1\\+1|Fülbevaló)/.test(x)))||""), nyitott:!!r.querySelector(".pk.nyitva")}');
       let jo = m && !m.nyitott;
       const tk = g.tipus || tipusKodUtbol(ut);
-      if (g.csomag === '1') jo = jo && (!tk || m.elso.toLowerCase().includes(TIPUSNEV[tk].toLowerCase()));
+      if (g.csomag === '1') jo = jo && (!tk || m.elsoEgy.toLowerCase().includes(TIPUSNEV[tk].toLowerCase()));
       else if (g.csomag === '2' || g.csomag === '3') jo = jo && m.elso === `${g.csomag} piercing`;
       else if (g.csomag === 'ketto') jo = jo && /^2 személynek/.test(m.elso);
       ok(`${cim}: "${g.szoveg}" (data-csomag=${g.csomag}${g.tipus ? ', data-tipus=' + g.tipus : ''}): az elovalasztas a gomb szerint`, jo, JSON.stringify(m));

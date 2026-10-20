@@ -367,6 +367,14 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 @media (max-width: 420px) { .pk-felugro-x { right: -4px; } }
 .pk-lista { display: grid; gap: 8px; }
 .pk { border: 1.5px solid #ecdcd8; border-radius: 14px; background: #fff; box-shadow: 0 1px 3px rgba(69, 70, 89, .08); }
+.pk { position: relative; }
+/* a 3 es a 2 piercing kiemelve (2026-10-20): arany keret + halvany hatter, a keret folott kis "Akció · Legjobban megéri" jelzes */
+.pk.pk-ajanlott { border-color: #e8b94f; background: #fffbf0; box-shadow: 0 2px 10px rgba(200, 140, 20, .18); }
+.pk-lista .pk.pk-ajanlott:first-child { margin-top: 8px; }
+.pk-lista .pk.pk-ajanlott + .pk.pk-ajanlott { margin-top: 10px; }
+.pk.pk-ajanlott .pk-fej { padding-top: 15px; }
+.pk-jelzo { position: absolute; left: 14px; top: -9px; padding: 2px 10px; border-radius: 99px; background: linear-gradient(90deg, #f6c95a, #e8a92c); box-shadow: 0 2px 5px rgba(150, 100, 10, .3); color: #3d2a05; font: 700 9.5px/1.4 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; pointer-events: none; }
+.pk.pk-ajanlott .pk-valaszt { box-shadow: 0 4px 12px rgba(163, 90, 75, .32); }
 .pk.nyitva { border-color: #c99b97; box-shadow: 0 6px 18px rgba(163, 90, 75, .12); }
 .pk-fej { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; min-height: 0; padding: 9px 12px 5px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
 .pk-ikon { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #f6e5e0; }
@@ -394,17 +402,17 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .pk-csomag { margin: 0 0 10px; font-size: 13px; line-height: 1.45; color: #6b6c80; }
 .pk-csomag p { margin: 0 0 6px; } .pk-csomag p:last-child { margin: 0; }
 .pk-garancia { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: #eef3ec; font-size: 13px; line-height: 1.45; color: #3c4a3f; }
-.pk-gombok { display: flex; gap: 8px; padding: 2px 12px 10px; }
-.pk-reszlet { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 36px; padding: 0 13px; border: 1.5px solid #e3cfca; border-radius: 99px; background: #fff; font: 600 13px/1 'poppins-semibold', Poppins, Arial, sans-serif; color: #a35a4b; cursor: pointer; white-space: nowrap; }
+.pk-gombok { display: flex; justify-content: space-between; gap: 8px; padding: 2px 12px 10px; }
+.pk-reszlet { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; padding: 0 2px; border: 0; background: none; font: 600 13px/1 'poppins-semibold', Poppins, Arial, sans-serif; color: #a35a4b; cursor: pointer; white-space: nowrap; text-decoration: underline; text-decoration-color: rgba(163, 90, 75, .45); text-decoration-thickness: 1px; text-underline-offset: 3px; } /* sima link (2026-10-20), nem gomb */
 .pk-reszlet svg { width: 13px; height: 13px; transition: transform .2s; }
 .pk-reszlet[aria-expanded="true"] svg { transform: rotate(180deg); }
-.pk-reszlet:hover { border-color: #d7aba8; background: #fdf3f0; }
-.pk-valaszt { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 36px; padding: 0 14px; border: 0; border-radius: 99px; background: #a35a4b; box-shadow: 0 2px 8px rgba(163, 90, 75, .25); color: #fff; font: 600 13.5px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; white-space: nowrap; }
+.pk-reszlet:hover { text-decoration-color: currentColor; }
+.pk-valaszt { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 36px; padding: 0 18px; border: 0; border-radius: 99px; background: #a35a4b; box-shadow: 0 2px 8px rgba(163, 90, 75, .25); color: #fff; font: 600 13.5px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; white-space: nowrap; }
 .pk-valaszt:hover { background: #8e4a3d; }
 .pk-valaszt svg { flex: none; width: 12px; height: 12px; }
 .rejtett { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .pk-fej:focus-visible, .pk-valaszt:focus-visible, .pk-reszlet:focus-visible, .pk-szuras:focus-visible, .pk-felugro-x:focus-visible { outline: 3px solid #f5d3ca; outline-offset: 2px; }
-@media (max-width: 380px) { .pk-fej { gap: 8px; padding: 8px 10px 4px; } .pk-ikon { width: 30px; height: 30px; } .pk-ikon img { width: 19px; height: 19px; } .pk-cim b { font-size: 14px; } .pk-gombok { gap: 6px; padding: 2px 10px 9px; } .pk-reszlet { padding: 0 11px; font-size: 12.5px; } .pk-valaszt { padding: 0 11px; font-size: 13px; gap: 5px; } .pk-info-sor { gap: 8px; font-size: 11.5px; } .pk-szuras { font-size: 11.5px; } }
+@media (max-width: 380px) { .pk-fej { gap: 8px; padding: 8px 10px 4px; } .pk-ikon { width: 30px; height: 30px; } .pk-ikon img { width: 19px; height: 19px; } .pk.pk-ajanlott .pk-fej { padding-top: 14px; } .pk-cim b { font-size: 14px; } .pk-gombok { gap: 6px; padding: 2px 10px 9px; } .pk-reszlet { padding: 0 2px; font-size: 12.5px; } .pk-valaszt { padding: 0 11px; font-size: 13px; gap: 5px; } .pk-info-sor { gap: 8px; font-size: 11.5px; } .pk-szuras { font-size: 11.5px; } }
 @media (max-width: 460px) { .pk-ertek-hosszu { display: none; } .pk-info-sor { gap: 8px; } }
 @media (max-width: 340px) { .pk-valaszt svg { display: none; } .pk-szuras { padding-right: 8px; } }
 `;
@@ -730,7 +738,7 @@ export function nyit(ctx) {
     szolgRajzol();
   }
   // A piercing-lista (a tulajdonos kerese, 2026-10-20: "regen egy listaban volt az osszes piercing, egymas alatt"): nincs szurosor, MINDEN lehetoseg egy listaban,
-  // egymas alatt, tomor kartyakkal. A kategoria a Salonic-szolgaltatas nevebol jon; a sorrend: 1 piercing, 2–3 piercing, 2 szemelynek, fulbevalo (a Salonic sorrendjeben).
+  // egymas alatt, tomor kartyakkal. A kategoria a Salonic-szolgaltatas nevebol jon; a sorrend: 3 piercing, 2 piercing (kiemelve), 1 piercing, 1+1, 2 szemelynek, fulbevalo (a Salonic sorrendjeben).
   // A "2 szemelynek - 2 db" fejenkent 1 piercing, a 4 es 6 db tobb piercing.
   // a "Kiesett ékszer újraszúrása" (2026-10-16 ota a Salonicban): belsős szolgáltatás, a piercing-listába nem kerül (szolgaltatasLepes)
   const ujraszuras = (n) => /kiesett|\S*jrasz\S*r/i.test(n);
@@ -741,29 +749,33 @@ export function nyit(ctx) {
     if (/3 PIERCING|2 PIERCING|^1\+1/i.test(n)) return { kinek: 'magamnak', mit: 'tobb' };
     return { kinek: 'magamnak', mit: 'egy' };
   };
-  // a csoport sorrendje a listaban: 0 = 1 piercing, 1 = 2–3 piercing, 2 = 2 szemelynek, 3 = fulbevalo
-  const csoport = (s) => { const c = kategoria(s); return c.mit === 'fulbevalo' ? 3 : c.kinek === 'ketto' ? 2 : c.mit === 'tobb' ? 1 : 0; };
+  // a csoport sorrendje a listaban (a tulajdonos kerese, 2026-10-20: "az elso kettő a ketto es a harom piercing legyen, kiemelve, Akcio - a legjobban megeri"):
+  // 0 = 3 piercing, 1 = 2 piercing (kiemelve), 2 = 1 piercing, 3 = 1+1, 4 = 2 szemelynek, 5 = fulbevalo
+  const csoport = (s) => { const n = szepNev(s.name), c = kategoria(s); return c.mit === 'fulbevalo' ? 5 : c.kinek === 'ketto' ? 4 : /^3 PIERCING/i.test(n) ? 0 : /^2 PIERCING/i.test(n) ? 1 : c.mit === 'tobb' ? 3 : 2; };
+  const ajanlott = (s) => csoport(s) <= 1;
   // A piercing-kartyak (a tulajdonos latvanyterve es kerese, 2026-10-16): a 4,8-as ertekeles mellett a "Hogy néz ki egy szúrás?" (felugro, bezarhato video),
   // alatta MINDEN lehetoseg kartyaja. Minden kartyan ket gomb: "Részletek" (lenyitja: a pont helye valodi fulfotoval, mire jo, garancia; a csomagoknal a kedvezmeny
   // magyarazata) es "Időpontot választok" (a regi [data-szolg]: title = a teljes Salonic-nev, .nev > span = a rovid nev, .ar = az ar; a tesztek es a foglalasi logika
   // ugyanaz). A kartya feje is nyit / zar (data-nyit).
   function szolgRajzol() {
     const lista = tartalom._lista || [];
-    // stabil rendezes (a Salonic sorrendje csoporton belul marad); a tipusoldal piercingje elol (pl. a lep-oldalrol nyitva a Lep), a divat fulpiercing-oldalon a fulbevalok
-    const elol = (s) => (all.oldalTipus === 'divat' ? csoport(s) === 3 : !!PK[all.oldalTipus] && csoport(s) === 0 && tipusKod(s.name) === all.oldalTipus);
-    let mutat = lista.map((s, i) => [s, i]).sort((x, y) => (elol(y[0]) - elol(x[0])) || (csoport(x[0]) - csoport(y[0])) || (x[1] - y[1])).map(([s]) => s);
+    // stabil rendezes (a Salonic sorrendje csoporton belul marad): elol a 3 es a 2 piercing (kiemelve), utana az 1 piercingek, a tipusoldal piercingje elol (pl. a lep-oldalrol
+    // nyitva a Lep); a divat fulpiercing-oldalon a fulbevalok az elsok (ott nincs ertelme a kozerzetjavito csomagnak elol)
+    const elol = (s) => (!!PK[all.oldalTipus] && csoport(s) === 2 && tipusKod(s.name) === all.oldalTipus ? 0 : 1);
+    const kulcs = (s) => (all.oldalTipus === 'divat' && csoport(s) === 5 ? -1 : csoport(s));
+    let mutat = lista.map((s, i) => [s, i]).sort((x, y) => (kulcs(x[0]) - kulcs(y[0])) || (elol(x[0]) - elol(y[0])) || (x[1] - y[1])).map(([s]) => s);
     // alapbol (es a lista ujrarajzolasakor) egy kartya sincs lenyitva (a tulajdonos kerese, 2026-10-16, 4. kor): elsore latszon, milyen piercingek vannak
     if (all.nyitott === null || (all.nyitott && !mutat.some((s) => s.serviceId === all.nyitott))) all.nyitott = '';
     if (all.csomag) { // (egyszer: az akcio-oldal elovalasztott csomagja elol; a kartyak - mint mindig - csukva, a tulajdonos kerese, 2026-10-16)
       const re = all.csomag === '3' ? /3 PIERCING/i : all.csomag === '2' ? /2 PIERCING/i : null;
-      const c = re && mutat.find((s) => csoport(s) === 1 && re.test(s.name));
+      const c = re ? mutat.find((s) => ajanlott(s) && re.test(s.name)) : all.csomag === '1' ? mutat.find((s) => csoport(s) === 2) : null;
       if (c) mutat = [c, ...mutat.filter((s) => s !== c)];
-      else if (all.csomag === 'ketto') mutat = [...mutat.filter((s) => csoport(s) === 2), ...mutat.filter((s) => csoport(s) !== 2)];
+      else if (all.csomag === 'ketto') mutat = [...mutat.filter((s) => csoport(s) === 4), ...mutat.filter((s) => csoport(s) !== 4)];
       all.csomag = null;
     }
     all.arak = arakBol(lista);
     tartalom.innerHTML = `<div class="pk-info"><p class="pk-info-sor"><span class="pk-ertek">${ertekelesHtml()}</span><button class="pk-szuras" data-szuras aria-haspopup="dialog"><span class="pk-play">${PLAY}</span>Hogy néz ki egy szúrás?</button></p></div>`
-      + `<div class="pk-lista">${mutat.map((s) => pkKartya(s, csoport(s) !== 3)).join('')}</div>`;
+      + `<div class="pk-lista">${mutat.map((s) => pkKartya(s, csoport(s) !== 5, ajanlott(s))).join('')}</div>`;
     // ha az ertekeles meg nem jott meg: megjottekor a sor frissul
     if (!ertekelesAdat) ertekelesBetolt().then(() => { const el = tartalom.querySelector('.pk-ertek'); if (el && ertekelesAdat) el.innerHTML = ertekelesHtml(); });
   }
@@ -774,7 +786,7 @@ export function nyit(ctx) {
   const NYIL_LE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const NYIL_JOBBRA = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   // egy kartya: fej (ikon, nev, rovid leiras, ar) + lenyithato test + a ket gomb (Részletek / Időpontot választok)
-  function pkKartya(s, kozerzet = true) {
+  function pkKartya(s, kozerzet = true, ajanlott = false) {
     const a = pkAdat(s);
     const e = eredetiAr(s);
     const nyitva = all.nyitott === s.serviceId;
@@ -790,7 +802,7 @@ export function nyit(ctx) {
     test += `<p class="pk-tart"><b>Az ár tartalmazza:</b> ${kozerzet ? 'titán ékszer · érzéstelenítő spray · gépi bemérés · ingyenes kontroll · garancia' : 'steril szúrás · G23 titánium ékszer vagy a hozott fülbevalód · ingyenes kontroll'}</p>`;
     const gombok = `<div class="pk-gombok"><button class="pk-reszlet" data-nyit="${id}" aria-expanded="${nyitva}" aria-controls="pk-t-${id}">${nyitva ? 'Bezár' : 'Részletek'}${NYIL_LE}</button>`
       + `<button class="pk-valaszt" data-szolg="${id}" title="${esc(szepNev(s.name))}">Időpontot választok${NYIL_JOBBRA}<span class="rejtett"><span class="nev"><span>${esc(rovidNev(s.name))}</span></span><span class="ar">${e ? `<s>${ft(e)}</s>` : ''}${ft(s.activePrice)}</span></span></button></div>`;
-    return `<div class="pk${nyitva ? ' nyitva' : ''}" data-pk="${id}">${fej}<div class="pk-test" id="pk-t-${id}"${nyitva ? '' : ' hidden'}>${test}</div>${gombok}</div>`;
+    return `<div class="pk${nyitva ? ' nyitva' : ''}${ajanlott ? ' pk-ajanlott' : ''}" data-pk="${id}">${ajanlott ? '<span class="pk-jelzo">Akció · Legjobban megéri</span>' : ''}${fej}<div class="pk-test" id="pk-t-${id}"${nyitva ? '' : ' hidden'}>${test}</div>${gombok}</div>`;
   }
   // a kartya szovegei a Salonic-szolgaltatasbol: tipus (1 piercing), csomag (2 / 3 piercing, ket szemelynek), fulbevalo
   const PK = {
