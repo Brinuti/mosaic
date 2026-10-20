@@ -51,7 +51,7 @@
   <label class="c">Melyik mappába?</label>
   <div class="mappak" id="folders">Betöltés…</div>
 
-  <label class="c" for="mi">Mi van a képen? (ez lesz a fájl neve)</label>
+  <label class="c" for="mi">Mi van a képen? (a fájl neve: a neved + ez a szöveg)</label>
   <input id="mi" type="text" maxlength="60" placeholder="pl. balayage előtte-utána" autocomplete="off">
 
   <div class="gombok">
@@ -149,7 +149,7 @@ $('go').onclick = async function () {
   $('msg').className = ''; $('msg').textContent = 'Feltöltés… ne zárd be az oldalt.';
   var alap = $('mi').value.trim(), ok = 0, bad = 0, hiba = '';
   for (var i = 0; i < items.length; i++) {
-    var nev = items.length > 1 ? alap + ' ' + (i + 1) : alap;
+    var nev = $('who').value + ' - ' + (items.length > 1 ? alap + ' ' + (i + 1) : alap); // a fájlnév a feltöltő nevével kezdődik
     try { await uploadOne(items[i], i, nev); ok++; }
     catch (e) { bad++; hiba = e.message; var st = $('f' + i).querySelector('.st'); st.className = 'st err'; st.textContent = 'hiba'; }
   }
