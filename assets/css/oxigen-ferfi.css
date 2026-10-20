@@ -44,6 +44,7 @@ main :is(p, li).hosszu { text-wrap: pretty; }
 .hero-ferfi .hero-cta { flex-direction: row; align-items: stretch; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
 .hero-ferfi .hero-cta .gomb { flex: 1 1 200px; max-width: 262px; padding: 15px 22px; }
 .hero-ferfi .gomb-ketsoros .c { font-size: 16px; }
+.hero-ferfi .gomb-ketsoros .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* a "–" csak az olvasoknak / a gomb szovegeben: "Hajkamerás felmérés – 4 990 Ft" (latva ket sor) */
 .hero-ferfi .gomb-ketsoros .ar { font-size: 16px; font-weight: 600; white-space: nowrap; }
 .hero-sor { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 26px; margin-top: 26px; }
 .hero-link { font-size: 15px; color: var(--sotet); text-decoration: none; cursor: pointer; }
