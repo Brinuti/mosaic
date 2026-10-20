@@ -28,8 +28,11 @@
 <body>
 <!--
   MOSAIC /hajvizsgalat-budapest - a Google Ads (OX-2) hirdetesi oldal: hajkamerás haj- és fejbőrvizsgálat 4 990 Ft (Salonic 466147), kezeles nelkul is foglalhato.
-  Az /oxigenterapia-budapest landing komponenseivel (oxigen-landing.css / .js valtozatlanul), a kiegeszito stilus: oxigen-hajvizsgalat.css. Szovegterv: a Drive-brief 2. szakasza
-  (MOSAIC-GOOGLE-4UZLETAG-LANDING-BRIEF-WEBES-ABLAKNAK-2026-10-17.md). Az oldal EGYETLEN fo gombja: "Hajvizsgálatot foglalok – 4 990 Ft" (service=466147); masodlagos, lent, kisebb: az elso kezeles (466110).
+  Az /oxigenterapia-budapest landing komponenseivel (oxigen-landing.css / .js valtozatlanul), a kiegeszito stilus: oxigen-hajvizsgalat.css, a sajat kis szkript: oxigen-hajvizsgalat.js
+  (belso gorgetes-linkek + Google-terkep). Szovegterv: a Drive-brief 2. szakasza (MOSAIC-GOOGLE-4UZLETAG-LANDING-BRIEF-WEBES-ABLAKNAK-2026-10-17.md), 2026-10-20-tol Feri visszajelzese szerint
+  atalakitva (docs/HAJVIZSGALAT_LANDING.md). Az oldal EGYETLEN fo gombja: "Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft" (service=466147); masodlagos, lent, kisebb: az elso kezeles (466110).
+  OLDALON BELUL marad minden (Feri, 2026-10-20): a Google-ertekeles es a Terkep-link BELSO horgony (data-horgony, JS-gorgetes: nincs #hash, a GTM History Change nem indul); csak az "Utvonaltervezes"
+  gomb (navigacio) es a Glamour-cikk visz ki.
   A megerosítésre varo tartalom (pl. a vizsgalat idotartama) es a tiltott allitasok (eredmenyigeret, orvosi / trichologiai szerep, hatekonysagi szazalek) nem szerepelnek: lasd docs/HAJVIZSGALAT_LANDING.md.
   Merokod, esemenykuldes NINCS az oldalon (data-cta sincs).
   Szombati nyitvatartas megerositesre var: csak H-P szerepel (az alabbi nyitvatartas-jelolo a lablecet / az Info-ablakot is szukiti).
@@ -48,6 +51,13 @@
   <symbol id="i-kartya" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10.500h18M7 15h4"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.500"/><path d="M12 11v6M12 7.500v.1"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.500"/><path d="M8 20h8M12 16v4M7 11l2-2 2 2 3-3 3 3"/></symbol>
+  <symbol id="i-lista" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h5"/></symbol>
+  <symbol id="i-cseppek" viewBox="0 0 24 24"><path d="M8 3.500c2.200 3 4 5 4 7.700a4 4 0 01-8 0c0-2.700 1.800-4.700 4-7.700z"/><path d="M16 11.500c1.600 2.100 3 3.600 3 5.500a3 3 0 01-6 0c0-1.900 1.400-3.400 3-5.500z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></symbol>
+  <symbol id="i-lakat" viewBox="0 0 24 24"><rect x="5" y="10.500" width="14" height="10" rx="2"/><path d="M8 10.500V8a4 4 0 018 0v2.500M12 14.500v2.500"/></symbol>
+  <symbol id="i-pajzs" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.500 8.500-7 10-3.500-1.500-7-5-7-10V6z"/><path d="M8.500 12l2.500 2.500 4.500-5"/></symbol>
+  <symbol id="i-ag" viewBox="0 0 24 24"><path d="M3 15h18v4H3zM5 15V9a2 2 0 012-2h4v8M3 19v2M21 19v2"/></symbol>
   <symbol id="i-bal" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
   <symbol id="i-jobb" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
   <symbol id="j-hullas" viewBox="0 0 64 64"><path d="M16 6c-4 14-4 28 2 42M32 5c-3 14-3 30 1 43M48 6c4 14 4 28-2 42"/><circle cx="19" cy="53" r="3.200"/><circle cx="33" cy="54" r="3.200"/><circle cx="45" cy="53" r="3.200"/><path d="M56 22c3 5 3 11 0 16" stroke-dasharray="1 4"/></symbol>
@@ -66,10 +76,11 @@
       <p class="hero-lead">Nézd meg kamerán, mi történik a fejbőrödön – kezelés nélkül is foglalható állapotfelmérés a Kolosy térnél.</p>
       <p class="hero-ar"><b>4&nbsp;990&nbsp;Ft</b><span>hajkamerás haj- és fejbőr-állapotfelmérés</span></p>
       <div class="hero-cta">
-        <a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4 990 Ft <span class="nyil">→</span></a>
+        <a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft <span class="nyil">→</span></a>
       </div>
-      <p class="hero-hely"><svg aria-hidden="true"><use href="#i-pin"/></svg><span>1023 Budapest, Bécsi út 2., Kolosy tér és Zsigmond tér között · <a href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener">Megnyitás a Google Térképen</a></span></p>
-      <a class="hero-ertekeles" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener"><img src="/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png" alt="" width="447" height="86" loading="lazy"><b>4,9 – 1 266 Google-értékelés</b></a>
+      <p class="hero-hely"><svg aria-hidden="true"><use href="#i-pin"/></svg><span>1023 Budapest, Bécsi út 2., Kolosy tér és Zsigmond tér között · <a href="#terkep" data-horgony="terkep">Megnézem a térképen <span class="le" aria-hidden="true">↓</span></a></span></p>
+      <!-- a Google-ertekeles az OLDALON BELUL a "Vendegeink velemenye" blokkra gorget (nem visz ki a Google-ra) -->
+      <a class="hero-ertekeles" href="#velemenyek" data-horgony="velemenyek"><img src="/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png" alt="" width="447" height="86" loading="lazy"><b>4,9 – 1 266 Google-értékelés</b></a>
     </div>
     <div class="hero-galeria hero-egy">
       <div class="hg-sav">
@@ -82,7 +93,7 @@
 <!-- ============ A) MIKOR ERDEMES? (a "jelek" komponens: a mobil sticky CTA ennek elgorgetese utan jelenik meg) ============ -->
 <section class="jelek mikor" aria-labelledby="mikor-cim">
   <div class="tartalom">
-    <h2 id="mikor-cim" class="kozepre">Mikor érdemes hajvizsgálatra jönnöd?</h2>
+    <h2 id="mikor-cim" class="kozepre">Mikor jöjj hajvizsgálatra?</h2>
     <div class="jel-racs">
       <article class="jel"><span class="jel-ikon"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#j-hullas"/></svg></span><h3>Hajhullás</h3><p>Hajmosáskor, fésüléskor vagy a párnán több szál marad, mint korábban.</p></article>
       <article class="jel"><span class="jel-ikon"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#j-vekony"/></svg></span><h3>Ritkuló haj</h3><p>A feje tetején ritkul a haj, és egyre jobban látszik a fejbőr.</p></article>
@@ -105,11 +116,11 @@
       <ul class="pipa-lista">
         <li><span><b>Hajkamerás haj- és fejbőrfelmérés</b></span></li>
         <li><span>Megmutatjuk a fejbőrképet</span></li>
-        <li><span>Kozmetikai fejbőrápolási lehetőségeket javaslunk</span></li>
+        <li><span>Kozmetikai fejbőrápolási javaslat</span></li>
         <li><span>Oxygeni mintasampon ajándékba</span></li>
       </ul>
       <div class="allapot-cta">
-        <a class="gomb gomb-feher gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4 990 Ft <span class="nyil">→</span></a>
+        <a class="gomb gomb-feher gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft <span class="nyil">→</span></a>
       </div>
     </div>
   </div>
@@ -125,13 +136,66 @@
   </div>
 </section>
 
-<!-- ============ D) HA KEZELEST VALASZTASZ ============ -->
+<!-- ============ D1) IGY TUDUNK SEGITENI (a kovetkezo lepes; Feri, 2026-10-20: nem "kezelest valasztasz") ============
+     A szovegek az /oxigenterapia-budapest "Mi tortenik az elso kezeleseden?" es a GYIK mondataibol (a vizsgalat utan szemelyre szabott javaslat, nincs kotelezo kezeles / berlet). -->
+<section class="segitunk" id="segitunk" aria-labelledby="segitunk-cim">
+  <div class="tartalom">
+    <h2 id="segitunk-cim" class="kozepre">Így tudunk segíteni</h2>
+    <p class="lead kozepre">A hajkamerás vizsgálat után együtt döntjük el, mi a következő lépés.</p>
+    <ol class="lepesek3">
+      <li class="lepes3"><div class="fej"><span class="szam">01</span><svg aria-hidden="true"><use href="#i-monitor"/></svg></div><h3>Megnézzük</h3><p>Hajkamerával közelről megnézzük a fejbőrt és a hajszálakat, és átbeszéljük a panaszaidat.</p></li>
+      <li class="lepes3"><div class="fej"><span class="szam">02</span><svg aria-hidden="true"><use href="#i-lista"/></svg></div><h3>Személyre szabjuk</h3><p>Az állapotfelmérés alapján személyre szabott javaslatot adunk a következő lépésre.</p></li>
+      <li class="lepes3"><div class="fej"><span class="szam">03</span><svg aria-hidden="true"><use href="#i-cseppek"/></svg></div><h3>Kezelünk, ha szeretnéd</h3><p>Ha az oxigénes hajkezelés indokolt, a következő alkalommal megkezdhetjük. Nincs kötelező kezelés vagy bérlet.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ D2) OXIGENES HAJKEZELES: MAGYARAZO BLOK (az eles /oxigenterapia-budapest "Mit csinalunk az oxigenterapia soran?" szakaszabol: szoveg + 3 kep) ============ -->
+<section class="folyamat oxigenes" id="oxigenes-hajkezeles" aria-labelledby="oxigenes-cim">
+  <div class="tartalom">
+    <h2 id="oxigenes-cim">Mit csinálunk az oxigénes&nbsp;hajkezelés&nbsp;során?</h2>
+    <p class="lead">A kezelés során megtisztítjuk és hidratáljuk a fejbőrt, majd a kiválasztott ápoló hatóanyagokat oxigén segítségével visszük fel. A protokollt a hajkamerás vizsgálat és a fejbőr állapota alapján személyre szabjuk.</p>
+    <ol class="lepesek-kep">
+      <li class="lk"><div class="fej"><span class="kor">1</span><div><h3>Tisztítás</h3><p>Gyengéden megtisztítjuk és hidratáljuk a fejbőrt.</p></div></div><img src="/assets/img/c2eb0f_d540831d3acb4a679ffc30073e58d2e2.jpg" alt="A kezelő a mosdónál tisztítja a vendég fejbőrét" loading="lazy" style="object-position:40% 45%"></li>
+      <li class="lk"><div class="fej"><span class="kor">2</span><div><h3>Ápolás</h3><p>Személyre szabott hatóanyagokat alkalmazunk.</p></div></div><img src="/assets/img/c2eb0f_719d9e59218349e7baf727fc8f8d1fb0.jpg" alt="A kezelő a kiválasztott hatóanyagot viszi fel a fejbőrre" loading="lazy" style="object-position:50% 50%"></li>
+      <li class="lk"><div class="fej"><span class="kor">3</span><div><h3>Oxigénes kezelés</h3><p>Az ápoló hatóanyagokat oxigén segítségével visszük fel.</p></div></div><img src="/assets/img/oxigen/oxigen-keszulek.jpg" alt="Az oxigénpalackos készülék és a hozzá tartozó pisztoly" loading="lazy" style="object-position:50% 35%"></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ D3) OXIGENES HAJKEZELES: VIDEO + PRIVAT KEZELOSZOBA (az eles /oxigenterapia-budapest "Nezd meg, hogyan zajlik egy kezeles" szakasza; a video csak kattintasra toltodik, oxigen-landing.js) ============ -->
+<section class="video-sor" id="video" aria-labelledby="video-cim">
+  <div class="tartalom">
+    <h2 id="video-cim" class="kozepre">Nézd meg, hogyan zajlik egy kezelés</h2>
+    <p class="lead kozepre">Nálunk a kezelés privát, csendes, mindenkitől elzárt kezelőszobában zajlik: csak te és a kezelőd vagytok bent.</p>
+    <div class="video-racs">
+      <div class="video-doboz" id="video-doboz" data-video="/assets/video/c2eb0f_360d73a2bc224690bb9d79edb4f6ed91.mp4">
+        <button type="button" id="video-gomb" aria-label="Videó lejátszása: így zajlik egy oxigénterápiás kezelés">
+          <img src="/assets/img/c2eb0f_360d73a2bc224690bb9d79edb4f6ed91f001.jpg" alt="" width="720" height="1280" loading="lazy">
+          <span class="lejatszas" aria-hidden="true"><svg><use href="#i-play"/></svg></span>
+        </button>
+      </div>
+      <div class="video-szoveg">
+        <ul class="elonyok">
+          <li class="elony kiemelt"><svg aria-hidden="true"><use href="#i-lakat"/></svg><div><h3>Privát, csendes, mindenkitől elzárt kezelő</h3><p>Zárt kezelőszobában dolgozunk, nem közös térben. A kezelés alatt senki más nem lát, és nem néz.</p></div></li>
+          <li class="elony"><svg aria-hidden="true"><use href="#i-pajzs"/></svg><div><h3>Nem kell szégyellned magad</h3><p>Senki nem nézi a hajad vagy a fejbőröd, így nem kell zavarban lenned, és nem kell kellemetlenül éreznod magad. Nyugodtan beszélhetsz a panaszaidról.</p></div></li>
+          <li class="elony"><svg aria-hidden="true"><use href="#i-ag"/></svg><div><h3>HeadSpa ágyon fekszel, nem ülős fejmosóban</h3><p>Kényelmesen, hanyatt fekve, ellazulva zajlik a kezelés.</p></div></li>
+        </ul>
+        <div class="szoba-kepek">
+          <figure><img src="/assets/img/oxigen/privat-szoba.jpg" alt="A MOSAIC privát kezelőszobája: zárt, csendes, szolidan megvilágított tér" width="760" height="570" loading="lazy"><figcaption>Privát, csendes kezelőszoba</figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ D4) OXIGENES HAJKEZELES: ARAK + CTA ============ -->
 <!-- Arak (Salonic, 2026-10; ugyanazok, mint az /oxigenterapia-budapest oldalon): elso kezeles hajkamerás vizsgálattal 466110 = 29 900 Ft (80 perc), 2. alkalomtol 466158 = 26 000 Ft,
      5 alkalmas berlet (nem kotelezo) = 5 x 26 000 = 130 000 Ft + 1 literes Oxygeni sampon ajandekba. -->
-<section class="ha-kezeles" id="kezeles" aria-labelledby="kezeles-cim">
+<section class="oxi-arak" id="arak" aria-labelledby="arak-cim">
   <div class="tartalom">
-    <h2 id="kezeles-cim" class="kozepre">Ha kezelést választasz</h2>
-    <p class="lead kozepre">Az állapotfelmérés után döntesz: oxigénes hajkezelést is foglalhatsz, de nem kötelező.</p>
+    <h2 id="arak-cim" class="kozepre">Az oxigénes hajkezelés árai</h2>
+    <p class="lead kozepre">Az állapotfelmérés után a következő alkalommal el is kezdhetjük. Alkalmanként fizetsz, bérletet nem kell előre venned.</p>
     <article class="kezeles-kartya">
       <h3>Oxigénes hajkezelés</h3>
       <ul class="kezeles-arak">
@@ -140,11 +204,12 @@
         <li><span class="kezeles-nev">5 alkalmas bérlet (nem kötelező)<small>5 × 26 000 Ft, ajándék: 1 literes Oxygeni sampon</small></span><b>130 000 Ft</b></li>
       </ul>
       <ul class="kezeles-jegyzet">
-        <li><svg aria-hidden="true"><use href="#i-naptar"/></svg><span>Nincs kötelező bérlet: alkalmanként fizetsz.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-naptar"/></svg><span>Nincs kötelező bérlet.</span></li>
         <li><svg aria-hidden="true"><use href="#i-kartya"/></svg><span>SZÉP Kártyát is elfogadunk.</span></li>
       </ul>
-      <p class="masodlagos-sor"><a class="masodlagos" href="/foglalo-motor?business=oxygen&amp;service=466110">Első kezelés hajkamerás vizsgálattal – 29 900 Ft <span class="nyil">→</span></a></p>
+      <p class="masodlagos-sor"><a class="masodlagos" href="/foglalo-motor?business=oxygen&amp;service=466110">Első kezelés hajkamerás vizsgálattal – 29&nbsp;900&nbsp;Ft <span class="nyil">→</span></a></p>
     </article>
+    <p class="kezeles-cta kozepre"><a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft <span class="nyil">→</span></a></p>
   </div>
 </section>
 
@@ -174,22 +239,31 @@
   </div>
 </section>
 
-<!-- ============ G) BIZALOM: Google-ertekeles + Glamour-emlites (idezet nelkul: eredmeny-allitas nem kerul az oldalra) ============ -->
+<!-- ============ G) BIZALOM: Google-ertekeles + Glamour-emlites + a vendegek velemenyei (Trustindex) - MIND AZ OLDALON BELUL (Feri, 2026-10-20) ============
+     A Glamour-nal idezet nelkul: eredmeny-allitas nem kerul az oldalra. A Google-kartya NEM link (nem visz ki a Google-ra): a hero ertekeles-jelvenye ide, a #velemenyek blokkra gorget (data-horgony). -->
 <section class="bizalom" aria-labelledby="bizalom-cim">
   <div class="tartalom">
     <h2 id="bizalom-cim" class="kozepre">Miért bízhatsz bennünk?</h2>
     <div class="bizalom-racs">
-      <a class="bizalom-google" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener">
+      <div class="bizalom-google">
         <img src="/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png" alt="" width="447" height="86" loading="lazy">
         <b>4,9 – 1 266 Google-értékelés</b>
-        <span>Vendégeink értékelései a Google-on <span class="nyil" aria-hidden="true">→</span></span>
-      </a>
+        <span>Vendégeink értékelései a Google-on</span>
+      </div>
       <aside class="bizalom-glamour" id="glamour" aria-label="A Glamour írt rólunk">
         <span class="glamour-logo" role="img" aria-label="Glamour"></span>
         <span class="glamour-cimke">Glamour cikk</span>
-        <p>A Glamour is írt rólunk · 2026. október 6.</p>
+        <p>A Glamour is írt rólunk</p>
+        <small class="glamour-datum">2026. október 6.</small>
         <a class="glamour-link" href="https://www.glamour.hu/szepseg/oxigenterapia-modszer-hajhullas/wjcmlmd" target="_blank" rel="noopener">Elolvasom a cikket <span class="nyil" aria-hidden="true">→</span></a>
       </aside>
+    </div>
+    <!-- Google-velemenyek: az eredeti Trustindex-csuszka (ugyanaz a beagyazott fajl, mint az /oxigenterapia-budapest oldalon); az oxigen-landing.js MINDIG azonnal betolti (nincs hozzajarulas-kapu) -->
+    <div class="velemenyek-blokk" id="velemenyek" role="region" aria-labelledby="velemenyek-cim">
+      <h3 id="velemenyek-cim" class="kozepre">Vendégeink Google-véleményei</h3>
+      <div class="ti-doboz" id="ti-doboz" data-forras="/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html">
+        <div class="ti-helykitolto"><p>Vélemények betöltése…</p></div>
+      </div>
     </div>
   </div>
 </section>
@@ -212,8 +286,8 @@
   </div>
 </section>
 
-<!-- ============ HELY ============ -->
-<section class="szalon" aria-labelledby="szalon-cim">
+<!-- ============ HELY + TERKEP (a hero "Megnézem a térképen" linkje ide, a #terkep blokkra gorget; az "Utvonaltervezes" gomb a navigacio: az marad kulso) ============ -->
+<section class="szalon" id="helyszin" aria-labelledby="szalon-cim">
   <div class="tartalom szalon-racs">
     <div class="szalon-kepek">
       <img src="/assets/img/oxigen/kezeloszoba.jpg" alt="A MOSAIC egyik kezelőszobája" width="760" height="507" loading="lazy">
@@ -221,9 +295,19 @@
     </div>
     <div>
       <h2 id="szalon-cim">Ilyen helyen várunk</h2>
-      <p>1023 Budapest, Bécsi út 2. (a Kolosy tér és a Zsigmond tér között). Nyitva hétfőtől péntekig 8:00–20:00. Telefon: 06 20 247 4444.</p>
-      <p class="szalon-terkep"><a class="link-gomb" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener">Megnyitás a Google Térképen <span class="nyil" aria-hidden="true">→</span></a></p>
+      <p>1023 Budapest, Bécsi út 2. (a Kolosy tér és a Zsigmond tér között). Nyitva hétfőtől péntekig 8:00–20:00. Telefon: <a class="szalon-tel" href="tel:+36202474444">06 20 247 4444</a>.</p>
       <p class="szep"><svg aria-hidden="true"><use href="#i-kartya"/></svg><span><b>SZÉP Kártyát is elfogadunk</b></span></p>
+      <p class="szalon-gombok"><a class="gomb gomb-korvonal" href="https://www.google.com/maps/dir/?api=1&amp;destination=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener">Útvonaltervezés <span class="nyil" aria-hidden="true">→</span></a></p>
+    </div>
+  </div>
+  <div class="tartalom">
+    <div class="terkep" id="terkep" role="region" aria-label="Térkép: MOSAIC, 1023 Budapest, Bécsi út 2.">
+      <!-- a Google-terkep (harmadik fel) a funkcionalis sutik engedelyezese utan, vagy a gombra kattintva toltodik be (oxigen-hajvizsgalat.js) -->
+      <div class="terkep-hely" id="terkep-hely">
+        <span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg></span>
+        <p><b>MOSAIC Head Spa</b><br>1023 Budapest, Bécsi út 2.</p>
+        <button type="button" class="gomb gomb-korvonal gomb-kicsi" id="terkep-gomb">Google térkép megjelenítése</button>
+      </div>
     </div>
   </div>
 </section>
@@ -233,8 +317,8 @@
   <div class="tartalom zaro-racs">
     <h2 id="zaro-cim">Nézd meg kamerán, mi történik a fejbőrödön.</h2>
     <div class="zaro-cta">
-      <a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4 990 Ft <span class="nyil">→</span></a>
-      <a class="masodlagos masodlagos-feher" href="/foglalo-motor?business=oxygen&amp;service=466110">Első kezelés hajkamerás vizsgálattal – 29 900 Ft <span class="nyil">→</span></a>
+      <a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft <span class="nyil">→</span></a>
+      <a class="masodlagos masodlagos-feher" href="/foglalo-motor?business=oxygen&amp;service=466110">Első kezelés hajkamerás vizsgálattal – 29&nbsp;900&nbsp;Ft <span class="nyil">→</span></a>
     </div>
   </div>
 </section>
@@ -243,12 +327,13 @@
 
 <!-- mobil sticky CTA (csak telefonon, a "Mikor érdemes?" szekció elgörgetése után, a záró sávig): az oldal egyetlen fő gombja -->
 <div class="sticky-cta" id="sticky-cta" aria-hidden="true">
-  <a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147" tabindex="-1">Hajvizsgálatot foglalok – 4 990 Ft <span class="nyil">→</span></a>
+  <a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147" tabindex="-1">Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft <span class="nyil">→</span></a>
 </div>
 
 <!--mh-lablec-->
 
 <script src="/assets/js/klon.js" defer></script>
 <script src="/assets/js/oxigen-landing.js" defer></script>
+<script src="/assets/js/oxigen-hajvizsgalat.js" defer></script>
 </body>
 </html>
