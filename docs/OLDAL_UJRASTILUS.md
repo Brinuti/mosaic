@@ -6,7 +6,7 @@ Ha valami hibásnak tűnik a régi oldalon (elavult ár, ellentmondás, elírás
 
 Minta (már kész, élő) oldalak: `foglalas/headspa-ferfiaknak.html` (+ `assets/css/headspa-ferfi.css`), `foglalas/headspa-arak-budapest.html`, `foglalas/head-spa-velemenyek.html`,
 `foglalas/lezeres-szortelenites-budapest.html`.
-**Oxigén-landing stílusú változat** (2026-10-17): `foglalas/oxigenterapia-ferfiaknak.html` (+ `assets/css/oxigen-ferfi.css`, teszt: `tools/ujrastilus-teszt/oxigen-ferfi.test.mjs`) az `/oxigenterapia-budapest` (`oxigen-landing.css`) komponenseivel; leírás: `OXIGEN-LANDING.md` („Férfi oxigén oldal”).
+**Oxigén-landing stílusú változat** (2026-10-17): `foglalas/oxigenterapia-ferfiaknak.html` (+ `assets/css/oxigen-ferfi.css`, teszt: `tools/ujrastilus-teszt/oxigen-ferfi.test.mjs`) az `/oxigenterapia-budapest` (`oxigen-landing.css`) komponenseivel; leírás: `OXIGEN-LANDING.md` („Férfi oxigén oldal”, benne a „2026-10-20 Feri visszajelzés”: új H1, nincs kedvezmény, a fő oldal árai, belső görgetés, lapozható galéria, egyforma magas hasábok).
 A Wix galériák (lapozós képsorok) teljes képlistája az `assets/js/galeriak.js`-ben van (a régi HTML / a `folyam.mjs` csak az első 2-3 képet adja): új oldalnál mindig ezt vesd össze. Szerkezet-leírás: `docs/HEADSPA_OLDALAK.md` (komponensek: `assets/css/headspa-oldal.css`, működés: `assets/js/headspa-oldal.js`).
 
 ## Menete oldalanként
