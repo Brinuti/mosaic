@@ -14,7 +14,7 @@ export const GFELT = Object.freeze({
 const KATT_MEZO = Object.freeze({ gclid: 'gclid', gbraid: 'gbraid', wbraid: 'wbraid' });
 
 export const gfeltoltesMod = (env) => { const m = String((env && env.GY_GADS_FELTOLTES) || 'dry').toLowerCase(); return ['ki', 'dry', 'eles'].includes(m) ? m : 'dry'; };
-export const maszk = (id) => { const s = String(id || ''); return s.length < 8 ? '***' : `${s.slice(0, 4)}…${s.slice(-3)} (${s.length})`; };
+export const maszk = (id) => { const s = String(id || ''); return s.length < 20 ? `*** (${s.length})` : `${s.slice(0, 4)}…${s.slice(-3)} (${s.length})`; };
 
 /** A feltoltendo payload (a Google Ads uploadClickConversions egy eleme). Consent: szandekosan nincs. */
 export function gfeltoltesPayload({ kattTipus, kattErtek, konverzioIdo, orderId }) {
@@ -34,15 +34,15 @@ export function gfeltoltesPayload({ kattTipus, kattErtek, konverzioIdo, orderId 
  * A meg nem naplozott, jogosult foglalasok (igazolt=1, allapotfelmeres, nem teszt, nem lemondott, van Google click-ID) payloadjanak epitese es naplozasa az aktualis modban.
  * Idempotens (UNIQUE uuid+mod); a visszameno (GY-23 ota gyult) foglalasokat is felveszi. Vissza: { mod, uj, kihagyott }.
  */
-export async function gfeltoltesFut({ db, env, most, budapestIdo }) {
+export async function gfeltoltesFut({ db, env, most, budapestIdo, uuid = null }) {
   const mod = gfeltoltesMod(env);
   if (mod === 'ki') return { mod, uj: 0 };
   if (!env.GY_HMAC_KULCS) return { mod, uj: 0, hiba: 'nincs_titkos_kulcs' };
   const sorok = (await db.prepare(
     `SELECT f.uuid, f.letrehozva, f.hozzajarulas, f.gads_katt_tipus, f.gads_katt_ertek FROM gy_foglalas f
      WHERE f.tipus = 'allapotfelmeres' AND f.teszt = 0 AND f.igazolt = 1 AND f.allapot IN ('aktiv','modositott') AND f.gads_katt_ertek IS NOT NULL
-       AND NOT EXISTS (SELECT 1 FROM gy_feltoltes g WHERE g.uuid = f.uuid AND g.mod = ?1) ORDER BY f.letrehozva LIMIT 500`,
-  ).bind(mod).all()).results || [];
+       AND NOT EXISTS (SELECT 1 FROM gy_feltoltes g WHERE g.uuid = f.uuid AND g.mod = ?1) AND (?2 IS NULL OR f.uuid = ?2) ORDER BY f.letrehozva LIMIT 500`,
+  ).bind(mod, uuid).all()).results || [];
   let uj = 0;
   for (const r of sorok) {
     const orderId = await tranzakcioId(r.uuid, env.GY_HMAC_KULCS);
@@ -63,6 +63,6 @@ export async function gfeltoltesRiport(db) {
   const darab = (await db.prepare('SELECT mod, allapot, COUNT(*) AS db FROM gy_feltoltes GROUP BY mod, allapot ORDER BY mod, allapot').all()).results || [];
   const hibak = (await db.prepare("SELECT hiba, COUNT(*) AS db FROM gy_feltoltes WHERE hiba IS NOT NULL GROUP BY hiba").all()).results || [];
   const sorok = (await db.prepare('SELECT mod, allapot, katt_tipus, katt_maszk, order_id, konverzio_ido, ertek, consent, hozzajarulas, letrehozva, hiba FROM gy_feltoltes ORDER BY id DESC LIMIT 100').all()).results || [];
-  const hj = (await db.prepare("SELECT hozzajarulas, COUNT(*) AS db FROM gy_foglalas WHERE tipus = 'allapotfelmeres' AND teszt = 0 AND igazolt = 1 AND gads_katt_ertek IS NOT NULL GROUP BY hozzajarulas").all()).results || [];
+  const hj = (await db.prepare("SELECT hozzajarulas, COUNT(*) AS db FROM gy_foglalas WHERE tipus = 'allapotfelmeres' AND teszt = 0 AND igazolt = 1 AND allapot IN ('aktiv','modositott') AND gads_katt_ertek IS NOT NULL GROUP BY hozzajarulas").all()).results || [];
   return { darab, hibak, hozzajarulas_a_jogosult_foglalasokon: hj, sorok };
 }

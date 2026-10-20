@@ -1100,7 +1100,7 @@ test('GY-25 feltoltes: payload csak a megengedett mezokkel, consent nelkul; masz
   assert.equal(p.conversionValue, 19000);
   assert.equal(JSON.stringify(p).includes('consent'), false);
   assert.equal(gfeltoltesPayload({ kattTipus: 'fbclid', kattErtek: 'ABCDEFGH12345' }), null);
-  assert.equal(maszk('ABCDEFGH12345'), 'ABCD…345 (13)');
+  assert.equal(maszk('ABCDEFGH12345'), '*** (13)'); assert.equal(maszk('A'.repeat(24)), 'AAAA…AAA (24)');
 
   const env = await lpcKornyezet();
   await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345`, uuid: 'mb_gfel0000000000001' });
@@ -1110,7 +1110,7 @@ test('GY-25 feltoltes: payload csak a megengedett mezokkel, consent nelkul; masz
   assert.deepEqual(await futas(), { mod: 'dry', uj: 1 });
   assert.deepEqual(await futas(), { mod: 'dry', uj: 0 }); // idempotens
   const sor = await env.GY_DB.prepare('SELECT * FROM gy_feltoltes').first();
-  assert.deepEqual([sor.mod, sor.allapot, sor.katt_tipus, sor.katt_maszk, sor.ertek, sor.consent, sor.hiba], ['dry', 'kesz', 'gclid', 'ABCD…345 (13)', 19000, 'nem_ismert', null]);
+  assert.deepEqual([sor.mod, sor.allapot, sor.katt_tipus, sor.katt_maszk, sor.ertek, sor.consent, sor.hiba], ['dry', 'kesz', 'gclid', '*** (13)', 19000, 'nem_ismert', null]);
   assert.equal(JSON.stringify(sor).includes('ABCDEFGH12345'), false);
   assert.match(sor.order_id, /^[0-9a-f]{64}$/);
   const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();

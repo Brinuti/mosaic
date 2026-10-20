@@ -391,7 +391,7 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   }
   if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length};${tobbOkkod};${oldalDiag}`.slice(0, 190), most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
-  try { await gfeltoltesFut({ db, env, most, budapestIdo }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); } // GY-25: dry-run napló; hiba SOHA nem erinti az igazolast
+  try { await gfeltoltesFut({ db, env, most, budapestIdo, uuid: jeloltek[0].uuid }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); } // GY-25: dry-run (csak az igazolt foglalas; a visszameno feldolgozas az admin vegponton) napló; hiba SOHA nem erinti az igazolast
   return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
 }
 
