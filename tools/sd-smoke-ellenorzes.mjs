@@ -36,7 +36,7 @@ export function smokeSql(u8) {
   const p = [u8];
   const sdId = `(SELECT sd_id ${UUID_SOR})`, bookingId = `(SELECT booking_id ${UUID_SOR})`;
   return [
-    { nev: 'level', sql: `SELECT substr(uuid, 1, 8) AS u8, kulcs, allapot, letrehozva, booking_id IS NOT NULL AS van_booking, kuldve IS NOT NULL AS kuldve, sd_id IS NOT NULL AS van_sd, sd_allapot, sd_ido, riasztas ${UUID_SOR}`, params: p },
+    { nev: 'level', sql: `SELECT substr(uuid, 1, 8) AS u8, kulcs, allapot, letrehozva, booking_id IS NOT NULL AS van_booking, kuldve IS NOT NULL AS kuldve, sd_id IS NOT NULL AS van_sd, sd_allapot, sd_ido, riasztas, (SELECT MAX(j.kupon) FROM meres_jelleg j WHERE j.source_id IN (foglalas_egyeztetes.sd_id, foglalas_egyeztetes.booking_id)) AS kupon ${UUID_SOR}`, params: p },
     { nev: 'index', sql: "SELECT uzletag, forras, allapot, email_h IS NOT NULL AS van_email_h FROM foglalas_vendeg WHERE uuid LIKE ?1 || '%'", params: p },
     { nev: 'cellak', sql: `SELECT platform, uzletag, esemeny_tipus, esemeny_nev, allapot, forras, substr(indok, 1, 60) AS indok, json_extract(kerelem, '$.url') AS url, json_extract(kerelem, '$.cel') AS cel FROM meres_kuldes WHERE source_id = ${sdId} ORDER BY id`, params: p },
     { nev: 'motor_cellak', sql: `SELECT COUNT(*) AS db FROM meres_kuldes WHERE source_id = ${bookingId}`, params: p },
@@ -95,7 +95,14 @@ export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = 
   }
 
   const cellak = r.cellak || [];
-  if (sdVan) {
+  const kupon = Number(level.kupon) === 1; // DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio - semmilyen esemeny nem megy ki (a meres_jelleg.kupon=1 a tartos nyom)
+  if (sdVan && kupon) {
+    k.push(K('C5', 'esemeny_sorok', cellak.length ? 'FAIL' : 'NA', cellak.length ? `kuponos foglalas, de ${cellak.length} esemeny-sor van (DECISION #194: nem lehet)` : 'kuponos foglalas: nincs esemeny-sor (DECISION #194, szabalyos)'));
+    k.push(K('C6', 'forras', cellak.some((c) => c.forras !== 'salonic_direct') ? 'FAIL' : 'NA', cellak.length ? 'van sor' : 'nincs sor (kuponos foglalas)'));
+    const kuldottKupon = cellak.filter((c) => c.allapot === 'elkuldve' || c.allapot === 'hiba');
+    k.push(K('C7', 'cel_arnyek', kuldottKupon.length ? 'FAIL' : 'NA', kuldottKupon.length ? `${kuldottKupon.length} kiment kerelem egy kuponos foglalasra (DECISION #194: nem lehet)` : 'kuponos foglalas: nincs kimeno kerelem'));
+    k.push(K('C8', 'allapotok', cellak.length ? 'FAIL' : 'NA', cellak.length ? 'kuponos foglalas, de van esemeny-sor' : 'kuponos foglalas: nincs esemeny (nem hiba)'));
+  } else if (sdVan) {
     const alap = (p) => cellak.filter((c) => c.platform === p && c.esemeny_tipus === 'alap');
     const hianyzik = PLATFORMOK.filter((p) => !alap(p).length);
     k.push(K('C5', 'esemeny_sorok', hianyzik.length ? 'FAIL' : 'PASS', hianyzik.length ? `nincs alap esemeny-sor: ${hianyzik.join(', ')}` : `${cellak.length} sor; alap esemeny: ${[...new Set(cellak.filter((c) => c.esemeny_tipus === 'alap').map((c) => c.esemeny_nev))].join('+')}`));

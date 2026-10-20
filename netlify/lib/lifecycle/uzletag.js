@@ -158,10 +158,14 @@ export function mpSzolgNev(szolgaltatas) {
   if (csomag) return `${csomag[1]} db piercing (csomag)`;
   return tisztaNev(szolgaltatas).replace(/\s*-?\s*\d[\d.\s]*\s?Ft\b.*$/i, '').trim();
 }
-/** A latogatas varhato hossza (a Salonic-idotartam csak a szuras ideje): egy piercing ~30-40 perc, csomag ~40-50 perc. */
+/**
+ * A latogatas varhato hossza a levelben: a Salonic-idotartamtol (a szolgaltatas idosavja, mp: egy piercing 10 perc) +10 percig: "kb. 10–20 perc" (egy piercing),
+ * "kb. 15–25 perc" (3 piercing), "kb. 30–40 perc" (2 szemelynek 6 db). A tulajdonos jelezte (2026-10-19): egy piercing beszurasa 10-20 perc; az elozo, kitalalt
+ * "30-40 / 40-50 perc" hibas volt. Ismeretlen (a Salonic-pillanatkepben nem szereplo) szolgaltatasnal null: az idotartam-sor / mondat kimarad (nem talalunk ki szamot).
+ */
 export function mpLatogatas(szolgaltatas) {
-  const n = ekezetNelkul(szolgaltatas);
-  return /^[23] piercing\b|\b[2-6] db\b|szemelynek|\b1 1 db\b/.test(n) ? 'kb. 40–50 perc' : 'kb. 30–40 perc';
+  const perc = idotartamPerc('mp', szolgaltatas);
+  return Number.isFinite(perc) && perc > 0 ? `kb. ${perc}–${perc + 10} perc` : null;
 }
 /** A munkatars fotoja a Medical Piercing oldalarol (az alairas mellett); ismeretlen munkatarsnal nincs. */
 const MP_FOTOK = [

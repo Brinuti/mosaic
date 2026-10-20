@@ -44,6 +44,10 @@ const bp = (unix) => {
 // az idopont budapesti napja / ideje egyszer szamolva (a cache-elt idopont-objektumon marad, igy a naptar-ujrarajzolasok olcsok)
 const sb = (x) => x._b || (x._b = bp(x.start_unix));
 const napCim = (nap) => { const [e, h, d] = nap.split('-').map(Number); const w = new Date(Date.UTC(e, h - 1, d)).getUTCDay(); return `${HONAP[h - 1]} ${d}., ${NAP_NEV[w]}`; };
+// Nevtelen lepes-statisztika (Feri 2026-10-19: hol esik ki a latogato): napi darabszam esemeny + lepes + eszkoz szerint, D1 (mp_motor_stat).
+// Suti, azonosito, IP, URL, szemelyes adat NINCS. A meres soha nem allithatja meg a foglalast.
+const motorStat = (e, l) => { try { const t = JSON.stringify({ e, l: l || '', m: matchMedia('(max-width: 700px)').matches ? 1 : 0 });
+  if (!(navigator.sendBeacon && navigator.sendBeacon('/api/mp-motor-stat', new Blob([t], { type: 'text/plain' })))) fetch('/api/mp-motor-stat', { method: 'POST', body: t, keepalive: true }).catch(() => {}); } catch (x) { /* */ } };
 const gtagEsemeny = (nev, param) => { try { if (typeof window.gtag === 'function') window.gtag('event', nev, { send_to: 'G-SJT2RN62H8', ...param }); } catch (e) { /* a meres nem allithatja meg a foglalast */ } };
 
 const CSS = `
@@ -550,6 +554,7 @@ export function nyit(ctx) {
   // utana a Piercing-lepes a csomaggal elol (a kartyak csukva); a foglalasinditas merese ugyanaz, mint az "Uj piercing" valasztasakor (egyszer, lent: meres())
   if (all.csomag && all.lepes === 'tipus') { all.tipus = 'uj'; all.lepes = 'hely'; }
   let lezart = false;
+  const latott = new Set(); // a lepes-statisztika: lepesenkent egyszer nyitasonkent
 
   const tartalek = () => {
     // a Salonic eredeti foglaloja, ugyanazzal a cimmel, amire a vendeg kattintott
@@ -557,6 +562,7 @@ export function nyit(ctx) {
   };
   const hiba = (ok, e) => {
     gtagEsemeny('motor_hiba', { hiba_tipus: ok });
+    motorStat('hiba', ok);
     try { console.warn('[mp-motor]', ok, e && (e.code || e.message)); } catch (x) { /* */ }
     tartalom.innerHTML = tartalek();
   };
@@ -913,6 +919,7 @@ export function nyit(ctx) {
     const napok = new Map();
     for (const x of sajat) { const b = sb(x); if (!napok.has(b.nap)) napok.set(b.nap, []); napok.get(b.nap).push(x); }
     if (!sajat.length) {
+      motorStat('nincs_idopont', 'ido');
       tartalom.innerHTML = osszegzes() + `<p class="uzenet">A következő ${NAPOK} napban ezen a helyszínen erre a piercingre nincs szabad időpont.${munkatarsak.length > 1 && all.staffId ? '' : ''}</p><p><button class="gomb masodlagos" data-lepes="szolg">Másik piercing</button> <button class="gomb masodlagos" data-lepes="hely">Másik helyszín</button></p>`;
       return;
     }
@@ -959,6 +966,17 @@ export function nyit(ctx) {
     all.expected = b.expected;
     const u = new URL(b.guestDataUrl);
     for (const [k, v] of tovabbi) if (!u.searchParams.has(k)) u.searchParams.set(k, v);
+    // Meta kattintas-azonosito a Salonic-adatlapnak (a Salonic sajat CAPI Schedule-je a fo Meta-konverzio): ha a kattintott link nem vitte,
+    // a sajat tartomany _fbc / _fbp sutijebol (a Meta-pixel irja) potoljuk: fbclid (az _fbc utolso tagja), fbc, fbp. Nem egeszsegugyi adat. (2026-10-19)
+    try {
+      const suti = (n) => { const m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : null; };
+      const fbc = suti('_fbc'), fbp = suti('_fbp');
+      if (fbc && /^fb\.\d\.\d+\.[A-Za-z0-9._-]{8,512}$/.test(fbc)) {
+        if (!u.searchParams.has('fbclid')) u.searchParams.set('fbclid', fbc.split('.').slice(3).join('.'));
+        u.searchParams.set('fbc', fbc);
+      }
+      if (fbp && /^fb\.\d\.\d+\.\d+$/.test(fbp)) u.searchParams.set('fbp', fbp);
+    } catch (e) { /* tiltott suti: marad a link parametere */ }
     foglalas.update({ business: 'mp', service_id: all.szolg.serviceId, slot_unix: all.slot.start_unix, staff_id: all.staffId || '-1', carrier: 'back', sent_at: Date.now() });
     let stilus = null;
     try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
@@ -968,6 +986,8 @@ export function nyit(ctx) {
   }
 
   async function rajzol() {
+    if (all.lepes === 'hely' && all.placeId) all.lepes = 'szolg';
+    if (!latott.has(all.lepes)) { latott.add(all.lepes); motorStat('lepes', all.lepes); gtagEsemeny('motor_lepes', { lepes: all.lepes }); }
     lepesjelzo();
     tartalom.scrollTop = 0;
     if (all.lepes === 'tipus') return tipusLepes();
@@ -1061,6 +1081,7 @@ export function nyit(ctx) {
   window.addEventListener('message', uzenet);
 
   function bezar() {
+    if (!lezart) motorStat('bezar', all.lepes);
     lezart = true;
     window.removeEventListener('message', uzenet);
     document.removeEventListener('keydown', billentyu);
@@ -1072,6 +1093,7 @@ export function nyit(ctx) {
     try { if (typeof ctx.bezarasUtan === 'function') ctx.bezarasUtan(); } catch (e) { /* */ }
   }
   nyitott = { host, bezar };
+  motorStat('nyit');
   rajzol();
   $('.tartalom').focus({ preventScroll: true });
   return nyitott;

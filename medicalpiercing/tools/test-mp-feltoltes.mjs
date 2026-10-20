@@ -206,7 +206,8 @@ test('divat fulpiercing (/fulbevalo-ok*): ugyanaz a lanc - D1-sor (tipus=ful, fo
   assert.equal(sor.forras_verzio, 'mp_v2'); assert.equal(sor.utm_campaign, '23456789'); assert.equal(sor.forras_cimke, 'google_nem_markas');
   // Feri dontese (2026-10-13): a divat fulpiercing NEM megy platformra (alacsony erteku, ne optimalizaljanak ra)
   assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, 0, 'Google: nincs feltoltes');
-  assert.equal(db._s.prepare('SELECT count(*) n FROM mp_tiktok_feltoltes').get().n, 0, 'TikTok: nincs naplo/kuldes');
+  assert.equal(db._s.prepare("SELECT count(*) n FROM mp_tiktok_feltoltes WHERE allapot NOT LIKE 'kihagyva:%'").get().n, 0, 'TikTok: nincs naplo/kuldes');
+  assert.equal(db._s.prepare('SELECT allapot FROM mp_tiktok_feltoltes').get().allapot, 'kihagyva:divat_fulpiercing', 'TikTok: csak a kihagyas oka (2026-10-20)');
   // ugyanaz a foglalas ujra (F5): nincs uj sor, nincs uj feltoltes
   assert.deepEqual(await (await foglalasErkezes({ request: keres(torzs), env }, { fetchImpl: f, most: MOST + 5 })).json(), { ok: true, uj: false });
   assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, 0);

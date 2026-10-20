@@ -332,6 +332,19 @@ lep('visszahivas-kerelem: az elo urlap mezoi szo szerint, hibauzenetek, kuldes -
 const forrasDb = (await srv.env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_munkamenet').first()).n;
 assert.ok(forrasDb >= 1);
 lep('a forras-megtartas lefutott (munkamenet-rekord)');
+// GY-24: lepesenkenti tolcser-szamlalo (nevtelen, napi aggregalt; a teszt "teszt" kornyezetbe ir, nem az elesbe)
+{
+  const sorok = (await srv.env.GY_DB.prepare('SELECT kornyezet, esemeny, lepes, kategoria, eszkoz, db FROM gy_motor_stat').all()).results;
+  const db = (esemeny, lepes, kategoria = '') => sorok.filter((x) => x.esemeny === esemeny && (lepes === undefined || x.lepes === lepes) && x.kategoria === kategoria).reduce((a, x) => a + x.db, 0);
+  assert.ok(sorok.length > 0 && sorok.every((x) => x.kornyezet === 'teszt' && ['mobil', 'asztali', 'ismeretlen'].includes(x.eszkoz)), 'a teszt forgalom a teszt kornyezetbe kerul: ' + JSON.stringify(sorok.slice(0, 3)));
+  assert.ok(db('nyit', '') >= 3, 'nyit');
+  for (const l of ['szolg', 'hely', 'szakember', 'ido', 'adatlap', 'hivas']) assert.ok(db('lepes', l) >= 1, 'lepes ' + l);
+  assert.ok(db('bezar_gomb', 'szolg') + db('bezar_gomb', 'adatlap') + db('bezar_gomb', 'hely') + db('bezar_gomb', 'ido') + db('bezar_gomb', 'szakember') >= 1, 'bezar_gomb az utolso lepes nevevel');
+  assert.ok(db('elakad', 'hivas', 'kotelezo_hianyzik') >= 1, 'validacios elakadas fix kategoriaval');
+  assert.ok(db('kesz', 'adatlap') >= 1 && db('kesz', 'hivas') >= 1, 'kesz: szerveroldali foglalas + visszahivas');
+  assert.equal(JSON.stringify(sorok).match(/proba@example|Próba|036|derék/i), null, 'nincs szemelyes adat / szabad szoveg a szamlalokban');
+}
+lep('GY-24 tolcser-szamlalo: nyit / lepes / bezar_gomb / elakad (fix kategoria) / szerveroldali kesz; teszt kornyezet; nincs szemelyes adat');
 // harmadik felek: a teszt alatt nem ment ki semmi
 assert.deepEqual(kulso, [], 'kulso kerelem: ' + kulso.join(','));
 lep('0 kimeno kulso (meres) kerelem a teszt alatt');

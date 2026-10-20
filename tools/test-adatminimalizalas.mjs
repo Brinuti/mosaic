@@ -88,7 +88,7 @@ test('A5 ajandekkartya: GA4 items[] item_id = item_name = "ajandekkartya"; Meta 
 });
 
 test('A6 Google regresszio: a Zapier-torzs tovabbra is csak a Zap mezoit tartalmazza, szolgaltatasnev nelkul', async () => {
-  const MEZOK = ['ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'gclid', 'order_id', 'value'];
+  const MEZOK = ['ad_personalization', 'ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'gclid', 'hashed_email', 'hashed_phone_number', 'order_id', 'user_agent', 'user_identifiers', 'user_ip_address', 'value']; // DECISION #202: + ad_personalization (hozzajarulas-jel) + hash-elt azonositok + a motor altal rogzitett IP / UA (a Zap mezoi bovulnek; szolgaltatasnev / nyers adat tovabbra sincs)
   let db = 0;
   for (const forras of [undefined, 'salonic_direct']) for (const uzletag of ['headspa', 'fodrasz', 'oxigen', 'szor', 'pmu']) {
     const ctx = await ctxEpit({ uzletag, jelleg: 'elso', szolgaltatas: SZOLG, ...(forras ? { forras } : {}) }, HOZZ, ERK());

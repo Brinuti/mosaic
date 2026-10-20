@@ -30,6 +30,10 @@
     }
   } catch (e) { /* idegen oldal kereteben */ }
 
+  // 7 napos utolso fizetett kattintas (docs/booking-engine/FORRAS_LPT.md): a szerver altal irt HttpOnly sutibol visszanyerheto kattintasazonositok lekerese a foglalo indulasakor (egyszer, azonos eredet; a szulo
+  // window.mhAttribucio-ja inditja, hozzajarulas nelkul nem keri le); a siker utani atiranyitas a mar megjott eredmenyt hasznalja, nem var ra. A koszonooldalon (/pmu-ok, /pmu-vh) nem kell.
+  try { if (!/^\/pmu-(ok|vh)\/?$/.test(location.pathname)) { const fo0 = BEAGYAZVA ? window.top : window; if (fo0.mhAttribucio && typeof fo0.mhAttribucio.lptKlikk === 'function') fo0.mhAttribucio.lptKlikk(); } } catch (e) { /* nem kritikus */ }
+
   const SZALON = {
     cim: 'https://mosaic-pmu.salonic.hu',
     placeId: 14585,
@@ -513,11 +517,40 @@
   //  - sikeres foglalas: a /pmu-ok oldalra iranyitott - a teljes ablakban nyitjuk meg (meres!),
   //    a mh_proba jelre a klon.js a meres utan visszahoz a koszonooldalra;
   //  - ha az idopont kozben elkelt, a Salonic "vissza" iranyit (a fooldalra vagy ide).
+  // R3 (DECISION #196/1): a siker utani teljes-ablakos atiranyitas (/pmu-ok) URL-je is hordozza a Google-azonositokat (gclid / gbraid / wbraid), mint a fo foglalo koszonooldal-atadasa
+  // (withAttribution). MINDEN forras a marketing-hozzajarulasi kapun megy: a szulo (landing / reteg gazdaoldala, azonos eredet) window.mhAttribucio.googleAzonositok()-a adja (az aktualis
+  // URL azonositoi, a hozzajarulassal mentett mh_attr, a Google-cimke sutije); hozzajarulas nelkul / kifejezett elutasitas utan / suti.js nelkul ures - ilyenkor a /pmu-ok URL-je azonosito
+  // nelkul marad, mint a main-en. A szulo URL-jet SOSEM olvassuk kozvetlenul. Csak a HIANYZO kulcsokat fuzi hozza; ervenytelen / idegen eredetu szulo eseten az URL valtozatlan.
+  // 7 napos utolso fizetett kattintas (2026-10-19, docs/booking-engine/FORRAS_LPT.md): az R3 mind az 5 kattintasazonositora altalanositva (gclid / gbraid / wbraid / fbclid / ttclid). A forras a szulo
+  // window.mhAttribucio.klikkReszletes()-e: a bongeszobol jovo azonosito (Google: URL / mh_attr / _gcl_aw; Meta / TikTok: URL / mh_attr / _fbc) elsobbseget elvez, a szerver altal irt HttpOnly "mh_lpt" sutibol
+  // visszanyert azonosito (lptKlikk) csak az a platform potlodik, amelyikhez a bongeszobol nem jott. Ugyanaz a hozzajarulasi kapu (engedely nelkul / elutasitas utan ures). A sutibol potolt kulcsok tipusait jelzi
+  // (lptJelol), a koszonooldali jelzes viszi (meres_forras.klikk_potolt). Csak a HIANYZO kulcsokat fuzi hozza, mintaellenorzessel.
+  const KLIKK_MINTA = { gclid: /^[A-Za-z0-9_-]{10,200}$/, gbraid: /^[A-Za-z0-9_-]{10,200}$/, wbraid: /^[A-Za-z0-9_-]{10,200}$/, fbclid: /^[A-Za-z0-9_-]{8,200}$/, ttclid: /^[A-Za-z0-9_.-]{8,200}$/ };
+  function googleAzonositokHozzaad(u) {
+    try {
+      const fo = BEAGYAZVA ? window.top : window;
+      const ma = fo.mhAttribucio;
+      let ids = {}, lpt = [];
+      if (ma && typeof ma.klikkReszletes === 'function') { const r = ma.klikkReszletes() || {}; ids = r.ids || {}; lpt = Array.isArray(r.lpt) ? r.lpt : []; }
+      else if (ma && typeof ma.googleAzonositok === 'function') ids = ma.googleAzonositok(); // regebbi szulo-szkript: csak a Google
+      const potolt = [];
+      let googleVan = ['gclid', 'gbraid', 'wbraid'].some((k) => u.searchParams.get(k));
+      for (const k of ['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid']) {
+        if (u.searchParams.get(k)) continue;
+        const v = ids[k];
+        const google = k === 'gclid' || k === 'gbraid' || k === 'wbraid';
+        if (google && googleVan && lpt.includes(k)) continue; // a sutibol potolt Google-azonosito nem kerul egy mar meglevo (URL-beli) Google-azonosito melle
+        if (v && KLIKK_MINTA[k].test(v)) { u.searchParams.set(k, v); if (google) googleVan = true; if (lpt.includes(k)) potolt.push(k); }
+      }
+      if (ma && typeof ma.lptJelol === 'function') ma.lptJelol(potolt);
+    } catch (e) { /* idegen eredetu szulo: az URL azonositok nelkul marad */ }
+  }
   window.mhKeretbenOldal = (href) => {
     const u = new URL(href);
     const ut = u.pathname.replace(/\/+$/, '');
     if (ut !== '' && ut !== '/foglalo-pmu') {
       u.searchParams.set('mh_proba', 'pmu');
+      googleAzonositokHozzaad(u);
       (BEAGYAZVA ? window.top : window).location.assign(u.href);
       return;
     }

@@ -5,6 +5,8 @@ import { erkezesMent, fuggoKuldesek, kapcsoloBeallit, kapcsolokOlvas, kuldesMege
 import { irasKi, irasKapcsolo, IRAS_KI_VALASZ } from './iras-kapcsolo.js';
 import { sdKapcsoloBeallit } from './salonic-direct.js';
 import { kezelQaNap } from './qa-nap.js';
+import { googleProbaMuvelet } from './google-proba.js';
+import { PROBA_KULCS_MUVELETEK, probaKulcsEllenorzes, probaKulcsNaplo } from './proba-kulcs.js';
 
 /** POST /api/meres-erkezes (azonos eredet; a bongeszo nem ker valaszt a foglalas folyamataban: a hiba nem akaszthat meg semmit). A "ip" / "ua" a keresbol jon, nem a torzsbol. */
 export async function kezelErkezes(request, env, deps = {}) {
@@ -26,7 +28,11 @@ export async function kezelErkezes(request, env, deps = {}) {
 export async function kezelAdmin(request, env, deps = {}) {
   { const qa = new URL(request.url).searchParams.get('qa'); if (qa === 'nap' || qa === 't2start') return kezelQaNap(request, env, deps); } // napi T2 QA-jelentes (csak olvas, aggregalt, PII-mentes): sajat kulcs-ellenorzes (401/403), rate-limit, no-store
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
-  if (!(await kulcsEllenorzes(request, env))) return valasz(404, { ok: false });
+  let probaKulccsal = false; // a fo kulcs helyett a CELHOZ KOTOTT, lejaratos proba-kulcs (proba-kulcs.js; DECISION #199/#200): CSAK POST google_proba / google_proba_visszavon, minden mas 404
+  if (!(await kulcsEllenorzes(request, env))) {
+    if (request.method !== 'POST' || !(await probaKulcsEllenorzes(request, env, deps.now ? deps.now() : Date.now()))) return valasz(404, { ok: false });
+    probaKulccsal = true;
+  }
   const url = new URL(request.url);
   if (request.method === 'GET') {
     if (url.searchParams.get('kapcsolok') === '1') return valasz(200, { ok: true, kapcsolok: await kapcsolokOlvas(env.KULCS_DB) });
@@ -46,6 +52,7 @@ export async function kezelAdmin(request, env, deps = {}) {
     const szoveg = await request.text(); if (szoveg.length > 20000) return valasz(413, { ok: false });
     let o; try { o = JSON.parse(szoveg); } catch (e) { return valasz(400, { ok: false, miert: 'nem JSON' }); }
     const most = deps.now ? deps.now() : Date.now();
+    if (probaKulccsal && !(o && PROBA_KULCS_MUVELETEK.includes(o.muvelet) && await probaKulcsNaplo(env.KULCS_DB, { muvelet: o.muvelet, kuld: o.kuld === true, eles: o.eles === true }, most))) return valasz(404, { ok: false }); // a proba-kulcs minden mas muveletre 404; a hasznalat a muvelet ELOTT naplozva
     if (o.muvelet === 'iras') return valasz(200, await irasKapcsolo(env.KULCS_DB, { be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most)); // QA-4: az UJ IRASOK veszkapcsoloja (be:false = leall)
     // Salonic-direct safety net (DECISION #127 (b), D1): a kapcsolo ALAPBOL KI (hianyzo sor = ki); be:true KULON, kifejezett jovahagyas utan allithato (salonic_direct / salonic_direct:<uzletag>)
     if (o.muvelet === 'sd_kapcsolo') return valasz(200, await sdKapcsoloBeallit(env.KULCS_DB, { uzletag: o.uzletag || null, be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most));
@@ -55,6 +62,11 @@ export async function kezelAdmin(request, env, deps = {}) {
       if (!deps.ajandekUjra) return valasz(501, { ok: false, miert: 'nincs ajandek-ujrajatszas' });
       if (!/^pi_[A-Za-z0-9]{8,80}$/.test(String(o.pi || ''))) return valasz(400, { ok: false, miert: 'ervenytelen pi' });
       return valasz(200, { ok: true, allapot: await deps.ajandekUjra(env, o.pi, o.mod === 'atutalas' ? 'atutalas' : 'kartya', new Date(most)) });
+    }
+    // Google ARNYEK backend proba-feltoltes + visszavonas (DECISION #196; google-proba.js): alapbol SZARAZ; kuldeshez kuld:true + megerosit + a webhook-env + MERES_ELOSZTO=1 kell
+    if (o.muvelet === 'google_proba' || o.muvelet === 'google_proba_visszavon') {
+      if (!request.headers.get('x-egyeztetes-kulcs')) return valasz(404, { ok: false }); // a kulcs CSAK fejlecben fogadhato el (a ?kulcs= query-kulcs a naplokba / elozmenyekbe kerulhet): mint a qa=nap agnal
+      const r = await googleProbaMuvelet(env.KULCS_DB, env, o, { now: most, fetchImpl: deps.fetchImpl || fetch, kuldo: deps.kuldo }); return valasz(r.status, r.body);
     }
     if (o.muvelet === 'megerosit') return valasz(200, await kuldesMegerosit(env.KULCS_DB, { id: Number(o.id), allapot: o.allapot, http_status: o.http_status, valasz: o.valasz, kuldo: o.kuldo }, most));
     return valasz(400, { ok: false, miert: 'ismeretlen muvelet' });
