@@ -346,7 +346,8 @@ export const PROBA_SZABALY = 'alapbol minden foglalas_egyeztetes sor valos; kiza
 
 // ---------- T2_START rogzito (a meresi oldal / GPT DECISION #166 3.) ----------
 /** A T2 kezdetekor rogzitendo allapot EGY hivasban: idopont + kod-ujjlenyomat (+ a hivo altal megadott production SHA) + D1 sema-ujjlenyomat + Zap revizio (a hivo adja) + kapcsolok + arnyekcel-ID-k. CSAK OLVAS, titok / PII nelkul (a titkokrol csak jelenlet-bit). */
-export const T2_ACCEPTANCE = Object.freeze({ min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 200 });
+// DECISION #212 (Feri, 2026-10-20 16:31): a mintaszam-kuszob 200 -> 140 (max 14 nap valtozatlan); CSAK a riport-konstans, kuldest nem erint. ROLLBACK: vissza 200-ra.
+export const T2_ACCEPTANCE = Object.freeze({ min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 140 });
 const KAPCSOLO_ENV = Object.freeze(['MERES_ELOSZTO', 'MERES_SALONIC_DIRECT', 'MERES_SD_INDEX', 'MERES_SD_NS', 'MERES_IRAS_KI', 'META_API_VERSION']);
 const TITOK_JELENLET = Object.freeze(['META_CAPI_TOKEN', 'TIKTOK_EVENTS_TOKEN', 'GA4_TESZT_API_SECRET', 'GOOGLE_ARNYEK_WEBHOOK_URL', 'SD_HMAC_KEY_V1', 'GUEST_HMAC_KEY_V1', 'EGYEZTETES_KULCS_HASH']);
 const T2_TABLAK = Object.freeze(['meres_kuldes', 'foglalas_egyeztetes', 'foglalas_vendeg', 'foglalas_reschedule', 'foglalas_lemondas', 'meres_erkezes', 'foglalas_kulcs']);

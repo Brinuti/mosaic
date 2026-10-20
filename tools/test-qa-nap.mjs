@@ -580,7 +580,7 @@ test('N26 ?qa=t2start: ugyanaz a hozzaferes (401 / 403 / 405 / 429), no-store; i
   const r = await w.kerj('qa=t2start'); assert.equal(r.status, 200); assert.equal(r.headers.get('cache-control'), 'no-store');
   const j = await r.json();
   assert.equal(j.ok, true); assert.equal(j.qa, 't2start'); assert.equal(j.t2_start_utc, '2026-10-13T12:00:00Z'); assert.equal(j.t2_start_budapest, '2026-10-13 14:00');
-  assert.deepEqual(j.acceptance, { min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 200 }); assert.deepEqual(j.acceptance, T2_ACCEPTANCE);
+  assert.deepEqual(j.acceptance, { min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 140 }); assert.deepEqual(j.acceptance, T2_ACCEPTANCE);
   assert.match(j.kod.kod_ujjlenyomat, /^[0-9a-f]{64}$/); assert.match(j.d1.sema_ujjlenyomat, /^[0-9a-f]{64}$/);
   assert.deepEqual(j.kod.elo_tiltolista_db, { meta: 5, tiktok: 1, ga4: 1, google_primary: 9 });
   assert.equal(j.kod.production_sha, null); assert.equal(j.kod.production_sha_forras, 'nincs'); assert.equal(j.zap.revizio, null);

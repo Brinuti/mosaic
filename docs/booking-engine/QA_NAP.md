@@ -55,7 +55,7 @@ x-egyeztetes-kulcs: <kulcs>          (ugyanaz a hozzaferes, rate-limit es no-sto
 
 | Mezo | Tartalom |
 |---|---|
-| `t2_start_utc`, `t2_start_budapest`, `acceptance` | a szerver ideje; `acceptance` = `{ min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 200 }` (a T2 PASS: min. 7 teljes nap ES >= 200 valodi, jogosult foglalas, max. 14 nap) |
+| `t2_start_utc`, `t2_start_budapest`, `acceptance` | a szerver ideje; `acceptance` = `{ min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 140 }` (a T2 PASS: min. 7 teljes nap ES >= 140 valodi, jogosult foglalas, max. 14 nap) |
 | `kod.kod_ujjlenyomat` | az ARNYEK-celok + az elo tiltolista (`ELO_CELOK`) + a QA-konstansok sha256-ja: ha valtozik, a celok / a tiltolista valtozott (a SHA-tol fuggetlen bizonyitek) |
 | `kod.production_sha`, `production_sha_forras` | **A Cloudflare Pages a `CF_PAGES_COMMIT_SHA`-t csak BUILD-kor adja, futasidoben a Function nem latja** → a rogzito a deploy SHA-jat a hivasban adja (`&sha=`; forrasa pl. a `main` HEAD / a Cloudflare Pages production deployment commitja), ekkor `forras='hivo'`. Ha a kornyezetben megis van `CF_PAGES_COMMIT_SHA`, az `env_sha`-ban latszik (`forras='env'`); egyebkent `nincs` |
 | `d1.sema_ujjlenyomat`, `tablak_db` | a `sqlite_master` (tabla / index: nev + DDL, szokozok normalizalva, `sqlite_*` / `_cf_*` nelkul) sha256-ja: adat NEM, csak sema-valtozas (uj oszlop / tabla / index) valtoztatja |
