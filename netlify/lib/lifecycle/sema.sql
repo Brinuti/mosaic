@@ -50,6 +50,13 @@ CREATE TABLE IF NOT EXISTS esemenyek (
   reszlet TEXT                              -- rovid, szemelyes adat nelkuli JSON
 );
 
+-- Leiratkozas az automatikus e-mailekrol (/u/<kod>, leiratkozas.js): CSAK az e-mail SHA-256 hash-e (kisbetusitve), a foglalas torlese ezt nem erinti.
+CREATE TABLE IF NOT EXISTS leiratkozasok (
+  email_h TEXT PRIMARY KEY,
+  ido INTEGER NOT NULL,                     -- epoch masodperc
+  forras TEXT                               -- link | kezi
+);
+
 CREATE TABLE IF NOT EXISTS beallitasok (
   kulcs TEXT PRIMARY KEY,
   ertek TEXT,
