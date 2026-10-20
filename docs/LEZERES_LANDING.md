@@ -140,3 +140,6 @@ node --test tools/lezer-teszt/lezer.test.mjs
 
 A teszt a helyi `dist/` ellen fut Playwrighttal (a Salonic-API hamisítva, külső forgalom tiltva); `CHROME_UTVONAL` és `PLAYWRIGHT_UTVONAL` környezeti
 változóval állítható a Chrome és a `playwright-core` helye.
+
+## 2026-10-20 (késő délelőtt): kezelő-fotók – a HeadSpa kezelőhelyiség ki, a lézeres kezelő be
+Feri: a szőrtelenítés nem a HeadSpa kezelőben van, ezért a „A kezelőhelyiség növényekkel” / „…esti fényekben” fotók (`c2eb0f_0afd6583…`, `c2eb0f_7b41e9e5…`, a mosófejes HeadSpa kezelő) lekerültek a `/vegleges-szortelenites-ferfiaknak` szalon-galériájáról és az intim oldalról (a HeadSpa / oxigén oldalakon maradnak). Helyettük a lézeres kezelő 3 fotója (Feri küldte): `assets/img/lezer-kezelo/kezelo-nagy.jpg`, `kezelo-agy.jpg`, `kezelo-sarok.jpg` (3:2-re vágva, 1200×800). A férfi oldali galéria 10 képes (a váró / bejárat / folyosó közös terek maradtak); az intim oldal két képsávja a `kezelo-nagy` + `kezelo-agy`. Teszt: `KEZELO-KEPEK` (nincs HeadSpa kezelő-kép, megvan a 3 új fájl).

@@ -48,3 +48,6 @@ A `?gclid=…&gbraid=…&wbraid=…&fbclid=…&ttclid=…&utm_*` paraméterekkel
 - **Eredmények feljebb:** a „Valódi vendégek eredményei” külön szekció (`#eredmenyek`), a „Miért kérdeznek” és az árak közé került (korábban a vélemények alatt, az oldal alján).
 - **Sortörés-szabály (Feri alapszabály):** mobilon (360 / 390 / 412 px) a címekben, jelvényekben, gombokban, ár-cellákban, kártyacímekben, rövid szövegekben nincs 1–2 szavas árva sor (`text-wrap: balance`, a hosszabb szövegeken `pretty`); a hosszú törzsbekezdések természetes tördelése kivétel. A teszt (`SORTORES`) ellenőrzi.
 - Tesztek: `lezer-intim.test.mjs` 13 teszt (új: `ARAK FORMAZAS`, `SORTORES`; átírt: értékelés/térkép, mobil sorrend, szó szerinti mondatok az Elysion-kártya kivételével).
+
+## 2026-10-20: kezelő-fotók cseréje
+A „kezelőhelyiség növényekkel / esti fényekben” képek a HeadSpa kezelőt mutatták (nem ott van a szőrtelenítés), ezért kikerültek; a két képsáv a lézeres kezelő fotóit mutatja (`assets/img/lezer-kezelo/kezelo-nagy.jpg`, `kezelo-agy.jpg`; Feri küldte, 3:2-re vágva). Lásd `docs/LEZERES_LANDING.md`.

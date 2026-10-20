@@ -33,7 +33,7 @@ const FOCTA = '/foglalo-motor?business=laser&service=konzult';
 const MASODLAGOS = '/foglalo-motor?business=laser';
 // a repoban mar meglevo, NEM intim teruletet mutato kepek (gep / kezeloszoba / Zsofi / lab- es arc-eredmeny / orvos / varo)
 const KEPEK_ENGEDETT = new Set([
-  '/assets/img/c2eb0f_095b37f37006437d8942bb760bc4740b.jpg', '/assets/img/c2eb0f_0afd6583c98246a88f14e7f429e5284b.jpg', '/assets/img/c2eb0f_7b41e9e53cc240dcbdd1191999af285b.jpg',
+  '/assets/img/c2eb0f_095b37f37006437d8942bb760bc4740b.jpg', '/assets/img/lezer-kezelo/kezelo-nagy.jpg', '/assets/img/lezer-kezelo/kezelo-agy.jpg',
   '/assets/img/c2eb0f_1aa35b8ff0f4417abff9e955399b5dc2.jpg', '/assets/img/lezer-eredmeny/labszar.jpg', '/assets/img/lezer-eredmeny/arc.jpg', '/assets/img/lezer-orvos.jpg',
   '/assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg',
 ]);

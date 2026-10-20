@@ -234,7 +234,8 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     const eleje = regiHtml.indexOf('81f16bfc67fb');
     // "brutalis-simasag" (d25d1e56510f): a regi oldal konzultacio- es "felejtsd el a penget" dobozanak TAKART hatterkepe. Lecserelt: a Wixes ertekeles-csillag (81f16bfc67fb: szoveges csillagok),
     // a konzultacio Zsofi-fotoja (1aa35b8ff0f4: helyette a Zsofi-video), a nagy ARGARANCIA pecset (bfd0d4397 9b2) es a ket infografika (4afa5a45a0b5, 77ff06afd6e2): helyettuk a fo oldal egyszeru abraja
-    const LECSERELT = new Set(['d25d1e56510f', '81f16bfc67fb', '1aa35b8ff0f4', 'bfd0d43979b2', '4afa5a45a0b5', '77ff06afd6e2']);
+    // + 0afd6583c982 / 7b41e9e53cc2: a HeadSpa kezelohelyiseg kepei (Feri 2026-10-20: a szortelenites nem ott van) - helyettuk assets/img/lezer-kezelo/* (a lezeres kezelo)
+    const LECSERELT = new Set(['d25d1e56510f', '81f16bfc67fb', '1aa35b8ff0f4', 'bfd0d43979b2', '4afa5a45a0b5', '77ff06afd6e2', '0afd6583c982', '7b41e9e53cc2']);
     const azonosito = [...new Set([...regiHtml.slice(eleje).matchAll(/(?:(?:c2eb0f|11062b|nsplsh)_)?([0-9a-f]{12})[0-9a-f]{8,}\.(?:jpe?g|png|webp)/g)].map((m) => m[1]))].filter((k) => !LECSERELT.has(k));
     assert.ok(azonosito.length >= 28, 'a regi oldal kepeinek listaja: ' + azonosito.length);
     const html = await p.content();
@@ -504,11 +505,11 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     await ctx.close();
   });
 
-  test('SZALON-GALERIA (Feri kerese): lapozhato kep-karusszel (9 kep, lusta betoltes, fix keparany), asztalon nyilak, pottyos jelzo, billentyuzet (balra / jobbra), aria-cimkek; mobilon erintesre huzhato (scroll-snap), nyilak nelkul', async () => {
+  test('SZALON-GALERIA (Feri kerese): lapozhato kep-karusszel (10 kep, lusta betoltes, fix keparany), asztalon nyilak, pottyos jelzo, billentyuzet (balra / jobbra), aria-cimkek; mobilon erintesre huzhato (scroll-snap), nyilak nelkul', async () => {
     const src = forras();
     const gal = /<div class="fl-galeria"[\s\S]*?<p class="sr fl-gal-allapot"[^>]*><\/p>\s*<\/div>/.exec(src)[0];
-    assert.equal((gal.match(/<figure class="fl-gal-kep"/g) || []).length, 9, '9 szalon-kep a galeriaban');
-    assert.equal((gal.match(/loading="lazy"/g) || []).length, 9, 'mind lusta');
+    assert.equal((gal.match(/<figure class="fl-gal-kep"/g) || []).length, 10, '10 szalon-kep a galeriaban');
+    assert.equal((gal.match(/loading="lazy"/g) || []).length, 10, 'mind lusta');
     assert.match(gal, /role="region" aria-roledescription="képlapozó" aria-label="A felújított szalon képei"/);
     assert.match(gal, /aria-label="Előző kép"[^>]*>[\s\S]*aria-label="Következő kép"/);
     // asztal
@@ -517,8 +518,8 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     const mag0 = await a.p.evaluate(() => document.documentElement.scrollHeight);
     const sav = a.p.locator('.fl-gal-sav');
     await sav.scrollIntoViewIfNeeded();
-    assert.equal(await a.p.locator('.fl-gal-kep').count(), 9);
-    assert.equal(await a.p.locator('.fl-gal-pont').count(), 7, 'asztalon 3 kep latszik egyszerre: 9 - 3 + 1 = 7 megallo');
+    assert.equal(await a.p.locator('.fl-gal-kep').count(), 10);
+    assert.equal(await a.p.locator('.fl-gal-pont').count(), 8, 'asztalon 3 kep latszik egyszerre: 10 - 3 + 1 = 8 megallo');
     assert.equal(await a.p.locator('.fl-gal-pont[aria-current="true"]').count(), 1);
     assert.equal(await a.p.evaluate(() => getComputedStyle(document.querySelector('.fl-gal-sav')).scrollSnapType), 'x mandatory');
     const meretek = await a.p.$$eval('.fl-gal-kep', (l) => l.map((f) => { const b = f.getBoundingClientRect(); return [Math.round(b.width), Math.round(b.height), getComputedStyle(f).aspectRatio]; }));
@@ -541,10 +542,10 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     assert.ok(await sav.evaluate((e) => e.scrollLeft) < x2 - 100, 'balra nyil visszalapoz');
     await a.p.keyboard.press('End'); await a.p.waitForTimeout(1200);
     assert.equal(await a.p.locator('.fl-gal-nyil.kovetkezo').isDisabled(), true, 'az utolso kepnel a Kovetkezo tiltott');
-    assert.equal(await a.p.locator('.fl-gal-pont').nth(6).getAttribute('aria-current'), 'true');
+    assert.equal(await a.p.locator('.fl-gal-pont').nth(7).getAttribute('aria-current'), 'true');
     await a.p.locator('.fl-gal-pont').nth(2).click(); await a.p.waitForTimeout(1000);
     assert.equal(await a.p.locator('.fl-gal-pont').nth(2).getAttribute('aria-current'), 'true', 'a potty-ra kattintva odaugrik');
-    assert.match(await a.p.textContent('.fl-gal-allapot'), /3\. kép a\(z\) 9 közül/);
+    assert.match(await a.p.textContent('.fl-gal-allapot'), /3\. kép a\(z\) 10 közül/);
     assert.equal(await a.p.evaluate(() => document.documentElement.scrollHeight), mag0, 'lapozas kozben az oldal magassaga nem valtozik (nincs ugralas)');
     assert.deepEqual(a.hibak, []);
     await a.ctx.close();
@@ -557,11 +558,21 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     assert.equal(r.snap, 'x mandatory'); assert.equal(r.tap, 'auto');
     assert.ok(r.kepW < 390 - 32 && r.kepW > 250, 'egy kep + a kovetkezo kukucskal: ' + r.kepW);
     assert.ok(Math.abs(r.kepW / r.kepH - 1.5) < 0.02, 'fix 3:2 keparany');
-    assert.equal(await m.p.locator('.fl-gal-pont').count(), 9, 'mobilon egy kep latszik: 9 megallo');
+    assert.equal(await m.p.locator('.fl-gal-pont').count(), 10, 'mobilon egy kep latszik: 10 megallo');
     await m.p.locator('.fl-gal-pont').nth(4).tap(); await m.p.waitForTimeout(900);
     assert.ok(await m.p.evaluate(() => document.querySelector('.fl-gal-sav').scrollLeft) > 500, 'a potty-re erintve odalapoz');
     assert.equal(await m.p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), 0);
     await m.ctx.close();
+  });
+
+  test('KEZELO-KEPEK (Feri 2026-10-20): a lezeres oldalon NINCS a HeadSpa kezelohelyiseg (0afd6583 / 7b41e9e5), helyette a lezeres kezelo 3 kepe (assets/img/lezer-kezelo/*), mind letezik 3:2 meretben', async () => {
+    const h = fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8');
+    assert.ok(!/0afd6583c98246a88f14e7f429e5284b|7b41e9e53cc240dcbdd1191999af285b/.test(h), 'nincs HeadSpa kezelo-kep');
+    for (const f of ['kezelo-nagy', 'kezelo-agy', 'kezelo-sarok']) {
+      assert.ok(h.includes('/assets/img/lezer-kezelo/' + f + '.jpg'), f + ' szerepel');
+      const b = fs.readFileSync(path.join(GYOKER, 'assets/img/lezer-kezelo', f + '.jpg'));
+      assert.ok(b.length > 50000 && b.length < 400000, f + ' merete: ' + b.length);
+    }
   });
 
   test('MOBIL STICKY CTA: telefonon a hero elgorgetese utan jon be ("Ingyenes konzultacio" + kis "Idopont-foglalas" link), a helyszin szekciotol eltunik; asztalon nem latszik; a gombok a foglalora mutatnak', async () => {
