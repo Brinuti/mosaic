@@ -43,7 +43,7 @@ await varj('[data-hely]');
 naplo.foglalasInditasGA4 = await p.evaluate(() => (window.dataLayer || []).filter((x) => x && x[0] === 'event' && x[1] === 'foglalas_inditasa').length);
 await sr('r.querySelector(`[data-hely="${a}"]`).click()', HELY);
 await varj('[data-szolg]');
-const szolgNev = await sr(`for (const k of ['magamnak','ketto']) { const kb=r.querySelector('[data-kinek="'+k+'"]'); if(!kb||kb.disabled) continue; kb.click(); for (const m of ['egy','tobb','fulbevalo']) { const mb=r.querySelector('[data-mit="'+m+'"]'); if(!mb||mb.disabled) continue; mb.click(); const x=r.querySelector('[data-szolg="'+a+'"]'); if(x){ const n=x.title; x.click(); return n; } } } return null;`, SZOLG);
+const szolgNev = await sr(`const x=r.querySelector('[data-szolg="'+a+'"]'); if(x){ const n=x.title; x.click(); return n; } return null;`, SZOLG);
 if (!szolgNev) throw new Error('nincs ilyen szolgaltatas ezen a helyszinen: ' + SZOLG);
 naplo.szolgNev = szolgNev;
 await varj('[data-slot]');

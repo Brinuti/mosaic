@@ -118,12 +118,12 @@ async function gombProba(p, cim, sel, idx, ut) {
     if (!GYORS && g.csomag && hely) {
       await sr(p, 'r.querySelector(\'[data-hely="6029"]\').click()');
       await varj(p, '.pk', 15000); await p.waitForTimeout(400);
-      const m = await sr(p, 'return {on:[...r.querySelectorAll(".pk-szuro button.on")].map(x=>(x.getAttribute("aria-label")||x.textContent).trim()), elso:((r.querySelector(".pk .pk-cim b")||{}).textContent||"").trim(), nyitott:!!r.querySelector(".pk.nyitva")}');
+      const m = await sr(p, 'return {elso:((r.querySelector(".pk .pk-cim b")||{}).textContent||"").trim(), nyitott:!!r.querySelector(".pk.nyitva")}');
       let jo = m && !m.nyitott;
       const tk = g.tipus || tipusKodUtbol(ut);
-      if (g.csomag === '1') jo = jo && m.on[1] === '1 piercing' && (!tk || m.elso.toLowerCase().includes(TIPUSNEV[tk].toLowerCase()));
-      else if (g.csomag === '2' || g.csomag === '3') jo = jo && m.on[1] === '2–3 piercing' && m.elso === `${g.csomag} piercing`;
-      else if (g.csomag === 'ketto') jo = jo && m.on[0] === '2 személynek';
+      if (g.csomag === '1') jo = jo && (!tk || m.elso.toLowerCase().includes(TIPUSNEV[tk].toLowerCase()));
+      else if (g.csomag === '2' || g.csomag === '3') jo = jo && m.elso === `${g.csomag} piercing`;
+      else if (g.csomag === 'ketto') jo = jo && /^2 személynek/.test(m.elso);
       ok(`${cim}: "${g.szoveg}" (data-csomag=${g.csomag}${g.tipus ? ', data-tipus=' + g.tipus : ''}): az elovalasztas a gomb szerint`, jo, JSON.stringify(m));
       const mn2 = await p.evaluate(() => window.__mn);
       ok(`${cim}: "${g.szoveg}": a helyszin valasztasa utan sem fut ujra a meres`, mn2 === 1, `${mn2} db`);

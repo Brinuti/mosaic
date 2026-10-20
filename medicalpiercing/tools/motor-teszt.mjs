@@ -106,7 +106,6 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   ok('GA4 foglalas_inditasa egyszer (eldobva)', ga.length === 1, `${ga.length} db; ${merkez.length} meroeszkoz-keres`);
   await motorKattint(p, '[data-hely="6029"]');
   ok('Budapest: a kezelesek betoltodnek', await varMotor(p, '[data-szolg]'));
-  await motorKattint(p, '[data-mit="egy"]'); // alapertek: Magamnak + Tobb piercing; a migren az "1 piercing" kozott van
   const szolg = await p.evaluate(() => [...document.querySelector('[data-mp-motor]').shadowRoot.querySelectorAll('[data-szolg]')].map((x) => x.querySelector('.nev').textContent));
   ok('a kezelesek magyarul, a migren-oldalon a migren-piercing az elso', /Migrén/.test(szolg[0] || '') && szolg.length >= 9, szolg.slice(0, 2).join(' | '));
   await motorKattint(p, '[data-szolg]');
@@ -199,8 +198,6 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   const lap320 = /width=320/.test(eredetiNezet);
   ok('nezetszelesseg: nyitott motornal eszkozszelesseg' + (MOBIL ? (lap320 ? ' (a lap 320 px-es)' : ' (az uj lap eleve eszkozszelesseg)') : ''), MOBIL ? /device-width/.test(await nezet()) && (lap320 || /device-width/.test(eredetiNezet)) : (await nezet()) === eredetiNezet, `${eredetiNezet} -> ${await nezet()}`);
   await motorKattint(p, '[data-hely="9067"]');
-  await varMotor(p, '[data-mit="fulbevalo"]');
-  await motorKattint(p, '[data-mit="fulbevalo"]');
   await varMotor(p, '[data-szolg="395895"]');
   await motorKattint(p, '[data-szolg="395895"]');
   ok('Sopron, divat fulpiercing: van szabad idopont', await varMotor(p, '[data-slot]'));

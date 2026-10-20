@@ -348,23 +348,7 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 
 /* --- 2. lepes: a piercing-kartyak (a tulajdonos latvanyterve es kerese, 2026-10-16): tomor szurosor, a 4,8 mellett a felugro szuras-video, kicsi
    "Az ár tartalmazza", minden lehetoseg kartyaja; minden kartyan "Részletek" (lenyitja) + "Időpontot választok" (tovabb); csomagoknal a kedvezmeny magyarazata --- */
-.pk-szuro { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 8px; margin: 0 0 10px; }
-.pk-szuro .szeg { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid #e6d9d6; border-radius: 99px; background: #faf6f5; }
-.pk-szuro .szeg button { min-height: 32px; padding: 0 12px; border: 0; border-radius: 99px; background: none; box-shadow: none; font-size: 12.5px; line-height: 1; white-space: nowrap; color: #454659; }
-.pk-szuro .szeg button.on { background: #454659; border: 0; box-shadow: none; color: #fff; }
-.pk-szuro .szeg button[disabled] { opacity: .38; }
-/* a "2–3 piercing" eri meg a legjobban (a tulajdonos kerese, 2026-10-16): eros jeloles a gomb folott; ha kifer, a ket kapcsolo egy sorban.
-   5. kor: alapbol a 2–3 piercing van kivalasztva; a jeloles lefele mutato nyillal pontosan a gomb folott; ket sorban a "Magamnak / 2 személynek" feljebb, a jeloles a ket sor kozott */
-.pk-szuro { margin-top: 22px; row-gap: 30px; }
-@media (max-width: 384px) { .pk-szuro { margin-top: 2px; } }
-.pk-szuro.ket-sor { margin-top: 2px; } /* (ha a ket kapcsolo ket sorba torik - pl. keskeny foglalo-ablak asztalon is -: a jeloles a ket sor kozott) */
-.pk-szuro.egy-sor { margin-top: 22px; }
-.pk-szuro .szeg button.ajanlott { position: relative; color: #a35a4b; font-weight: 700; }
-.pk-szuro .szeg button.ajanlott.on { background: #a35a4b; color: #fff; }
-.pk-szuro .szeg button.ajanlott::after { content: "Legjobban megéri"; position: absolute; left: 50%; top: -26px; transform: translateX(-50%); padding: 3px 9px; border-radius: 99px; background: linear-gradient(90deg, #c27a6a, #a35a4b); box-shadow: 0 2px 6px rgba(163, 90, 75, .35); color: #fff; font: 700 9px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; pointer-events: none; }
-.pk-szuro .szeg button.ajanlott::before { content: ""; position: absolute; left: 50%; top: -9px; transform: translateX(-50%); border-style: solid; border-width: 7px 6px 0; border-color: #a35a4b transparent transparent; pointer-events: none; }
-.pk-szuro .szeg button.ajanlott[disabled]::after, .pk-szuro .szeg button.ajanlott[disabled]::before { display: none; }
-.pk-info { margin: 0 0 12px; text-align: center; }
+.pk-info { margin: 0 0 10px; text-align: center; }
 .pk-info p { margin: 0; }
 .pk-info-sor { display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 12px; margin: 0 0 6px !important; font-size: 12.5px; line-height: 1.2; white-space: nowrap; color: #454659; }
 .pk-csillag { color: #c99b3c; }
@@ -375,33 +359,24 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .pk-play svg { width: 8px; height: 10px; fill: currentColor; }
 .pk-tart { margin: 0 0 10px; font-size: 12.5px; line-height: 1.45; color: #6b6c80; }
 .pk-tart b { font-weight: 600; color: #454659; }
-/* a szurosor egy sorban (a tulajdonos kerese, 2026-10-16, 4. kor): 385–520 px kozott a darab-gombok rovid felirata ("1 db", "2–3 db"); keskenyebb kepernyon (360 / 375 px) nem fer el,
-   ott ket sor marad, a teljes felirattal */
-.pk-rovid { display: none; }
-@media (min-width: 385px) and (max-width: 520px) {
-  .pk-szuro { flex-wrap: nowrap; gap: 5px; }
-  .pk-szuro .szeg button { padding: 0 7px; font-size: 11.5px; }
-  .pk-hosszu { display: none; }
-  .pk-rovid { display: inline; }
-}
 .pk-felugro { position: fixed; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 20px 16px; background: rgba(39, 40, 52, .78); }
 .pk-felugro-doboz { position: relative; width: min(100%, 380px, calc((100dvh - 110px) * 9 / 16)); }
 .pk-felugro-cim { margin: 0 0 10px; text-align: center; font: 600 15px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; color: #fff; }
 .pk-felugro video { display: block; width: 100%; aspect-ratio: 9 / 16; border-radius: 16px; background: #2f3044; object-fit: cover; }
 .pk-felugro-x { position: absolute; top: 22px; right: -10px; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 4px 14px rgba(0, 0, 0, .3); font: 400 28px/1 Arial, sans-serif; color: #454659; cursor: pointer; }
 @media (max-width: 420px) { .pk-felugro-x { right: -4px; } }
-.pk-lista { display: grid; gap: 10px; }
-.pk { border: 1.5px solid #ecdcd8; border-radius: 16px; background: #fff; box-shadow: 0 1px 3px rgba(69, 70, 89, .08); }
+.pk-lista { display: grid; gap: 8px; }
+.pk { border: 1.5px solid #ecdcd8; border-radius: 14px; background: #fff; box-shadow: 0 1px 3px rgba(69, 70, 89, .08); }
 .pk.nyitva { border-color: #c99b97; box-shadow: 0 6px 18px rgba(163, 90, 75, .12); }
-.pk-fej { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px 14px 8px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
-.pk-ikon { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: #f6e5e0; }
-.pk-ikon img { width: 26px; height: 26px; object-fit: contain; }
+.pk-fej { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; min-height: 0; padding: 9px 12px 5px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.pk-ikon { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #f6e5e0; }
+.pk-ikon img { width: 21px; height: 21px; object-fit: contain; }
 .pk-cim { min-width: 0; }
-.pk-cim b { display: block; font: 600 16.5px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
-.pk-cim small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #6b6c80; }
+.pk-cim b { display: block; font: 600 15px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-cim small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #6b6c80; }
 .pk-ar { display: grid; justify-items: end; gap: 1px; white-space: nowrap; }
-.pk-ar s { font-size: 12px; color: #9a9aa8; }
-.pk-ar b { font: 600 15.5px/1.2 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-ar s { font-size: 11.5px; color: #9a9aa8; }
+.pk-ar b { font: 600 14.5px/1.2 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
 .pk-test { padding: 4px 14px 2px; }
 .pk-pont { display: grid; grid-template-columns: minmax(96px, 34%) minmax(0, 1fr); gap: 12px; align-items: start; margin-bottom: 10px; }
 .pk-pont img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; background: #f6e5e0; }
@@ -419,17 +394,17 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .pk-csomag { margin: 0 0 10px; font-size: 13px; line-height: 1.45; color: #6b6c80; }
 .pk-csomag p { margin: 0 0 6px; } .pk-csomag p:last-child { margin: 0; }
 .pk-garancia { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: #eef3ec; font-size: 13px; line-height: 1.45; color: #3c4a3f; }
-.pk-gombok { display: flex; gap: 8px; padding: 4px 12px 12px; }
-.pk-reszlet { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; border: 1.5px solid #e3cfca; border-radius: 99px; background: #fff; font: 600 14px/1 'poppins-semibold', Poppins, Arial, sans-serif; color: #a35a4b; cursor: pointer; white-space: nowrap; }
-.pk-reszlet svg { width: 15px; height: 15px; transition: transform .2s; }
+.pk-gombok { display: flex; gap: 8px; padding: 2px 12px 10px; }
+.pk-reszlet { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 36px; padding: 0 13px; border: 1.5px solid #e3cfca; border-radius: 99px; background: #fff; font: 600 13px/1 'poppins-semibold', Poppins, Arial, sans-serif; color: #a35a4b; cursor: pointer; white-space: nowrap; }
+.pk-reszlet svg { width: 13px; height: 13px; transition: transform .2s; }
 .pk-reszlet[aria-expanded="true"] svg { transform: rotate(180deg); }
 .pk-reszlet:hover { border-color: #d7aba8; background: #fdf3f0; }
-.pk-valaszt { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; min-height: 44px; padding: 0 16px; border: 0; border-radius: 99px; background: #a35a4b; box-shadow: 0 4px 12px rgba(163, 90, 75, .3); color: #fff; font: 600 14.5px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; white-space: nowrap; }
+.pk-valaszt { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 36px; padding: 0 14px; border: 0; border-radius: 99px; background: #a35a4b; box-shadow: 0 2px 8px rgba(163, 90, 75, .25); color: #fff; font: 600 13.5px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; white-space: nowrap; }
 .pk-valaszt:hover { background: #8e4a3d; }
-.pk-valaszt svg { flex: none; width: 14px; height: 14px; }
+.pk-valaszt svg { flex: none; width: 12px; height: 12px; }
 .rejtett { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .pk-fej:focus-visible, .pk-valaszt:focus-visible, .pk-reszlet:focus-visible, .pk-szuras:focus-visible, .pk-felugro-x:focus-visible { outline: 3px solid #f5d3ca; outline-offset: 2px; }
-@media (max-width: 380px) { .pk-fej { gap: 9px; padding: 10px 11px 6px; } .pk-ikon { width: 38px; height: 38px; } .pk-cim b { font-size: 15.5px; } .pk-gombok { gap: 6px; padding: 4px 10px 10px; } .pk-reszlet { padding: 0 12px; font-size: 13px; } .pk-valaszt { padding: 0 12px; font-size: 13.5px; gap: 6px; } .pk-szuro .szeg button { padding: 0 10px; font-size: 12px; } .pk-info-sor { gap: 8px; font-size: 11.5px; } .pk-szuras { font-size: 11.5px; } }
+@media (max-width: 380px) { .pk-fej { gap: 8px; padding: 8px 10px 4px; } .pk-ikon { width: 30px; height: 30px; } .pk-ikon img { width: 19px; height: 19px; } .pk-cim b { font-size: 14px; } .pk-gombok { gap: 6px; padding: 2px 10px 9px; } .pk-reszlet { padding: 0 11px; font-size: 12.5px; } .pk-valaszt { padding: 0 11px; font-size: 13px; gap: 5px; } .pk-info-sor { gap: 8px; font-size: 11.5px; } .pk-szuras { font-size: 11.5px; } }
 @media (max-width: 460px) { .pk-ertek-hosszu { display: none; } .pk-info-sor { gap: 8px; } }
 @media (max-width: 340px) { .pk-valaszt svg { display: none; } .pk-szuras { padding-right: 8px; } }
 `;
@@ -533,7 +508,7 @@ export function nyit(ctx) {
   const all = {
     lepes: 'hely', placeId: HELYSZINEK[ctx.placeId] ? +ctx.placeId : null, serviceId: ctx.serviceId || null,
     staffId: ctx.employeeId ? String(ctx.employeeId) : null, nap: null, honap: null, slotok: null, szolg: null, bookingId: null, expected: null,
-    tipus: null, urlapAdat: null, merve: !ctx.merjen, kinek: 'magamnak', mit: oldalTipus(ctx.forras || '') === 'divat' ? 'egy' : 'tobb',
+    tipus: null, urlapAdat: null, merve: !ctx.merjen,
     oldalTipus: oldalTipus(ctx.forras || ''), nyitott: null, arak: null, csomag: null,
   };
   // a gomb sajat piercing-tipusa (uj-fooldal.js: window.__mpTipus = data-tipus, pl. a velemenyek kategoriainak gombjai): az oldal utvonala helyett ez dont
@@ -541,8 +516,7 @@ export function nyit(ctx) {
     if (/^(mi|sh|kl|sl|al|mj|lp|vb|pm|divat)$/.test(t)) all.oldalTipus = t; }
   // az akcio-oldal "Ezt foglalom" gombjai (uj-fooldal.js: window.__mpCsomag = 1 / 2 / 3): a Piercing-lepes ezzel a csomaggal elol (csukva)
   { const c = String(ctx.csomag || window.__mpCsomag || ''); try { delete window.__mpCsomag; } catch (e) { /* */ }
-    if (/^[123]$/.test(c)) { all.kinek = 'magamnak'; all.mit = c === '1' ? 'egy' : 'tobb'; all.csomag = c; }
-    else if (c === 'ketto') { all.kinek = 'ketto'; all.mit = 'tobb'; all.csomag = c; } }   // paros gomb ("Páros időpontot foglalok"): a "2 személynek" csomagok
+    if (/^([123]|ketto)$/.test(c)) all.csomag = c; }   // a paros gomb ("Páros időpontot foglalok", ketto): a "2 személynek" csomagok kerülnek előre
   const ctxFoglalas = foglalas.begin({ business: 'mp', source_page: ctx.forras || location.pathname });
   all.bookingId = ctxFoglalas.id;
   // belepes: a foglalo fo oldala a tipus-valaszto
@@ -755,8 +729,9 @@ export function nyit(ctx) {
     tartalom._lista = lista;
     szolgRajzol();
   }
-  // A piercing-lista ket kerdesre szurve (mindenhonnan ugyanaz): 1. Kinek? (magamnak / ket szemelynek), 2. Milyen szolgaltatas? (1 piercing / tobb piercing / fulbevalo).
-  // A kategoria a Salonic-szolgaltatas nevebol jon; a "2 szemelynek - 2 db" fejenkent 1 piercing, a 4 es 6 db tobb piercing.
+  // A piercing-lista (a tulajdonos kerese, 2026-10-20: "regen egy listaban volt az osszes piercing, egymas alatt"): nincs szurosor, MINDEN lehetoseg egy listaban,
+  // egymas alatt, tomor kartyakkal. A kategoria a Salonic-szolgaltatas nevebol jon; a sorrend: 1 piercing, 2–3 piercing, 2 szemelynek, fulbevalo (a Salonic sorrendjeben).
+  // A "2 szemelynek - 2 db" fejenkent 1 piercing, a 4 es 6 db tobb piercing.
   // a "Kiesett ékszer újraszúrása" (2026-10-16 ota a Salonicban): belsős szolgáltatás, a piercing-listába nem kerül (szolgaltatasLepes)
   const ujraszuras = (n) => /kiesett|\S*jrasz\S*r/i.test(n);
   const kategoria = (s) => {
@@ -766,45 +741,30 @@ export function nyit(ctx) {
     if (/3 PIERCING|2 PIERCING|^1\+1/i.test(n)) return { kinek: 'magamnak', mit: 'tobb' };
     return { kinek: 'magamnak', mit: 'egy' };
   };
-  const MIT = [['egy', '1 piercing'], ['tobb', 'Több piercing'], ['fulbevalo', 'Fülbevaló']];
-  // A piercing-kartyak (a tulajdonos latvanyterve es kerese, 2026-10-16): tomor szurosor (Kinek? / Milyen?), a 4,8-as ertekeles mellett a "Hogy néz ki egy szúrás?"
-  // (felugro, bezarhato video), kicsi "Az ár tartalmazza", alatta MINDEN lehetoseg kartyaja (nincs rejtett "+ tobbi"). Minden kartyan ket gomb: "Részletek"
-  // (lenyitja: a pont helye valodi fulfotoval, mire jo, garancia; a csomagoknal a kedvezmeny magyarazata) es "Időpontot választok" (a regi [data-szolg]:
-  // title = a teljes Salonic-nev, .nev > span = a rovid nev, .ar = az ar; a tesztek es a foglalasi logika ugyanaz). A kartya feje is nyit / zar (data-nyit).
-  // a szurosor egy vagy ket sorban all-e (a foglalo-ablak szelessegetol fugg, nem a kepernyoetol): ket sorban a "Magamnak / 2 személynek" feljebb, a jeloles kozottuk
-  function szuroSorok() {
-    const sz = tartalom.isConnected && tartalom.querySelector(".pk-szuro"); const g = sz ? sz.querySelectorAll(".szeg") : [];
-    if (g.length < 2) return;
-    const ket = g[1].getBoundingClientRect().top > g[0].getBoundingClientRect().bottom - 4;
-    sz.classList.toggle('ket-sor', ket); sz.classList.toggle('egy-sor', !ket);
-  }
-  window.addEventListener('resize', () => szuroSorok());
+  // a csoport sorrendje a listaban: 0 = 1 piercing, 1 = 2–3 piercing, 2 = 2 szemelynek, 3 = fulbevalo
+  const csoport = (s) => { const c = kategoria(s); return c.mit === 'fulbevalo' ? 3 : c.kinek === 'ketto' ? 2 : c.mit === 'tobb' ? 1 : 0; };
+  // A piercing-kartyak (a tulajdonos latvanyterve es kerese, 2026-10-16): a 4,8-as ertekeles mellett a "Hogy néz ki egy szúrás?" (felugro, bezarhato video),
+  // alatta MINDEN lehetoseg kartyaja. Minden kartyan ket gomb: "Részletek" (lenyitja: a pont helye valodi fulfotoval, mire jo, garancia; a csomagoknal a kedvezmeny
+  // magyarazata) es "Időpontot választok" (a regi [data-szolg]: title = a teljes Salonic-nev, .nev > span = a rovid nev, .ar = az ar; a tesztek es a foglalasi logika
+  // ugyanaz). A kartya feje is nyit / zar (data-nyit).
   function szolgRajzol() {
     const lista = tartalom._lista || [];
-    const kat = lista.map((s) => [s, kategoria(s)]);
-    const db = (k, m) => kat.filter(([, c]) => c.kinek === k && (!m || c.mit === m)).length;
-    if (!db(all.kinek, all.mit)) { const m = MIT.find(([k]) => db(all.kinek, k)); if (m) all.mit = m[0]; else { all.kinek = 'magamnak'; all.mit = (MIT.find(([k]) => db('magamnak', k)) || ['egy'])[0]; } }
-    let mutat = kat.filter(([, c]) => c.kinek === all.kinek && c.mit === all.mit).map(([s]) => s);
-    // a tipusoldal piercingje elol (pl. a lep-oldalrol nyitva a Lep); tipus nelkuli oldalrol (fooldal) a Salonic sorrendje
-    const sajat = (s) => all.mit === 'egy' && !!PK[all.oldalTipus] && tipusKod(s.name) === all.oldalTipus;
-    mutat = [...mutat.filter(sajat), ...mutat.filter((s) => !sajat(s))];
-    // alapbol (es a szuro valtasakor) egy kartya sincs lenyitva, a 2–3 piercingnel sem (a tulajdonos kerese, 2026-10-16, 4. kor): elsore latszon, milyen piercingek vannak
+    // stabil rendezes (a Salonic sorrendje csoporton belul marad); a tipusoldal piercingje elol (pl. a lep-oldalrol nyitva a Lep), a divat fulpiercing-oldalon a fulbevalok
+    const elol = (s) => (all.oldalTipus === 'divat' ? csoport(s) === 3 : !!PK[all.oldalTipus] && csoport(s) === 0 && tipusKod(s.name) === all.oldalTipus);
+    let mutat = lista.map((s, i) => [s, i]).sort((x, y) => (elol(y[0]) - elol(x[0])) || (csoport(x[0]) - csoport(y[0])) || (x[1] - y[1])).map(([s]) => s);
+    // alapbol (es a lista ujrarajzolasakor) egy kartya sincs lenyitva (a tulajdonos kerese, 2026-10-16, 4. kor): elsore latszon, milyen piercingek vannak
     if (all.nyitott === null || (all.nyitott && !mutat.some((s) => s.serviceId === all.nyitott))) all.nyitott = '';
-    if (all.csomag) { // (egyszer: az akcio-oldal elovalasztott csomagja elol; a kartyak - mint mindig - csukva, a tulajdonos kerese, 2026-10-16; a szuro valtasakor mar a szokasos rend)
+    if (all.csomag) { // (egyszer: az akcio-oldal elovalasztott csomagja elol; a kartyak - mint mindig - csukva, a tulajdonos kerese, 2026-10-16)
       const re = all.csomag === '3' ? /3 PIERCING/i : all.csomag === '2' ? /2 PIERCING/i : null;
-      const c = re && all.mit === 'tobb' && mutat.find((s) => re.test(s.name));
+      const c = re && mutat.find((s) => csoport(s) === 1 && re.test(s.name));
       if (c) mutat = [c, ...mutat.filter((s) => s !== c)];
+      else if (all.csomag === 'ketto') mutat = [...mutat.filter((s) => csoport(s) === 2), ...mutat.filter((s) => csoport(s) !== 2)];
       all.csomag = null;
     }
     all.arak = arakBol(lista);
-    const kozerzet = all.mit !== 'fulbevalo';
-    const gomb = (attr, k, nev, on, tilt, osztaly = '', cimke = '') => `<button class="${[on ? 'on' : '', osztaly].filter(Boolean).join(' ')}" data-${attr}="${k}" aria-pressed="${on}"${cimke ? ` aria-label="${cimke}"` : ''}${tilt ? ' disabled' : ''}${osztaly ? ' title="Ez éri meg a legjobban"' : ''}>${nev}</button>`;
-    tartalom.innerHTML = `<div class="pk-szuro"><div class="szeg">${gomb('kinek', 'magamnak', 'Magamnak', all.kinek === 'magamnak', false)}${gomb('kinek', 'ketto', '2 személynek', all.kinek === 'ketto', !db('ketto'))}</div>`
-      + `<div class="szeg harom">${MIT.map(([k, n]) => gomb('mit', k, n === 'Több piercing' ? '2–3 <span class="pk-hosszu">piercing</span><span class="pk-rovid">db</span>' : n === '1 piercing' ? '1 <span class="pk-hosszu">piercing</span><span class="pk-rovid">db</span>' : n, all.mit === k, !db(all.kinek, k), k === 'tobb' ? 'ajanlott' : '', k === 'tobb' ? '2–3 piercing' : k === 'egy' ? '1 piercing' : '')).join('')}</div></div>`
-      + `<div class="pk-info"><p class="pk-info-sor"><span class="pk-ertek">${ertekelesHtml()}</span><button class="pk-szuras" data-szuras aria-haspopup="dialog"><span class="pk-play">${PLAY}</span>Hogy néz ki egy szúrás?</button></p></div>`
-      + `<div class="pk-lista">${mutat.map((s) => pkKartya(s, kozerzet)).join('')}</div>`;
+    tartalom.innerHTML = `<div class="pk-info"><p class="pk-info-sor"><span class="pk-ertek">${ertekelesHtml()}</span><button class="pk-szuras" data-szuras aria-haspopup="dialog"><span class="pk-play">${PLAY}</span>Hogy néz ki egy szúrás?</button></p></div>`
+      + `<div class="pk-lista">${mutat.map((s) => pkKartya(s, csoport(s) !== 3)).join('')}</div>`;
     // ha az ertekeles meg nem jott meg: megjottekor a sor frissul
-    szuroSorok();
     if (!ertekelesAdat) ertekelesBetolt().then(() => { const el = tartalom.querySelector('.pk-ertek'); if (el && ertekelesAdat) el.innerHTML = ertekelesHtml(); });
   }
   // a "Hogy néz ki egy szúrás?" videoja (a tulajdonos kerese, 2026-10-16): a TikTok-fiok legnezettebb organikus shenmen-szuras videoja
@@ -1012,8 +972,6 @@ export function nyit(ctx) {
     if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) return visszaLep(d.lepes);
     const hely = d.hely || d.terkepHely;
     if (hely) { all.placeId = +hely; all.szolg = null; all.nap = null; all.honap = null; all.staffId = null; return ugrik('szolg'); }
-    if (d.kinek) { all.kinek = d.kinek; all.nyitott = null; return szolgRajzol(); }
-    if (d.mit) { all.mit = d.mit; all.nyitott = null; return szolgRajzol(); }
     if (d.nyit) { all.nyitott = all.nyitott === d.nyit ? '' : d.nyit; szolgRajzol(); const k = shadow.querySelector(`.pk[data-pk="${d.nyit}"]`); if (k && all.nyitott) k.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
     if (d.szuras !== undefined) return szurasNyit(t);
     if (d.szolg) { all.szolg = (tartalom._lista || []).find((x) => x.serviceId === d.szolg) || null; all.nap = null; all.honap = null; if (all.szolg) ugrik('ido'); return; }
