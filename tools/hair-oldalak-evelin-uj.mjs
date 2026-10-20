@@ -59,7 +59,7 @@ export function oldal() {
   MOSAIC Hair - Evelin-oldal UJ, hirdetesi valtozata (Google Ads FOD-3, brief 4. szakasz). GENERALT FAJL: ne szerkeszd kezzel.
   Forras: tools/hair-oldalak/sablon-evelin-uj.mjs (szekciok), tools/hair-oldalak/adat.mjs + salonic-hair.json (arak: a Salonic-pillanatkep); generalas: node tools/hair-oldalak-evelin-uj.mjs
   NINCS ELESBEN: /${FAJL_NEV} (noindex, onmagara mutato canonical, nincs ra link, nincs a sitemapben). A meglevo oldal valtozatlan: /noi-hajfestes-budapest.
-  Az oldalon belul NINCS #horgony-link (a GTM History Change minden hash-valtozasra merest inditana): a gorgetest a hair-landing.js vegzi.
+  Az oldalon belul NINCS #horgony-link (a GTM History Change minden hash-valtozasra merest inditana): a gorgetest a hair-landing.js, a Terkep / ertekeles-sor ([data-gorget]) gombjaiet a hair-evelin-uj.js vegzi.
   Foglalas: a gombok a /foglalo-motor?business=hair&staff=evelin... linkek (a launcher a retegben nyitja meg); a fejlec / Info-ablak / lablec gombjai a business=hair foglalora mutatnak.
 -->
 
@@ -80,6 +80,7 @@ ${LIGHTBOX}
 
 <script src="/assets/js/klon.js" defer></script>
 <script src="/assets/js/hair-landing.js" defer></script>
+<script src="/assets/js/hair-evelin-uj.js" defer></script>
 </body>
 </html>
 `;

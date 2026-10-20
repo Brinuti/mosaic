@@ -19,15 +19,16 @@ main.hl.hl-evelin-uj .szekcio-fej + .kartya-racs { margin-bottom: 0; }
 main.hl.hl-evelin-uj .ar-megj { margin-bottom: 4px; }
 main.hl.hl-evelin-uj #szolgaltatasok > .tartalom > .cta-sor { margin-top: 22px; }
 
-/* --- telefon / tablet (900 px alatt): a hero sorrendje: cim, alcim, ar, gomb (egy kepernyore fer), majd a kep, hely, ertekeles --- */
+/* --- telefon / tablet (900 px alatt): a hero sorrendje (Feri, 2026-10-20): CIM -> KEP -> alcim -> ar -> gombok -> hely -> ertekeles. A minta a kozos hair-landing.css-e:
+   a .hero-szoveg display: contents, a gyerekek order-e; itt a kep kozvetlenul a H1 utan jon (2. hely). --- */
 @media (max-width: 899px) {
   main.hl.hl-evelin-uj .hero .hero-szoveg > h1 { order: 1; }
-  main.hl.hl-evelin-uj .hero .hero-szoveg > .lead { order: 2; margin-top: 2px; }
-  main.hl.hl-evelin-uj .hero .hero-szoveg > .ar-sav { order: 3; margin-top: 2px; gap: 6px; }
+  main.hl.hl-evelin-uj .hero .hero-kep { order: 2; aspect-ratio: 4 / 3; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .lead { order: 3; margin-top: 2px; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .ar-sav { order: 4; margin-top: 0; gap: 6px; }
   main.hl.hl-evelin-uj .hero .hero-szoveg > .ar-sav li { padding: 6px 12px; }
   main.hl.hl-evelin-uj .hero .hero-szoveg > .ar-sav li span { font-size: 17px; }
-  main.hl.hl-evelin-uj .hero .hero-szoveg > .cta-sor { order: 4; margin-top: 4px; }
-  main.hl.hl-evelin-uj .hero .hero-kep { order: 5; aspect-ratio: 4 / 3; }
+  main.hl.hl-evelin-uj .hero .hero-szoveg > .cta-sor { order: 5; margin-top: 2px; }
   main.hl.hl-evelin-uj .hero .hero-szoveg > .hely-sor { order: 6; }
   main.hl.hl-evelin-uj .hero .hero-szoveg > .ert-sor { order: 7; }
   main.hl.hl-evelin-uj .hero .hero-szoveg > .kovetkezo { order: 8; }
@@ -41,4 +42,43 @@ main.hl.hl-evelin-uj #szolgaltatasok > .tartalom > .cta-sor { margin-top: 22px; 
   main.hl.hl-evelin-uj .kartya-racs.harom .szolg-kep { aspect-ratio: 4 / 3.2; min-height: 0; }
   main.hl.hl-evelin-uj .kartya-racs.harom .szolg-torzs { flex: 1; padding: 18px 20px 20px; }
   main.hl.hl-evelin-uj .hero-fodrasz h1 { font-size: clamp(32px, 3.4vw, 46px); }
+}
+
+/* --- belso gorgeto "link-gombok" (Terkep, ertekeles-sor): kinezetre link, de nem visz el az oldalrol (assets/js/hair-evelin-uj.js); a padding + negativ margo nagyobb erintesi feluletet ad, az elrendezes nem valtozik --- */
+main.hl.hl-evelin-uj .link-gomb { padding: 11px 8px; margin: -11px -8px; border: 0; background: none; font: inherit; color: var(--bronz-ss); text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+main.hl.hl-evelin-uj .link-gomb:hover { color: var(--zold); }
+main.hl.hl-evelin-uj .hely-sor .link-gomb { flex: none; }
+
+/* --- "Itt talalsz meg": a lapozhato szalon-galeria (grid-elem, aspect-ratio + min-height) telefonon nem lohet tul a szelessegen: a kozos CSS-ben az aspect-ratio miatt a grid-elem nem nyulik ki
+   (justify-self: normal -> start), a min-height: 280px pedig a keparany szerint 373 px-re szelesiti (20 px-szel kilogna jobbra, a main overflow: clip levagja) --- */
+main.hl.hl-evelin-uj .hely-racs > .hely-galeria { justify-self: stretch; min-width: 0; }
+
+/* --- a tofestes kartya lapozhato kepgaleriaja (a hair-landing.js [data-hero-galeria] komponense; a .hg-* szabalyok a hair-landing.css-ben) --- */
+main.hl.hl-evelin-uj .szolg-galeria { position: absolute; inset: 0; margin: 0; }
+main.hl.hl-evelin-uj .szolg-galeria .hg-sav li { position: relative; }
+main.hl.hl-evelin-uj .szolg-galeria .hg-sav img { position: static; width: 100%; height: 100%; object-fit: cover; }
+main.hl.hl-evelin-uj .szolg-galeria .hg-nyil { width: 38px; height: 38px; margin-top: -19px; }
+main.hl.hl-evelin-uj .szolg-galeria .hg-pontok { right: auto; left: 50%; bottom: 12px; transform: translateX(-50%); padding: 5px 8px; border-radius: 999px; background: rgba(15, 40, 40, .38); }
+/* telefonon (560 px alatt) a galeria-kartya fuggoleges: felul a (teljes szelessegu, fix keparanyu) galeria, alatta a szoveg; a tobbi kartya valtozatlan */
+@media (max-width: 560px) {
+  main.hl.hl-evelin-uj .szolg-galeria-kartya { grid-template-columns: minmax(0, 1fr); }
+  main.hl.hl-evelin-uj .szolg-galeria-kartya .szolg-kep { aspect-ratio: 1 / 1; min-height: 0; }
+}
+
+/* --- megtort sorok (a tulajdonos alapszabalya, 2026-10-20: ahol egy-ket szo csuszik at uj sorba, az legyen egy sor; mobilon / tableten, az asztali kinezet valtozatlan).
+   Ellenorzo: node tools/hair-teszt/evelin-uj-torott-sor.mjs (360 / 390 / 412 px). Eszkozok: text-wrap: balance (cimek, rovid szovegek: kiegyensulyozott sorok), text-wrap: pretty (bekezdesek),
+   nem torheto szokoz a "Hajfestes / oszfedes" cimekben (a per-jel elott nem tordelodik), kisebb cim- / gombfelirat-meret keskeny kepernyon, hogy a feliratok egy sorba ferjenek. --- */
+@media (max-width: 899px) {
+  main.hl.hl-evelin-uj :is(h1, h2, h3, summary, .felcim) { text-wrap: balance; }
+  main.hl.hl-evelin-uj :is(p, li) { text-wrap: pretty; }
+  /* a legfeljebb ~6 soros rovid szovegek: kiegyensulyozott sorok (a bongeszo 6 sornal hosszabb szovegen magatol a termeszetes tordelesre all: a hosszu torzsszovegnel az rendben van) */
+  main.hl.hl-evelin-uj :is(.szekcio-fej .lead, .hero .lead, .kovetkezo span, .szolg-torzs p, .mini-kartya p, .ar-megj li > span, .ar-kedvezmeny span, .foglalo-doboz .lead, .hely-szoveg p, .gyik-lista details p, .festek .lead) { text-wrap: balance; }
+}
+@media (max-width: 430px) {
+  main.hl.hl-evelin-uj h2 { font-size: clamp(24px, 7vw, 28px); }
+  /* a gombfeliratok egy sorba ferjenek (360 px-en is): kisebb betu / belso ter, a hero es a foglalo-doboz gombjain nincs nyil */
+  main.hl.hl-evelin-uj :is(.hero-szoveg, .foglalo-doboz) .cta-sor .gomb { font-size: 14px; padding-inline: 12px; gap: 8px; }
+  main.hl.hl-evelin-uj :is(.hero-szoveg, .foglalo-doboz) .cta-sor .gomb .nyil { display: none; }
+  main.hl.hl-evelin-uj .szolg-torzs .gomb { font-size: 14px; padding-inline: 8px; gap: 6px; }
+  main.hl.hl-evelin-uj .ar-gomb-sor .gomb { font-size: 14px; padding-inline: 12px; gap: 8px; }
 }

@@ -5,12 +5,17 @@
 // Szandekos eltérések a briefhez (a PR leirasaban reszletezve): (1) az "az ar tartalmazza a festeket, a vagast es a szaritast" mondat NEM minden szolgaltatasra igaz (Salonic: "Tofestes + Szaritas"
 // nem tartalmaz vagast), ezert pontos megfogalmazas; (2) a balayage "-tol" ara 42 950 Ft (a 39 950 Ft a teljes melir / szokites rovid hajra), ezert kulon sor; (3) a [MEGERŐSÍTENDŐ] tartalom
 // (hajhosszabbitas, tapasztalati evek, szombati nyitvatartas) kimarad.
+//
+// 2026-10-20, a tulajdonos (Feri) visszajelzese: (1) mobilon a hero sorrendje CIM -> KEP -> alcim; (2) a tofestes szolgaltatas-kartyajan lapozhato kepgaleria (a hair-landing.js [data-hero-galeria] komponense);
+// (3) az ertekeles es a terkep SEHOL nem visz ki az oldalrol: belso gorgetes a Google-velemenyek / a helyszin-terkep blokkra ([data-gorget] gombok, assets/js/hair-evelin-uj.js; a gomb, nem #horgony-link:
+// a GTM History Change minden hash-valtozasra merest inditana); az egyetlen kifele vivo Google-link a terkep-blokk "Utvonaltervezes" gombja (navigalas); (4) mobilon ahol egy-ket szo csuszna at uj sorba, az legyen egy sor
+// (assets/css/hair-evelin-uj.css; ellenorzo: tools/hair-teszt/evelin-uj-torott-sor.mjs).
 import {
-  FODRASZOK, SZALON, TERKEP_LINK, GOOGLE_VELEMENYEK_LINK, KEPEK, KONZULT, foglalo, arlista, katAdat, konzultacio, galeria, szolgFodrasz, ft, ido, idoTartomany, HOSSZOK,
+  FODRASZOK, SZALON, TERKEP_LINK, KEPEK, KONZULT, foglalo, arlista, katAdat, konzultacio, galeria, szolgFodrasz, kep, ft, ido, idoTartomany, HOSSZOK,
 } from './adat.mjs';
 import { sablonReszek as S } from './sablon.mjs';
 
-const { esc, ik, kepTag, gomb, felcim, szekcioFej, kovetkezo, videoDoboz, galeriaSzekcio, lapozGaleria, velemenyekSzekcio, cellaHtml, egyCella, KARTYA_SZOVEG, KAT_LINK } = S;
+const { esc, ik, kepTag, gomb, felcim, szekcioFej, kovetkezo, videoDoboz, galeriaSzekcio, lapozGaleria, cellaHtml, egyCella, KARTYA_SZOVEG, KAT_LINK } = S;
 const F = 'evelin';
 const f = FODRASZOK[F];
 const KAT = { festes: 'Elrontott festés korrekció / Teljes festés', tofestes: 'Tőfestés + szárítás', tofestesVagas: 'Tőfestés + vágás + szárítás', balayage: 'Balayage', melir: 'Teljes melír / airtouch + vágás' };
@@ -45,8 +50,8 @@ function hero() {
         ${gomb('30 perces ingyenes konzultáció Evelinnel', foglalo({ staff: F, service: KONZULT }), { cta: 'hero-konzultacio', poz: 'hero', extra: ' data-konzult="1"' })}
         ${gomb('Festés és tőfestés időpontok', foglalo({ staff: F, category: 'color' }), { fajta: 'korvonal', cta: 'hero-festes-idopontok', poz: 'hero', extra: ` data-service="color" data-staff-cta="${F}"`, nyilat: false })}
       </div>
-      <p class="hely-sor">${ik('pin')}<span>${HELY_SOR}</span><a href="${TERKEP_LINK}" target="_blank" rel="noopener" data-cta="hero-terkep">Térkép</a></p>
-      <p class="ert-sor"><span class="g-csillag" role="img" aria-label="5 csillagból 4,9" style="--ert:98%"></span><a href="${GOOGLE_VELEMENYEK_LINK}" target="_blank" rel="noopener" data-cta="hero-google-ertekeles">${ERTEKELES}</a></p>
+      <p class="hely-sor">${ik('pin')}<span>${HELY_SOR}</span><button type="button" class="link-gomb" data-gorget="hely" data-cta="hero-terkep-lejjebb">Térkép</button></p>
+      <p class="ert-sor"><span class="g-csillag" role="img" aria-label="5 csillagból 4,9" style="--ert:98%"></span><button type="button" class="link-gomb" data-gorget="velemenyek" data-cta="hero-velemenyek-lejjebb">${ERTEKELES}</button></p>
       ${kovetkezo(F)}
     </div>
     <figure class="hero-kep">${kepTag(p, { lazy: false, sizes: '(min-width:900px) 45vw, 100vw' })}</figure>
@@ -55,9 +60,35 @@ function hero() {
 }
 
 // ---- szolgaltatasok + arak (A) --------------------------------------------------------------------------------------------------------------------
-function szolgKartya({ cim, szoveg, kep, arSor, perc, gombCim, href, cta, szandek }) {
-  return `<article class="szolg-kartya">
-    <div class="szolg-kep">${kepTag(kep, { sizes: '(min-width:900px) 30vw, 40vw' })}</div>
+// A tofestes kartya kepgaleriaja (Feri kerese, 2026-10-20): Evelin SAJAT, valodi munkai a regi /noi-hajfestes-budapest oldal galeriajabol (tools/content/noi-hajfestes-budapest.json 41., 42., 53., 52., 39., 49. blokk).
+// A repoban NINCS kifejezetten "tofestes"-ként cimkezett Evelin-foto (a regi oldal tofestes-szekciojaban nincs kep), ezert olyan kesz munkak, ahol a szin a tovektol egyenletes. A kartya szovege nem allitja,
+// hogy a kepek tofestes-eredmenyek: valodi vendegmunkak. A kepek teteje latszik (object-position), mert a tofestesnel a tovek szamitanak.
+const TOFESTES_KEPEK = () => [
+  kep('evelin', 41, { poz: '50% 10%', alt: 'Sötétbarna, fényes haj egyenletes színnel a tövektől – valódi MOSAIC Hair vendégmunka' }),
+  kep('evelin', 42, { poz: '50% 10%', alt: 'Hamvas, barnás-szőke haj egyenletes színnel – valódi MOSAIC Hair vendégmunka' }),
+  kep('evelin', 53, { poz: '50% 10%', alt: 'Világos szőke, fényes haj egyenletes színnel a tövektől – valódi MOSAIC Hair vendégmunka' }),
+  kep('evelin', 52, { poz: '50% 10%', alt: 'Aranyszőke, fényes haj egyenletes színnel – valódi MOSAIC Hair vendégmunka' }),
+  kep('evelin', 39, { poz: '50% 10%', alt: 'Mély, sötétbarna hullámos haj – valódi MOSAIC Hair vendégmunka' }),
+  kep('evelin', 49, { poz: '50% 10%', alt: 'Hamvas szőke, sima haj – valódi MOSAIC Hair vendégmunka' }),
+];
+/** Lapozhato kepgaleria a szolgaltatas-kartyaban: scroll-snap (ujjal huzva), asztalon nyilak, pottyok, a sav tabindex=0 es a bal/jobb nyil billentyu lapoz. A mukodest a hair-landing.js
+ *  [data-hero-galeria] komponense adja (ugyanaz, mint a kozponti hero-ban es az "Itt talalsz meg" szekcioban); itt MINDEN kep lusta betoltesu (a kartya a hajtas alatt van), a keparany fix (CSS). */
+function kartyaGaleria(kepek, { nev, felirat, sizes }) {
+  return `<figure class="szolg-galeria hero-galeria" data-hero-galeria="${nev}">
+        <ul class="hg-sav" tabindex="0" aria-label="${esc(felirat)}">
+${kepek.map((k) => `          <li>${kepTag(k, { sizes })}</li>`).join('\n')}
+        </ul>
+        <button type="button" class="hg-nyil hg-elozo" aria-label="Előző kép">${ik('bal')}</button>
+        <button type="button" class="hg-nyil hg-kovetkezo" aria-label="Következő kép">${ik('jobb')}</button>
+        <div class="hg-pontok" aria-hidden="true">${kepek.map((k, i) => `<span${i === 0 ? ' class="aktiv"' : ''}></span>`).join('')}</div>
+      </figure>`;
+}
+function szolgKartya({ cim, szoveg, kep: kepAdat, galeria: galKepek, arSor, perc, gombCim, href, cta, szandek }) {
+  const kepResz = galKepek
+    ? kartyaGaleria(galKepek, { nev: szandek, felirat: `${cim}: Evelin munkái, lapozható képgaléria (balra-jobbra húzással vagy a nyilakkal lapozhatsz)`, sizes: '(min-width:900px) 30vw, 100vw' })
+    : kepTag(kepAdat, { sizes: '(min-width:900px) 30vw, 40vw' });
+  return `<article class="szolg-kartya${galKepek ? ' szolg-galeria-kartya' : ''}">
+    <div class="szolg-kep">${kepResz}</div>
     <div class="szolg-torzs">
       <h3>${cim}</h3>
       <p>${szoveg}</p>
@@ -70,9 +101,9 @@ function kartyak() {
   const f1 = kat('festes'), t1 = kat('tofestes'), b1 = kat('balayage'), m1 = kat('melir');
   const tv = kat('tofestesVagas');
   return `<div class="kartya-racs harom">
-      ${szolgKartya({ cim: 'Hajfestés / őszfedés', szoveg: KARTYA_SZOVEG.color.szoveg, kep: szolgFodrasz(F, 'color'), arSor: `${ft(f1.tol)}-tól`, perc: idoTartomany(f1.percTol, f1.percIg), gombCim: 'Festés időpontok', href: foglalo({ staff: F, category: 'color' }), cta: 'szolgaltatas-festes', szandek: 'color' })}
-      ${szolgKartya({ cim: 'Tőfestés', szoveg: `${KARTYA_SZOVEG.tofestes.szoveg} Tőfestés + szárítás: ${ft(t1.tol)}-tól, vágással: ${ft(tv.tol)}-tól.`, kep: szolgFodrasz(F, 'tofestes'), arSor: `${ft(t1.tol)}-tól`, perc: idoTartomany(t1.percTol, t1.percIg), gombCim: 'Tőfestés időpontok', href: foglalo({ staff: F, category: KAT_LINK.tofestes }), cta: 'szolgaltatas-tofestes', szandek: 'tofestes' })}
-      ${szolgKartya({ cim: 'Balayage / ombre / melír', szoveg: `${KARTYA_SZOVEG.balayage.szoveg} Teljes melír / airtouch: ${ft(m1.tol)}-tól.`, kep: szolgFodrasz(F, 'balayage'), arSor: `${ft(b1.tol)}-tól`, perc: idoTartomany(b1.percTol, b1.percIg), gombCim: 'Balayage időpontok', href: foglalo({ staff: F, category: 'balayage' }), cta: 'szolgaltatas-balayage', szandek: 'balayage' })}
+      ${szolgKartya({ cim: 'Hajfestés&nbsp;/ őszfedés', szoveg: KARTYA_SZOVEG.color.szoveg, kep: szolgFodrasz(F, 'color'), arSor: `${ft(f1.tol)}-tól`, perc: idoTartomany(f1.percTol, f1.percIg), gombCim: 'Festés időpontok', href: foglalo({ staff: F, category: 'color' }), cta: 'szolgaltatas-festes', szandek: 'color' })}
+      ${szolgKartya({ cim: 'Tőfestés', szoveg: `${KARTYA_SZOVEG.tofestes.szoveg} Tőfestés + szárítás: ${ft(t1.tol)}-tól, vágással: ${ft(tv.tol)}-tól.`, galeria: TOFESTES_KEPEK(), arSor: `${ft(t1.tol)}-tól`, perc: idoTartomany(t1.percTol, t1.percIg), gombCim: 'Tőfestés időpontok', href: foglalo({ staff: F, category: KAT_LINK.tofestes }), cta: 'szolgaltatas-tofestes', szandek: 'tofestes' })}
+      ${szolgKartya({ cim: 'Balayage&nbsp;/ ombre&nbsp;/ melír', szoveg: `${KARTYA_SZOVEG.balayage.szoveg} Teljes melír / airtouch: ${ft(m1.tol)}-tól.`, kep: szolgFodrasz(F, 'balayage'), arSor: `${ft(b1.tol)}-tól`, perc: idoTartomany(b1.percTol, b1.percIg), gombCim: 'Balayage időpontok', href: foglalo({ staff: F, category: 'balayage' }), cta: 'szolgaltatas-balayage', szandek: 'balayage' })}
     </div>`;
 }
 function arTabla() {
@@ -151,6 +182,14 @@ ${f.bemutatkozas.map((t) => `      <p class="lead">${t}</p>`).join('\n')}
 </section>`;
 }
 
+// ---- vendegvelemenyek: a Trustindex-beagyazas (a hair-landing.js tolti) AZ OLDALON BELUL; a hero ertekeles-sora ide gorget. A kozos sablon "Tovabbi velemenyek a Google-on" gombja (kifele vivo link) itt NINCS.
+const velemenyekSzekcio = () => `<section class="szekcio halvany" id="velemenyek" aria-labelledby="velemenyek-cim">
+  <div class="tartalom">
+    ${szekcioFej('Vendégeim mondták', 'Valódi vendégek, valódi vélemények', 'A MOSAIC Google-értékelései és vendégvéleményei – szerkesztés és válogatás nélkül.', 'velemenyek-cim')}
+    <div class="ti-doboz" id="ti-doboz" data-forras="/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html"></div>
+  </div>
+</section>`;
+
 // ---- GYIK (F): a Noel-oldal mintaja, Evelinre (a hajhosszabbitas es a szombati nyitvatartas nelkul) --------------------------------------------------------
 export function gyikLista() {
   const ba = kat('balayage'), melir = kat('melir'), tof = kat('tofestes');
@@ -208,7 +247,7 @@ const helySzekcio = () => `<section class="szekcio halvany" id="hely" aria-label
 
 export const stickyEvelinUj = () => `<div class="sticky-cta" id="sticky-cta" aria-hidden="true">
   <a class="gomb gomb-arany" href="${foglalo({ staff: F, service: KONZULT })}" data-cta="sticky-konzultacio" data-konzult="1" tabindex="-1">Ingyenes konzultáció <span class="nyil" aria-hidden="true">→</span></a>
-  <a class="sticky-masodlagos" href="${foglalo({ staff: F })}" data-cta="sticky-idopontok" data-staff-cta="${F}" tabindex="-1">Evelin<br>időpontjai</a>
+  <a class="sticky-masodlagos" href="${foglalo({ staff: F })}" data-cta="sticky-idopontok" data-staff-cta="${F}" tabindex="-1">Evelin időpontjai</a>
 </div>`;
 
 export function evelinUjTorzs() {
@@ -227,7 +266,7 @@ ${festek()}
 
 ${bemutat()}
 
-${velemenyekSzekcio(F)}
+${velemenyekSzekcio()}
 
 ${foglalasSzekcio()}
 

@@ -29,7 +29,7 @@
   MOSAIC Hair - Evelin-oldal UJ, hirdetesi valtozata (Google Ads FOD-3, brief 4. szakasz). GENERALT FAJL: ne szerkeszd kezzel.
   Forras: tools/hair-oldalak/sablon-evelin-uj.mjs (szekciok), tools/hair-oldalak/adat.mjs + salonic-hair.json (arak: a Salonic-pillanatkep); generalas: node tools/hair-oldalak-evelin-uj.mjs
   NINCS ELESBEN: /noi-hajfestes-evelin-uj (noindex, onmagara mutato canonical, nincs ra link, nincs a sitemapben). A meglevo oldal valtozatlan: /noi-hajfestes-budapest.
-  Az oldalon belul NINCS #horgony-link (a GTM History Change minden hash-valtozasra merest inditana): a gorgetest a hair-landing.js vegzi.
+  Az oldalon belul NINCS #horgony-link (a GTM History Change minden hash-valtozasra merest inditana): a gorgetest a hair-landing.js, a Terkep / ertekeles-sor ([data-gorget]) gombjaiet a hair-evelin-uj.js vegzi.
   Foglalas: a gombok a /foglalo-motor?business=hair&staff=evelin... linkek (a launcher a retegben nyitja meg); a fejlec / Info-ablak / lablec gombjai a business=hair foglalora mutatnak.
 -->
 
@@ -73,8 +73,8 @@
         <a class="gomb gomb-arany" href="/foglalo-motor?business=hair&staff=evelin&service=konzultacio" data-cta="hero-konzultacio" data-poz="hero" data-konzult="1">30 perces ingyenes konzultáció Evelinnel <span class="nyil" aria-hidden="true">→</span></a>
         <a class="gomb gomb-korvonal" href="/foglalo-motor?business=hair&staff=evelin&category=color" data-cta="hero-festes-idopontok" data-poz="hero" data-service="color" data-staff-cta="evelin">Festés és tőfestés időpontok</a>
       </div>
-      <p class="hely-sor"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><span>1023 Budapest, Bécsi út 2. · a Kolosy tér és a Zsigmond tér között</span><a href="https://www.google.com/maps/search/?api=1&query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="hero-terkep">Térkép</a></p>
-      <p class="ert-sor"><span class="g-csillag" role="img" aria-label="5 csillagból 4,9" style="--ert:98%"></span><a href="https://www.google.com/maps/search/?api=1&query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="hero-google-ertekeles">4,9 – 1 266 Google-értékelés</a></p>
+      <p class="hely-sor"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><span>1023 Budapest, Bécsi út 2. · a Kolosy tér és a Zsigmond tér között</span><button type="button" class="link-gomb" data-gorget="hely" data-cta="hero-terkep-lejjebb">Térkép</button></p>
+      <p class="ert-sor"><span class="g-csillag" role="img" aria-label="5 csillagból 4,9" style="--ert:98%"></span><button type="button" class="link-gomb" data-gorget="velemenyek" data-cta="hero-velemenyek-lejjebb">4,9 – 1 266 Google-értékelés</button></p>
       <p class="kovetkezo " data-kovetkezo="evelin" hidden><svg class="ik" aria-hidden="true"><use href="#i-naptar"/></svg><span>Legközelebbi szabad konzultáció: <a href="/foglalo-motor?business=hair&staff=evelin&service=konzultacio" data-cta="kovetkezo-idopont" data-ido-link></a></span></p>
     </div>
     <figure class="hero-kep"><img src="/assets/img/c2eb0f_daa60c756ac240a8af2776b040919d37.jpg" alt="Evelin, a MOSAIC Hair fodrásza hajfestés közben" width="1300" height="936" fetchpriority="high" sizes="(min-width:900px) 45vw, 100vw" style="object-position:30% 40%"></figure>
@@ -89,14 +89,26 @@
       <article class="szolg-kartya">
     <div class="szolg-kep"><img src="/assets/img/c2eb0f_56d954ffd3ac43949832a865639592f0.jpg" alt="Barna, karamellárnyalatú haj – valódi MOSAIC Hair vendégmunka" width="796" height="1535" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 40vw"></div>
     <div class="szolg-torzs">
-      <h3>Hajfestés / őszfedés</h3>
+      <h3>Hajfestés&nbsp;/ őszfedés</h3>
       <p>Egységes, fényes hajszín és pontos őszfedés. Teljes festés, ha új színt szeretnél.</p>
       <p class="szolg-adat"><span>32 950 Ft-tól</span><span class="szolg-ido"><svg class="ik" aria-hidden="true"><use href="#i-ora"/></svg>2–3,5 óra</span></p>
       <a class="gomb gomb-korvonal" href="/foglalo-motor?business=hair&staff=evelin&category=color" data-cta="szolgaltatas-festes" data-service="color" data-staff-cta="evelin">Festés időpontok <span class="nyil" aria-hidden="true">→</span></a>
     </div>
   </article>
-      <article class="szolg-kartya">
-    <div class="szolg-kep"><img src="/assets/img/c2eb0f_f138c9a1c0494e0786f48b7229df5ad1.jpg" alt="Barna, karamellárnyalatú haj – valódi MOSAIC Hair vendégmunka" width="1125" height="1500" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 40vw"></div>
+      <article class="szolg-kartya szolg-galeria-kartya">
+    <div class="szolg-kep"><figure class="szolg-galeria hero-galeria" data-hero-galeria="tofestes">
+        <ul class="hg-sav" tabindex="0" aria-label="Tőfestés: Evelin munkái, lapozható képgaléria (balra-jobbra húzással vagy a nyilakkal lapozhatsz)">
+          <li><img src="/assets/img/c2eb0f_f138c9a1c0494e0786f48b7229df5ad1.jpg" alt="Sötétbarna, fényes haj egyenletes színnel a tövektől – valódi MOSAIC Hair vendégmunka" width="1125" height="1500" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 100vw" style="object-position:50% 10%"></li>
+          <li><img src="/assets/img/c2eb0f_8dd884813b39460c867ec0dbe4e54d8e.jpg" alt="Hamvas, barnás-szőke haj egyenletes színnel – valódi MOSAIC Hair vendégmunka" width="1017" height="1460" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 100vw" style="object-position:50% 10%"></li>
+          <li><img src="/assets/img/c2eb0f_db144fe225464c7d840084bded2da66d.jpg" alt="Világos szőke, fényes haj egyenletes színnel a tövektől – valódi MOSAIC Hair vendégmunka" width="1125" height="1500" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 100vw" style="object-position:50% 10%"></li>
+          <li><img src="/assets/img/c2eb0f_2f42a96d028e44b09b7eb1d4478b3603.jpg" alt="Aranyszőke, fényes haj egyenletes színnel – valódi MOSAIC Hair vendégmunka" width="1170" height="1533" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 100vw" style="object-position:50% 10%"></li>
+          <li><img src="/assets/img/c2eb0f_eb50ab815f7f4eb2961ced72e57568e4.jpg" alt="Mély, sötétbarna hullámos haj – valódi MOSAIC Hair vendégmunka" width="1125" height="1500" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 100vw" style="object-position:50% 10%"></li>
+          <li><img src="/assets/img/c2eb0f_1306008fd5104887b0160f0b01c85e1d.jpg" alt="Hamvas szőke, sima haj – valódi MOSAIC Hair vendégmunka" width="810" height="1500" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 100vw" style="object-position:50% 10%"></li>
+        </ul>
+        <button type="button" class="hg-nyil hg-elozo" aria-label="Előző kép"><svg class="ik" aria-hidden="true"><use href="#i-bal"/></svg></button>
+        <button type="button" class="hg-nyil hg-kovetkezo" aria-label="Következő kép"><svg class="ik" aria-hidden="true"><use href="#i-jobb"/></svg></button>
+        <div class="hg-pontok" aria-hidden="true"><span class="aktiv"></span><span></span><span></span><span></span><span></span><span></span></div>
+      </figure></div>
     <div class="szolg-torzs">
       <h3>Tőfestés</h3>
       <p>Ha csak a lenövést kell eltüntetni: gyors, pontos tőfestés, egységes hajszínnel a tövektől. Tőfestés + szárítás: 23 950 Ft-tól, vágással: 26 950 Ft-tól.</p>
@@ -107,7 +119,7 @@
       <article class="szolg-kartya">
     <div class="szolg-kep"><img src="/assets/img/c2eb0f_598950063e194020b30de9ab9af02f70.jpg" alt="Világos, szőke hajszín – valódi MOSAIC Hair vendégmunka" width="1125" height="1500" loading="lazy" decoding="async" sizes="(min-width:900px) 30vw, 40vw"></div>
     <div class="szolg-torzs">
-      <h3>Balayage / ombre / melír</h3>
+      <h3>Balayage&nbsp;/ ombre&nbsp;/ melír</h3>
       <p>Lágy átmenetek, hozzád illő árnyalat, természetes hatás. A balayage lágy átmenetet ad, az ombre mélyebb kontrasztot, a melír precíz csíkokat. Teljes melír / airtouch: 39 950 Ft-tól.</p>
       <p class="szolg-adat"><span>42 950 Ft-tól</span><span class="szolg-ido"><svg class="ik" aria-hidden="true"><use href="#i-ora"/></svg>3–4,5 óra</span></p>
       <a class="gomb gomb-korvonal" href="/foglalo-motor?business=hair&staff=evelin&category=balayage" data-cta="szolgaltatas-balayage" data-service="balayage" data-staff-cta="evelin">Balayage időpontok <span class="nyil" aria-hidden="true">→</span></a>
@@ -237,7 +249,6 @@
   <div class="tartalom">
     <div class="szekcio-fej"><p class="felcim">Vendégeim mondták</p><h2 id="velemenyek-cim">Valódi vendégek, valódi vélemények</h2><p class="lead">A MOSAIC Google-értékelései és vendégvéleményei – szerkesztés és válogatás nélkül.</p></div>
     <div class="ti-doboz" id="ti-doboz" data-forras="/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html"></div>
-    <p class="cta-sor kozepre"><a class="gomb gomb-korvonal" href="https://www.google.com/maps/search/?api=1&query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." data-cta="velemenyek-google" target="_blank" rel="noopener">További vélemények a Google-on <span class="nyil" aria-hidden="true">→</span></a></p>
   </div>
 </section>
 
@@ -301,7 +312,7 @@
 
 <div class="sticky-cta" id="sticky-cta" aria-hidden="true">
   <a class="gomb gomb-arany" href="/foglalo-motor?business=hair&staff=evelin&service=konzultacio" data-cta="sticky-konzultacio" data-konzult="1" tabindex="-1">Ingyenes konzultáció <span class="nyil" aria-hidden="true">→</span></a>
-  <a class="sticky-masodlagos" href="/foglalo-motor?business=hair&staff=evelin" data-cta="sticky-idopontok" data-staff-cta="evelin" tabindex="-1">Evelin<br>időpontjai</a>
+  <a class="sticky-masodlagos" href="/foglalo-motor?business=hair&staff=evelin" data-cta="sticky-idopontok" data-staff-cta="evelin" tabindex="-1">Evelin időpontjai</a>
 </div>
 
 <!--mh-lablec-->
@@ -315,5 +326,6 @@
 
 <script src="/assets/js/klon.js" defer></script>
 <script src="/assets/js/hair-landing.js" defer></script>
+<script src="/assets/js/hair-evelin-uj.js" defer></script>
 </body>
 </html>
