@@ -132,7 +132,10 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     assert.equal(await p.locator('main .hero a.gomb-korvonal').getAttribute('href'), MASODLAGOS);
     // minden helyi, nem foglalo link: csak a ferfi oldal / tel / terkep / google
     const masok = await p.$$eval('main a[href]', (l) => l.map((a) => a.getAttribute('href')).filter((h) => !h.startsWith('/foglalo-motor')));
-    for (const h of masok) assert.ok(/^(https:\/\/(maps\.app\.goo\.gl|www\.google\.com\/maps)\/|tel:\+36202474444$|\/vegleges-szortelenites-ferfiaknak$)/.test(h), 'engedett link: ' + h);
+    for (const h of masok) assert.ok(/^(#(velemenyek|terkep)$|https:\/\/www\.google\.com\/maps\/|tel:\+36202474444$|\/vegleges-szortelenites-ferfiaknak$)/.test(h), 'engedett link: ' + h);
+    // Feri kerese (2026-10-20): az ertekeles / a terkep NEM visz ki az oldalrol: belso horgony a velemenyek / a terkepes blokkra (kulso Google-link csak az Utvonaltervezes gomb es a Trustindex betolto-tartaleka)
+    assert.ok(!masok.some((h) => h.includes('maps.app.goo.gl')), 'nincs kulso Google-profil / ertekeles link');
+    assert.ok(masok.filter((h) => h.startsWith('https://')).length <= 2 && masok.includes('https://www.google.com/maps/search/?api=1&query=MOSAIC%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202.'), 'kulso Google Maps link: csak az Utvonaltervezes (es a Trustindex betolto-tartaleka)');
     assert.ok(masok.includes('/vegleges-szortelenites-ferfiaknak'), 'G) Ferfi intim kezeles? -> /vegleges-szortelenites-ferfiaknak');
     assert.equal(await p.locator('a', { hasText: 'Férfi intim kezelés?' }).getAttribute('href'), '/vegleges-szortelenites-ferfiaknak');
     await ctx.close();
@@ -142,7 +145,7 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     const { p, ctx } = await nyit(NEV);
     const sav = (await p.$$eval('.in-arsav li', (l) => l.map((x) => x.textContent.replace(/\s+/g, ' ').trim())));
     assert.deepEqual(sav, ['Bikini vonal 19 000 Ft / alkalom', 'Teljes intim 36 000 Ft / alkalom', 'Hónalj + intim csomag 45 500 Ft / alkalom'].map((x) => x.replace(/\u00a0/g, ' ')));
-    const sorok = await p.$$eval('.in-tabla tbody tr', (l) => l.map((tr) => [...tr.querySelectorAll('th,td')].map((c, i) => (i === 0 ? c.childNodes[0].textContent : c.textContent).replace(/\s+/g, ' ').trim())));
+    const sorok = await p.$$eval('.in-tabla tbody tr', (l) => l.map((tr) => [...tr.querySelectorAll('th,td')].map((c, i) => (i === 0 ? c.querySelector('.in-ar-nev').childNodes[0].textContent : c.textContent).replace(/\s+/g, ' ').trim())));
     assert.deepEqual(sorok, [['Bikini vonal', '19 000 Ft', '114 000 Ft'], ['Teljes intim', '36 000 Ft', '216 000 Ft'], ['Hónalj + intim csomag', '45 500 Ft', '273 000 Ft']].map((r) => r.map((x) => x.replace(/\u00a0/g, ' '))));
     const fo = olvas('foglalas/lezeres-szortelenites-budapest.html');
     for (const [k, egy] of [['bikini', 19000], ['intim', 36000], ['basic', 45500]]) {
@@ -159,13 +162,18 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
   test('SZO SZERINT a fo oldalbol: a 3 pont, a felkeszules, a GYIK-valaszok, az arak feltetelei minden mondata megvan a /lezeres-szortelenites-budapest (vagy a ferfi) oldalon; csak a brief sajat mondatai ternek el', async () => {
     const korpusz = norm(szovegbol(olvas('foglalas/lezeres-szortelenites-budapest.html')) + ' ' + szovegbol(olvas('foglalas/vegleges-szortelenites-ferfiaknak.html')));
     const { p, ctx } = await nyit(NEV);
-    const szelektorok = ['.in-bevezeto', '.in-kartyak p', '.in-felk p', '.gyik details p', '.in-feltetelek span', '.in-lepesek li:nth-child(2) p', '.in-lepesek li:nth-child(3) p', '.szorbenoves-szoveg p'];
+    const szelektorok = ['.in-bevezeto', '.in-kartyak article:not(:first-child) p', '.in-felk p', '.gyik details p', '.in-feltetelek span', '.in-lepesek li:nth-child(2) p', '.in-lepesek li:nth-child(3) p', '.szorbenoves-szoveg p'];
     const hianyzo = [];
     for (const sel of szelektorok) {
       for (const t of await p.$$eval(sel, (l) => l.map((x) => x.textContent))) for (const m of mondatok(t)) if (!korpusz.includes(norm(m))) hianyzo.push(sel + ' :: ' + m.slice(0, 100));
     }
     // a brief sajat atfogalmazasa / osszefuzese (a forrasmondatok a korpuszban megvannak): az 1. es a 4. lepes, a feltetel-lista nehany sora
     assert.deepEqual(hianyzo, [], 'a korpuszban nem talalhato mondatok');
+    // Feri kerese (2026-10-20): az Elysion Pro kartya cime a vevonek szol ("Világelső Elysion Pro orvosi diódalézer"), a 3500 W nem a cimben; a hatas-mondatok a fo oldal allitasai
+    assert.equal((await p.textContent('.in-kartyak article:first-child h3')).trim(), 'Világelső Elysion Pro orvosi diódalézer');
+    const elysion = (await p.textContent('.in-kartyak article:first-child p')).replace(/\s+/g, ' ');
+    assert.match(elysion, /\(3500 W\)\. Neked ez azt jelenti/);
+    for (const resz of ['hatékonyabban éri el a szőrtüszőket, mint a gyengébb gépek', 'a hűtőfej védi a bőrt, így a kezelés kényelmes, és a legtöbb bőrtípuson biztonságosan alkalmazható', 'az egyik legnagyobb teljesítményű a piacon (3500 W)']) assert.ok(norm(korpusz).includes(norm(resz)) || korpusz.includes(norm(resz)), 'a fo oldal allitasa: ' + resz);
     const k = (s) => korpusz.includes(norm(s));
     assert.ok(k('a Fitzpatrick-skála alapján meghatározzuk a bőrtípusodat és a szőrszálaid vastagságát'), '1. lepes: forras');
     assert.ok(k('átbeszéljük a kizáró okokat (pl. fényérzékenyítő gyógyszerek, hormonális betegségek)'), '1. lepes: forras 2');
@@ -208,22 +216,33 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     await a.ctx.close(); await b.ctx.close();
   });
 
-  test('ERTEKELES: "4,9 – 1 266 Google-ertekeles" (a HTML-ben a tartalek; a google-szam.js elo szamra cserli), kattinthato a Google-profilra; hely + Google Terkep-link a hero-ban', async () => {
+  test('ERTEKELES / TERKEP (Feri kerese 2026-10-20): "4,9 – 1 266 Google-ertekeles" (a HTML-ben a tartalek; a google-szam.js elo szamra cserli); NEM visz ki az oldalrol: a hero jelvenye a velemenyek blokkra gorget, a hero helye a terkepes blokkra; a velemenyek-blokkban nem kattinthato jelveny', async () => {
     const { p, ctx } = await nyit(NEV);
     const e = p.locator('.in-hero-sor a.in-ertekeles');
     assert.equal((await e.textContent()).replace(/\s+/g, ' ').replace(/\u00a0/g, ' ').replace('★★★★★', '').trim(), '4,9 – 1 266 Google-értékelés');
-    assert.equal(await e.getAttribute('href'), 'https://maps.app.goo.gl/TnGenp8VyoUxa7Aw6');
-    assert.equal(await e.getAttribute('target'), '_blank'); assert.match(await e.getAttribute('rel'), /noopener/);
-    assert.equal(await p.locator('a.in-ertekeles').count(), 2, 'hero + velemenyek');
+    assert.equal(await e.getAttribute('href'), '#velemenyek');
+    assert.equal(await e.getAttribute('target'), null, 'nem uj lap');
+    assert.equal(await p.locator('a.in-ertekeles').count(), 1, 'csak a hero jelvenye link');
+    assert.equal(await p.locator('#velemenyek .in-ertekeles').evaluate((el) => el.tagName), 'SPAN', 'a velemenyek blokkban a jelveny nem link (mar ott vagyunk)');
     const hely = (await p.textContent('.in-hely')).replace(/\s+/g, ' ');
     assert.match(hely, /1023 Budapest, Bécsi út 2\., Kolosy tér és Zsigmond tér között/);
-    assert.match(await p.locator('.in-hely a').getAttribute('href'), /^https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=MOSAIC/);
+    assert.equal(await p.locator('.in-hely a').getAttribute('href'), '#terkep');
+    assert.equal(await p.locator('.in-hely a').getAttribute('target'), null);
+    for (const id of ['velemenyek', 'terkep', 'eredmenyek', 'foglalas']) assert.equal(await p.locator('#' + id).count(), 1, 'horgony-cel: #' + id);
+    // a horgonyra kattintva az oldal a cel-blokkhoz gorget (nem navigal el)
+    for (const [sel, cel] of [['.in-hero-sor a.in-ertekeles', '#velemenyek'], ['.in-hely a', '#terkep']]) {
+      await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(100);
+      await p.locator(sel).click(); await p.waitForTimeout(450);
+      assert.match(p.url(), new RegExp(cel + '$'));
+      const y = await p.locator(cel).evaluate((el) => el.getBoundingClientRect().top);
+      assert.ok(y < 400 && y > -200, cel + ' a kepernyon (top ' + Math.round(y) + ')');
+    }
     // a build a google-szam.js-t a "<szam> Google-ertekeles" mintara teszi az oldalra (lasd tools/netlify-build.mjs GV_MINTA)
     assert.match(szovegbol(forras()), /1\s?266\s+Google-értékelés/);
     await ctx.close();
   });
 
-  test('MOBIL (390 es 360 px): nincs vizszintes gorgetes; az ELSO KEPERNYON (390x844) latszik: H1, 1 mondatos igeret, ar-sav, fo CTA gomb, ertekeles, hely + terkep-link; a kep alatta', async () => {
+  test('MOBIL (390 es 360 px): nincs vizszintes gorgetes; a hero sorrendje CIM, KEP, alcim, ar-sav, fo CTA, ertekeles, hely (Feri kerese 2026-10-20); az elso kepernyon (390x844) latszik a H1, a kep es az alcim', async () => {
     for (const szeles of [390, 360]) {
       const { p, ctx, hibak } = await nyit(NEV, { szeles });
       await betoltMind(p);
@@ -231,13 +250,64 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
       if (szeles === 390) {
         await p.evaluate(() => window.scrollTo(0, 0));
         const lent = async (sel) => (await p.locator(sel).first().boundingBox()).y + (await p.locator(sel).first().boundingBox()).height;
-        for (const sel of ['main h1', '.in-hero .hero-al', '.in-arsav', '.in-hero-cta a.gomb-arany', '.in-hero-sor a.in-ertekeles', '.in-hely a']) assert.ok(await lent(sel) <= 844, 'az elso kepernyon belul: ' + sel + ' (' + await lent(sel) + ')');
-        // a sorrend: cim < igeret < ar-sav < CTA < ertekeles < hely < kep
+        for (const sel of ['main h1', '.in-hero .hero-kep', '.in-hero .hero-al']) assert.ok(await lent(sel) <= 844, 'az elso kepernyon belul: ' + sel + ' (' + await lent(sel) + ')');
+        // a sorrend: cim < kep < alcim < ar-sav < CTA < ertekeles < hely
         const y = async (sel) => (await p.locator(sel).first().boundingBox()).y;
-        const sor = [await y('main h1'), await y('.in-hero .hero-al'), await y('.in-arsav'), await y('.in-hero-cta'), await y('.in-hero-sor'), await y('.in-hely'), await y('.in-hero .hero-kep')];
-        assert.deepEqual([...sor].sort((m, n) => m - n), sor, 'a hero mobil sorrendje');
+        const sor = [await y('main h1'), await y('.in-hero .hero-kep'), await y('.in-hero .hero-al'), await y('.in-arsav'), await y('.in-hero-cta'), await y('.in-hero-sor'), await y('.in-hely')];
+        assert.deepEqual([...sor].sort((m, n) => m - n), sor, 'a hero mobil sorrendje: ' + sor.join(' < '));
+        assert.ok(sor[1] - sor[0] < 140, 'a kep kozvetlenul a cim alatt kezdodik');
       }
       assert.deepEqual(hibak, []);
+      await ctx.close();
+    }
+    // asztalon a kep a szoveg mellett (jobb oldalon) marad
+    const asztal = await nyit(NEV, { szeles: 1440 });
+    const kep = await asztal.p.locator('.in-hero .hero-kep').boundingBox(), cim = await asztal.p.locator('main h1').boundingBox();
+    assert.ok(kep.x > cim.x + cim.width - 40, 'asztalon a kep a szoveg jobb oldalan');
+    await asztal.ctx.close();
+  });
+
+  test('ARAK FORMAZAS (Feri kerese 2026-10-20): ikonok az ar-sorokon es a 6 feltetel-dobozon; mobilon az ar-tablazat kartya-nezet (nincs 3 soros csomag-nev); az EREDMENYEK az arak ELOTT, a "Miert kerdeznek" szekcio utan', async () => {
+    const a = await nyit(NEV, { szeles: 1440 });
+    assert.equal(await a.p.locator('.in-ar-ikon svg').count(), 3);
+    assert.equal(await a.p.locator('.in-fel-ikon svg').count(), 6);
+    const y = async (sel) => (await a.p.locator(sel).first().boundingBox()).y;
+    assert.ok(await y('#miert') < await y('#eredmenyek') && await y('#eredmenyek') < await y('#arak') && await y('#arak') < await y('#elso-alkalom'), 'sorrend: miert, eredmenyek, arak, elso alkalom');
+    assert.equal(await a.p.locator('#eredmenyek .eredmeny-kartya').count(), 2);
+    assert.equal(await a.p.locator('#velemenyek .eredmeny-kartya').count(), 0, 'az eredmenyek mar nincsenek a velemenyek blokkban');
+    assert.equal(await a.p.locator('#eredmenyek h2').count(), 1);
+    await a.ctx.close();
+    const m = await nyit(NEV, { szeles: 390 });
+    await betoltMind(m.p);
+    const nev = await m.p.locator('.in-tabla tbody tr:nth-child(3) th .in-ar-nev').boundingBox();
+    assert.ok(nev.height < 50, 'a "Hónalj + intim csomag" nev nem tor 3 sorba mobilon (' + Math.round(nev.height) + ' px)');
+    assert.deepEqual(await m.p.$$eval('.in-tabla tbody tr:first-child td', (l) => l.map((td) => getComputedStyle(td, '::before').content)), ['"1 alkalom"', '"8 alkalmas program"']);
+    await m.ctx.close();
+  });
+
+  test('SORTORES (Feri alapszabaly: ahol 1-2 szo csuszik at uj sorba, az legyen egy sor, mobilon): a cimekben, jelvenyekben, gombokban, ar-cellakban, kartya-cimekben es a rovid szovegekben nincs arva-sor 360 / 390 / 412 px-en (az utolso sor <= 2 szo ES a leghosszabb sor felenel rovidebb)', async () => {
+    for (const szeles of [360, 390, 412]) {
+      const { p, ctx } = await nyit(NEV, { szeles });
+      await betoltMind(p);
+      const arva = await p.evaluate(() => {
+        const SEL = 'main h1, main h2, main h3, main summary, main .gomb, main .cimke, main .in-arsav li b, main .in-arsav li span, main .in-tabla th, main .in-tabla td, main .in-feltetelek li > div > b, main .in-feltetelek li > div > span, main .in-lepesek h3, main .in-ertekeles-szoveg, main .in-hely, main .hero-al, main .in-bevezeto, main figcaption, main dt, main dd, main .hely-sor p, .sticky-cta a';
+        const ki = [];
+        for (const el of document.querySelectorAll(SEL)) {
+          if (getComputedStyle(el).display === 'none' || !el.getClientRects().length) continue;
+          if ([...el.children].some((k) => !/^(inline|inline-block|inline-flex)$/.test(getComputedStyle(k).display) || k.tagName === 'BR')) continue;
+          const szavak = []; const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
+          while ((n = w.nextNode())) { if (n.parentElement.closest('svg, [aria-hidden="true"]') && !n.parentElement.closest('.in-ertekeles-szoveg')) continue; const re = /[^ \t\n\r]+/g; let m; while ((m = re.exec(n.nodeValue))) { const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length); const rr = [...r.getClientRects()].pop(); if (rr) szavak.push({ top: Math.round(rr.top), bal: rr.left, jobb: rr.right }); } }
+          if (szavak.length < 3) continue;
+          const sorok = []; for (const sz of szavak) { const s = sorok.find((x) => Math.abs(x.top - sz.top) < 6); if (s) { s.n++; s.bal = Math.min(s.bal, sz.bal); s.jobb = Math.max(s.jobb, sz.jobb); } else sorok.push({ top: sz.top, n: 1, bal: sz.bal, jobb: sz.jobb }); }
+          if (sorok.length < 2) continue;
+          const u = sorok[sorok.length - 1]; const szeles2 = Math.max(...sorok.map((x) => x.jobb - x.bal));
+          if (u.n <= 2 && u.jobb - u.bal < szeles2 * 0.55) ki.push(el.textContent.replace(/\s+/g, ' ').trim().slice(0, 70));
+        }
+        return ki;
+      });
+      // a hosszu torzs-bekezdesek (4+ sor) termeszetes tordelese kivetel: itt csak a rovid elemeket szamoljuk
+      const rovid = arva.filter((t) => t.length < 70);
+      assert.deepEqual(rovid, [], `arva-sor ${szeles} px-en`);
       await ctx.close();
     }
   });
