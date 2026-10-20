@@ -67,7 +67,7 @@ export function arnyekCel(sor, env = {}) {
   if (!cel || typeof cel !== 'object') return false;
   switch (sor.platform) {
     case 'meta': return cel.dataset === ARNYEK.meta.datasetId && !!cel.test_event_code && String(k.url || '').includes(`/${ARNYEK.meta.datasetId}/events`);
-    case 'tiktok': return cel.pixel_code === ARNYEK.tiktok.pixelCode && !!cel.test_event_code;
+    case 'tiktok': return cel.pixel_code === ARNYEK.tiktok.pixelCode && (!!cel.test_event_code || cel.arnyek_eles === true); // arnyek_eles: Feri 10-20, tesztkod nelkul, de csak az ARNYEK pixelre
     case 'ga4': { const mid = String(cel.measurement_id || ''); if (!mid || ELO_CELOK.ga4.includes(mid)) return false; return env.GA4_TESZT_MEASUREMENT_ID ? mid === env.GA4_TESZT_MEASUREMENT_ID : /^G-/.test(mid); }
     case 'google': { const akciok = Object.values(ARNYEK.google.akciok).flatMap((o) => Object.values(o)); const akcio = String(cel.conversion_action_id || ''); return String(cel.customer_id || '') === ARNYEK.google.customerId && akciok.includes(akcio) && !ELO_CELOK.google_primary.includes(akcio); } // a Zapier-webhook torzse: customer_id + conversion_action_id (az ARNYEK masodlagos akciok)
     default: return false;

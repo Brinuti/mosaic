@@ -277,6 +277,9 @@ test('N11 arnyekCel: a kuldott kerelem csak az ARNYEK celpontokra "jo" (Meta tes
   assert.ok(!be('meta', { ...m, cel: { ...m.cel, dataset: ELO_CELOK.meta[0] } }));
   assert.ok(!be('meta', { url: `https://graph.facebook.com/v23.0/${ELO_CELOK.meta[0]}/events`, cel: m.cel }), 'az url-ben mas dataset');
   assert.ok(!be('tiktok', { cel: { pixel_code: ELO_CELOK.tiktok[0], test_event_code: 'T' } }));
+  assert.ok(be('tiktok', { cel: { pixel_code: ARNYEK.tiktok.pixelCode, test_event_code: null, arnyek_eles: true } }), 'Feri 10-20: ARNYEK pixel tesztkod nelkul (arnyek_eles) = arnyek cel');
+  assert.ok(!be('tiktok', { cel: { pixel_code: ELO_CELOK.tiktok[0], arnyek_eles: true } }), 'elo pixel arnyek_eles-szel sem');
+  assert.ok(!be('tiktok', { cel: { pixel_code: ARNYEK.tiktok.pixelCode } }), 'jelzo es tesztkod nelkul nem');
   assert.ok(!be('tiktok', { cel: { pixel_code: ARNYEK.tiktok.pixelCode } }), 'tesztkod nelkul nem');
   assert.ok(!be('google', { cel: { customer_id: ARNYEK.google.customerId, conversion_action_id: ELO_CELOK.google_primary[0] } }));
   assert.ok(!be('google', { cel: { customer_id: '1', conversion_action_id: '7825199989' } }));
