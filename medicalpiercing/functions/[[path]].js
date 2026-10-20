@@ -90,7 +90,8 @@ export async function onRequest(context) {
   // ugyanaz a cim mobilon es asztalin mast ad - a gyorsitotar ezt tudja
   h.set('vary', 'User-Agent');
   if (!eles || REJTETT_LAPOK.has(ut) || REJTETT_ELOTAG.test(ut) || B_ELOTAG.test(ut)) h.set('x-robots-tag', 'noindex, nofollow');
-  const hosKulcs = status === 200 && request.method === 'GET' && /text\/html/.test(h.get('content-type') || '') ? await hosValasztas(url, context.env.HOS_DB) : null;
+  // KIKAPCSOLVA (Feri, 2026-10-19): a hos-kep csere csak teszt-parameterrel (hos_teszt=1) fut, amig csiszoljuk; hirdetesrol erkezonel nincs csere.
+  const hosKulcs = status === 200 && request.method === 'GET' && url.searchParams.get('hos_teszt') === '1' && /text\/html/.test(h.get('content-type') || '') ? await hosValasztas(url, context.env.HOS_DB) : null;
   const kesz = new Response(valasz.body, { status, headers: h });
   return hosKulcs ? hosCsere(kesz, hosKulcs) : kesz; // hirdeteshez illo hos-kep (lib/hirdetes-hos.js)
 }

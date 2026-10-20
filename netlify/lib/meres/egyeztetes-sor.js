@@ -86,7 +86,9 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
   if (alapok.length > 1) jelzesek.push('tobb_alap_esemeny:' + alapok.map((e) => e.nev).join('+'));
   // a parositas allapota: a (Salonic-levelbol) kikuldott egyeztetes = kuldve; 'fuggoben' = a Zap ujraprobal (1 / 3 / 10 perc) - friss soroknal ez meg nem hiba
   const parositva = !!(egyeztetes && egyeztetes.kuldve);
-  if (!lista.length) jelzesek.push(parositva ? 'nincs_esemeny' : egyeztetes ? 'egyeztetes_' + egyeztetes.allapot : 'parositatlan');
+  // DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio -> szandekosan nincs esemenye: NEM hiany / nincs_esemeny jelzes (a jelleg.kupon a meres_jelleg-bol jon)
+  const kuponNemKonverzio = !!(jelleg && jelleg.kupon) && !lista.length;
+  if (!lista.length) { if (!kuponNemKonverzio) jelzesek.push(parositva ? 'nincs_esemeny' : egyeztetes ? 'egyeztetes_' + egyeztetes.allapot : 'parositatlan'); }
   else if (!parositva && booking_id.startsWith('mb_')) jelzesek.push(egyeztetes ? 'egyeztetes_' + egyeztetes.allapot : 'parositatlan');
   const alap = alapok[0] || null;
   const sd = String(booking_id).startsWith('sd_');
@@ -108,6 +110,7 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
     kulcs_irva: irat ? irat.ido : null,
     parositas: egyeztetes ? { allapot: egyeztetes.allapot, forras: egyeztetes.kulcs_forras || null, kuldve: egyeztetes.kuldve || null, probalkozas: egyeztetes.probalkozas } : null,
     jelleg: jelleg ? { jelleg: jelleg.jelleg, kupon: !!jelleg.kupon, forras: jelleg.forras } : null,
+    kupon_nem_konverzio: kuponNemKonverzio, // DECISION #194: szandekosan esemeny nelkuli (szabalyos nulla) kuponos foglalas
     esemenytipus: alap ? alap.nev : null,
     uj_visszatero: alap ? (UJ_VISSZATERO[alap.nev] || null) : null,
     ertek: alap ? alap.ertek : null,

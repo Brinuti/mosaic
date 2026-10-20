@@ -169,8 +169,17 @@
     var o = forrasOlvas();
     if (!o || o.v !== V2 || !fizetett(o) || !hirdetesiHozzajarulas()) return;
     var f = {}; ['v', 't', 'us', 'um', 'uc', 'ut', 'uco', 'kp', 'rk'].forEach(function (k) { if (o[k] != null) f[k] = o[k]; });
+    // a nyers kattintasazonosito is a HttpOnly sutibe kerul (Feri 2026-10-19: a kesobb visszatero foglalonal is meglegyen);
+    // csak hirdetesi hozzajarulassal (fent), csak a nyertes erintes tipusaval: a mostani cimbol, kulonben a tarolt mp_gk-bol
+    var torzs = { forras: f };
+    if (o.kp) {
+      // csak a NYERTES erintes sajat azonositoja: a tarolt mp_gk-erteket csak akkor, ha az ideje az erintesevel egyezik
+      // (+-10 mp); kulonben (pl. kesobbi oldalon adott hozzajarulas, regi mp_gk) nem kuldunk azonositot (review #432)
+      var jel = friss[o.kp] || olvas()[o.kp];
+      if (jel && jel.ertek && /^[A-Za-z0-9._-]{8,300}$/.test(jel.ertek) && Math.abs(Number(jel.ido) - Number(o.t)) <= 10) torzs.kattintas = { t: o.kp, e: jel.ertek, i: Number(jel.ido) };
+    }
     try {
-      fetch('/api/mp-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify({ forras: f }) })
+      fetch('/api/mp-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })
         .catch(function () { /* nem zavar */ });
     } catch (e) { /* regi bongeszo */ }
   };
@@ -250,6 +259,8 @@
     torzs.forras_v = V2;
     if (window.top !== window) torzs.keret = true;
     if (potlas) torzs.potlas = true;
+    // sajat latogato-azonosito (external_id, suti.js mp_vid): veletlen UUID, nem szemelyes adatbol kepzett (Feri 2026-10-19)
+    try { var vid = (document.cookie.match(/(?:^|; )mp_vid=([0-9a-f-]{36})(?:;|$)/) || [])[1] || (typeof window.mpLatogatoAzon === 'function' ? window.mpLatogatoAzon() : null); if (vid) torzs.vid = vid; } catch (e) { /* */ }
     try {
       fetch('/api/mp-foglalas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })
         .catch(function () { /* a vendeg folyamatat nem zavarja */ });

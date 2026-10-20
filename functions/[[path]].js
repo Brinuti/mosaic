@@ -79,7 +79,8 @@ export async function onRequest(context) {
   }
   const kesz = new Response(valasz.body, { status: valasz.status, headers: h });
   // Hirdeteshez illo hos-kep (netlify/lib/hirdetes-hos.js): csak GET, 200-as HTML, ad_id vagy (a meglevo hirdetesekben) szamos utm_content parameterrel; barmilyen hiba -> az eredeti lap
-  if (request.method === 'GET' && valasz.status === 200 && (url.searchParams.has('ad_id') || url.searchParams.has('utm_content')) && /text\/html/.test(h.get('content-type') || '')) {
+  // KIKAPCSOLVA (Feri, 2026-10-19): csak teszt-parameterrel (hos_teszt=1) fut, amig csiszoljuk; hirdetesrol erkezonel nincs csere.
+  if (request.method === 'GET' && valasz.status === 200 && url.searchParams.get('hos_teszt') === '1' && (url.searchParams.has('ad_id') || url.searchParams.has('utm_content')) && /text\/html/.test(h.get('content-type') || '')) {
     try {
       const hos = await hosValasztas(url, context.env.HOS_DB);
       if (hos) return hosCsere(kesz, hos);

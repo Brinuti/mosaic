@@ -10,7 +10,7 @@ import { ingest, tick } from '../../netlify/lib/lifecycle/engine.js';
 import { tervez } from '../../netlify/lib/lifecycle/terv.js';
 import { KATALOG } from '../../netlify/lib/lifecycle/katalog/index.js';
 import { ertekek, emailKirajzol, smsKirajzol } from '../../netlify/lib/lifecycle/render.js';
-import { szegmensek, uzletagFelismer, mpHelyszin } from '../../netlify/lib/lifecycle/uzletag.js';
+import { szegmensek, uzletagFelismer, mpHelyszin, mpLatogatas } from '../../netlify/lib/lifecycle/uzletag.js';
 import { kuldokKeszit } from '../../netlify/lib/lifecycle/kuldok.js';
 import { kimenoFeldolgoz } from '../../medicalpiercing/lib/lifecycle-kimeno.js';
 import { reszletek, megerosites } from '../../netlify/lib/lifecycle/http.js';
@@ -78,6 +78,30 @@ test('mp: utemezes a lead-time szerint (T0 e-mail+SMS; T-24 SMS; 3+ nap T-48 lev
   assert.ok(ido('MP-EMAIL-08') - ido('MP-EMAIL-03') >= 24 * ORA && ido('MP-EMAIL-09') - ido('MP-EMAIL-08') >= 24 * ORA && ido('MP-EMAIL-09') <= kezdet - 96 * ORA);
   // a MOSAIC keretje valtozatlan (oxigen: 7 nap = 1 tartalmi level)
   assert.equal(tervez({ uzletag: 'oxygen', szegmensek: ['elso'], kezdet: MOST + 7 * NAP }, MOST).terv.filter((x) => ['OX-EMAIL-02', 'OX-EMAIL-03'].includes(x.uzenet_id)).length, 1);
+});
+
+test('mp: a levelbeli idotartam a Salonic-idosavbol jon (10 perc -> "kb. 10–20 perc"), nem kitalalt 30-50 perc; ismeretlen szolgaltatasnal kimarad; a foglalas-kartya cimkei az ertek FELETT allnak (nincs fix oszlopszelesseg)', () => {
+  // a tulajdonos jelezte (2026-10-19): egy piercing beszurasa 10-20 perc; a levelekben "kb. 40–50 perc" allt (vendeg-visszajelzes, mobilon szetesett kartyaval)
+  assert.equal(mpLatogatas('1+1 db Allergia piercing'), 'kb. 10–20 perc');
+  assert.equal(mpLatogatas('1 db Fejfájás / Migrén Piercing'), 'kb. 10–20 perc');
+  assert.equal(mpLatogatas('🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥'), 'kb. 15–25 perc');
+  assert.equal(mpLatogatas('👭 2 személynek - 6 db piercing'), 'kb. 30–40 perc');
+  assert.equal(mpLatogatas('Valami teljesen új szolgáltatás'), null, 'ismeretlen szolgaltatasnal nem talalunk ki szamot');
+  const f = (szolgaltatas) => ({ uzletag: 'mp', nev: 'TESZT Elek', keresztnev: 'Elek', munkatars: 'Kamilli Viktória', szolgaltatas, token: 'abcdef0123', kezdet: MOST + 10 * NAP, letrehozva: MOST, telefon: '+36301234567', email: 'a@b.hu' });
+  const kirajzol = (id, szolg) => emailKirajzol(KATALOG.mp.uzenetek.find((u) => u.id === id), ertekek(f(szolg), 'email', { most: MOST, velemenyek: {}, googleVelemenyek: 5033 })).html;
+  for (const id of ['MP-EMAIL-01', 'MP-EMAIL-10']) {
+    const h = kirajzol(id, '1+1 db Allergia piercing');
+    assert.ok(/<td class="l">Időtartam<\/td><\/tr><tr><td><span class="dyn">kb\. 10–20 perc<\/span><\/td>/.test(h), `${id}: az idotartam-sor`);
+    assert.ok(!/40–50|30–40/.test(h), `${id}: a regi, hibas idotartam nem szerepelhet`);
+    assert.ok(/<td class="l">Szolgáltatás<\/td><\/tr><tr><td>/.test(h) && !/width:\s*110px/.test(h), `${id}: a cimke az ertek felett all, nincs fix oszlopszelesseg`);
+    assert.ok(/table-layout:fixed/.test(h) && /overflow-wrap:anywhere/.test(h), `${id}: a hosszu ertek tordelodik`);
+  }
+  assert.ok(/<b>Tervezz <span class="dyn">kb\. 10–20 perc<\/span>et<\/b>, és érkezz 5 perccel korábban\./.test(kirajzol('MP-EMAIL-10', '1+1 db Allergia piercing')));
+  // ismeretlen szolgaltatas: az Időtartam-sor kimarad, a T-48 mondat csak az erkezes (nem marad "Tervezz et")
+  const ism = kirajzol('MP-EMAIL-01', 'Valami teljesen új szolgáltatás');
+  assert.ok(!/Időtartam/.test(ism) && !HELYORZO_MARADT.test(ism));
+  const ism48 = kirajzol('MP-EMAIL-10', 'Valami teljesen új szolgáltatás');
+  assert.ok(!/Tervezz/.test(ism48) && /<b>Érkezz 5 perccel korábban\.<\/b> Ha késnél, hívj minket\./.test(ism48) && !HELYORZO_MARADT.test(ism48));
 });
 
 test('mp: minden sablon kitoltve hibatlan (bp / videk / ismeretlen munkatars, nevvel / nev nelkul); MOSAIC-adat nincs benne; a velemeny a D1-bol jon vagy kimarad', () => {

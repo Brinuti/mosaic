@@ -38,7 +38,7 @@
   //     egy fagyasztott, nem felsorolhato objektumba kerul (window.mpKoszonoAdat); szolgaltatasnev, kategoria, helyszin,
   //     munkatars, vendegazonosito NEM;
   //  2) a cim semleges lesz: /foglalas-ok (vagy /fulbevalo-ok), parameterekbol csak a GTM-triggerekhez kello `price` es
-  //     `first_booking` marad, plusz a `mert=1` jel (ismetelt meres ellen) (a 3 Ads-konverzio triggere: Page Path tartalmazza "/foglalas-ok" + first_booking + price);
+  //     `first_booking`, valamint a Google kattintas-azonositok (gclid/gbraid/wbraid) maradnak, plusz a `mert=1` jel (ismetelt meres ellen) (a 3 Ads-konverzio triggere: Page Path tartalmazza "/foglalas-ok" + first_booking + price);
   //  3) a lap cime semleges (a build is atirja: tools/build.mjs).
   // Tarolas (suti, localStorage, sessionStorage) nincs.
   var KOSZONO_UT = /^\/(foglalas-ok|fulbevalo-ok)/i.test(location.pathname);
@@ -58,6 +58,9 @@
       try { Object.defineProperty(window, 'mpKoszonoAdat', { value: adat, writable: false, enumerable: false, configurable: false }); } catch (e) { /* mar letezik */ }
       var tq = new URLSearchParams();
       ['price', 'first_booking'].forEach(function (k) { if (eq.has(k)) tq.set(k, eq.get(k)); });
+      // A Google kattintas-azonositok (gclid/gbraid/wbraid) a cimben maradnak: nem egeszsegugyi adat, es a fo Google-konverzio
+      // (GTM 107) mobilon a suti nelkul csak a cimbol tudja a kattintashoz kotni (2026-10-18, a mobil konverzio felezodese utan).
+      KATT.forEach(function (k) { if (eq.get(k)) tq.set(k, eq.get(k)); });
       // `mert=1`: a tisztitott cim jele. F5, vissza/elore, a tisztitott cim uj lapon: a foglalasi kulcs mar nincs a cimben,
       // ezert a marMert() errol a jelrol tudja, hogy ezt a foglalast mar kezeltuk (nincs uj tarolas, semleges ertek).
       tq.set('mert', '1');
@@ -82,9 +85,11 @@
   // nem dontes, igy a sav megjelenik; a vendeg valasztasa (elfogad / elutasit) az egesz oldalon ervenyes.
   // Feri kerese (2026-10-14, kb. 07:30): az URLAPROL a sav lekerul (a /kontroll oldal az urlapot nyitja meg, a sav rafedett): a kontroll-oldal kikerult a
   // tesztoldalak kozul, es amig a foglalo ablak nyitva van, a sav rejtve van (akarmelyik oldalon; bezaras utan, ha nincs dontes, ujra latszik).
-  var TESZT_OLDAL = /^\/(shenmen-piercing-ezt-tedd-ha-begyulladt)\/?$/i.test(location.pathname);
-  var SAV_KI = !TESZT_OLDAL;
-  if (dontes && dontes.t === 0 && !SAV_KI) dontes = null;
+  // Feri dontese (2026-10-18 08:08): NINCS suti-sav sehol (a sav-teszt oldal is megszunik), es minden platformnak
+  // elfogadott hozzajarulassal kuldunk mindent, ahogy a sav elott. A korabbi (sav-teszt idejen tarolt) elutasitas sem ervenyes.
+  var TESZT_OLDAL = false;
+  var SAV_KI = true;
+  if (dontes && (!dontes.stat || !dontes.mark)) dontes = null;
   if (!dontes && SAV_KI) {
     dontes = { stat: true, mark: true, t: 0 };
     try {
@@ -119,6 +124,7 @@
   window.gtag('set', 'ads_data_redaction', true);
   if (dontes) window.gtag('consent', 'update', jelek(dontes));
 
+  var TIKTOK_KODOS_SCHEDULE = true; // ATALLASKOR true (egyszerre a TikTok URL-szabaly kikapcsolasaval + mp_beallitas.tiktok_schedule=be); Feri 2026-10-19 19:50 "mehet es A"
   var tiktokFoglalas = null; // a koszonooldali TikTok SubmitForm adatai (lent: tiktokSubmitForm)
   // Igazolhato foglalas (Google Ads "Időpontfoglalás - igazolt", orderId = foglalasi kulcs): a kulcs ugyanaz, mint a szerveren
   // (lib/meres/meres.js foglalasKulcs: placeId|employeeId|startUnix), igy a szerver a Salonic-igazolas alapjan
@@ -151,6 +157,8 @@
       if (window.ttq && typeof window.ttq.track === 'function' && window.ttq._i) {
         var tul = tiktokFoglalas.ertek ? { value: tiktokFoglalas.ertek, currency: 'HUF' } : {};
         try { window.ttq.track('SubmitForm', tul, { event_id: tiktokFoglalas.id }); } catch (e) { /* */ }
+        // Elo konverzio (Feri 2026-10-19): kodos Schedule azonos event_id-val (a szerver is kuldi) -> dedup; az URL-szabaly ki
+        if (TIKTOK_KODOS_SCHEDULE) { try { window.ttq.track('Schedule', tul, { event_id: tiktokFoglalas.id }); } catch (e) { /* */ } }
         tiktokFoglalas = null;
       } else if (++probak < 40) setTimeout(kuld, 250);
     };
@@ -300,7 +308,7 @@
     if (cel) { a.className = cel.className; a.style.color = 'inherit'; cel.after(document.createTextNode(' - '), a); }
   };
   var felepit = function () {
-    if (sav || keretben || !document.body) return;
+    if (sav || keretben || !document.body || SAV_KI) return; // nincs sav, nincs lablec-link (Feri, 2026-10-18)
     var st = document.createElement('style');
     st.textContent = STILUS;
     document.head.appendChild(st);
@@ -412,6 +420,20 @@
   // TikTok SubmitForm a koszonooldalon: csak marketing-hozzajarulassal (a TikTok-pixelt a GTM tolti)
   marketingKor(tiktokSubmitForm);
 
+  // Sajat, veletlen latogato-azonosito (external_id; Feri 2026-10-19: max. adat, egeszsegugyi adat es PII nelkul): nem e-mailbol /
+  // telefonbol kepzett UUID, elso feles suti (mp_vid, 1 ev). A Meta-pixel maga hash-eli; a foglalasi meres a sajat szervernek
+  // kuldi, ott csak a SHA-256 lenyomata kerul a Meta ARNYEK- es a TikTok-esemenybe.
+  var latogatoAzon = function () {
+    try {
+      var m = document.cookie.match(/(?:^|; )mp_vid=([0-9a-f-]{36})(?:;|$)/);
+      if (m) return m[1];
+      var v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+      document.cookie = 'mp_vid=' + v + '; path=/; max-age=' + 365 * 86400 + (eles ? '; domain=medicalpiercing.hu' : '') + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+      return v;
+    } catch (e) { return undefined; }
+  };
+  window.mpLatogatoAzon = latogatoAzon;
+
   // Convertize es Meta-pixel: CSAK marketing-hozzajarulassal (ha a vendeg kesobb fogad el, akkor abban a pillanatban)
   marketingKor(function () {
     // Convertize
@@ -426,7 +448,7 @@
       t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
       document,'script','https://connect.facebook.net/en_US/fbevents.js');
       /* eslint-enable */
-      window.fbq('init', '2177829632420786');
+      window.fbq('init', '2177829632420786', { external_id: latogatoAzon() });
       window.fbq('track', 'PageView');
     }
   });
