@@ -21,7 +21,7 @@ export const ESEMENYEK = Object.freeze({
 export const UZLETAGAK = Object.freeze(['headspa', 'hair', 'oxygen', 'laser', 'pmu', 'gift']);
 export const HIBA_TIPUSOK = Object.freeze(['salonic_api', 'no_slots', 'timeout', 'validation', 'slot_lost', 'hold_expired', 'verify_failed', 'unknown_redirect', 'callback_failed', 'client_error']);
 // Hiba-reszlet (DECISION #188, 2026-10-15): CSAK a belso szamlalonak (nem a GA4-nek): <hibatipus>.<nezet-kod>.<hibakod>.<http> darabszam, URL / uzenet / azonosito nelkul.
-export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
+export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'PARSE_EMPTY', 'PARSE_NOTHTML', 'PARSE_SHORT', 'PARSE_NOLIST', 'PARSE_JSON', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
 export const RESZLET_LEPES = 'error_reszlet';
 export const VEGPONT = '/api/foglalo-szamlalo';
 // A regi tracking.js ezt a ket nevet a dataLayer-be nem irja (a lepes-meres adja, a spec szerinti parameterekkel)
@@ -55,11 +55,13 @@ const tisztaSzolgaltatas = (id) => (id !== undefined && id !== null && /^[A-Za-z
  * a nezet-kod a foglalo nezeteinek alakja (C1, HS1, A3_SENT, ...), minden mas 'ismeretlen'; HTTP-statusz csak HTTP / API_STATUS kod mellett (100-599), egyebkent 0. Csak darabszam-kulcs, szemelyes adat nincs.
  */
 const RESZLET_KODOK = Object.freeze({ timeout: ['TIMEOUT'], client_error: ['NONE'], salonic_api: HIBA_KODOK.filter((k) => k !== 'NONE' && k !== 'TIMEOUT') });
+const PARSE_KINDOK = Object.freeze(['EMPTY', 'NOTHTML', 'SHORT', 'NOLIST', 'JSON']); // az adapter PARSE-bontasa (salonic-adapter.js parseKind): a PARSE kodbol PARSE_<KIND> lesz; ismeretlen kind marad PARSE
 export function hibaReszlet(hibaTipus, step, reszlet) {
   const lehet = RESZLET_KODOK[hibaTipus];
   if (!lehet) return null;
-  const { code, status } = reszlet && typeof reszlet === 'object' ? reszlet : {};
-  const kod = lehet.length === 1 ? lehet[0] : (lehet.includes(code) ? code : 'OTHER');
+  const { code, status, kind } = reszlet && typeof reszlet === 'object' ? reszlet : {};
+  const kodNyers = code === 'PARSE' && PARSE_KINDOK.includes(kind) ? `PARSE_${kind}` : code;
+  const kod = lehet.length === 1 ? lehet[0] : (lehet.includes(kodNyers) ? kodNyers : 'OTHER');
   const nezet = typeof step === 'string' && /^[A-Z][A-Z0-9_]{0,11}$/.test(step) ? step : 'ismeretlen';
   const http = (kod === 'HTTP' || kod === 'API_STATUS') && Number.isInteger(status) && status >= 100 && status <= 599 ? status : 0;
   return `${hibaTipus}.${nezet}.${kod}.${http}`;

@@ -67,7 +67,7 @@ A `salonic_api` hibatípus eddig nem árulta el, **melyik nézetben** és **mily
 
 - `lepes = error_reszlet`, `tipus = <hibatípus>.<nézet-kód>.<hibakód>.<http>`, pl. `salonic_api.C1.HTTP.503`.
   - `<nézet-kód>`: a foglaló nézetének kódja (C1, HS1, A3_SENT, … : nagybetű + nagybetű/szám/aláhúzás, legfeljebb 12 karakter), egyébként `ismeretlen`.
-  - `<hibakód>` és `<hibatípus>` zárt párok: `timeout` → `TIMEOUT`; `client_error` → `NONE` (nincs adapter-hibakód); `salonic_api` → az adapter hibakódja (`HTTP`, `PARSE`, `API_STATUS`, `SERVICE_NOT_FOUND`, `NO_CALENDAR`, `UNKNOWN_BUSINESS`, `NOT_SUPPORTED`; ismeretlen kód: `OTHER`). A többi hibatípus (`no_slots`, `slot_lost`, …) nem hordoz részletet.
+  - `<hibakód>` és `<hibatípus>` zárt párok: `timeout` → `TIMEOUT`; `client_error` → `NONE` (nincs adapter-hibakód); `salonic_api` → az adapter hibakódja (`HTTP`, `PARSE`, `API_STATUS`, `SERVICE_NOT_FOUND`, `NO_CALENDAR`, `UNKNOWN_BUSINESS`, `NOT_SUPPORTED`; ismeretlen kód: `OTHER`; a `PARSE` további bontása `PARSE_EMPTY` / `PARSE_NOTHTML` / `PARSE_SHORT` / `PARSE_NOLIST` / `PARSE_JSON` – lásd 5c). A többi hibatípus (`no_slots`, `slot_lost`, …) nem hordoz részletet.
   - `<http>`: kanonikusan `0` vagy `100`–`599` (nincs `00` / `000` / vezető nulla), és csak `HTTP` vagy `API_STATUS` kód mellett lehet nem nulla. **A `0` azt jelenti: nincs HTTP-státusz** (pl. a kérés nem jutott el a Salonic-hoz: hálózati hiba, CORS, megszakítás; vagy a hibakód nem HTTP-eredetű). Ha a Salonic API `status` mezője szám, az `API_STATUS.<szám>` alakban jelenik meg: ez az API saját státusza, **nem** HTTP-státusz; a szöveges API-státusz `API_STATUS.0`.
 - **Nincs benne** URL, hibaüzenet, azonosító, süti, időbélyeg, személyes adat; a szerver zárt alakot fogad el (`ervenyesit`), minden más `400`; a kliens kimenete a szerver által elfogadott halmaz része (teszt: kliens ⊆ szerver).
 - **Mikor megy:** csak a nézet-betöltési hibánál (`engine.js` `catch`), a hibatípus egyszer-kapuján belül (ugyanaz a (típus, nézet, szolgáltatás) hármas legfeljebb egyszer: egy második, más kódú hiba ugyanarra a hármasra nem kerül be), próbából és robotból nem. A kliens a hiba-részletet saját `try`-blokkban küldi, hibája sosem akadályozza a foglalást.
@@ -76,6 +76,29 @@ A `salonic_api` hibatípus eddig nem árulta el, **melyik nézetben** és **mily
 - **D1-séma:** nincs változás (a meglévő `lepes_szamlalo` oszlopai elegendők).
 - **Visszagörgetés:** a kód revertje után a már beírt `error_reszlet` sorokat a **régi** kód a `lepesek.error_reszlet` kulcsban és a CSV-ben mutatná (a tölcsér 10 lépésének száma nem torzul, de a `lepesek` objektum 11. kulcsot kap). Ezért a revert után: `DELETE FROM lepes_szamlalo WHERE lepes = 'error_reszlet';` az éles (`mosaic-foglalo-szamlalo`) és az előnézeti (`mosaic-foglalo-szamlalo-elonezet`) D1-en is.
 - Teszt: `node --test tools/test-lepes-meres.mjs` (29/29; 9 új eset), `node tools/meres-proba/lepes-proba.mjs --overlay dist` (asztali és mobil: 25/25, a 4b eset a valódi böngészőben ellenőrzi az `error_reszlet` beaconját), napló: `meres-naplo/2026-10-15-hiba-reszlet-teszt.md`.
+
+## 5c. PARSE-bontás (2026-10-17, #178, a #334 első adata) – MÉRÉS ÉRINTŐ
+
+A #334 első valós adata (10-16 oxigén 3× `salonic_api.OX1.PARSE.0`, 10-17 lézer 1× `salonic_api.LA1.PARSE.0`) azt mutatta, hogy az `OX1` / `LA1` nézet betöltésénél a **szolgáltatáslista** (`servicesRaw`) üres: a Salonic **2xx** választ adott (minden nem-2xx `HTTP.<státusz>`, az időtúllépés `TIMEOUT`, a hálózati / CORS-hiba `HTTP.0`), de a törzsben nem volt kategória-link / szolgáltatás-sor. A tartalom-típust és a hosszt az adapter nem nézte, ezért az üres törzs, a nem-Salonic oldal, a karbantartási sablon és a szabályos üres lista ugyanaz a `PARSE.0` volt.
+
+A kiegészítés a `PARSE` kódot **zárt, PII-mentes** részletekre bontja (ugyanabban az `error_reszlet` sorban, a hibakód helyén):
+
+| kód | jelentés |
+|---|---|
+| `PARSE_EMPTY` | üres (vagy csak szóközt tartalmazó) törzs |
+| `PARSE_NOTHTML` | a `content-type` nem `html` (pl. `text/plain`, `application/json`) |
+| `PARSE_SHORT` | html, de a vágott törzs < 5000 karakter (tipikus hiba- / karbantartási sablon) |
+| `PARSE_NOLIST` | normál méretű (≥ 5000) html, de nincs benne elem (szabályos üres lista vagy jelölésváltozás) |
+| `PARSE_JSON` | a naptár-API (`getAvailableTimes`) válasza nem JSON |
+| `PARSE` | bármi más (pl. argumentum-ellenőrzés; vagy nincs metaadat) |
+
+**Diagnosztikai korlátok:** üres vagy hiányzó `content-type` mellett egy < 5000 karakteres válasz is `PARSE_SHORT` (a „html, de” itt a fejléc hiányában nem bizonyított); a `PARSE_NOLIST` három esetet von össze (0 kategória a `selectSpecialization` oldalon, kategóriák szolgáltatás nélkül, teljes layoutú hibaoldal), ezeket a tartalom nélkül nem lehet szétválasztani – ez szándékos adatvédelmi / adatminimalizálási korlát. A küszöb (5000) a valós Salonic-oldalak mérete (kb. 20–112 KB) alapján konzervatív, de a hibaoldalak valós mérete nem mérhető előre: az első valós `PARSE_*` adatok után felülvizsgálandó.
+
+- **Mit jegyez fel az adapter:** a `getText` a `content-type` fejléc első 80 karakterét és a **vágott törzs hosszát** írja a **hívó saját, lokális objektumába** (a `servicesRaw` `page()` hívásának `lekert` listájába; nincs közös, URL-kulcsú állapot, ezért párhuzamos lekérések sem keverhetik). A törzs nem tárolódik, az URL nem kerül a metaadatba, és a lekérés végeztével az egész eldobódik; **kimenetbe (hibakivétel, beacon, napló) csak a zárt `kind` érték kerül**. A kérés, az újrapróbálás, az elemzés és a visszatérési érték **változatlan**; a jegyzés saját `try`-ban fut, hibája nem akadályozza a lekérést. A `servicesRaw` az üres (`found`) ágon osztályoz (`parseKind`: ha több oldalt töltött le, a legerősebb jel dönt: üres > nem html > rövid > nincs elem); a `kind`-ot a már dobott `SalonicError`-ra teszi.
+- **Mi változik még:** `lepes-meres.js` (`HIBA_KODOK` + `hibaReszlet`: `PARSE` + ismert `kind` → `PARSE_<KIND>`, ismeretlen kind marad `PARSE`), `engine.js` (egy sor: a `kind`-ot átadja), `netlify/lib/foglalo-szamlalo.js` (a zárt hibakód-lista és a `salonic_api` megengedett kódjai). A `PARSE_*` kód csak `salonic_api` mellett és HTTP-státusz nélkül (`.0`) fogadható el.
+- **Nem változik:** a GA4 / dataLayer (a `booking_error` `reason` továbbra is `PARSE`), a `LEPESEK`, a tölcsér-számok, az `error` sor, a D1-séma, a foglalási logika, a Salonic-hívások, a konverziók, a kiküldés.
+- **Teszt:** `tools/test-salonic-adapter.mjs` (6 új eset, köztük a párhuzamos lekérések függetlensége), `tools/test-lepes-meres.mjs` (5 új eset, köztük a rollback-SQL, köztük a „kliens ⊆ szerver” tulajdonság a PARSE-kindekre), `node tools/meres-proba/lepes-proba.mjs --overlay dist` (asztali és mobil: 33/33; a 4c eset a valódi böngészőben, mockolt Salonic-oldallal ellenőrzi a négy `OX1.PARSE_*.0` beaconját). Napló: `meres-naplo/2026-10-17-parse-bontas-teszt.md`.
+- **Visszagörgetés:** a kód revertje (egy commit) elég. A revert után a **régi** szerver az *újonnan érkező* `PARSE_*` beaconöket `400`-zal utasítja el (a kliens ezt lenyeli, a foglalást nem érinti), a már beírt `PARSE_*` sorok viszont a D1-ben megmaradnak, és a GET kimenetében `hiba_reszlet` alatt látszanának: ha zavar, `DELETE FROM lepes_szamlalo WHERE lepes = 'error_reszlet' AND tipus GLOB '*.*.PARSE_*';` az éles (`mosaic-foglalo-szamlalo`) és az előnézeti (`mosaic-foglalo-szamlalo-elonezet`) D1-en. (A `GLOB` literális `_`-t használ, nincs shell-escape; a sima `…PARSE.0` sort nem érinti. Tesztelve: `tools/test-lepes-meres.mjs`, a parancsot a teszt ebből a dokumentumból olvassa ki.)
 
 ## 6. Kikapcsolás
 

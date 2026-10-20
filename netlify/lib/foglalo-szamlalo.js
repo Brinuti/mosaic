@@ -20,11 +20,11 @@ export const HIBA_TIPUSOK = Object.freeze(['salonic_api', 'no_slots', 'timeout',
 // A tipus alakja: <hibatipus>.<nezet-kod>.<hibakod>.<http>   pl. salonic_api.C1.HTTP.503  (http: 0 = nincs HTTP-statusz: halozati hiba / nem HTTP-hibakod; kanonikus alak: 0 vagy 100-599).
 // Kulon lepes ('error_reszlet'), hogy a LEPESEK / hibak szerkezete valtozatlan maradjon. Zart: a nezet-kod a foglalo nezeteinek alakja (nagybetu + szam + alahuzas) vagy 'ismeretlen';
 // a hibatipus-hibakod parosok a kliens tenyleges kimenetet fedik; (nap, uzletag) szerint legfeljebb RESZLET_KULCS_PLAFON KULONBOZO kulcs (a kulcsok szama ellen; a darabszam-plafon DB_PLAFON kulcsonkent).
-export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
+export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'PARSE_EMPTY', 'PARSE_NOTHTML', 'PARSE_SHORT', 'PARSE_NOLIST', 'PARSE_JSON', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
 export const RESZLET_LEPES = 'error_reszlet';
 export const RESZLET_KULCS_PLAFON = 100; // napi legfeljebb ennyi KULONBOZO hiba-reszlet kulcs uzletagankent (a valodi forgalom naponta par tucat)
 // hibatipus -> megengedett hibakodok (a kliens engine.js hibaTipus() es a SalonicError kodjai szerint): timeout csak TIMEOUT, client_error csak NONE (nincs adapter-kod), a tobbi hibatipus nem hordoz reszletet
-const RESZLET_PAROK = Object.freeze({ timeout: ['TIMEOUT'], client_error: ['NONE'], salonic_api: ['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'OTHER'] });
+const RESZLET_PAROK = Object.freeze({ timeout: ['TIMEOUT'], client_error: ['NONE'], salonic_api: ['HTTP', 'PARSE', 'PARSE_EMPTY', 'PARSE_NOTHTML', 'PARSE_SHORT', 'PARSE_NOLIST', 'PARSE_JSON', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'OTHER'] });
 export const VEDROK = Object.freeze([['lt500', 500], ['lt1000', 1000], ['lt2000', 2000], ['lt5000', 5000], ['ge5000', Infinity]]);
 export const DB_PLAFON = 100000;
 const BEZARAS_LEPES = /^[A-Za-z0-9_]{1,12}$/; // a foglalo nezet-kodja (H0, HS1, C1, C4, A1_SENT, ...)
