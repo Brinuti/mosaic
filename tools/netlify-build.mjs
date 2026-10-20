@@ -24,9 +24,9 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { ritkit } from './css-ritkitas.mjs';
-import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
+import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, oldalUzletag, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
 import { popupAtkot } from './halott-popup.mjs';
-import { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo, FOGLALAS_JELOLO, foglalasCel, NYITVATARTAS_JELOLO, nyitvatartasHetkoznap } from './fejlec-menu.mjs';
+import { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo, FOGLALAS_JELOLO, foglalasCel, lablecFoglalasCel, NYITVATARTAS_JELOLO, nyitvatartasHetkoznap } from './fejlec-menu.mjs';
 import { personaOldal } from './ajandek-variansok/elore-render.mjs';
 import { CSP_CRM } from '../crm/lib/http.js';
 
@@ -328,6 +328,7 @@ for (const mappa of [LAP_A, LAP_M]) {
     const p = path.join(mappa, f);
     let h = fejlecSzoveg(ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS), mappa === LAP_M);
     h = headspaJelolo(h, f);   // az "Októberi akció" sáv csak a Head Spa oldalakon látszik (assets/css/fejlec-lablec.css)
+    h = lablecFoglalasCel(h, oldalUzletag(f));   // a lablec / Info-ablak Idopontfoglalas gombja az OLDAL uzletagara mutat (fodraszat / lezer / oxigen / pmu; HeadSpa es besorolatlan oldal valtozatlan; az explicit <!--mh-foglalas--> jelolo elsobbseget elvez)
     // Ahol a foglalo-linkek a motorra mutatnak (bekapcsolt atkotes: elonezet / helyi build), ott a CTA a foglalot HELYBEN nyitja (reteg),
     // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
     const launcherOldal = ATKOTES.size > 0 && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f) && !/^crm\.html$/.test(path.basename(f)); // ahol a launcher rajta van, a foglalo-linkek a retegben nyilnak

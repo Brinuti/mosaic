@@ -11,7 +11,8 @@ const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
   '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.txt': 'text/plain' };
 
 export async function szerverInditas() {
-  const { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo, FOGLALAS_JELOLO, foglalasCel, NYITVATARTAS_JELOLO, nyitvatartasHetkoznap } = await import(pathToFileURL(path.join(GYOKER, 'tools/fejlec-menu.mjs')).href);
+  const { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo, FOGLALAS_JELOLO, foglalasCel, lablecFoglalasCel, NYITVATARTAS_JELOLO, nyitvatartasHetkoznap } = await import(pathToFileURL(path.join(GYOKER, 'tools/fejlec-menu.mjs')).href);
+  const { oldalUzletag } = await import(pathToFileURL(path.join(GYOKER, 'tools/foglalo-atkotes.mjs')).href);
   const fejlecCss = fs.readFileSync(path.join(GYOKER, 'assets/css/fejlec-lablec.css'), 'utf8');
   const aktivMenu = (fejlec, utvonal, mobil) => {
     const ut = utvonal.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
@@ -34,6 +35,7 @@ export async function szerverInditas() {
     // <!--mh-foglalas:...--> / <!--mh-nyitvatartas:hetkoznap--> jelolok (mint a buildben, tools/netlify-build.mjs): jelolo nelkul semmi nem valtozik
     const foglalasJel = (forras.match(FOGLALAS_JELOLO) || [])[1];
     if (foglalasJel) { fejlec = foglalasCel(fejlec, foglalasJel); lablec = foglalasCel(lablec, foglalasJel); }
+    else { fejlec = lablecFoglalasCel(fejlec, oldalUzletag(nev)); lablec = lablecFoglalasCel(lablec, oldalUzletag(nev)); }   // jelolo nelkul: az oldal uzletagara (mint a build)
     if (NYITVATARTAS_JELOLO.test(forras)) { fejlec = nyitvatartasHetkoznap(fejlec); lablec = nyitvatartasHetkoznap(lablec); }
     const kozos = '<style data-forras="fejlec-lablec">' + fejlecCss + '</style>';
     if (fejlec) fejlec += kozos; else if (lablec) lablec += kozos;

@@ -90,3 +90,46 @@ test('nyitvatartas-jelolo: a lablec es az Info-ablak csak a hetkoznapokat irja (
   const egyutt = nyitvatartasHetkoznap(foglalasCel(alap.la, 'business=laser'));
   assert.ok(egyutt.includes('business=laser') && egyutt.includes('Hétfő – Péntek'));
 });
+
+// --- 2026-10-20 (Feri): jelolo NELKUL is az oldal uzletagara mutat a lablec es az Info-ablak "Idopontfoglalas" gombja (korabban minden oldalon HeadSpa) -----------------------
+import { lablecFoglalasCel, UZLETAG_FOGLALAS } from './fejlec-menu.mjs';
+test('lablecFoglalasCel: fodraszat / lezer / oxigen / pmu oldalon a lablec + Info-ablak gombja az uzletag foglalojara mutat, a fejlec menugombja VALTOZATLAN; HeadSpa / besorolatlan oldalon semmi nem valtozik', () => {
+  const alap = epit(null);
+  for (const [uzletag, jelolo] of Object.entries(UZLETAG_FOGLALAS)) {
+    const cel = CEL(jelolo);
+    for (const nev of ['fa', 'fm', 'la', 'lm']) {
+      const uj = lablecFoglalasCel(alap[nev], uzletag);
+      assert.ok(!/href="\/foglalo-motor\?business=headspa"/.test(uj) || nev === 'fm', uzletag + '/' + nev + ': nincs maradek business=headspa gomb' + (nev === 'fm' ? ' (a mobil fejlec nem tartalmaz ilyet)' : ''));
+      assert.equal(hrefek(uj).filter((h) => h === '/idpontfoglalas').length, hrefek(alap[nev]).filter((h) => h === '/idpontfoglalas').length, uzletag + '/' + nev + ': a fejlec FOGLALAS menugombja (/idpontfoglalas) valtozatlan');
+      assert.equal(lablecFoglalasCel(uj, uzletag), uj, uzletag + '/' + nev + ': idempotens');
+    }
+    assert.ok(lablecFoglalasCel(alap.fa, uzletag).includes('class="mhp-gomb mhp-arany" href="' + cel + '"'), uzletag + ': az Info-ablak gombja');
+    assert.ok(lablecFoglalasCel(alap.la, uzletag).includes('class="mhl-gomb" href="' + cel + '"'), uzletag + ': az asztali lablec gombja');
+    assert.ok(lablecFoglalasCel(alap.lm, uzletag).includes('class="mhl-gomb" href="' + cel + '"'), uzletag + ': a mobil lablec gombja');
+  }
+  for (const uzletag of ['headspa', null, undefined, 'blog']) for (const nev of ['fa', 'fm', 'la', 'lm']) assert.equal(lablecFoglalasCel(alap[nev], uzletag), alap[nev], String(uzletag) + '/' + nev + ': valtozatlan');
+  // az explicit jelolo elsobbseget elvez: utana a business=headspa gomb mar nincs, a lablecFoglalasCel nem ir felul
+  const expl = epit('business=laser&service=konzult');
+  for (const nev of ['fa', 'fm', 'la', 'lm']) assert.equal(lablecFoglalasCel(expl[nev], 'fodraszat'), expl[nev], nev + ': az explicit jelolo marad');
+  assert.deepEqual(UZLETAG_FOGLALAS, { fodraszat: 'business=hair', lezer: 'business=laser', oxigen: 'business=oxygen', pmu: 'business=pmu' });
+});
+
+test('dist (ha van): minden oldal lablec- / Info-ablak gombja az oldal uzletagara mutat; HeadSpa / besorolatlan oldal: HeadSpa; az explicit jelolos oldalak a jelolo szerint; asztali + mobil', async () => {
+  const dist = path.join(ROOT, 'dist');
+  if (!fs.existsSync(path.join(dist, '_a'))) return;   // CF_PAGES=1 CF_PAGES_BRANCH=<ag> node tools/netlify-build.mjs
+  const { oldalUzletag } = await import('./foglalo-atkotes.mjs');
+  let ellenorzott = 0;
+  for (const m of ['_a', '_m']) {
+    for (const f of fs.readdirSync(path.join(dist, m)).filter((x) => x.endsWith('.html'))) {
+      const h = fs.readFileSync(path.join(dist, m, f), 'utf8');
+      const gombok = [...h.matchAll(/class="(?:mhl-gomb|mhp-gomb mhp-arany)" href="([^"]*)"/g)].map((x) => x[1]);
+      if (!gombok.length) continue;
+      const forras = path.join(ROOT, 'foglalas', f);
+      const jelolo = fs.existsSync(forras) ? (fs.readFileSync(forras, 'utf8').match(FOGLALAS_JELOLO) || [])[1] : null;
+      const vart = jelolo ? CEL(jelolo) : (UZLETAG_FOGLALAS[oldalUzletag(f)] ? CEL(UZLETAG_FOGLALAS[oldalUzletag(f)]) : '/foglalo-motor?business=headspa');
+      for (const g of gombok) assert.equal(g, vart, m + '/' + f + ': lablec / Info-ablak gomb');
+      ellenorzott++;
+    }
+  }
+  assert.ok(ellenorzott > 250, 'varhatoan 290 koruli oldal (asztali + mobil): ' + ellenorzott);
+});
