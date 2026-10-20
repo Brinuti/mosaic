@@ -119,7 +119,7 @@ export function kuldokKeszit(env, { fetchFn = fetch, db = env.LIFECYCLE_DB, wait
   };
   return {
     sms: (adat) => smsKuld(env, adat, fetchFn),
-    async email({ to, targy, html, szoveg, felado, valasz, uzletag }) {
+    async email({ to, targy, html, szoveg, felado, valasz, uzletag, leiratkozas = null }) {
       if (uzletag === 'mp') { // soha nem a MOSAIC postafiokjabol: a D1-sorba, az MP-projekt kuldi ki
         const v = await mpSorba(db, { to, targy, html, szoveg, valasz });
         mpSorban += 1;
@@ -129,7 +129,8 @@ export function kuldokKeszit(env, { fetchFn = fetch, db = env.LIFECYCLE_DB, wait
       if (!emailKesz(env)) throw new Error('SMTP_PASS nincs beallitva');
       const p = await kapcsolat();
       const user = env.SMTP_USER || 'mosaicheadspa@gmail.com';
-      await p.send({ from: { name: felado || 'MOSAIC', email: user }, to, ...(valasz ? { reply: valasz } : {}), subject: targy, html, text: szoveg });
+      // leiratkozas: RFC 8058 egykattintasos fejlec (a Gmail sajat "Leiratkozas" gombja); a POST /u/<kod> hajtja vegre
+      await p.send({ from: { name: felado || 'MOSAIC', email: user }, to, ...(valasz ? { reply: valasz } : {}), subject: targy, html, text: szoveg, ...(leiratkozas ? { headers: { 'List-Unsubscribe': `<${leiratkozas}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } } : {}) });
       return { id: 'smtp' };
     },
     /** hany MP-level kerult a sorba ezzel a keszlettel */

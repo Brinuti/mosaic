@@ -112,3 +112,17 @@ export function megerositesOldal(f, eset = 'megerositve') {
 <div class="alul" style="margin-top:0"><a class="gomb" href="/f/${esc(f.token)}">Foglalás megtekintése / módosítása</a><a class="gomb halk" href="${esc(SZALON.navigacioUrl)}" target="_blank" rel="noopener">Útvonalterv</a></div></div>${hivas}`, f.uzletag);
 }
 
+/**
+ * /u/<kod> (leiratkozas az automatikus e-mailekrol, leiratkozas.js): eset = 'megerosites' (GET: gombbal, nem valtoztat semmit) | 'kesz' | 'mar' (mar leiratkozott).
+ * A gomb POST-ol ugyanide (nem JS), igy a levelezo-botok linkellenorzese nem iratkoztat le senkit.
+ */
+export function leiratkozasOldal(eset, { kod = '', uzletag = null } = {}) {
+  if (eset === 'megerosites') {
+    return oldal('Leiratkozás', `<div class="uzenet"><h2>Leiratkozás az automatikus e-mailekről</h2><p>Ha leiratkozol, erre az e-mail-címre nem küldünk több automatikus levelet (emlékeztetőt, tájékoztatót). Az SMS-ekre ez nem vonatkozik.</p>
+<form method="post" action="/u/${esc(kod)}" style="margin:0"><button class="gomb" type="submit" style="border:0;width:100%;cursor:pointer;font-family:inherit">Leiratkozom</button></form></div>${hivas}`, uzletag);
+  }
+  if (eset === 'mar' || eset === 'kesz') {
+    return oldal('Leiratkoztál', `<div class="uzenet"><h2>Leiratkoztál</h2><p>Erre az e-mail-címre mostantól nem küldünk automatikus leveleket. Ha időpontot szeretnél foglalni vagy változtatnál, hívj minket vagy látogass el az oldalunkra.</p><a class="gomb halk" href="https://www.mosaicheadspa.hu/">www.mosaicheadspa.hu</a></div>${hivas}`, uzletag);
+  }
+  return nemTalalhato();
+}

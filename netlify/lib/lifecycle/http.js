@@ -5,11 +5,13 @@
 //   GET  /api/lifecycle/allapot  (kulcsos)  az uzemallapot (szemelyes adat nelkul)
 //   POST /api/lifecycle/teszt-torol (kulcsos, csak teszt-vendegek)  a teszt-foglalasok torlese
 //   GET  /f/<kod>   a vendeg foglalasi oldalara (Salonic) iranyit      GET /m/<kod>   az idopont megerositese (egykattintasos)
+//   GET  /u/<kod>   leiratkozas az automatikus e-mailekrol (megerosito oldal)      POST /u/<kod>   a leiratkozas (RFC 8058 egykattintasos is)
 //
 // Beallitas (wrangler.toml / Cloudflare): LIFECYCLE_DB (D1), LIFECYCLE_KULCS_HASH (a kulcs SHA-256-ja; a kulcs maga az utemezoben / Zapier-ben van),
 // LIFECYCLE_MOD, LIFECYCLE_UZLETAGOK, LIFECYCLE_MUNKATARS_MOD (ki | figyel | be), LIFECYCLE_ELO_ELLENORZES (ki), LIFECYCLE_NOSHOW_AUTO (1), SIMPLESMS_FELHASZNALO / SIMPLESMS_DOMAIN (nem titkos), SIMPLESMS_JELSZO (Secret), SMTP_* (mint az urlap-leveleknel).
 import { ingest, tick, napi, megerosit, reszletekUrl, foglalasNezet, allapot, beallitas, mpImport } from './engine.js';
-import { foglalasOldal, nemTalalhato, megerositesOldal } from './oldal.js';
+import { foglalasOldal, nemTalalhato, megerositesOldal, leiratkozasOldal } from './oldal.js';
+import { leiratkozasNezet, leiratkoztat, LEIRATKOZAS_KOD } from './leiratkozas.js';
 import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg, smsConnectProba } from './kuldok.js';
 import { eloEllenorzoKeszit } from './elo.js';
 import { UZLETAGAK, SZALON, tisztaNev } from './uzletag.js';
@@ -170,4 +172,21 @@ export async function megerosites(request, env) {
   // lemondott / meg nem jelent foglalas: ugyanaz az oldal, mint a /f/<kod> (fejlec, doboz, "Uj idopontot foglalok" -> foglalo-motor)
   if (r.f.allapot !== 'aktiv') return foglalasOldal({ ...r.f, salonicUrl: null });
   return megerositesOldal(r.f, 'megerositve');
+}
+
+/** /u/<kod>: leiratkozas az automatikus e-mailekrol. GET = megerosito oldal (nem valtoztat), POST = leiratkozas (a gomb es a levelezok egykattintasos List-Unsubscribe-Post-ja). */
+export async function leiratkozas(request, env) {
+  if (!env.LIFECYCLE_DB) return new Response('nincs', { status: 404 });
+  const kod = new URL(request.url).pathname.split('/').filter(Boolean)[1] || '';
+  if (!LEIRATKOZAS_KOD.test(kod)) return nemTalalhato();
+  const db = env.LIFECYCLE_DB;
+  const nezet = await leiratkozasNezet(db, kod);
+  if (!nezet || !nezet.vanEmail) return nemTalalhato();
+  if (request.method === 'POST') {
+    const r = await leiratkoztat(db, kod, ma());
+    if (!r.ok) return nemTalalhato();
+    return leiratkozasOldal('kesz', { kod, uzletag: nezet.uzletag });
+  }
+  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('nem engedett', { status: 405, headers: { allow: 'GET, HEAD, POST' } });
+  return leiratkozasOldal(nezet.mar ? 'mar' : 'megerosites', { kod, uzletag: nezet.uzletag });
 }
