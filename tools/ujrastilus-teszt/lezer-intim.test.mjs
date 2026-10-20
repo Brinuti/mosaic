@@ -83,7 +83,8 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     assert.ok(desc.length <= 155, 'description <= 155: ' + desc.length);
     assert.equal(await p.getAttribute('link[rel="canonical"]', 'href'), 'https://www.mosaicheadspa.hu/intim-lezeres-szortelenites-budapest');
     assert.equal(await p.getAttribute('meta[property="og:url"]', 'content'), 'https://www.mosaicheadspa.hu/intim-lezeres-szortelenites-budapest');
-    assert.equal(await p.getAttribute('meta[name="robots"]', 'content'), 'noindex, nofollow', 'DRAFT: elesiteskor a robots meta torlendo (lasd a forras fejlec-kommentjet)');
+    assert.equal(await p.locator('meta[name="robots"]').count(), 0, 'ELES: nincs robots meta (indexelheto)');
+    assert.ok(olvas('tools/wix-sitemap/pages-sitemap.xml').includes('<loc>https://www.mosaicheadspa.hu/intim-lezeres-szortelenites-budapest</loc>'), 'a sitemapben szerepel');
     assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
     assert.equal((await p.textContent('h1')).replace(/\s+/g, ' ').trim(), BRIEF.h1);
     assert.equal((await p.textContent('.hero-al')).replace(/\s+/g, ' ').trim(), BRIEF.alcim);

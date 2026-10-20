@@ -2,7 +2,7 @@
 
 **Állapot (2026-10-18): DRAFT, nem élő.** Új oldal a Google Ads indulásához (hirdetés: SZ-2), a brief 1. szakasza szerint
 (`MOSAIC-GOOGLE-4UZLETAG-LANDING-BRIEF-WEBES-ABLAKNAK-2026-10-17.md`, Drive: 1GFM70dymseOnkmUp4zuk4fzpaRaDyNsd). Feri kérése: új oldalakat építünk, a meglévő (élő) oldalakhoz nem nyúlunk; élesítés előtt átbeszéljük.
-Az oldal **noindex** és nincs a sitemapben; egyetlen meglévő oldalt, CSS-t, JS-t sem módosít.
+**ÉLES (2026-10-20, Feri kérésére)**: indexelhető, a sitemapben van; egyetlen meglévő oldalt, CSS-t, JS-t sem módosít (az élesítés a robots meta törlése + a sitemap-bejegyzés).
 
 | Mi | Hol |
 |---|---|
@@ -27,7 +27,7 @@ Hős (H1, alcím, ár-sáv, fő + másodlagos CTA, értékelés, hely + Térkép
 Csak `/foglalo-motor` linkek: fő CTA `?business=laser&service=konzult` („Ingyenes konzultációt foglalok”), másodlagos `?business=laser` („Szabad kezelési időpontok”). A fejléc FOGLALÁS gombja, az Infó-ablak és a lábléc gombja is `business=laser`
 (`<!--mh-foglalas:business=laser-->`, lásd `docs/FEJLEC_LABLEC.md`). Mérőkód / `data-cta` / `dataLayer` az oldalon nincs; a foglalót a build által feltett `booking-launcher.js` nyitja a helyben nyíló rétegben.
 
-## Élesítés (ha Feri jóváhagyja)
+## Élesítés (megtörtént 2026-10-20: az 1., 2. lépés kész; a 3. a mérési oldalé)
 1. `<meta name="robots" content="noindex, nofollow">` sor törlése az oldalból (és a fejléc-komment igazítása).
 2. Sitemap: `tools/wix-sitemap/pages-sitemap.xml` bővítése az új címmel (a build ezt másolja a `dist/`-be).
 3. Meta-pixel: az oldal neve (`intim-lezeres-szortelenites-budapest`) a `assets/js/suti.js` `PIXEL_SZOR` listájára (védett mérési fájl: a mérési oldal döntése) – lásd lent.
