@@ -63,6 +63,18 @@ export function nevReszek(nyers, sorrend = 'vezeteknev_elol') {
   if (t.length === 1) return { fn: t[0], ln: null };
   return sorrend === 'keresztnev_elol' ? { fn: t[0], ln: t[t.length - 1] } : { fn: t[1], ln: t[0] };
 }
+/**
+ * Google Ads address_info nev-normalizalas (hashed_first_name / hashed_last_name): a Google szabalya szerint kisbetu + a kezdo / vegzo szokoz / irasjel nelkul; a szon BELUL a kotojel / aposztrof marad
+ * ("Kovacs-Nagy" -> "kovacs-nagy"; a Meta-fele nevReszek az irasjelet is kiveszi). Ugyanaz a tokenizalas, titulus-szuro es sorrend, mint a nevReszek-nel. null, ha nincs hasznalhato nev.
+ */
+export function nevReszekGoogle(nyers, sorrend = 'vezeteknev_elol') {
+  if (typeof nyers !== 'string') return null;
+  const szel = (t) => String(t || '').normalize('NFC').toLowerCase().replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
+  const t = nyers.slice(0, 200).split(/[\s,;]+/).map((x) => ({ g: szel(x), m: betukSzo(x) })).filter((x) => x.g && x.m && !TITULUSOK.has(x.m)).map((x) => x.g);
+  if (!t.length || t.length > 6 || t.some((x) => x.length > 40)) return null;
+  if (t.length === 1) return { fn: t[0], ln: null };
+  return sorrend === 'keresztnev_elol' ? { fn: t[0], ln: t[t.length - 1] } : { fn: t[1], ln: t[0] };
+}
 /** Google Ads / GA4 e-mail-normalizalas: a gmail.com / googlemail.com helyi reszebol a pontok kimaradnak; plusz = true (Ads): az elso "+" es a utana levo resz is. Mas domain: csak kisbetu + trim. */
 export function emailGoogleNormal(e, { plusz = true } = {}) {
   const n = emailNormal(e);

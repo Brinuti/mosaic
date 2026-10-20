@@ -132,7 +132,8 @@ export function tiktokKerelem(e, ctx, env = {}) {
  * (GOOGLE_ARNYEK_WEBHOOK_URL, titok); a Zap (csak a 10 ARNYEK akciora ir, elo azonositot visszautasit) tolti fel a masodlagos ARNYEK akciokba. A torzs PONTOSAN a Zap mezoi:
  * { conversion_action_id, gclid | wbraid | gbraid (egy), conversion_date_time, value, currency: 'HUF', order_id (= event_id), ad_user_data: 'GRANTED' | 'DENIED', ad_personalization: 'GRANTED' | 'DENIED' }.
  * ad_user_data / ad_personalization = a hozzajarulas-szabaly jele (hozzajarulas.js): DECISION #202 ota (nincs sutisav, elfogadott hozzajarulas) GRANTED, ha nincs rogzitett elutasito dontes (azt a valos jel adja: DENIED); MERES_HOZZAJARULAS_VALOS=1 mellett a regi, valos-jel szerinti szabaly (dontes nelkul DENIED).
- * DECISION #202 mezoi (csak GRANTED-es szabalynal, hash-elve): hashed_email (Ads-normalizalt SHA-256), hashed_phone_number (E.164 SHA-256), user_identifiers [{hashed_email}, {hashed_phone_number}] (max. 5), user_ip_address / user_agent (amit a motor rogzitett).
+ * DECISION #202 mezoi (csak GRANTED-es szabalynal, hash-elve): hashed_email (Ads-normalizalt SHA-256), hashed_phone_number (E.164 SHA-256), user_identifiers [{hashed_email}, {hashed_phone_number}, {address_info}] (max. 5), user_ip_address / user_agent (amit a motor rogzitett).
+ * 2026-10-20: address_info = { hashed_first_name, hashed_last_name, country_code: 'HU', postal_code (ha ismert) } (+ ugyanezek top-level mezokent), csak ha a vendeg mindket neve ismert.
  */
 export function googleKerelem(e, ctx, env = {}) {
   if (e.tipus !== 'alap' || e.nev === 'Visszajaro') return { kihagyva: 'a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)' };
@@ -146,10 +147,13 @@ export function googleKerelem(e, ctx, env = {}) {
   // a Zap a hashed_email / hashed_phone_number mezoket (vagy a user_identifiers listat) kepezi az ARNYEK feltoltes user_identifiers-ebe. user_ip_address / user_agent: amit a motor rogzitett (erkezes-sor), kitalalni nem talaljuk ki.
   const fh = szab.felhasznaloi_adat && gazdagitas(env);
   const azon = fh ? tisztit({ hashed_email: ctx.hash.em_ads, hashed_phone_number: ctx.hash.ph_e164 }) : {};
+  // 2026-10-20 (Google ARNYEK kiegeszites): address_info (hashed_first_name + hashed_last_name KOTELEZO a parosathoz, country_code "HU", postal_code NYERSEN - a Google address_info.postal_code nem hash-elt -, ha ismert);
+  // csak ha mindket nev megvan ES az orszag "HU" (egy nev / nev nelkul / kulfoldi telefonszam: nincs address_info, orszagot nem talalunk ki), ugyanazon hozzajarulas- / MERES_GAZDAGITAS-szabaly mogott, mint a tobbi hash. A Zap a top-level mezoket (vagy az address_info elemet) kepezi az ARNYEK user_identifiers-ebe.
+  const cim = fh && ctx.hash.fn_g && ctx.hash.ln_g && ctx.hash.orszag_kod ? tisztit({ hashed_first_name: ctx.hash.fn_g, hashed_last_name: ctx.hash.ln_g, country_code: ctx.hash.orszag_kod, postal_code: ctx.hash.postal }) : {};
   const body = tisztit({
     conversion_action_id: akcioId, [click.tipus]: click.ertek, conversion_date_time: googleIdo(ctx.fk.ido), value: egesz(e.ertek), currency: 'HUF', order_id: e.esemeny_id,
     ad_user_data: szab.jel.ad_user_data === 'GRANTED' ? 'GRANTED' : 'DENIED', ad_personalization: szab.jel.ad_personalization === 'GRANTED' ? 'GRANTED' : 'DENIED',
-    ...azon, user_identifiers: Object.entries(azon).map(([k, v]) => ({ [k]: v })), user_ip_address: fh ? ctx.ip : null, user_agent: fh ? ctx.ua : null,
+    ...azon, ...cim, user_identifiers: [...Object.entries(azon).map(([k, v]) => ({ [k]: v })), ...(Object.keys(cim).length ? [{ address_info: { ...cim } }] : [])], user_ip_address: fh ? ctx.ip : null, user_agent: fh ? ctx.ua : null,
   });
   return { platform: 'google', platform_nev: `ARNYEK-${akcioId}`, url: 'zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)', method: 'POST', fejlec_nevek: ['content-type'], cel: { customer_id: ARNYEK.google.customerId, conversion_action_id: akcioId, athidalas: 'zapier-webhook' }, body };
 }
