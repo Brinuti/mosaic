@@ -1,6 +1,6 @@
 # /hajvizsgalat-budapest – hajkamerás hajvizsgálat (Google Ads OX-2), ÚJ oldal
 
-**Állapot (2026-10-18): EGYELŐRE NEM ÉLES.** Feri utasítása: új oldalakat építünk, a régieken nem változtatunk, holnap átbeszéljük. Az oldal `noindex, nofollow`, nincs a sitemapben, nincs rá link sehonnan.
+**Állapot (2026-10-20): ÉLES** (Feri kérésére élesítve: indexelhető, a sitemapben van; rá a belső linkelés külön döntés). Korábban (2026-10-18) DRAFT volt: `noindex, nofollow`, nincs a sitemapben, nincs rá link sehonnan.
 Szövegterv: Drive `MOSAIC-GOOGLE-4UZLETAG-LANDING-BRIEF-WEBES-ABLAKNAK-2026-10-17.md`, 2. szakasz.
 
 ## Fájlok (mind új)
@@ -49,7 +49,7 @@ alapszabály: ahol egy-két szó csúszik át új sorba, az legyen egy sor (mobi
 - Tiltott: gyógyulás- / eredményígéret, „trichológus”, „orvos” mint szolgáltató, „95% hatékonyság”; a Glamour-cikknél az eredményre utaló idézet kimaradt (csak az említés + link).
 - A kezelők bemutatkozó mondatai kimaradtak (a fő oldalon „validálásra várnak”); csak név + szerep.
 
-## Élesítés (ha Feri jóváhagyja)
+## Élesítés (megtörtént 2026-10-20: az 1., 2., 4. lépés kész; a 3. a mérési oldalé)
 1. `foglalas/hajvizsgalat-budapest.html`: a `<meta name="robots" content="noindex, nofollow">` sor (és az előtte lévő megjegyzés) ki.
 2. Sitemap: `tools/wix-sitemap/pages-sitemap.xml` – új `<url><loc>https://www.mosaicheadspa.hu/hajvizsgalat-budapest</loc>…</url>` (mint a többi sor); a `tools/netlify-build.mjs` a Wix-sitemapet szó szerint adja ki.
 3. Meta-pixel: az `assets/js/suti.js` `PIXEL_OLDALAK` listáján az oldal ma NINCS (az `oxigenterapia-budapest` / `oxigenterapia-ferfiaknak` a `PIXEL_FODRASZ` csoportban van): élesítéskor a `hajvizsgalat-budapest` kerüljön oda (védett mérési fájl: a mérési oldallal).

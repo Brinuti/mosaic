@@ -71,8 +71,8 @@ describe('statikus: meta-adatok, tartalom, foglaló-linkek', () => {
     assert.equal(lathato(/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(b)[1]), BRIEF.h1);
     assert.match(h, /<link rel="canonical" href="https:\/\/www\.mosaicheadspa\.hu\/hajvizsgalat-budapest">/);
     assert.match(h, /<meta property="og:url" content="https:\/\/www\.mosaicheadspa\.hu\/hajvizsgalat-budapest">/);
-    assert.match(h, /<meta name="robots" content="noindex, nofollow">/, 'noindex, amíg Feri nem hagyja jóvá (élesítéskor ezt a sort ki kell venni)');
-    assert.ok(!fs.readFileSync(path.join(GYOKER, 'tools/wix-sitemap/pages-sitemap.xml'), 'utf8').includes('hajvizsgalat-budapest'), 'nincs a sitemapben');
+    assert.ok(!/<meta name="robots"/.test(h), 'ÉLES: nincs robots meta (indexelhető)');
+    assert.ok(fs.readFileSync(path.join(GYOKER, 'tools/wix-sitemap/pages-sitemap.xml'), 'utf8').includes('<loc>https://www.mosaicheadspa.hu/hajvizsgalat-budapest</loc>'), 'a sitemapben szerepel');
   });
 
   test('a hős-részben: H1, a brief szerinti alcím, ár, EGY fő gomb, hely + BELSŐ "térkép" gomb, BELSŐ Google-értékelés gomb (4,9 – 1 266); nincs kifelé vivő link', () => {
@@ -555,7 +555,7 @@ describe('dist (a build kimenete)', { skip: !VAN_DIST && 'nincs dist/: előbb CF
       for (const u of motor) assert.ok(u === FO_HREF || u === MASODLAGOS_HREF, mappa + ': ' + u);
       assert.ok(/Hétfő – Péntek: 8:00 – 20:00/.test(x) && !/Hétfő – Szombat/.test(x), mappa + ': nyitvatartás');
       assert.match(x, /booking-launcher\.js/);
-      assert.match(x, /<meta name="robots" content="noindex, nofollow">/);
+      assert.ok(!/<meta name="robots"/.test(x), mappa + ': ÉLES: nincs robots meta');
     }
   });
 
