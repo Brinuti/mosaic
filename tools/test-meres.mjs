@@ -180,6 +180,15 @@ test('TikTok kerelem: ARNYEK pixel + test_event_code, ttclid + ttp, E.164 hash; 
   assert.equal(d.user.phone, await sha256hex('+36300000001')); assert.equal(d.user.email, await sha256hex('teszt.claude@example.com'));
   assert.equal(tiktokKerelem(ernyo, ctx, ENV).body.data[0].event, 'CompletePayment');
   assert.match(tiktokKerelem(alap, ctx, {}).tiltva, /TIKTOK_TESZT_KOD/);
+  { // Feri 10-20: TIKTOK_ARNYEK_ELES=1 -> tesztkod nelkul, de CSAK az ARNYEK pixelre; az elo pixel tovabbra is tiltott
+    const env2 = { ...ENV, TIKTOK_TESZT_KOD: '', TIKTOK_ARNYEK_ELES: '1' };
+    const k2 = tiktokKerelem(alap, ctx, env2);
+    assert.ok(!k2.tiltva, 'ARNYEK pixelre tesztkod nelkul mehet'); assert.equal(k2.body.event_source_id, 'DB2GTTJC77UE4D1NE4MG'); assert.ok(!('test_event_code' in k2.body));
+    assert.equal(k2.cel.arnyek_eles, true); assert.equal(k2.cel.test_event_code, null);
+    assert.match(tiktokKerelem(alap, ctx, { ...env2, TIKTOK_ARNYEK_PIXEL: ELO_CELOK.tiktok[0] }).tiltva, /ARNYEK/);
+    assert.match(tiktokKerelem(alap, ctx, { ...env2, TIKTOK_ARNYEK_ELES: '0' }).tiltva, /TIKTOK_TESZT_KOD/);
+    assert.ok(!('arnyek_eles' in tiktokKerelem(alap, ctx, ENV).cel), 'tesztkoddal a cel valtozatlan (golden)');
+  }
   assert.match(tiktokKerelem(alap, ctx, { ...ENV, TIKTOK_ARNYEK_PIXEL: ELO_CELOK.tiktok[0] }).tiltva, /ARNYEK/);
   assert.equal(ARNYEK.tiktok.pixelCode, 'DB2GTTJC77UE4D1NE4MG');
 });
