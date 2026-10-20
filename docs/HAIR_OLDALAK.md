@@ -80,7 +80,7 @@ A mostani Wixes oldalakon szerepel, **ide nem vettem át** (a fodrász-oldalak H
 
 ## Evelin-oldal ÚJ, hirdetési változata (`/noi-hajfestes-evelin-uj`, 2026-10-18, Google Ads FOD-3)
 
-A Google Ads brief (4. szakasz) szerinti Evelin-landing, **a meglévő `/noi-hajfestes-budapest` MELLETT**, nincs élesben: `noindex, nofollow`, önmagára mutató canonical / og:url, nincs rá link sehonnan, nincs a sitemapben, a meglévő 4 fodrász-oldal bit-azonos
+A Google Ads brief (4. szakasz) szerinti Evelin-landing, **a meglévő `/noi-hajfestes-budapest` MELLETT**. **2026-10-20 óta ÉLŐ (Feri kérésére: a hirdetés céloldala, a címen elérhető), de szándékosan `noindex, nofollow` marad** (a meglévő 4 fodrász-oldal ikertestvére, a keresőindexben nem versenyezhet velük; indexelhetővé tétel csak Feri külön mondatára: a robots meta törlése + sitemap-bejegyzés), önmagára mutató canonical / og:url, nincs rá link sehonnan, nincs a sitemapben, a meglévő 4 fodrász-oldal bit-azonos
 (`node tools/hair-oldalak.mjs --ellenoriz`). A `/noi-hajfestes-budapest-uj` cím foglalt (a `netlify/lib/utvonal.js` 301-gyel a meglévő oldalra irányít), ezért a cím `noi-hajfestes-evelin-uj`.
 
 | Mit | Hol |
