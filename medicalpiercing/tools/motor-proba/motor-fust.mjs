@@ -56,7 +56,7 @@ const kattintLink = (p) => p.evaluate(() => {
   ok('15 helyszin', (await sr(p, 'return r.querySelectorAll("[data-hely]").length')) === 15);
   await sr(p, 'r.querySelector("[data-hely=\\"6029\\"]").click()');
   ok('Budapest kezelesei', await varMotor(p, '[data-szolg]'));
-  await sr(p, 'r.querySelector("[data-mit=egy]").click()');
+  
   const sz = await sr(p, 'return [...r.querySelectorAll("[data-szolg] .nev")].map(x=>x.textContent)');
   ok('magyar nevek', sz.length >= 15 && sz.some((x) => /Migrén/.test(x)), sz.slice(0, 2).join(' | '));
   await sr(p, 'r.querySelector("[data-szolg]").click()');
