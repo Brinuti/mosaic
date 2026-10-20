@@ -28,7 +28,7 @@ export function salonicHamis(opts = {}) {
         const b = foglalasok[m[1]];
         if (!b) return ok('nincs', 'text/html', 404);
         if (b.torolve) return ok('torolve', 'text/html', 200, `https://gyogytornaszomhu.salonic.hu/booking/deleteSuccess/${m[1]}`);
-        return ok(`<a href="/selectDate/?startDate=${b.startUnix}&amp;bookingId=${m[1]}">Foglalas modositasa</a>`);
+        return ok(`<a href="/selectDate/?startDate=${b.startUnix}&amp;bookingId=${m[1]}">Foglalas modositasa</a>${b.emp ? `<a href="/employees/${b.emp}/?placeId=8439">Munkatars</a>` : ''}`);
       }
     }
     if (u.hostname === 'api.salonic.hu') {

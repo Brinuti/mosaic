@@ -14,6 +14,7 @@
 //   --masodik 1    az utolso elotti szabad napot valasztja (ket valodi foglalas egymas utan ugyanabban a Salonic-fiokban: a Salonic 5 percig tartja a megnyitott idopontot)
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
+import { sajatIras } from './tilt.mjs';
 import path from 'node:path';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
@@ -24,7 +25,11 @@ if (MOD === 'valodi' && !MEGALL) for (const [n, mit] of [['MERES_TELEFON', 'a tu
 const BASE = 'https://www.mosaicheadspa.hu';
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
-const CLICK_QS = 'gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc';
+// MERES_GCLID (opcionalis): szintetikus gclid, ketto kotelezo tulajdonsaggal - >= 10 karakter [A-Za-z0-9_-] (kulonben az attribucio.js nem menti az mh_attr-ba: a szerveroldali erkezesi adat gclid nelkul marad, hamis negativ); a Google E2E-kapu futtatokonyve (docs/booking-engine/MERES_GOOGLE_E2E_FUTTATOKONYV.md) ezt kri.
+// Alapertek: a regi 'TESZT123' (8 karakter: a kornyezeti GTM-es _gcl_aw-t letrehozza, az mh_attr-ba viszont NEM kerul be).
+const GCLID_TESZT = process.env.MERES_GCLID || 'TESZT123';
+if (process.env.MERES_GCLID && !/^[A-Za-z0-9_-]{10,200}$/.test(process.env.MERES_GCLID)) throw new Error('MERES_GCLID: legalabb 10, legfeljebb 200 karakter [A-Za-z0-9_-]');
+const CLICK_QS = `gclid=${GCLID_TESZT}&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc`;
 
 // landing: a "hirdetes -> landing -> motor" utvonalhoz (--landing 1): az oldal, es a motorra vezeto gomb szelektora (csak a link-atkotessel epitett dist-ben van)
 const SZENARIOK = {
@@ -95,7 +100,7 @@ const ENGEDETT_GET = [
 ];
 // a Salonic maga (naptar-API, oldalak) barmilyen metodussal engedett: szimulalt modban az adatlap ugyis ki van valtva, a foglalas nem jon letre;
 // a valodi foglalashoz a Salonic-urlap reCAPTCHA-ja is kell (nem meres, a Salonic sajat vedelme): barmilyen metodussal engedett
-const engedett = (url, method) => /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url) || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url) || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
+const engedett = (url, method) => sajatIras(url, method) || /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url) || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url) || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
 const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
 const naplo = [], idovonal = [], harmadik = new Map();

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import {
   HOSTOK, LEJART_TURES_MP, MEGORZES_NAP, UJRAPROBA_MP, egyeztetesAllapot, veglegesLejart, bookingUrlElemzes, budapestUnix, egyeztet, emailElemzes, emailKulcsNevtablabol, evKovetkeztet, idopontSzovegElemzes, isoUnix, kezelEgyeztetes, kezelKulcs,
-  foglalasAllapot, kulcsJeloltek, lemondasKezel, munkatarsNevOldalbol, kulcsIras, kulcsKepez, kulcsKeres, modositasOldalElemzes, nevtablaBetolt, nevtablaMent, nevtablaSalonicbol, norm, reszletekOldalElemzes, riasztasok, salonicOldalKulcs, sema,
+  foglalasAllapot, foglalasKezdet, kulcsJeloltek, lemondasKezel, munkatarsNevOldalbol, kulcsIras, kulcsKepez, kulcsKeres, modositasOldalElemzes, nevtablaBetolt, nevtablaMent, nevtablaSalonicbol, norm, reszletekOldalElemzes, riasztasok, salonicOldalKulcs, sema,
 } from '../netlify/lib/foglalas-kulcs.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -413,12 +413,16 @@ const bUrl = (id) => BOOKING_URL.replace(BID, id);
 const levelIdo = (ms) => new Date(ms - 8000).toISOString(); // a Salonic a levelet masodpercekkel a foglalas utan kuldi
 const UUID_MINTA_T = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 // a Salonic "szerver" UUID-nkenti ELO allapottal: 'aktiv' (a valodi megtekintes oldal) | 'torolve' ("Idopont torolve!") | 'hiba'
-const eloFetch = (allapotok) => async (url) => {
+// kezdetek: UUID -> a foglalas AKTUALIS kezdete (unix mp) a naptar-exportban (/booking/addToCalendar/<uuid>/ios); nincs bejegyzes = a Salonic nem ad naptar-exportot (404)
+const icsIdo = (mp) => new Date(mp * 1000).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+const eloFetch = (allapotok, kezdetek = {}) => async (url) => {
   const u = String(url); const uuid = (u.match(UUID_MINTA_T) || [])[0]; const all = uuid && allapotok[uuid];
   const nem = { ok: false, status: all === 'hiba' ? 500 : 404, url: u, text: async () => '' };
   if (!all || all === 'hiba') return nem;
   const ok = (szoveg) => ({ ok: true, status: 200, url: u, text: async () => szoveg });
-  if (u.includes('/booking/bookingDetails/')) return ok(all === 'torolve' ? fx('kulcs-torolve-hu.html') : fx('kulcs-bookingDetails-hair.html').split(UUID).join(uuid));
+  if (u.includes('/booking/addToCalendar/') && u.endsWith('/ios')) return kezdetek[uuid] === 'hiba' ? { ok: false, status: 500, url: u, text: async () => '' } : kezdetek[uuid] ? ok(`BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nDTSTART:${icsIdo(kezdetek[uuid])}\r\nDTEND:${icsIdo(kezdetek[uuid] + 1800)}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`) : nem;
+  // 'athelyezett': a megtekintes oldalon NINCS "Foglalas modositasa" link (a vendeg athelyezte; a Salonic ekkor csak "Visszaigazolt"-at mutat), a kezdet csak a naptar-exportban van
+  if (u.includes('/booking/bookingDetails/')) return ok(all === 'torolve' ? fx('kulcs-torolve-hu.html') : all === 'athelyezett' ? fx('kulcs-bookingDetails-hair.html').split(UUID).join(uuid).replace(/\/selectDate\/\?startDate=\d+&(amp;)?bookingId=[0-9a-f-]{36}/g, '/booking/nincs-link') : fx('kulcs-bookingDetails-hair.html').split(UUID).join(uuid));
   if (u.includes('/selectDate/?startDate=')) return all === 'torolve' ? nem : ok(fx('kulcs-selectDate-modositas-hair.html'));
   return nem;
 };
@@ -428,10 +432,10 @@ async function lanc() {
   const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora();
   await nevtablaMent(adb, tablaHair(), t());
   await kulcsIras(adb, { bookingId: BA, bookingUrl: bUrl(BA) }, t());
-  const allapotok = { [UUID]: 'aktiv', [UB]: 'aktiv' };
-  const deps = () => ({ fetchImpl: eloFetch(allapotok), now: t });
+  const allapotok = { [UUID]: 'aktiv', [UB]: 'aktiv' }, kezdetek = {};
+  const deps = () => ({ fetchImpl: eloFetch(allapotok, kezdetek), now: t });
   const ra = await egyeztet(adb, MEZOK(), deps());
-  return { db, adb, t, allapotok, deps, ra };
+  return { db, adb, t, allapotok, kezdetek, deps, ra };
 }
 const bMezok = (L) => ({ ...MEZOK(), uuid: UB, leveldatum: levelIdo(L.t()) });
 
@@ -480,6 +484,76 @@ test('SORREND 1/3 (fordito): ha A ELO -> B ELLENTMONDAS + riasztas, nem kuld, a 
   await kulcsIras(M.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, M.t());
   const rv = await egyeztet(M.adb, bMezok(M), M.deps());
   assert.deepEqual({ a: rv.allapot, k: rv.kuldheto, r: rv.riasztas }, { a: 'fuggoben', k: false, r: false }); assert.match(rv.miert, /nem ellenorizheto/);
+});
+
+test('foglalasKezdet: a naptar-export DTSTART-ja (UTC) -> unix; idegen host, rossz uuid, TZID-s / Z nelkuli / tobb / ervenytelen / tartomanyon kivuli DTSTART, hianyzo DTSTART, http-hiba, halozati hiba = ok:false', async () => {
+  const F = (kezdetek, allapotok = { [UUID]: 'aktiv' }) => eloFetch(allapotok, kezdetek);
+  const k0 = Number(KULCS.split('|')[2]);
+  const szoveg = (t) => async () => ({ ok: true, status: 200, url: 'x', text: async () => t });
+  const kez = (fetchImpl) => foglalasKezdet({ host: 'mosaic-hair.salonic.hu', uuid: UUID, fetchImpl });
+  assert.deepEqual(await kez(F({ [UUID]: k0 })), { ok: true, status: 200, startUnix: k0 });
+  assert.equal((await kez(F({}))).ok, false, 'a Salonic nem ad naptar-exportot (404)'); assert.equal((await kez(F({}))).miert, 'http 404');
+  const r500 = await kez(F({ [UUID]: 'hiba' })); assert.deepEqual({ ok: r500.ok, status: r500.status, miert: r500.miert }, { ok: false, status: 500, miert: 'http 500' });
+  for (const [nev, t] of [['nincs DTSTART', 'BEGIN:VCALENDAR\r\nEND:VCALENDAR'], ['TZID-s', 'DTSTART;TZID=Europe/Budapest:20261020T180000\r\n'], ['Z nelkuli', 'DTSTART:20261020T180000\r\n'],
+    ['tobb DTSTART', 'DTSTART:20261020T160000Z\r\nDTSTART:20261021T160000Z\r\n'], ['ervenytelen honap', 'DTSTART:20261320T160000Z\r\n'], ['ervenytelen nap', 'DTSTART:20260231T160000Z\r\n'], ['ervenytelen ora', 'DTSTART:20261031T250000Z\r\n'], ['tartomanyon kivul (1999)', 'DTSTART:19990101T000000Z\r\n']]) {
+    assert.equal((await kez(szoveg(t))).ok, false, nev);
+  }
+  const rk = await kez(async () => { throw new Error('halozati hiba'); }); assert.deepEqual({ ok: rk.ok, atmeneti: rk.atmeneti }, { ok: false, atmeneti: true }); assert.match(rk.miert, /lekeres-hiba/);
+  for (const [st, atm] of [[500, true], [503, true], [408, true], [429, true], [404, false], [403, false]]) { const rr = await kez(async () => ({ ok: false, status: st, url: 'x', text: async () => '' })); assert.deepEqual({ ok: rr.ok, atmeneti: rr.atmeneti, miert: rr.miert }, { ok: false, atmeneti: atm, miert: 'http ' + st }, 'http ' + st); }
+  assert.equal((await kez(szoveg('DTSTART:20261119T163000Z\r\n'))).atmeneti, undefined, 'siker: nincs atmeneti jelzo');
+  assert.equal((await foglalasKezdet({ host: 'evil.example.com', uuid: UUID, fetchImpl: F({ [UUID]: k0 }) })).ok, false, 'idegen host nem kerdezheto');
+  assert.equal((await foglalasKezdet({ host: 'mosaic-hair.salonic.hu', uuid: 'nem-uuid', fetchImpl: F({}) })).ok, false);
+});
+
+test('ATHELYEZETT BIRTOKOS (a vendeg "Foglalas modositva vendeg altal"): A aktiv, a megtekintes oldalon nincs link, a naptar-export aktualis kezdete mas -> a kulcs felszabadult, B (uj vendeg, a regi idopontra) parositott es kuld, NEM ellentmondas', async () => {
+  const L = await lanc(); L.t.tick(3600);
+  L.allapotok[UUID] = 'athelyezett'; L.kezdetek[UUID] = Number(KULCS.split('|')[2]) + 86400; // A-t a vendeg masnapra athelyezte: aktiv marad, a kulcstabla a regi kezdetet orzi
+  await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t());
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps());
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id, atadva: rb.kulcs_atadva, r: rb.riasztas }, { a: 'parositott', k: true, e: BB, atadva: true, r: false });
+  assert.equal(rb.nyom.birtokos_ellenorzes.elo_allapot, 'aktiv'); assert.equal(rb.nyom.birtokos_ellenorzes.aktualis_kezdet.forras, 'naptar-export'); assert.equal(rb.nyom.birtokos_ellenorzes.aktualis_kezdet.startUnix, L.kezdetek[UUID]);
+  assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BB, 'a kulcs birtoka B');
+  assert.match(L.db.prepare('SELECT ok FROM foglalas_kulcs_atadas').get().ok, /athelyezve.*naptar-export/, 'az atadas oka naplozva');
+  assert.deepEqual(await riasztasok(L.adb), [], 'nincs riasztas');
+  assert.equal(L.db.prepare("SELECT COUNT(*) AS n FROM foglalas_egyeztetes WHERE kuldve IS NOT NULL").get().n, 2, 'ket foglalas, ket esemeny, mindegyik egyszer');
+});
+
+test('ATHELYEZETT BIRTOKOS, ha az oldal linkje MAS kezdetet mutat, mint a kulcs: a naptar-export nem is kell (a link kezdete donti el)', async () => {
+  const L = await lanc(); L.t.tick(3600);
+  const K0 = Number(KULCS.split('|')[2]);
+  const f0 = eloFetch(L.allapotok, L.kezdetek), kapott = [];
+  const deps = () => ({ fetchImpl: async (url) => { kapott.push(String(url)); const r = await f0(url); if (String(url).includes('/booking/bookingDetails/' + UUID)) { const t = (await r.text()).replace('startDate=' + K0, 'startDate=' + (K0 + 86400)); return { ...r, text: async () => t }; } return r; }, now: L.t });
+  await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t());
+  const rb = await egyeztet(L.adb, bMezok(L), deps());
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, atadva: rb.kulcs_atadva }, { a: 'parositott', k: true, atadva: true });
+  assert.equal(rb.nyom.birtokos_ellenorzes.aktualis_kezdet.forras, 'oldal');
+  assert.equal(kapott.some((u) => u.includes('/addToCalendar/')), false, 'a naptar-exportot nem kerdeztuk');
+});
+
+test('ket ELO foglalas azonos kulccsal tovabbra is ELLENTMONDAS: a link kezdete = a kulcs kezdete (export nelkul), vagy az export kezdete = a kulcs kezdete, vagy az export nem olvashato / ervenytelen (fail-closed); atmeneti exporthiba -> varakozas (ujraprobalas)', async () => {
+  const K0 = Number(KULCS.split('|')[2]);
+  const L = await lanc(); L.t.tick(3600); // nem athelyezett: az A oldalan a link kezdete = a kulcs kezdete
+  await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t());
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps());
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, r: rb.riasztas }, { a: 'ellentmondas', k: false, r: true }); assert.match(rb.miert, /ELO Salonic-foglalas/);
+  assert.equal(rb.nyom.birtokos_ellenorzes.aktualis_kezdet.forras, 'oldal'); assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BA, 'a kulcs A-nal marad');
+  const E = await lanc(); E.t.tick(3600); E.allapotok[UUID] = 'athelyezett'; E.kezdetek[UUID] = K0; // link nelkul, de az export szerint tenyleg ugyanarra az idopontra el
+  await kulcsIras(E.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, E.t());
+  assert.deepEqual((({ allapot, kuldheto }) => ({ allapot, kuldheto }))(await egyeztet(E.adb, bMezok(E), E.deps())), { allapot: 'ellentmondas', kuldheto: false });
+  const M = await lanc(); M.t.tick(3600); M.allapotok[UUID] = 'athelyezett'; // link nelkul es az export nem olvashato (404)
+  await kulcsIras(M.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, M.t());
+  const rm = await egyeztet(M.adb, bMezok(M), M.deps());
+  assert.deepEqual({ a: rm.allapot, k: rm.kuldheto, r: rm.riasztas }, { a: 'ellentmondas', k: false, r: true });
+  assert.equal(rm.nyom.birtokos_ellenorzes.aktualis_kezdet.ok, false); assert.equal(rm.nyom.birtokos_ellenorzes.aktualis_kezdet.status, 404);
+  const H = await lanc(); H.t.tick(3600); H.allapotok[UUID] = 'athelyezett'; H.kezdetek[UUID] = 'hiba'; // atmeneti hiba (5xx): nem dont, ujraprobal
+  await kulcsIras(H.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, H.t());
+  const rh = await egyeztet(H.adb, bMezok(H), H.deps());
+  assert.deepEqual({ a: rh.allapot, k: rh.kuldheto, r: rh.riasztas }, { a: 'fuggoben', k: false, r: false }); assert.match(rh.miert, /atmeneti hiba/);
+  const X = await lanc(); X.t.tick(3600); X.allapotok[UUID] = 'athelyezett'; // az export lekerese kivetelt dob (halozat / idotullepes): szinten atmeneti -> varakozas
+  await kulcsIras(X.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, X.t());
+  const fx0 = eloFetch(X.allapotok, X.kezdetek);
+  const rx = await egyeztet(X.adb, bMezok(X), { now: X.t, fetchImpl: async (url) => { if (String(url).includes('/addToCalendar/')) throw new Error('idotullepes'); return fx0(url); } });
+  assert.deepEqual({ a: rx.allapot, k: rx.kuldheto }, { a: 'fuggoben', k: false }); assert.match(rx.miert, /atmeneti hiba.*lekeres-hiba/);
 });
 
 test('SORREND 2/3: az A LEMONDASI ertesitoje B e-mailje ELOTT ert ide (B koszonooldala mar iras): a kulcs CSAK felszabadul (a jelolt elo allapota itt nem ellenorizheto), B levelenel - elo ellenorzes utan - veszi at', async () => {

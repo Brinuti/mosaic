@@ -77,7 +77,9 @@ test('vedohalo: erzekeny nem-azonosito mezo -> dob; tiktokLepes semmit nem rogzi
   const f = szamlalo();
   const r = await tiktokLepes(db, alapSor({ kulcs: 'klimax|1|2' }), {}, HOST, { fetchImpl: f, most: MOST });
   assert.equal(r.kihagyva, 'erzekeny_adat');
-  assert.equal((await naploSorok(db)).length, 0);
+  // 2026-10-20: kihagyas-naplo - csak az ok, payload nelkul
+  const ns = await naploSorok(db);
+  assert.equal(ns.length, 1); assert.equal(ns[0].allapot, 'kihagyva:erzekeny_adat'); assert.equal(ns[0].payload_maszkolt, null);
   assert.equal(f.hivasok.length, 0);
   // a ttclid maga lehet barmilyen veletlen sor (azonosito, nem ellenorizzuk tartalomra)
   assert.doesNotThrow(() => tiktokTorzs(alapSor({ tiktok_ttclid: 'abcmajlepxyz12' })));
@@ -90,7 +92,7 @@ test('jogosultsag: eles + igazolt + hozzajarulas + ttclid + 7 napos ablak', () =
   assert.equal(jogosult(alapSor({ igazolas: null }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ igazolas: 'nem_igazolt' }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ hozzajarulas_hirdetes: 0 }), MOST).miert, 'nincs_hozzajarulas');
-  assert.equal(jogosult(alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), MOST).miert, 'nincs_tiktok_azonosito');
+  assert.equal(jogosult(alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), MOST).ok, true); // 2026-10-19: IP/UA/external_id is azonosit
   assert.equal(jogosult(alapSor({ tiktok_ttclid: null }), MOST).ok, true); // _ttp eleg
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK - 1 }), MOST).miert, 'ablakon_kivul');
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK + 60 }), MOST).ok, true);
@@ -220,7 +222,8 @@ test('lanc: hozzajarulas nelkul nincs ttclid -> nincs naplosor; a TikTok hibaja 
   await foglalasErkezes({ request: foglalKeres(`mp_suti=v1-s0-m0-t${MOST}`), env }, { fetchImpl: f, most: MOST });
   const v = await (await igazolasErkezes({ request: igKeres(), env }, { fetchImpl: f, most: MOST + 30 })).json();
   assert.equal(v.igazolva, true);
-  assert.equal((await naploSorok(db)).length, 0);
+  // 2026-10-20: nincs kuldes / naplozott torzs, csak a kihagyas oka
+  assert.deepEqual((await naploSorok(db)).map((x) => [x.allapot, x.payload_maszkolt]), [['kihagyva:nincs_hozzajarulas', null]]);
   // eltort TikTok-tabla: a lepes elnyeli a hibat
   const rossz = { prepare: () => { throw new Error('db hiba'); } };
   assert.deepEqual(await tiktokLepes(rossz, alapSor(), {}, HOST, { most: MOST }), { kihagyva: 'hiba' });
@@ -234,12 +237,72 @@ test('lanc: kesoi hozzajarulas (potlas) mar igazolt soron -> 1 naplosor, fetch n
   const f = async (url) => { hivasok.push(String(url)); return new Response('{"results":[{}]}', { status: 200 }); };
   await foglalasErkezes({ request: foglalKeres(`mp_suti=v1-s0-m0-t${MOST}`), env }, { fetchImpl: f, most: MOST });
   await igazolasErkezes({ request: igKeres(), env }, { fetchImpl: f, most: MOST + 30 });
-  assert.equal((await naploSorok(db)).length, 0);
+  assert.deepEqual((await naploSorok(db)).map((x) => x.allapot), ['kihagyva:nincs_hozzajarulas']);
   const potlo = new Request(`https://${HOST}/api/mp-foglalas`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: `mp_suti=v1-s1-m1-t${MOST}` },
     body: JSON.stringify({ ut: '/foglalas-ok-mi', p: { bookingUrl: BURL, price: '24900', first_booking: 'true' }, potlas: true, kattintas: { ttclid: { ertek: TTCLID, ido: MOST - 1800 } } }) });
   const v = await (await foglalasErkezes({ request: potlo, env }, { fetchImpl: f, most: MOST + 60 })).json();
   assert.equal(v.potolva, true);
   const n = await naploSorok(db);
-  assert.equal(n.length, 1); assert.equal(n[0].allapot, 'naplozva');
+  assert.equal(n.length, 1); assert.equal(n[0].allapot, 'naplozva', 'a kihagyva-sort a kesobbi naplozas felulirja');
   assert.ok(!hivasok.some((u) => u.includes('tiktok')));
+});
+
+// Feri 2026-10-19: IP + user agent a foglalas pillanatabol (mp_kontextus); egeszsegugyi / szemelyes adat tovabbra sem
+{
+  const { tiktokTorzs } = await import('../lib/meres/tiktok.js');
+  const t2 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: '84.1.2.3', ua: 'Mozilla/5.0 teszt' });
+  assert.equal(t2.data[0].user.ip, '84.1.2.3');
+  assert.equal(t2.data[0].user.user_agent, 'Mozilla/5.0 teszt');
+  const t3 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: 'nem-ip<script>', ua: null });
+  assert.ok(!('ip' in t3.data[0].user) && !('user_agent' in t3.data[0].user));
+  assert.ok(!/"email"|"phone"|"external_id"/.test(JSON.stringify(t2)));
+  console.log('OK ip + user agent (kontextus)');
+}
+
+{
+  const { tiktokTorzs } = await import('../lib/meres/tiktok.js');
+  const h = 'b'.repeat(64);
+  const t4 = tiktokTorzs({ kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' }, { ip: '84.1.2.3', ua: 'UA', ext: h });
+  assert.equal(t4.data[0].user.external_id, h);
+  assert.ok(!('external_id' in tiktokTorzs({ kulcs: '1|2|3', letrehozva: 1792300000 }, { ext: 'nem-hash' }).data[0].user));
+  console.log('OK external_id (tiktok)');
+}
+
+{
+  const { tiktokTorzs, maszkoltTorzs } = await import('../lib/meres/tiktok.js');
+  const sor = { kulcs: '1|2|3', ertek: 24900, letrehozva: 1792300000, tiktok_ttclid: 'E.C.P.abcdefgh' };
+  assert.equal(tiktokTorzs(sor).data.length, 1);
+  const t5 = tiktokTorzs(sor, { ip: '84.1.2.3', ua: 'UA' }, { schedule: true });
+  assert.deepEqual(t5.data.map((d) => d.event), ['SubmitForm', 'Schedule']);
+  assert.equal(t5.data[0].event_id, t5.data[1].event_id);
+  assert.equal(t5.data[1].event_id, 'Foglalas:1|2|3');
+  assert.equal(t5.data[1].user.ttclid, 'E.C.P.abcdefgh');
+  const m = await maszkoltTorzs(t5);
+  assert.ok(m.data.every((d) => String(d.user.ttclid).startsWith('h:')));
+  console.log('OK kodos Schedule (azonos event_id)');
+}
+
+// 2026-10-20: kihagyas-naplo a TikTok-agban is
+test('azonosito nelkul -> kihagyva:nincs_azonosito naplozva (payload nelkul); kesobb ttclid-del a naplozas felulirja', async () => {
+  const db = await ujDb();
+  const f = szamlalo();
+  const r1 = await tiktokLepes(db, alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), {}, HOST, { fetchImpl: f, most: MOST });
+  assert.deepEqual(r1, { kihagyva: 'nincs_azonosito' });
+  let n = await naploSorok(db);
+  assert.equal(n.length, 1); assert.equal(n[0].allapot, 'kihagyva:nincs_azonosito'); assert.equal(n[0].payload_maszkolt, null); assert.equal(n[0].mod, 'naplo');
+  const r2 = await tiktokLepes(db, alapSor(), {}, HOST, { fetchImpl: f, most: MOST + 60 });
+  assert.equal(r2.allapot, 'naplozva');
+  n = await naploSorok(db);
+  assert.equal(n.length, 1); assert.equal(n[0].allapot, 'naplozva'); assert.equal(n[0].ido, MOST + 60);
+  assert.ok(!/"em"|"ph"|"fn"|"ln"|"email"|"phone"/.test(n[0].payload_maszkolt));
+  // a naplozott sort egy kesobbi kihagyas nem irja felul
+  assert.deepEqual(await tiktokLepes(db, alapSor({ hozzajarulas_hirdetes: 0 }), {}, HOST, { fetchImpl: f, most: MOST + 120 }), { kihagyva: 'mar_rogzitve' });
+  assert.equal((await naploSorok(db))[0].allapot, 'naplozva');
+  assert.equal(f.hivasok.length, 0);
+});
+
+test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
+  const db = await ujDb();
+  assert.deepEqual(await tiktokLepes(db, alapSor({ kornyezet: 'elonezet' }), {}, HOST, { most: MOST }), { kihagyva: 'nem_eles' });
+  assert.equal((await naploSorok(db).catch(() => [])).length, 0);
 });

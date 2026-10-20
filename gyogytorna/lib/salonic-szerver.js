@@ -40,7 +40,11 @@ export function eloElemzes({ status, url, html, id }) {
   if (torolt) return torolt[1].toLowerCase() === String(id).toLowerCase() ? { allapot: 'torolve', forras: 'atiranyitas' } : { allapot: 'ismeretlen', miert: 'masik_foglalas' };
   if (status && status !== 200) return { allapot: 'ismeretlen', miert: `http_${status}` };
   const m = /href="(\/selectDate\/\?startDate=(\d{9,11})&(?:amp;)?bookingId=([0-9a-f-]{36}))"/i.exec(szoveg);
-  if (m && m[3].toLowerCase() === String(id).toLowerCase()) return { allapot: 'aktiv', startUnix: Number(m[2]) };
+  if (m && m[3].toLowerCase() === String(id).toLowerCase()) {
+    // a munkatars azonositoja, HA az oldal hordozza (employeeId=<szam> vagy /employees/<szam> hivatkozas); pontosan egy KULONBOZO ertek kell, kulonben nem hasznaljuk
+    const idk = [...new Set([...szoveg.matchAll(/employeeId=(\d{1,12})/g), ...szoveg.matchAll(/\/employees\/(\d{1,12})/g)].map((x) => x[1]).filter((x) => +x > 0))];
+    return { allapot: 'aktiv', startUnix: Number(m[2]), ...(idk.length === 1 ? { employeeId: idk[0] } : {}), ...(idk.length > 1 ? { oldalEmp: idk.length } : {}) };
+  }
   if (/Visszaigazolt|\bConfirmed\b/.test(szoveg)) return { allapot: 'aktiv' };
   return { allapot: 'ismeretlen', miert: /Id[oő]pont t[oö]r[oö]lve|Appointment deleted/i.test(szoveg) ? 'torolve_felirat_atiranyitas_nelkul' : 'ismeretlen_oldal' };
 }

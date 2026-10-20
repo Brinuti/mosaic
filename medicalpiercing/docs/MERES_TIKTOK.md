@@ -25,7 +25,12 @@ hozzájárulás pótlásakor, ha a sor már igazolt. A Google-lánctól függetl
 - van `tiktok_ttclid` (a `tiktok_ttp` nem kötelező);
 - az esemény ideje (a foglalás = Salonic-levél ideje, tartalék: köszönőoldali rögzítés) legfeljebb 7 napos, és ha
   ismert a kattintás ideje, a foglalás a kattintás után 7 napon belül történt (TikTok attribúciós ablak);
-- erre a kulcsra még nincs sor az `mp_tiktok_feltoltes` táblában (kulcsonként egyszer).
+- erre a kulcsra még nincs sor az `mp_tiktok_feltoltes` táblában (kulcsonként egyszer); a `kihagyva:<ok>` sor nem számít.
+
+Kihagyás-napló (2026-10-20): ha a küldés kimarad (pl. `nincs_hozzajarulas`, `nincs_azonosito`, `divat_fulpiercing`,
+`ablakon_kivul`, `erzekeny_adat`), a táblába `allapot = 'kihagyva:<ok>'` sor kerül, payload nélkül, hogy a napi riport okot
+mutasson. Ha ugyanaz a kulcs később kimegy (naplózva / elküldve), felülírja. Nem naplózott: nem éles környezet, `ki` mód,
+már rögzített kulcs, váratlan hiba. Ugyanez a minta az `mp_meta_arnyek` táblában (Meta ÁRNYÉK).
 
 ## 3. Mit küldene (TikTok Events API 2.0)
 

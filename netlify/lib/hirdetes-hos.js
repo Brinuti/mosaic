@@ -49,10 +49,18 @@ export async function hosKepValasz(request, db) {
 }
 
 // A HTML-valaszban a hos-kepet csereli (az elso SZELEKTOR-talalat, a KIHAGY_ID-k kivetelevel).
+const NEGYZET_CSS = '<style id="hirdetes-hos-negyzet">'
+  + ':has(>img[data-hirdetes-hos]){aspect-ratio:auto!important;height:auto!important;min-height:0!important;max-height:none!important}'
+  + 'img[data-hirdetes-hos]{position:static!important;display:block!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:1/1!important;object-fit:cover!important;inset:auto!important;transform:none!important}'
+  + '</style>';
+
 export function hosCsere(valasz, { ad, v }) {
   const src = `/hirdetes-hos-kep/${ad}?v=${v}`;
   let kesz = false, videosHos = false, kihagyKov = false;
   const ujValasz = new HTMLRewriter()
+    // Negyzetes keret a hirdetes-kepnek (Feri, 2026-10-19; az MP-hez hasonloan): a hirdetes-kepek negyzetesek, ne vagodjanak.
+    // Csak a cserelt kepre es kozvetlen szulojere hat (:has), mas oldalelemhez nem nyul.
+    .on('head', { element(el) { el.append(NEGYZET_CSS, { html: true }); } })
     // A <head> kep-eloltolto sorahoz NEM nyulunk: a fej feldolgozasakor meg nem tudni, lesz-e csere (nehany lapon - pl. szajtetovalas,
     // paros-headspa-budapest-uj, ajandek- es Wix-klon lapok - nincs csere), es ott a torles lassitana. Ara: csere eseten az eredeti
     // hos-kep is letoltodik (felesleges, de artalmatlan). Az uj kep <img>-je fetchpriority="high"-jal a lap elejen all.

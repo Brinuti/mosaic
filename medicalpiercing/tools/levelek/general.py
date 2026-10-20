@@ -38,11 +38,11 @@ if MOTOR:
     GOOGLE_DB = '{google_vélemények}'
 BP = dict(nev='Feri', datum='2026. október 23., csütörtök', ido='14:30', szolg='3 db piercing (csomag)', ar='44 900 Ft',
           munkatars='Kovács Gabriella', varos='Budapest', varosban='Budapesten', cim='1137 Budapest, Újpesti rakpart 7., 5. emelet 25. (a Jászai Mari térnél)',
-          ido_tart='kb. 40–50 perc', terkep='https://maps.google.com/?q=1137+Budapest+Újpesti+rakpart+7',
+          ido_tart='kb. 15–25 perc', terkep='https://maps.google.com/?q=1137+Budapest+Újpesti+rakpart+7',
           erkezes='A Jászai Mari térnél vagyunk, a környező utcákban könnyen meg tudsz állni autóval; villamossal a Jászai Mari tér megálló van a legközelebb.')
 VIDEK = dict(BP, datum='2026. november 3., kedd', ido='10:40', szolg='1 db migrén piercing', ar='24 900 Ft', munkatars='Fekete Henrietta',
              varos='Miskolc', varosban='Miskolcon', cim='3525 Miskolc, Széchenyi István utca 19., 4. emelet 2. ajtó (Széchenyi Egészség Központ)',
-             ido_tart='kb. 30–40 perc', terkep='https://maps.google.com/?q=3525+Miskolc+Széchenyi+István+utca+19',
+             ido_tart='kb. 10–20 perc', terkep='https://maps.google.com/?q=3525+Miskolc+Széchenyi+István+utca+19',
              erkezes='A Széchenyi Egészség Központban, a 4. emeleten, a 2-es ajtónál várunk.')
 if MOTOR:  # a motor helyorzoi (katalog/ertekek.js HELYORZOK); a videki varost phase 1-ben nem ismerjuk: varos nelkuli (altalanos) mondatok
     BP = dict(nev='{keresztnév}', datum='{dátum}', ido='{időpont}', szolg='{szolgáltatás}', ar='{aktuális_ár}', munkatars='{munkatárs}', varos=None, varosban=None,
@@ -71,8 +71,8 @@ h2{{font-family:{FONT};font-size:18px;line-height:1.35;font-weight:700;margin:30
 p{{margin:10px 0}} a{{color:#b0463b}} b{{color:#2f3044}}
 .cimke{{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#b0463b;margin:0 0 6px}}
 .card{{border:1px solid #ecdcd4;border-radius:14px;padding:18px 20px;margin:18px 0;background:#fffaf7}}
-.card td{{padding:8px 0;font-size:15px;line-height:1.45;vertical-align:top;border-bottom:1px solid #f1e6e0}}.card tr:last-child td{{border-bottom:0}}
-.card td.l{{color:#8a8b9c;width:110px;font-size:13px;padding-top:10px}}
+.card td{{padding:0 0 10px;font-size:15px;line-height:1.45;vertical-align:top;border-bottom:1px solid #f1e6e0;word-wrap:break-word;overflow-wrap:anywhere}}.card tr:last-child td{{border-bottom:0;padding-bottom:0}}
+.card td.l{{color:#8a8b9c;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:10px 0 2px;border-bottom:0}}
 .btn{{display:inline-block;background:#b0463b;color:#ffffff!important;text-decoration:none;font-weight:700;font-size:15px;padding:14px 26px;border-radius:999px;margin:6px 8px 6px 0}}
 .btn2{{display:inline-block;color:#b0463b!important;text-decoration:none;font-weight:700;font-size:15px;padding:12px 22px;border:2px solid #e3c4bf;border-radius:999px;margin:6px 0}}
 .steps td{{padding:9px 0;vertical-align:top;font-size:15px;line-height:1.55}}
@@ -113,14 +113,17 @@ Erre a levélre nyugodtan válaszolhatsz, kollégáink elolvassák.<br><br>
 Piercingeink közérzetjavító ékszerek; nem minősülnek gyógymódnak vagy orvosi kezelésnek, és nem helyettesítik az orvosi vizsgálatot.</div>
 </div></body></html>'''
 
+def _kartya_sor(cimke, ertek):  # cimke es ertek EGYMAS ALATT: nincs fix oszlopszelesseg, nagy betumeretnel / keskeny kepernyon sem csuszik egymasba
+    return f'<tr><td class="l">{cimke}</td></tr><tr><td>{ertek}</td></tr>'
+
 def foglalas_kartya(d):
-    return f'''<div class="card"><div class="cimke">A foglalásod</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-<tr><td class="l">Időpont</td><td><b>{m(d["datum"])}, {m(d["ido"])}</b></td></tr>
-<tr><td class="l">Szolgáltatás</td><td>{m(d["szolg"])}</td></tr>
-{opt(f'<tr><td class="l">Szakember</td><td>{m(d["munkatars"])}</td></tr>')}
-{opt(f'<tr><td class="l">Helyszín</td><td>{m(d["cim"])}</td></tr>')}
-{opt(f'<tr><td class="l">Időtartam</td><td>{m(d["ido_tart"])}</td></tr>')}
-{opt(f'<tr><td class="l">Ár</td><td>{m(d["ar"])} – a helyszínen fizetendő</td></tr>')}</table></div>'''
+    return f'''<div class="card"><div class="cimke">A foglalásod</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;table-layout:fixed">
+{_kartya_sor("Időpont", f'<b>{m(d["datum"])}, {m(d["ido"])}</b>')}
+{_kartya_sor("Szolgáltatás", m(d["szolg"]))}
+{opt(_kartya_sor("Szakember", m(d["munkatars"])))}
+{opt(_kartya_sor("Helyszín", m(d["cim"])))}
+{opt(_kartya_sor("Időtartam", m(d["ido_tart"])))}
+{opt(_kartya_sor("Ár", f'{m(d["ar"])} – a helyszínen fizetendő'))}</table></div>'''
 
 def gombok(d):
     return f'<p>{opt(f"<a class=\"btn\" href=\"{d["terkep"]}\">Útvonal</a>")}<a class="btn2" href="{L["modositas"]}">Időpont módosítása</a></p>'
@@ -310,7 +313,7 @@ def t48(d, bp):
 <tr><td><span class="num">1</span></td><td><b>Egyél előtte rendesen</b> – üres gyomorral könnyebben megszédül az ember.</td></tr>
 <tr><td><span class="num">2</span></td><td><b>Ha hosszú a hajad, fogd össze</b>, hogy ne lógjon a füledre.</td></tr>
 <tr><td><span class="num">3</span></td><td><b>Szólj előre</b>, ha vérhígítót szedsz, várandós vagy, volt már ájulásod, vagy a füled most gyulladt – így felelősen tudunk dönteni. Hívj nyugodtan: +36 1 901 7444.</td></tr>
-<tr><td><span class="num">4</span></td><td><b>Tervezz {m(d["ido_tart"])}et</b>, és érkezz 5 perccel korábban. Ha késnél, hívj minket.</td></tr></table>
+<tr><td><span class="num">4</span></td><td>{opt(f'<b>Tervezz {m(d["ido_tart"])}et</b>, és érkezz 5 perccel korábban.', '<b>Érkezz 5 perccel korábban.</b>')} Ha késnél, hívj minket.</td></tr></table>
 {opt(f'<p><b>Hogyan találsz meg minket?</b> {m(d["erkezes"])}</p>')}
 <h2>Mi fog történni?</h2>
 <p>Leülünk beszélgetni: megkérdezzük, mi miatt érkeztél, és elmondjuk, hová kerül az ékszer. Kiválasztod a neked tetsző G23 titán ékszert, akupunktúrás pontmérővel kimérjük a pontot a füleden, érzéstelenítjük – és a szúrás maga pár másodperc – a legtöbben egy szúnyogcsípéshez hasonlítják. Vendégeink nagy része utána csak mosolyog, hogy ettől tartott.</p>

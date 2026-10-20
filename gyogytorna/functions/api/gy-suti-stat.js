@@ -13,8 +13,9 @@ export async function onRequest({ request, env }) {
   const nezet = NEZETEK.includes(b.n) ? b.n : 'egyeb';
   const eszkoz = b.m === 1 ? 'mobil' : 'asztali';
   const verzio = VERZIO.test(String(b.v || '')) ? b.v : 'v0';
-  const host = new URL(request.url).hostname;
-  const kornyezet = host === 'www.gyogytornaszom.hu' ? 'eles' : 'elonezet';
+  // A Worker-proxy a kerest a gyogytorna.pages.dev hostra tovabbitja, ezert a request.url hostja mindig az: a kornyezet az Origin (sendBeacon kuldi), tartaleknak a Referer alapjan dol el.
+  const eredet = request.headers.get('origin') || request.headers.get('referer') || '';
+  const kornyezet = /^https:\/\/(www\.)?gyogytornaszom\.hu(\/|$)/.test(eredet) ? 'eles' : 'elonezet';
   const nap = new Date(Date.now() + 2 * 3600 * 1000).toISOString().slice(0, 10);
   try {
     const db = env.GY_DB;

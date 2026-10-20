@@ -241,10 +241,22 @@ export function nyit(ctx = {}) {
   const ctxFoglalas = foglalas.begin({ business: 'gyogytorna', source_page: ctx.forras || location.pathname });
   all.bookingId = ctxFoglalas.id;
   let lezart = false;
+  // GY-24: nevtelen lepesenkenti tolcser-szamlalo (esemeny + lepes + fix kategoria + eszkoz; suti / azonosito / URL / mezoertek NINCS). A `kesz` esemenyt a szerver irja. Hiba eseten semmi nem tortenik.
+  let utolsoLepes = '', elhagyKuldve = false;
+  const latottLepes = new Set();
+  const motorStat = (e, l, k) => {
+    try {
+      const t = JSON.stringify({ e, l: l || '', k: k || '', m: matchMedia('(max-width: 700px)').matches ? 1 : 0 }), u = (ctx.apiBase || '') + '/api/gy-motor-stat';
+      if (!(navigator.sendBeacon && navigator.sendBeacon(u, new Blob([t], { type: 'text/plain' })))) fetch(u, { method: 'POST', body: t, keepalive: true, credentials: 'omit' }).catch(() => {});
+    } catch (x) { /* a statisztika sosem akadalyozhat */ }
+  };
+  const lepesStat = (k) => { utolsoLepes = k; if (!latottLepes.has(k)) { latottLepes.add(k); motorStat('lepes', k); } }; // egy lepes megnyitasonkent legfeljebb egyszer szamol
+  const eszkozJel = () => { try { return matchMedia('(max-width: 700px)').matches ? 1 : 0; } catch (x) { return undefined; } };
 
   const tartalek = () => `<p class="uzenet">Most nem sikerült betölteni a foglalót. A foglalást a Salonic oldalán is el tudod végezni:</p><p><a class="gomb" href="${esc(link.href)}" target="_blank" rel="noopener">Tovább a foglaláshoz</a></p>`;
   const hiba = (ok, e) => {
     try { console.warn('[gy-motor]', ok, e && (e.code || e.message)); } catch (x) { /* */ }
+    motorStat('elakad', utolsoLepes || all.lepes, 'szerverhiba');
     tartalek && (tartalom.innerHTML = tartalek());
   };
 
@@ -328,6 +340,7 @@ export function nyit(ctx = {}) {
     if (jelen.has('egyeb')) kartyak.push({ kod: 'egyeb', nev: 'Egyéb szolgáltatás', leiras: 'További szolgáltatásaink' });
     // az ajanlott csalad (a belepesi link kontextusa: pl. allapotfelmeres-landing) elore kerul
     if (ctx.csalad) kartyak.sort((a, b) => (b.kod === ctx.csalad) - (a.kod === ctx.csalad));
+    lepesStat('szolg');
     tartalom.innerHTML = `<p class="kicsi bevezeto">Mire szeretnél időpontot foglalni?</p><div class="lista tipus-racs">${kartyak.map((c) => `<button class="kartya${c.kiemelt ? ' kiemelt' : ''}" data-csalad="${c.kod}"><span class="nev">${esc(c.nev)}</span>${c.kiemelt ? '<span class="cimke zold">Első alkalom</span>' : ''}<div class="reszlet">${esc(c.leiras)}</div></button>`).join('')}</div>`
       + (ctx.hivas ? '<div class="hivas-doboz"><button class="kartya telefon" data-hivas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span><span class="nev">Telefonon egyeztetek időpontot</span><div class="reszlet">Előbb beszélnék egy gyógytornásszal: visszahívunk</div></span></button></div>' : '');
   }
@@ -344,6 +357,7 @@ export function nyit(ctx = {}) {
   const hivasJo = (k, v) => (k === 'nev' ? v.trim().length >= 2 : k === 'email' ? /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(v.trim()) : k === 'tel' ? (v.match(/\d/g) || []).length >= 6 : true);
   const hivasElfogadva = () => all.hivasAdat.elfogad_info && all.hivasAdat.elfogad_adatv;
   function hivasLepes() {
+    lepesStat('hivas');
     const a = all.hivasAdat;
     const opt = (lista, ertek) => lista.map((n) => `<option value="${esc(n)}"${n === ertek ? ' selected' : ''}>${esc(n)}</option>`).join('');
     const mezo = (id, cimke, bemenet, kotelezo) => `<div class="mezo" data-mezo="${id}"><label class="cimke-sz" for="hv-${id}">${esc(cimke)}${kotelezo ? ' *' : ''}</label>${bemenet}<div class="hiba-uzenet" role="alert"></div></div>`;
@@ -374,14 +388,14 @@ export function nyit(ctx = {}) {
     if (!f || hivasKuldes || lezart) return;
     const a = all.hivasAdat, uz = f.querySelector('.kuld-uzenet'), gomb = f.querySelector('[data-kuld]');
     let elso = null;
-    for (const k of ['nev', 'email', 'tel']) { const jo = hivasJo(k, a[k]); hivasHiba(f, k, !jo); if (!jo && !elso) elso = k; }
-    { const jo = hivasElfogadva(); hivasHiba(f, 'elfogad', !jo); if (!jo && !elso) elso = 'elfogad_info'; }
+    for (const k of ['nev', 'email', 'tel']) { const jo = hivasJo(k, a[k]); hivasHiba(f, k, !jo); if (!jo) motorStat('elakad', 'hivas', String(a[k] || '').trim() ? 'formatum' : 'kotelezo_hianyzik'); if (!jo && !elso) elso = k; }
+    { const jo = hivasElfogadva(); hivasHiba(f, 'elfogad', !jo); if (!jo) motorStat('elakad', 'hivas', 'kotelezo_hianyzik'); if (!jo && !elso) elso = 'elfogad_info'; }
     if (elso) { const el = f.elements[elso]; if (el) el.focus({ preventScroll: true }); uz.textContent = ''; return; }
     hivasKuldes = true; gomb.disabled = true; uz.className = 'kuld-uzenet'; uz.textContent = 'Küldés…';
     try {
       const v = await fetch((ctx.apiBase || '') + '/api/gy-visszahivas', {
         method: 'POST', credentials: 'omit', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ nev: a.nev.trim(), email: a.email.trim(), tel: a.tel.trim(), surgosseg: a.surgosseg, hivhato: a.hivhato, rendelo: a.rendelo, panasz: a.panasz.trim(), elfogad_info: true, elfogad_adatv: true, bot: f.elements.bot.value, oldal: ctx.forras || location.pathname }),
+        body: JSON.stringify({ m: eszkozJel(), nev: a.nev.trim(), email: a.email.trim(), tel: a.tel.trim(), surgosseg: a.surgosseg, hivhato: a.hivhato, rendelo: a.rendelo, panasz: a.panasz.trim(), elfogad_info: true, elfogad_adatv: true, bot: f.elements.bot.value, oldal: ctx.forras || location.pathname }),
       });
       if (!v.ok) throw new Error(String(v.status));
       all.hivasAdat = HIVAS_ALAP();
@@ -390,12 +404,14 @@ export function nyit(ctx = {}) {
       tartalom.innerHTML = '<div class="toltes">Köszönjük, megkaptuk! Egy pillanat…</div>';
       location.assign(location.origin + '/visszahivas-ok/');
     } catch (x) {
+      motorStat('elakad', 'hivas', 'szerverhiba');
       hivasKuldes = false; gomb.disabled = false; uz.className = 'kuld-uzenet hiba'; uz.textContent = 'Most nem sikerült elküldeni, kérjük próbálja újra egy perc múlva.';
     }
   }
 
   // --- 2. valtozat (ha a csaladban tobb szolgaltatas van: pl. allapotfelmeres normal / akcios) ---
   function valtLepes() {
+    lepesStat('valt');
     const l = csaladSzolgak().sort((a, b) => (akcioSzazalek(b.name) ? 1 : 0) - (akcioSzazalek(a.name) ? 1 : 0)); // az akcios valtozat elol
     const csalad = CSALADOK.find((c) => c.kod === all.csalad);
     tartalom.innerHTML = `<p class="kicsi bevezeto">${esc(csalad ? csalad.nev : 'Szolgáltatás')}: melyiket választod?</p><div class="lista">${l.map((s) => `<button class="kartya${akcioSzazalek(s.name) ? ' akcio' : ''}" data-valt="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(szepNev(s.name))}</span>${akcioSzazalek(s.name) ? `<span class="cimke">${akcioSzazalek(s.name)} akció</span>` : ''}<div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${akcioSzazalek(s.name) ? ' · csak bizonyos gyógytornászoknál' : ''}</div></button>`).join('')}</div>`;
@@ -423,6 +439,7 @@ export function nyit(ctx = {}) {
 
   // --- 3. helyszin (csak ahol a valasztott szolgaltatas elerheto) ---
   function helyLepes() {
+    lepesStat('hely');
     const l = csaladSzolgak();
     const s = all.szolg ? l.find((x) => x.serviceId === all.szolg.serviceId) : null;
     const helyek = HELYSZIN_SORREND.filter((id) => (s ? s.helyek.includes(id) : l.some((x) => x.helyek.includes(id))));
@@ -448,6 +465,7 @@ export function nyit(ctx = {}) {
 
   // --- 4. szakember (a "Mindegy - a legkorabbi idopont" legfelul) ---
   async function szakemberLepes() {
+    lepesStat('szakember');
     tartalom.innerHTML = osszegzes() + '<div class="toltes">A szakemberek betöltése…</div>';
     let szolgLista, staff = {};
     try { szolgLista = await adapter.getServices(all.placeId); } catch (e) { return hiba('szolgaltatasok', e); }
@@ -481,6 +499,7 @@ export function nyit(ctx = {}) {
     return pre;
   };
   async function idopontLepes() {
+    lepesStat('ido');
     const s = all.szolg;
     const pre = elolt(s);
     if (!pre.lista) {
@@ -500,6 +519,7 @@ export function nyit(ctx = {}) {
     const napok = new Map();
     for (const x of sajat) { const b = sb(x); if (!napok.has(b.nap)) napok.set(b.nap, []); napok.get(b.nap).push(x); }
     if (!sajat.length) {
+      motorStat('elakad', 'ido', 'nincs_szabad_ido');
       tartalom.innerHTML = osszegzes() + `<p class="uzenet">A következő ${NAPOK} napban ezen a helyszínen erre a szolgáltatásra nincs szabad időpont.</p><p><button class="gomb masodlagos" data-lepes="szakember">Másik szakember</button> <button class="gomb masodlagos" data-lepes="hely">Másik helyszín</button></p>`;
       return;
     }
@@ -529,6 +549,7 @@ export function nyit(ctx = {}) {
 
   // --- 6. adatlap (a Salonic beagyazott urlapja) ---
   async function adatlapLepes() {
+    lepesStat('adatlap');
     const sorszam = ++adatSorszam;
     tartalom.innerHTML = osszegzes() + '<div class="toltes">Az adatlap betöltése…</div>';
     // "Mindegy": a valasztott idoponthoz tartozo konkret szakemberrel foglalunk (igy tudjuk, kit lat a vendeg; az idopont ugyanaz marad)
@@ -586,7 +607,7 @@ export function nyit(ctx = {}) {
   shadow.addEventListener('click', (e) => {
     const t = e.target.closest('button, a');
     if (!t) return;
-    if (t.hasAttribute('data-bezar')) return bezar();
+    if (t.hasAttribute('data-bezar')) return bezarGomb();
     if (t.hasAttribute('data-vissza')) return vissza();
     const d = t.dataset;
     if (t.hasAttribute('data-hivas')) { all.lepes = 'hivas'; return rajzol(); }
@@ -617,7 +638,7 @@ export function nyit(ctx = {}) {
   shadow.addEventListener('submit', (e) => { if (e.target.closest && e.target.closest('form.hivas-urlap')) { e.preventDefault(); hivasKuld(); } });
   // fokuszcsapda: Tab / Shift+Tab a retegen belul marad (a Shadow DOM-ban a document.activeElement a host, a shadow.activeElement a belso elem)
   const billentyu = (e) => {
-    if (e.key === 'Escape' && all.lepes !== 'adatlap') return bezar();
+    if (e.key === 'Escape' && all.lepes !== 'adatlap') return bezarGomb();
     if (e.key !== 'Tab') return;
     const f = [...shadow.querySelectorAll('button:not([disabled]):not([hidden]):not([tabindex="-1"]), a[href], iframe.aktiv')].filter((el) => el.offsetParent !== null || el.tagName === 'IFRAME');
     if (!f.length) return;
@@ -643,7 +664,7 @@ export function nyit(ctx = {}) {
     try {
       const v = await fetch((ctx.apiBase || '') + '/api/gy-foglalas', {
         method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ uuid: all.bookingId, place_id: all.placeId, service_id: all.szolg.serviceId, staff_id: String(all.effStaff || all.staffId || '-1'), start_unix: all.slot.start_unix, redirect_url: url }),
+        body: JSON.stringify({ m: eszkozJel(), uuid: all.bookingId, place_id: all.placeId, service_id: all.szolg.serviceId, staff_id: String(all.effStaff || all.staffId || '-1'), start_unix: all.slot.start_unix, redirect_url: url }),
       });
       const j = v.ok ? await v.json() : null;
       if (j && typeof j.koszono === 'string' && /^\/(allapot-ok|foglalas-ok)\/$/.test(j.koszono)) ut = j.koszono;
@@ -654,8 +675,17 @@ export function nyit(ctx = {}) {
   };
   window.addEventListener('message', uzenet);
 
+  // kifejezett bezaras (X / hatter / Esc): az utolso lepes nevevel; a tobbi bezaras (programbol, sikeres foglalas) nem szamol
+  function bezarGomb() { if (!lezart) motorStat('bezar_gomb', utolsoLepes || all.lepes); bezar(); }
+  // technikai kilepesjelzes (pagehide / lathatosag-valtas): CSAK becsles; megnyitasonkent legfeljebb egyszer
+  const elhagyJelzes = () => { if (lezart || elhagyKuldve) return; elhagyKuldve = true; motorStat('elhagy_jelzes', utolsoLepes || all.lepes); };
+  const lathatosag = () => { if (document.visibilityState === 'hidden') elhagyJelzes(); };
+  window.addEventListener('pagehide', elhagyJelzes);
+  document.addEventListener('visibilitychange', lathatosag);
   function bezar() {
     lezart = true;
+    window.removeEventListener('pagehide', elhagyJelzes);
+    document.removeEventListener('visibilitychange', lathatosag);
     window.removeEventListener('message', uzenet);
     document.removeEventListener('keydown', billentyu);
     document.documentElement.style.overflow = elozoOverflow;
@@ -667,6 +697,7 @@ export function nyit(ctx = {}) {
     try { if (typeof ctx.bezarasUtan === 'function') ctx.bezarasUtan(); } catch (e) { /* */ }
   }
   nyitott = { host, bezar, destroyed: false };
+  motorStat('nyit');
   rajzol();
   $('.tartalom').focus({ preventScroll: true });
   return nyitott;
