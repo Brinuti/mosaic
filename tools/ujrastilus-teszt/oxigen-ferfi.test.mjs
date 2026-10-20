@@ -26,8 +26,8 @@ function playwright() {
 const { chromium } = playwright();
 
 const NEV = 'oxigenterapia-ferfiaknak';
-const H1_FO = 'Hajgyógyászati kezelés';
-const H1_TELJES = 'Hajgyógyászati kezelés, ami 2 millió kezelés alapján 95%-ban hatásos hajhullásra, ritkulásra és ritka szakállra';
+const H1_FO = 'Oxigénes fejbőrápolás férfiaknak Budán';
+const H1_TELJES = H1_FO;   // 2026-10-20 10:30: egyetlen, rövid H1 (a "hajgyógyászati" orvosi állítás és a 95% / 2 millió kezelés ki: Google Ads brief 9.B 2/1)
 const GYIK_AZON = 'c2eb0f_193bec926d66321bf99ada19cf4105a5';
 const FOGLALO = '/foglalo-motor?business=oxygen';
 const HAJVIZSGALAT = '/foglalo-motor?business=oxygen&service=466147';
@@ -60,7 +60,7 @@ const norm = (s) => s.toLowerCase().normalize('NFC').replace(/[\u0336\p{Extended
 
 // --- a tulajdonos kerte / a fo oldal szerint javitott helyek (a regi oldal szovegei, amik mar NEM vagy MASKENT szerepelnek) ---
 const VALTOZTATOTT = [
-  [/^Férfi Oxigénterápia kopaszodás/, 'uj H1 (Feri 2026-10-20): "Hajgyógyászati kezelés, ami 2 millió kezelés alapján 95%-ban hatásos hajhullásra, ritkulásra és ritka szakállra"'],
+  [/^Férfi Oxigénterápia kopaszodás/, 'uj H1 (2026-10-20 10:30, Google Ads brief 9.B 2/1): "Oxigénes fejbőrápolás férfiaknak Budán"'],
   [/^(Csak Arc|Arc \+ Haj): .*(helyett|\/ 2 óra)|helyett 29\.900 Ft|helyett 39\.900 Ft|^(29\.900|39\.900) Ft \/ 2 óra|^(Csak Arc|Arc \+ Haj): [\d.]+ Ft helyett/, 'a hero ar-sorai: nincs kedvezmeny / athuzott ar; helyette a Salonic szerinti arak (hajvizsgalat 4 990, elso kezeles 29 900, 2. alkalomtol 26 000); az Arc-arak nem ellenorizhetok'],
   [/Májusban 10% kedvezménnyel/, 'a "Májusban 10% kedvezménnyel!" felirat mind a 6 helyen torolve (nincs kedvezmeny)'],
   [/891 értékelésből/, 'az ertekeles az elo Google-szam mintaja (4,9 – <szam> értékelés)'],
@@ -134,10 +134,11 @@ describe(`/${NEV}`, () => {
     const { p, ctx, hibak, nincs } = await nyit(nev);
     const cim = await p.title();
     assert.ok(cim.length <= 60, `title hossza ${cim.length}`);
-    assert.match(cim, /Hajgyógyászati/);
+    assert.match(cim, /^Oxigénes fejbőrápolás férfiaknak Budán/);
     const leiras = await p.getAttribute('meta[name="description"]', 'content');
     assert.ok(leiras.length <= 155 && leiras.length >= 80, `description hossza ${leiras.length}`);
-    assert.ok(leiras.startsWith('Hajgyógyászati kezelés, ami 2 millió kezelés alapján 95%-ban hatásos hajhullásra, ritkulásra és ritka szakállra'), 'a description az uj H1 mondatával kezdődik');
+    assert.ok(leiras.startsWith('Oxigénes fejbőrápolás férfiaknak'), 'a description az uj H1-gyel kezdődik');
+    assert.doesNotMatch(cim + ' ' + leiras, /hajgyógyász|95\s*%|2 millió/i, 'a title / description nem tartalmaz orvosi állítást / 95% / 2 millió kezelés');
     assert.doesNotMatch(leiras + cim, /seborrea|ekcéma|pikkelysömör|[Mm]ájus|10%/, 'nincs betegseg-felsorolas / majus / 10% a meta-adatokban');
     assert.equal(await p.getAttribute('meta[property="og:title"]', 'content'), cim);
     assert.equal(await p.getAttribute('meta[name="twitter:title"]', 'content'), cim);
@@ -148,7 +149,7 @@ describe(`/${NEV}`, () => {
     assert.equal(await p.locator('meta[name="robots"]').count(), 0, 'nincs robots meta (a regi oldal indexelheto volt)');
     assert.doesNotMatch(regi, /<meta name="robots"/, 'a regi oldal sem volt noindex');
     assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
-    assert.equal(norm(await p.textContent('h1')), norm(H1_TELJES), 'a H1 Feri mondata');
+    assert.equal(norm(await p.textContent('h1')), norm(H1_TELJES), 'a H1 a Google Ads brief szerinti');
     assert.equal((await p.textContent('h1 .h1-fo')).replace(',', '').trim(), H1_FO);
     assert.equal(await p.$$eval('img', (l) => l.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.currentSrc)).then((l) => l.length), 0, 'torott kepek');
     assert.equal(await p.$$eval('img:not([alt])', (l) => l.length), 0, 'minden kepnek van alt attributuma');
@@ -180,19 +181,20 @@ describe(`/${NEV}`, () => {
     await ctx.close();
   });
 
-  test('H1: a nagy cim egy sor, az alcim kiemelt (ugyanabban az H1-ben); mobilon a cim legfeljebb 3 sor (nagy cim 1 + alcim 2) 390 / 412 px-en, 360 px-en legfeljebb 4; az alcim utolso sora nem 1 szo; a hero-sorrend: CIM, KEP, alcim, arak, gombok, ertekeles, hely', async () => {
-    for (const [szeles, max] of [[412, 3], [390, 3], [360, 4]]) {
+  test('H1: egyetlen, rovid cim; mobilon legfeljebb 2 sor (412 / 390 / 360 px), az utolso sor legalabb 2 szo (nincs arva-szo); nincs lablec-csillag / "hajgyogyaszati" / 95% a hero-ban; a hero-sorrend: CIM, KEP, alcim, arak, gombok, ertekeles, hely', async () => {
+    for (const [szeles, max] of [[412, 2], [390, 2], [360, 2]]) {
       const { p, ctx } = await nyit(nev, { szeles });
-      const fo = await sorSzam(p, 'h1 .h1-fo'), al = await sorSzam(p, 'h1 .h1-al'), ossz = await sorSzam(p, 'h1');
-      assert.equal(fo, 1, `${szeles}px: a nagy cim egy sor`);
-      assert.ok(ossz <= max, `${szeles}px: a H1 ${ossz} soros (nagy cim ${fo} + alcim ${al}); max ${max}`);
-      // az alcim utolso sora legalabb 2 szo (nincs arva-szo): a sorok szavai
+      const ossz = await sorSzam(p, 'h1');
+      assert.ok(ossz <= max, `${szeles}px: a H1 ${ossz} soros; max ${max}`);
+      assert.equal(await p.locator('h1 .h1-al, h1 .h1-csillag, .hero .hero-lab').count(), 0, 'nincs alcim-span / csillag / lablejegyzet a H1-ben');
+      assert.doesNotMatch(await p.evaluate(() => document.querySelector('.hero').innerText), /95\s*%|2\s*millió\s*kezelés/i, 'a hero nem hivatkozik a 95% / 2 millió kezelés állításra');
+      // a H1 utolso sora legalabb 2 szo (nincs arva-szo): a sorok szavai
       const utolso = await p.evaluate(() => {
-        const el = document.querySelector('h1 .h1-al'); const bejaro = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); const szavak = []; let n;
-        while ((n = bejaro.nextNode())) { if (n.parentElement.closest('[aria-hidden="true"]')) continue; const re = /\S+/g; let m; while ((m = re.exec(n.nodeValue))) { const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length); const k = r.getClientRects(); if (k.length) szavak.push(Math.round(k[k.length - 1].top)); } }
+        const el = document.querySelector('h1'); const bejaro = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); const szavak = []; let n;
+        while ((n = bejaro.nextNode())) { const re = /\S+/g; let m; while ((m = re.exec(n.nodeValue))) { const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length); const k = r.getClientRects(); if (k.length) szavak.push(Math.round(k[k.length - 1].top)); } }
         const veg = szavak[szavak.length - 1]; return szavak.filter((t) => Math.abs(t - veg) < 5).length;
       });
-      assert.ok(utolso >= 2, `${szeles}px: az alcim utolso sora ${utolso} szo`);
+      assert.ok(utolso >= 2 || ossz === 1, `${szeles}px: a H1 utolso sora ${utolso} szo`);
       // hero-sorrend (fentrol lefele): H1 -> kep -> alcim (lead) -> arak -> gombok -> ertekeles -> hely
       const y = await p.evaluate(() => {
         const t = (s) => { const e = document.querySelector(s); const r = e.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; };
@@ -405,12 +407,12 @@ describe(`/${NEV}`, () => {
     await ctx.close();
   });
 
-  test('foglalo-gombok: a hero ket fo gombja (Hajvizsgalat 4 990 Ft -> service=466147, fo / arany; Elso kezeles 29 900 Ft -> 466110), a Haj csomag gombjai, a tobbi a /foglalo-motor?business=oxygen; mobil sticky CTA; fejlec-lablec jelolok', async () => {
+  test('foglalo-gombok: a hero ket fo gombja ("Hajkamerás felmérés – 4 990 Ft" -> service=466147, fo / arany; Elso kezeles 29 900 Ft -> 466110), a Haj csomag gombjai, a tobbi a /foglalo-motor?business=oxygen; mobil sticky CTA; fejlec-lablec jelolok', async () => {
     const { p, ctx } = await nyit(nev);
     const gombok = await p.$$eval('main a[href^="/foglalo-motor"]', (l) => l.map((a) => [a.getAttribute('href'), a.textContent.replace(/\s+/g, ' ').replace(/→/, '').trim()]));
     assert.deepEqual(gombok.map((g) => g[0]), [HAJVIZSGALAT, ELSO_KEZELES, FOGLALO, FOGLALO, ELSO_KEZELES, HAJVIZSGALAT, FOGLALO, FOGLALO, FOGLALO, FOGLALO]);
-    assert.deepEqual(gombok.map((g) => g[1]), ['Hajvizsgálat 4 990 Ft', 'Első kezelés 29 900 Ft', 'IDŐPONTFOGLALÁS', 'IDŐPONTFOGLALÁS', 'Első kezelés – 29 900 Ft', 'Csak hajvizsgálat – 4 990 Ft', 'FOGLALOK!', 'BEJELENTKEZEK!', 'IDŐPONT FOGLALÁS', 'IDŐPONTFOGLALÁS']);
-    assert.match(await p.getAttribute('.hero-cta a:first-child', 'class'), /gomb-arany/, 'a Hajvizsgalat a fo (arany) gomb');
+    assert.deepEqual(gombok.map((g) => g[1]), ['Hajkamerás felmérés – 4 990 Ft', 'Első kezelés 29 900 Ft', 'IDŐPONTFOGLALÁS', 'IDŐPONTFOGLALÁS', 'Első kezelés – 29 900 Ft', 'Csak hajkamerás felmérés – 4 990 Ft', 'FOGLALOK!', 'BEJELENTKEZEK!', 'IDŐPONT FOGLALÁS', 'IDŐPONTFOGLALÁS']);
+    assert.match(await p.getAttribute('.hero-cta a:first-child', 'class'), /gomb-arany/, 'a Hajkamerás felmérés a fo (arany) gomb');
     assert.match(await p.getAttribute('.hero-cta a:last-child', 'class'), /gomb-korvonal/);
     const oldal = await p.textContent('body');
     assert.ok(oldal.includes('Szőrtelenítés') && oldal.includes('Ajándékkártya'), 'fejlec (fomenu)');

@@ -85,3 +85,6 @@ A szöveg a `/sminktetovalas-budapest` mostani oldalának szájra átírt válto
 3. Menü / link: a `tools/fejlec-menu.mjs` / `assets/fejlec/*` csak akkor, ha a tulajdonos menüpontot kér; a SEO miatt érdemes a `/sminktetovalas-budapest` oldalról is linkelni, és az ottani „Ajak” szűrőről / kártyáról ide mutatni (kettős tartalom elkerülése: a két oldal tartalma különbözik, a canonical mindkettőn önmagára mutat).
 4. A teszt `rejtett` próbája (nincs link, `noindex`) ekkor módosítandó.
 5. Nem kell külön útválasztás: az oldal a `foglalas/*.html` alapján már a `/szajtetovalas-budapest` címen érhető el (ékezetes cím nincs: `/szájtetoválás-budapest` 404).
+
+## 2026-10-20: /sminktetovalas-budapest (a meglévő oldal) javítása – Google Ads brief 9.B, 3. pont
+A GYIK „Mire kell figyelnem előtte?” válaszából a látható „[A kezelés előtti teendők és kizáró okok végleges listája Melitta jóváhagyása után.]” helyőrző törölve (a /gyik oldalon is: `node tools/gyik-oldal.mjs`); a tételes lista csak Melitta jóváhagyásával kerül be. Az oldal fejléce (FOGLALÁS menügomb, asztali + mobil), az Infó-ablak és a lábléc „Időpontfoglalás” gombja `/foglalo-motor?business=pmu` (`<!--mh-foglalas:business=pmu-->`, nem a régi `/idpontfoglalas`, nem `business=headspa`). Teszt: `tools/test-sminktetovalas-oldal.mjs`.
