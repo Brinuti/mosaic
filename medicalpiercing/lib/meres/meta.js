@@ -78,9 +78,9 @@ export async function metaTesztVegpont({ request, env, fetchFn = fetch }) {
 // ARNYEKMERES (Feri, 2026-10-14 08:57 "mehet a meta teszt", 10:22: a GPT-javaslat szerinti 1. valtozat).
 // A foglalas ROGZITESEKOR (a koszonooldali bongeszo-keresbol) sajat szerveres Schedule megy a kampanyban NEM hasznalt
 // "ARNYEK - MP meres teszt" adathalmazba (1650176753358464), forraskent a Salonic-aldomainnel (a foglalas ott tortenik),
-// fbc/fbp-vel. A bongeszo user agentjet (a Meta website-esemenyhez keri) CSAK ebben a hivasban hasznaljuk, SEHOL NEM TAROLJUK.
+// fbc/fbp-vel (2026-10-20-tol fbc/fbp nelkul is, ha van IP + UA vagy external_id). A bongeszo user agentjet (a Meta website-esemenyhez keri) CSAK ebben a hivasban hasznaljuk, SEHOL NEM TAROLJUK.
 // Csak hirdetesi hozzajarulassal. A Salonic-igazolast csak a sajat osszevetesunkhoz hasznaljuk. Az eles adathalmazt nem erinti.
-// Kifele NINCS e-mail, telefon, nev, IP, szolgaltatasnev, helyszin.
+// Kifele NINCS e-mail, telefon, nev, szolgaltatasnev, helyszin (az IP 2026-10-19 ota megy, Feri dontese).
 // Mod: mp_beallitas.meta_arnyek_mod = 'ki' | 'naplo' (alapertelmezes) | 'eles'; eles kuldes csak eles hoszton + tokennel.
 export const ARNYEK_DATASET = '1650176753358464';
 export const ARNYEK_ESEMENY = 'Schedule';
@@ -101,15 +101,30 @@ export function arnyekHatalyos(mod, env = {}, host = '') {
   return 'naplo';
 }
 
-/** Jogosultsag (tiszta): eles, hirdetesi hozzajarulas, fbc vagy fbp, van user agent. */
-export function arnyekJogosult(sor, ua) {
+/**
+ * Jogosultsag (tiszta): eles, hirdetesi hozzajarulas, van user agent, es van legalabb egy azonosito: fbc / fbp, vagy
+ * (2026-10-20, a TikTok-ag mintajara) ervenyes IP + user agent, vagy external_id. Azonosito nelkul: 'nincs_azonosito'.
+ */
+export function arnyekJogosult(sor, ua, ip = null, ext = null) {
   if (!sor) return { ok: false, miert: 'nincs_sor' };
   if (sor.kornyezet !== 'eles') return { ok: false, miert: 'nem_eles' };
   if (Number(sor.hozzajarulas_hirdetes) !== 1) return { ok: false, miert: 'nincs_hozzajarulas' };
-  if (!sor.meta_fbc && !sor.meta_fbp) return { ok: false, miert: 'nincs_meta_azonosito' };
   if (!ua) return { ok: false, miert: 'nincs_ua' };
+  if (!sor.meta_fbc && !sor.meta_fbp && !ipJo(ip) && !extJo(ext)) return { ok: false, miert: 'nincs_azonosito' };
   return { ok: true };
 }
+
+/** A veletlen latogato-azonosito SHA-256 lenyomata (64 hex), kulonben null. */
+export const extJo = (ext) => (ext && /^[0-9a-f]{64}$/.test(String(ext)) ? String(ext) : null);
+
+/**
+ * Kihagyas-naplo (2026-10-20): a kimaradt kuldes oka 'kihagyva:<ok>' allapottal, payload / valasz NELKUL kerul a tablaba,
+ * hogy a napi riport okot mutasson. Csak a meg nem rogzitett vagy korabban szinten kihagyott kulcsot irja (felul).
+ * Nem naplozzuk: nincs kulcs, nem eles kornyezet, szandekosan kikapcsolt mod, mar rogzitett kulcs, varatlan hiba.
+ */
+export const NAPLOZATLAN_KIHAGYAS = Object.freeze(['nincs_sor', 'nem_eles', 'ki', 'mar_rogzitve', 'hiba']);
+export const kihagyvaAllapot = (ok) => `kihagyva:${ok}`;
+export const kihagyottE = (allapot) => String(allapot || '').startsWith('kihagyva:');
 
 /** IP-cim ellenorzese (IPv4 / IPv6), kulonben null. */
 export const ipJo = (ip) => { const s = String(ip || '').trim(); return /^(\d{1,3}\.){3}\d{1,3}$/.test(s) || (/^[0-9a-f:]+$/i.test(s) && s.includes(':') && s.length <= 45) ? s : null; };
@@ -118,7 +133,7 @@ export const ipJo = (ip) => { const s = String(ip || '').trim(); return /^(\d{1,
 export function arnyekTorzs(sor, ua, ip = null, ext = null) {
   const user = { client_user_agent: String(ua).slice(0, 400) };
   if (ipJo(ip)) user.client_ip_address = ipJo(ip);
-  if (ext && /^[0-9a-f]{64}$/.test(String(ext))) user.external_id = String(ext); // a veletlen latogato-azonosito SHA-256-ja
+  if (extJo(ext)) user.external_id = extJo(ext); // a veletlen latogato-azonosito SHA-256-ja
   if (sor.meta_fbc) user.fbc = String(sor.meta_fbc);
   if (sor.meta_fbp) user.fbp = String(sor.meta_fbp);
   const e = { event_name: ARNYEK_ESEMENY, event_time: Number(sor.letrehozva), event_id: esemenyId(sor.kulcs), action_source: 'website', event_source_url: SALONIC_FORRAS_URL };
@@ -128,22 +143,33 @@ export function arnyekTorzs(sor, ua, ip = null, ext = null) {
   return { data: [{ ...e, user_data: user }] };
 }
 
-/** Az uj foglalas arnyek-lepese. Soha nem dob; kulcsonkent egyszer. A user agent nem kerul a naplóba. */
+/** Az uj foglalas arnyek-lepese. Soha nem dob; kulcsonkent egyszer. A user agent / IP nem kerul a naplóba. */
 export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchImpl = fetch, most = Math.floor(Date.now() / 1000), ip = null, ext = null } = {}) {
   try {
-    const j = arnyekJogosult(sor, ua);
-    if (!j.ok) return { kihagyva: j.miert };
+    const j = arnyekJogosult(sor, ua, ip, ext);
+    if (!j.ok && (j.miert === 'nincs_sor' || j.miert === 'nem_eles' || !sor.kulcs)) return { kihagyva: j.miert };
     await db.prepare(ARNYEK_SEMA).run();
     const mod = arnyekHatalyos(await arnyekMod(db), env, host);
+    const kihagy = async (ok) => {
+      if (!NAPLOZATLAN_KIHAGYAS.includes(ok)) {
+        try {
+          await db.prepare(`INSERT INTO mp_meta_arnyek (kulcs, mod, allapot, van_fbc, van_fbp, valasz, ido) VALUES (?,?,?,?,?,NULL,?)
+            ON CONFLICT (kulcs) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, van_fbc = excluded.van_fbc, van_fbp = excluded.van_fbp, valasz = NULL, ido = excluded.ido
+            WHERE mp_meta_arnyek.allapot LIKE 'kihagyva:%'`).bind(sor.kulcs, mod, kihagyvaAllapot(ok), sor.meta_fbc ? 1 : 0, sor.meta_fbp ? 1 : 0, most).run();
+        } catch (e) { /* a naplo nem allithatja meg */ }
+      }
+      return { kihagyva: ok };
+    };
     if (mod === 'ki') return { kihagyva: 'ki' };
     const van = await db.prepare('SELECT allapot FROM mp_meta_arnyek WHERE kulcs = ?').bind(sor.kulcs).first();
-    if (van) return { kihagyva: 'mar_rogzitve' };
+    if (van && !kihagyottE(van.allapot)) return { kihagyva: 'mar_rogzitve' };
+    if (!j.ok) return kihagy(j.miert);
     let torzs;
-    try { torzs = arnyekTorzs(sor, ua, ip, ext); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    try { torzs = arnyekTorzs(sor, ua, ip, ext); } catch (e) { return kihagy('erzekeny_adat'); }
     let allapot = 'naplozva';
     let valasz = null;
     if (mod === 'eles') {
-      const nyersek = [sor.meta_fbc, sor.meta_fbp, env.META_CAPI_TOKEN, ua, ip].filter(Boolean);
+      const nyersek = [sor.meta_fbc, sor.meta_fbp, env.META_CAPI_TOKEN, ua, ip, ext].filter(Boolean);
       try {
         const r = await fetchImpl(`${ARNYEK_VEGPONT()}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(torzs) });
         const sz = await r.text();
@@ -152,7 +178,10 @@ export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchI
         valasz = kitakar(sz, nyersek).slice(0, 400);
       } catch (e) { allapot = 'hiba'; valasz = kitakar(String(e && e.message || e), nyersek).slice(0, 200); }
     }
-    await db.prepare('INSERT OR IGNORE INTO mp_meta_arnyek (kulcs, mod, allapot, van_fbc, van_fbp, valasz, ido) VALUES (?,?,?,?,?,?,?)')
+    // a korabbi kihagyva-sort a sikeres (vagy naplozott) kuldes felulirja; mas allapotu sor nem irodik felul
+    await db.prepare(`INSERT INTO mp_meta_arnyek (kulcs, mod, allapot, van_fbc, van_fbp, valasz, ido) VALUES (?,?,?,?,?,?,?)
+      ON CONFLICT (kulcs) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, van_fbc = excluded.van_fbc, van_fbp = excluded.van_fbp, valasz = excluded.valasz, ido = excluded.ido
+      WHERE mp_meta_arnyek.allapot LIKE 'kihagyva:%'`)
       .bind(sor.kulcs, mod, allapot, sor.meta_fbc ? 1 : 0, sor.meta_fbp ? 1 : 0, valasz, most).run();
     return { allapot, mod };
   } catch (e) {

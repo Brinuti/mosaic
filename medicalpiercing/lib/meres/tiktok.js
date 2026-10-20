@@ -11,7 +11,7 @@
 // gyujtve), semleges URL, penznem + ertek. IP + user agent (Feri 2026-10-19, max. adat egeszsegugyi adat nelkul). NINCS e-mail, telefon, external_id, szolgaltatasnev, kategoria,
 // piercing-tipus, helyszin, uj/visszatero jeloles. A nem-azonosito mezokon a meres.js vedohaloja (vanErzekeny) fut: talalat -> semmi.
 import { esemenyId, vanErzekeny, SEMLEGES_URL } from './meres.js';
-import { ipJo } from './meta.js';
+import { ipJo, NAPLOZATLAN_KIHAGYAS, kihagyvaAllapot, kihagyottE } from './meta.js';
 import { maszk, kitakar, ELES_HOST } from './google-ads.js';
 // Elo konverzio javitasa (Feri 2026-10-19 19:50: "mehet es A"): a 7 elo adgroup a pixel SCHEDULE esemenyere optimalizal. Az URL-szabalyos
 // (event_id nelkuli) Schedule helyett a koszonooldal kodbol kuldi a 'Schedule'-t (suti.js), a szerver ugyanazzal az event_id-val -> dedup.
@@ -122,18 +122,30 @@ async function elesKuldes(torzs, env, { fetchImpl, ms = 8000 }) {
 export async function tiktokLepes(db, sor, env = {}, host = '', { fetchImpl = fetch, most = Math.floor(Date.now() / 1000) } = {}) {
   try {
     const j = jogosult(sor, most);
-    if (!j.ok) return { kihagyva: j.miert };
+    if (!j.ok && (j.miert === 'nincs_sor' || j.miert === 'nem_eles' || !sor.kulcs)) return { kihagyva: j.miert };
     await db.prepare(TIKTOK_SEMA).run();
     const mod = hatalyosMod(await tiktokMod(db), env, host);
+    // Kihagyas-naplo (2026-10-20): 'kihagyva:<ok>' allapot, payload NELKUL; csak meg nem rogzitett / kihagyott kulcsra
+    const kihagy = async (ok) => {
+      if (!NAPLOZATLAN_KIHAGYAS.includes(ok)) {
+        try {
+          await db.prepare(`INSERT INTO mp_tiktok_feltoltes (kulcs, mod, allapot, payload_maszkolt, ido) VALUES (?,?,?,NULL,?)
+            ON CONFLICT (kulcs) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, payload_maszkolt = NULL, ido = excluded.ido
+            WHERE mp_tiktok_feltoltes.allapot LIKE 'kihagyva:%'`).bind(sor.kulcs, mod, kihagyvaAllapot(ok), most).run();
+        } catch (e) { /* a naplo nem allithatja meg */ }
+      }
+      return { kihagyva: ok };
+    };
     if (mod === 'ki') return { kihagyva: 'ki' };
     const van = await db.prepare('SELECT mod, allapot FROM mp_tiktok_feltoltes WHERE kulcs = ?').bind(sor.kulcs).first();
-    if (van && !(mod === 'eles' && van.allapot === 'hiba')) return { kihagyva: 'mar_rogzitve' };
+    if (van && !kihagyottE(van.allapot) && !(mod === 'eles' && van.allapot === 'hiba')) return { kihagyva: 'mar_rogzitve' };
+    if (!j.ok) return kihagy(j.miert);
     let torzs;
     let ktx = null;
     try { ktx = await db.prepare('SELECT ip, ua, ext FROM mp_kontextus WHERE kulcs = ?').bind(sor.kulcs).first(); } catch (e) { /* nincs tabla */ }
     const schedule = String((await beallitas(db, 'tiktok_schedule')) || '').trim().toLowerCase() === 'be';
-    try { torzs = tiktokTorzs(sor, ktx, { schedule }); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
-    if (!Object.keys(torzs.data[0].user).length) return { kihagyva: 'nincs_azonosito' };
+    try { torzs = tiktokTorzs(sor, ktx, { schedule }); } catch (e) { return kihagy('erzekeny_adat'); }
+    if (!Object.keys(torzs.data[0].user).length) return kihagy('nincs_azonosito');
     const mtorzs = JSON.stringify(await maszkoltTorzs(torzs));
     let allapot = 'naplozva';
     if (mod === 'eles') {
@@ -144,7 +156,7 @@ export async function tiktokLepes(db, sor, env = {}, host = '', { fetchImpl = fe
     }
     await db.prepare(`INSERT INTO mp_tiktok_feltoltes (kulcs, mod, allapot, payload_maszkolt, ido) VALUES (?,?,?,?,?)
       ON CONFLICT (kulcs) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, payload_maszkolt = excluded.payload_maszkolt, ido = excluded.ido
-      WHERE mp_tiktok_feltoltes.allapot = 'hiba'`).bind(sor.kulcs, mod, allapot, mtorzs, most).run();
+      WHERE mp_tiktok_feltoltes.allapot = 'hiba' OR mp_tiktok_feltoltes.allapot LIKE 'kihagyva:%'`).bind(sor.kulcs, mod, allapot, mtorzs, most).run();
     return { allapot, mod };
   } catch (e) {
     console.error('mp-meres: tiktok lepes hiba', String(e && e.message || e).slice(0, 200));
