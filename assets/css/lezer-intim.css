@@ -28,6 +28,9 @@
 .in-hely .ikon-kor { width: 34px; height: 34px; }
 .in-hely .ikon-kor svg { width: 17px; height: 17px; }
 .in-hely a { color: var(--sotet); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+/* belso gorgetes (nem #horgony-link: a GTM History Change ne induljon): a gombok linknek latszanak */
+.in-gorget { background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+.in-hely-gomb { color: var(--sotet); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
 
 /* --- A) 3 pont + kezelohelyiseg-kepek --- */
 .in-kartyak { margin-top: 26px; }
@@ -135,7 +138,7 @@
   .in-hely { font-size: 13.5px; gap: 10px; align-items: flex-start; }
   .in-hely .ikon-kor { width: 30px; height: 30px; }
   .in-hely .ikon-kor svg { width: 15px; height: 15px; }
-  .in-hely a { white-space: normal; }
+  .in-hely a, .in-hely-gomb { white-space: normal; }
   .in-bevezeto { font-size: 16.5px; }
   .in-kepsor { gap: 10px; margin-top: 20px; }
   .in-kepsor figure { border-radius: 10px; }

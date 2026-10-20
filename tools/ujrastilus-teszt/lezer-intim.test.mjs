@@ -132,9 +132,9 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     assert.equal(await p.locator('main .hero a.gomb-korvonal').getAttribute('href'), MASODLAGOS);
     // minden helyi, nem foglalo link: csak a ferfi oldal / tel / terkep / google
     const masok = await p.$$eval('main a[href]', (l) => l.map((a) => a.getAttribute('href')).filter((h) => !h.startsWith('/foglalo-motor')));
-    for (const h of masok) assert.ok(/^(#(velemenyek|terkep)$|https:\/\/www\.google\.com\/maps\/|tel:\+36202474444$|\/vegleges-szortelenites-ferfiaknak$)/.test(h), 'engedett link: ' + h);
+    for (const h of masok) assert.ok(/^(https:\/\/www\.google\.com\/maps\/|tel:\+36202474444$|\/vegleges-szortelenites-ferfiaknak$)/.test(h), 'engedett link: ' + h);
     // Feri kerese (2026-10-20): az ertekeles / a terkep NEM visz ki az oldalrol: belso horgony a velemenyek / a terkepes blokkra (kulso Google-link csak az Utvonaltervezes gomb es a Trustindex betolto-tartaleka)
-    assert.ok(!masok.some((h) => h.includes('maps.app.goo.gl')), 'nincs kulso Google-profil / ertekeles link');
+    assert.ok(!masok.some((h) => h.includes('maps.app.goo.gl') || h.startsWith('#')), 'nincs kulso Google-profil / ertekeles link, es nincs #horgony-link (GTM History Change)');
     assert.ok(masok.filter((h) => h.startsWith('https://')).length <= 2 && masok.includes('https://www.google.com/maps/search/?api=1&query=MOSAIC%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202.'), 'kulso Google Maps link: csak az Utvonaltervezes (es a Trustindex betolto-tartaleka)');
     assert.ok(masok.includes('/vegleges-szortelenites-ferfiaknak'), 'G) Ferfi intim kezeles? -> /vegleges-szortelenites-ferfiaknak');
     assert.equal(await p.locator('a', { hasText: 'Férfi intim kezelés?' }).getAttribute('href'), '/vegleges-szortelenites-ferfiaknak');
@@ -216,24 +216,26 @@ describe(`/${NEV} (tartalom, stilus, linkek)`, () => {
     await a.ctx.close(); await b.ctx.close();
   });
 
-  test('ERTEKELES / TERKEP (Feri kerese 2026-10-20): "4,9 – 1 266 Google-ertekeles" (a HTML-ben a tartalek; a google-szam.js elo szamra cserli); NEM visz ki az oldalrol: a hero jelvenye a velemenyek blokkra gorget, a hero helye a terkepes blokkra; a velemenyek-blokkban nem kattinthato jelveny', async () => {
+  test('ERTEKELES / TERKEP (Feri kerese 2026-10-20): "4,9 – 1 266 Google-ertekeles" (a HTML-ben a tartalek; a google-szam.js elo szamra cserli); NEM visz ki az oldalrol: a hero jelvenye (gomb) a velemenyek blokkra gorget, a "Lasd a terkepen" gomb a terkepes blokkra (URL-valtozas nelkul); a velemenyek-blokkban nem kattinthato jelveny', async () => {
     const { p, ctx } = await nyit(NEV);
-    const e = p.locator('.in-hero-sor a.in-ertekeles');
+    const e = p.locator('.in-hero-sor button.in-ertekeles');
     assert.equal((await e.textContent()).replace(/\s+/g, ' ').replace(/\u00a0/g, ' ').replace('★★★★★', '').trim(), '4,9 – 1 266 Google-értékelés');
-    assert.equal(await e.getAttribute('href'), '#velemenyek');
-    assert.equal(await e.getAttribute('target'), null, 'nem uj lap');
-    assert.equal(await p.locator('a.in-ertekeles').count(), 1, 'csak a hero jelvenye link');
-    assert.equal(await p.locator('#velemenyek .in-ertekeles').evaluate((el) => el.tagName), 'SPAN', 'a velemenyek blokkban a jelveny nem link (mar ott vagyunk)');
+    assert.equal(await e.getAttribute('data-gorget'), 'velemenyek');
+    assert.equal(await p.locator('a.in-ertekeles').count(), 0, 'nincs link (a hash-valtozas a GTM History Change-et inditana): gomb + JS-gorgetes');
+    assert.equal(await p.locator('#velemenyek .in-ertekeles').evaluate((el) => el.tagName), 'SPAN', 'a velemenyek blokkban a jelveny nem kattinthato (mar ott vagyunk)');
     const hely = (await p.textContent('.in-hely')).replace(/\s+/g, ' ');
     assert.match(hely, /1023 Budapest, Bécsi út 2\., Kolosy tér és Zsigmond tér között/);
-    assert.equal(await p.locator('.in-hely a').getAttribute('href'), '#terkep');
-    assert.equal(await p.locator('.in-hely a').getAttribute('target'), null);
-    for (const id of ['velemenyek', 'terkep', 'eredmenyek', 'foglalas']) assert.equal(await p.locator('#' + id).count(), 1, 'horgony-cel: #' + id);
-    // a horgonyra kattintva az oldal a cel-blokkhoz gorget (nem navigal el)
-    for (const [sel, cel] of [['.in-hero-sor a.in-ertekeles', '#velemenyek'], ['.in-hely a', '#terkep']]) {
+    assert.equal(await p.locator('.in-hely button').getAttribute('data-gorget'), 'terkep');
+    assert.equal(await p.locator('.in-hely a').count(), 0);
+    for (const id of ['velemenyek', 'terkep', 'eredmenyek', 'foglalas']) assert.equal(await p.locator('#' + id).count(), 1, 'gorgetes-cel: #' + id);
+    // a gombra kattintva az oldal a cel-blokkhoz gorget; az URL NEM valtozik (nincs hash, nincs navigacio, nincs uj lap)
+    const url0 = p.url();
+    for (const [sel, cel] of [['.in-hero-sor button.in-ertekeles', '#velemenyek'], ['.in-hely button', '#terkep']]) {
       await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(100);
-      await p.locator(sel).click(); await p.waitForTimeout(450);
-      assert.match(p.url(), new RegExp(cel + '$'));
+      await p.locator(sel).click();
+      await p.waitForFunction((c) => { const t = document.querySelector(c).getBoundingClientRect().top; return t < 300 && t > -100; }, cel, { timeout: 5000 });
+      assert.equal(p.url(), url0, 'az URL nem valtozik');
+      assert.equal(ctx.pages().length, 1, 'nem nyilt uj lap');
       const y = await p.locator(cel).evaluate((el) => el.getBoundingClientRect().top);
       assert.ok(y < 400 && y > -200, cel + ' a kepernyon (top ' + Math.round(y) + ')');
     }
