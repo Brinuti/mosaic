@@ -105,7 +105,10 @@ export function tiktokKerelem(e, ctx, env = {}) {
   const pixel = (env && env.TIKTOK_ARNYEK_PIXEL) || ARNYEK.tiktok.pixelCode;
   if (ELO_CELOK.tiktok.includes(pixel) || pixel !== ARNYEK.tiktok.pixelCode) return { tiltva: 'a celpont nem az ARNYEK pixel (elo pixelre nem kuldunk)' };
   const teszt = env && env.TIKTOK_TESZT_KOD;
-  if (!teszt) return { tiltva: 'nincs TIKTOK_TESZT_KOD: TikToknak csak tesztkoddal kuldunk' };
+  // Feri 2026-10-20 ~21:55: az ARNYEK pixelre tesztkod NELKUL is mehet (TIKTOK_ARNYEK_ELES=1), hogy a pixel valodi szamot mutasson az osszeveteshez.
+  // Az ARNYEK pixelt egyetlen hirdetes sem hasznalja; az elo pixel (ELO_CELOK) tovabbra is TILTOTT. Rollback: TIKTOK_ARNYEK_ELES torlese + TIKTOK_TESZT_KOD vissza (wrangler.toml).
+  const arnyekEles = String((env && env.TIKTOK_ARNYEK_ELES) || '') === '1';
+  if (!teszt && !arnyekEles) return { tiltva: 'nincs TIKTOK_TESZT_KOD: TikToknak csak tesztkoddal kuldunk (kiveve TIKTOK_ARNYEK_ELES=1, csak az ARNYEK pixelre)' };
   const szab = ctx.hozz.tiktok;
   // MINDEN uzletag megy az ARNYEK pixelre (jovahagyott architektura 7. pont). Alapesemeny: a Meta-val egyezo egyedi nev (Fodrasz_Konzultacio, Szor_FoglalasElso ...);
   // ernyo: HeadSpa = CompletePayment (kompatibilitas), a tobbi uzletag = Schedule. Nem-HeadSpa esemeny SOHA nem lehet CompletePayment (DECISION 10-06, MERES-KONVERZIO-TERKEP 4. pont).
@@ -122,8 +125,8 @@ export function tiktokKerelem(e, ctx, env = {}) {
     properties: { ...(e.ertek_nelkul ? {} : { currency: 'HUF', value: egesz(e.ertek) }), content_type: 'product', contents: [{ content_id: kod, content_name: kod, quantity: 1, ...(e.ertek_nelkul ? {} : { price: egesz(e.ertek) }) }], order_id: ctx.fk.source_entity_id },
     page: ctx.fk.forras === 'salonic_direct' && !ctx.oldal ? null : { url: ctx.oldal }, // Salonic-direct: nincs bongeszo -> nincs oldal-URL (nem talaljuk ki); a motoros ag valtozatlan
   });
-  const alap = (adat) => ({ event_source: 'web', event_source_id: pixel, test_event_code: teszt, data: [adat] });
-  return tartalekkal({ platform: 'tiktok', platform_nev: nev, url: 'https://business-api.tiktok.com/open_api/v1.3/event/track/', method: 'POST', fejlec_nevek: ['content-type', 'access-token'], cel: { pixel_code: pixel, nev: ARNYEK.tiktok.nev, test_event_code: teszt }, body: alap(adatEpit({ ...userAlap, ...userBov })) },
+  const alap = (adat) => ({ event_source: 'web', event_source_id: pixel, ...(teszt ? { test_event_code: teszt } : {}), data: [adat] });
+  return tartalekkal({ platform: 'tiktok', platform_nev: nev, url: 'https://business-api.tiktok.com/open_api/v1.3/event/track/', method: 'POST', fejlec_nevek: ['content-type', 'access-token'], cel: teszt ? { pixel_code: pixel, nev: ARNYEK.tiktok.nev, test_event_code: teszt } : { pixel_code: pixel, nev: ARNYEK.tiktok.nev, test_event_code: null, arnyek_eles: true }, body: alap(adatEpit({ ...userAlap, ...userBov })) },
     Object.keys(userBov).length ? alap(adatEpit(userAlap)) : null);
 }
 
