@@ -6,7 +6,7 @@
 // 1) statikus tesztek (nincs böngésző): meta-adatok, tiltott / megerősítésre váró tartalom, ár-egyezés a Salonic-pillanatképpel, foglaló-linkek, a fejléc / lábléc a build láncával,
 //    Feri visszajelzése (2026-10-20): "Így tudunk segíteni" blokk, oxigénes magyarázó blokkok (az élő oldalról átvett szöveg), nincs kifelé vivő Google-értékelés / Térkép link;
 // 2) böngészős tesztek a könnyű helyi szerverrel (tools/headspa-teszt/szerver.mjs, nincs dist / külső hálózat): hibamentes betöltés, vízszintes görgetés, a hős sorrendje mobilon
-//    (H1 -> kép -> alcím), belső horgonyok (értékelés -> vélemények, Térkép -> térképes blokk), "Első kezelés hajkamerás vizsgálattal" egy sorban, MEGTÖRT SOR ellenőrzés 360 / 390 / 412 px-en,
+//    (H1 -> kép -> alcím), belső görgető gombok (értékelés -> vélemények, Térkép -> térképes blokk; nincs #hash / history), "Első kezelés hajkamerás vizsgálattal" egy sorban, MEGTÖRT SOR ellenőrzés 360 / 390 / 412 px-en,
 //    sticky CTA;
 // 3) dist-tesztek (csak ha a `CF_PAGES=1 CF_PAGES_BRANCH=main node tools/netlify-build.mjs` már lefutott): a build valódi fejléce / lábléca, a foglaló-réteg megnyílik a fő gombra és a mobil sticky gombra.
 import test, { before, after, describe } from 'node:test';
@@ -75,7 +75,7 @@ describe('statikus: meta-adatok, tartalom, foglaló-linkek', () => {
     assert.ok(!fs.readFileSync(path.join(GYOKER, 'tools/wix-sitemap/pages-sitemap.xml'), 'utf8').includes('hajvizsgalat-budapest'), 'nincs a sitemapben');
   });
 
-  test('a hős-részben: H1, a brief szerinti alcím, ár, EGY fő gomb, hely + BELSŐ "térkép" horgony, BELSŐ Google-értékelés horgony (4,9 – 1 266); nincs kifelé vivő link', () => {
+  test('a hős-részben: H1, a brief szerinti alcím, ár, EGY fő gomb, hely + BELSŐ "térkép" gomb, BELSŐ Google-értékelés gomb (4,9 – 1 266); nincs kifelé vivő link', () => {
     const hero = szekcio(b, 'hero');
     const sz = lathato(hero);
     assert.ok(sz.includes(BRIEF.alcim), 'alcím');
@@ -85,9 +85,10 @@ describe('statikus: meta-adatok, tartalom, foglaló-linkek', () => {
     assert.equal(gombok[0][1].replace(/&amp;/g, '&'), FO_HREF);
     assert.equal(lathato(gombok[0][2]).replace(/\s*→$/, ''), BRIEF.fo);
     assert.ok(sz.includes('1023 Budapest, Bécsi út 2., Kolosy tér és Zsigmond tér között'), 'pontos hely');
-    // Feri (2026-10-20): a Térkép és az értékelés NEM visz ki az oldalról: belső horgony (JS-gorgetés, a href a JS nélküli tartalék)
-    assert.ok(/<a href="#terkep" data-horgony="terkep">Megnézem a térképen/.test(hero), 'a hős hely-sorában belső "Megnézem a térképen" horgony a #terkep blokkra');
-    assert.ok(/<a class="hero-ertekeles" href="#velemenyek" data-horgony="velemenyek">[\s\S]*?4,9 – 1 266 Google-értékelés/.test(hero), 'a hős értékelése belső horgony a #velemenyek blokkra: 4,9 – 1 266 Google-értékelés (a google-szam.js élő számra cseréli)');
+    // Feri (2026-10-20): a Térkép és az értékelés NEM visz ki az oldalról: <button data-gorget> (nem #horgony-link: a GTM History Change minden hash-változásra mérést indítana)
+    assert.ok(/<button type="button" class="link-gomb" data-gorget="terkep">Megnézem a térképen/.test(hero), 'a hős hely-sorában belső "Megnézem a térképen" gomb a #terkep blokkra');
+    assert.ok(/<button type="button" class="hero-ertekeles" data-gorget="velemenyek">[\s\S]*?4,9 – 1 266 Google-értékelés/.test(hero), 'a hős értékelése belső gomb a #velemenyek blokkra: 4,9 – 1 266 Google-értékelés (a google-szam.js élő számra cseréli)');
+    assert.ok(!/<a\b[^>]*\shref="#/.test(hero), 'a hős-részben nincs #horgony-link');
     assert.deepEqual(hrefek(hero).filter((u) => /^https?:/.test(u)), [], 'a hős-részben nincs kifelé vivő (http) link');
     assert.ok(!/target="_blank"/.test(hero), 'a hős-részben nincs új lapon nyíló link');
     assert.ok(!/Előtte|Utána|eredmeny-\d|vendeg-0/.test(hero), 'nincs előtte/utána kép a hős-részben');
@@ -101,7 +102,7 @@ describe('statikus: meta-adatok, tartalom, foglaló-linkek', () => {
     assert.match(css, /@media \(max-width: 1100px\) \{\s*\.hero-hajv \.hero-racs \{ grid-template-areas: "cim" "gal" "szoveg"; \}/, 'a hős-rács mobilon: cim, gal, szoveg');
   });
 
-  test('NINCS kifelé vivő Google-értékelés / Térkép link az oldal forrásában: csak az "Útvonaltervezés" (navigáció) és a Glamour-cikk visz ki; a horgonyok célelemei léteznek (#velemenyek, #terkep)', () => {
+  test('NINCS kifelé vivő Google-értékelés / Térkép link az oldal forrásában: csak az "Útvonaltervezés" (navigáció) és a Glamour-cikk visz ki; a görgető gombok célelemei léteznek (#velemenyek, #terkep)', () => {
     const kifele = hrefek(b).filter((u) => /^https?:/.test(u));
     const google = kifele.filter((u) => /maps\.app\.goo\.gl|google\.com\/maps|g\.page|search\.google\.com|google\.[a-z]+\/search|goo\.gl/.test(u));
     assert.equal(google.length, 1, 'egyetlen Google-link maradt: ' + JSON.stringify(google));
@@ -112,11 +113,15 @@ describe('statikus: meta-adatok, tartalom, foglaló-linkek', () => {
     // a bizalom-blokkban a Google-kártya nem link
     assert.ok(/<div class="bizalom-google">/.test(b) && !/<a class="bizalom-google"/.test(b), 'a Google-kártya nem link');
     assert.ok(!/Összes vélemény a Google-on|Megnyitás a Google Térképen/.test(lathato(b)), 'nincs "Összes vélemény a Google-on" / "Megnyitás a Google Térképen" felirat');
-    // belső horgonyok: minden data-horgony célelemmel
-    const horgonyok = [...b.matchAll(/<a\b[^>]*\shref="#([^"]+)"[^>]*data-horgony="([^"]+)"/g)].map((m) => [m[1], m[2]]);
-    assert.ok(horgonyok.length >= 2);
-    for (const [href, cel] of horgonyok) { assert.equal(href, cel); assert.ok(new RegExp(`id="${cel}"`).test(b), 'célelem: #' + cel); }
-    assert.ok(horgonyok.some(([h]) => h === 'velemenyek') && horgonyok.some(([h]) => h === 'terkep'));
+    // belső görgető gombok: <button data-gorget="<id>">, minden célelemmel; az oldalon NINCS #horgony-link (GTM History Change), a szkript nem ír URL-t / history-t
+    assert.ok(!/<a\b[^>]*\shref="#/.test(b.replace(/<!--[\s\S]*?-->/g, '')), 'nincs href="#..." link az oldalon (GTM History Change)');
+    const gombok = [...b.replace(/<!--[\s\S]*?-->/g, '').matchAll(/<button\b[^>]*data-gorget="([^"]+)"/g)].map((m) => m[1]);
+    assert.ok(gombok.length >= 2);
+    for (const cel of gombok) assert.ok(new RegExp(`id="${cel}"`).test(b), 'célelem: #' + cel);
+    assert.ok(gombok.includes('velemenyek') && gombok.includes('terkep'));
+    const js = olvas('assets/js/oxigen-hajvizsgalat.js').replace(/\/\/[^\n]*/g, '');
+    assert.ok(!/pushState|replaceState|location\.hash|location\.href|location\.assign|dataLayer|fetch\(|XMLHttpRequest|sendBeacon/.test(js), 'a szkript nem ír URL-t / history-t, nem mérőkód, nincs hálózati kérése a görgetéshez');
+    assert.ok(/<script src="\/assets\/js\/oxigen-hajvizsgalat\.js" defer><\/script>/.test(FORRAS));
     // a #velemenyek blokkban a beágyazott Trustindex-keret ugyanaz a fájl, mint az /oxigenterapia-budapest oldalon; a #terkep a hely-szekcióban áll
     const vel = /id="velemenyek"[\s\S]*?<\/section>/.exec(b)[0];
     assert.match(vel, /class="ti-doboz" id="ti-doboz" data-forras="\/assets\/embed\/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6\.html"/);
@@ -362,20 +367,29 @@ describe(`böngészős: /${NEV}`, () => {
       await ctx.close(); }
   });
 
-  test('belső horgonyok: a hős értékelés-jelvénye a #velemenyek blokkra, a "Megnézem a térképen" a #terkep blokkra görget; NEM visz ki az oldalról (nincs új lap, nincs navigáció, nincs #hash-váltás)', async () => {
+  test('belső görgető gombok: a hős értékelés-jelvénye a #velemenyek blokkra, a "Megnézem a térképen" a #terkep blokkra görget; NEM visz ki az oldalról (nincs új lap, nincs navigáció, nincs #hash-váltás, nincs pushState / replaceState); a fókusz a cél fejlécére kerül', async () => {
     for (const szeles of [390, 1280]) {
       const { p, ctx } = await nyit(NEV, { szeles });
       const url0 = p.url();
       const popup = []; p.context().on('page', (x) => popup.push(x.url()));
-      for (const [valaszto, cel] of [['.hero-ertekeles', 'velemenyek'], ['.hero-hely a', 'terkep']]) {
+      let navig = 0; p.on('framenavigated', (f) => { if (f === p.mainFrame()) navig++; });
+      await p.evaluate(() => { window.__historia = 0; for (const m of ['pushState', 'replaceState']) { const o = history[m]; history[m] = function (...a) { window.__historia++; return o.apply(this, a); }; } window.__hossz = history.length; });
+      const navig0 = navig;
+      for (const [valaszto, cel] of [['.hero-ertekeles', 'velemenyek'], ['.hero-hely .link-gomb', 'terkep']]) {
+        assert.equal(await p.locator(valaszto).evaluate((e) => e.tagName), 'BUTTON', valaszto + ': gomb, nem link');
         await p.evaluate(() => window.scrollTo(0, 0));
         await p.locator(valaszto).click();
         await p.waitForFunction((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= -2 && r.top < 200; }, cel, { timeout: 6000 });
-        const r = await p.evaluate((id) => { const e = document.getElementById(id); const b = e.getBoundingClientRect(); return { top: b.top, hash: location.hash, szelesseg: b.width, mag: b.height }; }, cel);
+        const r = await p.evaluate((id) => { const e = document.getElementById(id); const b = e.getBoundingClientRect(); const f = document.activeElement; return { hash: location.hash, szelesseg: b.width, mag: b.height, fokusz: f && (f.id || f.tagName), fokuszBenne: !!f && (e.contains(f)) }; }, cel);
         assert.equal(r.hash, '', szeles + ' px: nincs #hash-váltás (GTM History Change): ' + cel);
         assert.equal(p.url(), url0, szeles + ' px: az URL változatlan');
         assert.ok(r.mag > 150 && r.szelesseg > 250, szeles + ' px: a cél (#' + cel + ') látható méretű blokk');
+        assert.ok(r.fokuszBenne, szeles + ' px: a fókusz a célblokkba (a fejlécére) került: ' + r.fokusz);
+        if (cel === 'velemenyek') assert.equal(r.fokusz, 'velemenyek-cim');
       }
+      assert.equal(await p.evaluate(() => window.__historia), 0, szeles + ' px: nincs pushState / replaceState hívás');
+      assert.equal(await p.evaluate(() => history.length), await p.evaluate(() => window.__hossz), szeles + ' px: a history nem nőtt');
+      assert.equal(navig, navig0, szeles + ' px: nem történt navigáció');
       assert.deepEqual(popup, [], szeles + ' px: nem nyílt új lap');
       await ctx.close();
     }

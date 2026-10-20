@@ -2,13 +2,13 @@
    Az oxigen-landing.css-t (betűk, színek, gombok, hero, jelek, állapot, kezelők, GYIK, szalon, záró, sticky CTA ...) VÁLTOZATLANUL használjuk; ez a fájl csak ennek az oldalnak a
    kiegészítői (egy-gombos hero, ár-jelvény, ikonos "mikor érdemes" kártyák, kötelező figyelmeztető doboz, "Így tudunk segíteni" + oxigénes magyarázó blokkok, árkártya, bizalom-sáv, térkép).
    Önálló: más oldal stílusát nem érinti.
-   Feri visszajelzése (2026-10-20): mobilon CÍM -> KÉP -> alcím; minden Google-vélemény / térkép az oldalon belül; "Így tudunk segíteni" blokk; oxigénes magyarázó blokkok;
+   Feri visszajelzése (2026-10-20): mobilon CÍM -> KÉP -> alcím; minden Google-vélemény / térkép az oldalon belül (<button data-gorget>, nem #horgony-link); "Így tudunk segíteni" blokk; oxigénes magyarázó blokkok;
    ALAPSZABÁLY: ahol egy vagy két szó csúszik át új sorba, az legyen egy sor (mobilon) - ellenőrzés: tools/ujrastilus-teszt/hajvizsgalat-torott-sor.mjs. */
 
 /* --- szövegtördelés (alapszabály): a címek / rövid szövegek kiegyensúlyozottak, a bekezdések "pretty" (nincs árva szó az utolsó sorban) --- */
 main :is(h1, h2, h3) { text-wrap: balance; }
 main :is(p, li, figcaption, small) { text-wrap: pretty; }
-main :is(.lead, .hero-lead, summary, .gyik-lista p, .jel p, .mikor-figyelmeztet span, .figyelmeztetes-doboz p, .pipa-lista span, .lepes3 p, .lk .fej p, .kezeles-jegyzet span, .elony p, .elony h3) { text-wrap: balance; }
+main :is(.lead, .hero-lead, .hero-hely span, summary, .gyik-lista p, .jel p, .mikor-figyelmeztet span, .figyelmeztetes-doboz p, .pipa-lista span, .lepes3 p, .lk .fej p, .kezeles-jegyzet span, .elony p, .elony h3) { text-wrap: balance; }
 
 /* --- hero: H1 + 1 mondat + ár + EGY fő gomb (az első képernyőn), alatta hely + értékelés; jobbra egy valódi fotó a landing keretes galéria-dobozában --- */
 .hero-hajv h1 { text-wrap: balance; }
@@ -20,11 +20,12 @@ main :is(.lead, .hero-lead, summary, .gyik-lista p, .jel p, .mikor-figyelmeztet 
 .gomb-fo { padding: 16px 34px; font-size: 16.5px; line-height: 1.25; text-align: center; white-space: nowrap; }
 .hero-hely { display: flex; align-items: flex-start; gap: 10px; margin: 20px 0 0; max-width: 540px; font-size: 14.5px; line-height: 1.45; color: #3b4a49; }
 .hero-hely svg { flex: none; width: 20px; height: 20px; margin-top: 1px; color: var(--arany); }
-.hero-hely a { color: var(--sotet); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
-.hero-hely a:hover { color: var(--arany); }
+/* belso gorgeto "link-gombok" (Megnezem a terkepen, ertekeles-sor): kinezetre link, de <button data-gorget>: nem visz el az oldalrol (assets/js/oxigen-hajvizsgalat.js); a padding + negativ margo nagyobb erintesi feluletet ad */
+.hero-hely .link-gomb { display: block; padding: 11px 6px; margin: -4px -6px -11px; font: inherit; font-weight: 500; color: var(--sotet); text-align: left; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.hero-hely .link-gomb:hover { color: var(--arany); }
 .hero-hely .le { display: inline-block; text-decoration: none; transition: transform .2s; }
-.hero-hely a:hover .le { transform: translateY(2px); }
-.hero-ertekeles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 14px; text-decoration: none; color: var(--szoveg); font-size: 14.5px; }
+.hero-hely .link-gomb:hover .le { transform: translateY(2px); }
+.hero-ertekeles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 3px 0 0 -6px; padding: 11px 6px; border: 0; background: none; font: inherit; font-size: 14.5px; text-align: left; text-decoration: none; color: var(--szoveg); cursor: pointer; }
 .hero-ertekeles:hover { text-decoration: underline; }
 .hero-ertekeles img { width: 107px; height: auto; }
 .hero-ertekeles b { font-weight: 600; }

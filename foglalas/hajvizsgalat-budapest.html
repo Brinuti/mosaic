@@ -29,10 +29,10 @@
 <!--
   MOSAIC /hajvizsgalat-budapest - a Google Ads (OX-2) hirdetesi oldal: hajkamerás haj- és fejbőrvizsgálat 4 990 Ft (Salonic 466147), kezeles nelkul is foglalhato.
   Az /oxigenterapia-budapest landing komponenseivel (oxigen-landing.css / .js valtozatlanul), a kiegeszito stilus: oxigen-hajvizsgalat.css, a sajat kis szkript: oxigen-hajvizsgalat.js
-  (belso gorgetes-linkek + Google-terkep). Szovegterv: a Drive-brief 2. szakasza (MOSAIC-GOOGLE-4UZLETAG-LANDING-BRIEF-WEBES-ABLAKNAK-2026-10-17.md), 2026-10-20-tol Feri visszajelzese szerint
+  (belso gorgetes-gombok + Google-terkep). Szovegterv: a Drive-brief 2. szakasza (MOSAIC-GOOGLE-4UZLETAG-LANDING-BRIEF-WEBES-ABLAKNAK-2026-10-17.md), 2026-10-20-tol Feri visszajelzese szerint
   atalakitva (docs/HAJVIZSGALAT_LANDING.md). Az oldal EGYETLEN fo gombja: "Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft" (service=466147); masodlagos, lent, kisebb: az elso kezeles (466110).
-  OLDALON BELUL marad minden (Feri, 2026-10-20): a Google-ertekeles es a Terkep-link BELSO horgony (data-horgony, JS-gorgetes: nincs #hash, a GTM History Change nem indul); csak az "Utvonaltervezes"
-  gomb (navigacio) es a Glamour-cikk visz ki.
+  OLDALON BELUL marad minden (Feri, 2026-10-20): a Google-ertekeles es a "Terkep" <button data-gorget="<id>"> (NEM #horgony-link: a GTM History Change minden hash-valtozasra merest inditana; az
+  oxigen-hajvizsgalat.js gorget, az URL nem valtozik, a cel fejlecere teszi a fokuszt); csak az "Utvonaltervezes" gomb (navigacio) es a Glamour-cikk visz ki.
   A megerosítésre varo tartalom (pl. a vizsgalat idotartama) es a tiltott allitasok (eredmenyigeret, orvosi / trichologiai szerep, hatekonysagi szazalek) nem szerepelnek: lasd docs/HAJVIZSGALAT_LANDING.md.
   Merokod, esemenykuldes NINCS az oldalon (data-cta sincs).
   Szombati nyitvatartas megerositesre var: csak H-P szerepel (az alabbi nyitvatartas-jelolo a lablecet / az Info-ablakot is szukiti).
@@ -78,9 +78,9 @@
       <div class="hero-cta">
         <a class="gomb gomb-arany gomb-fo" href="/foglalo-motor?business=oxygen&amp;service=466147">Hajvizsgálatot foglalok – 4&nbsp;990&nbsp;Ft <span class="nyil">→</span></a>
       </div>
-      <p class="hero-hely"><svg aria-hidden="true"><use href="#i-pin"/></svg><span>1023 Budapest, Bécsi út 2., Kolosy tér és Zsigmond tér között · <a href="#terkep" data-horgony="terkep">Megnézem a térképen <span class="le" aria-hidden="true">↓</span></a></span></p>
-      <!-- a Google-ertekeles az OLDALON BELUL a "Vendegeink velemenye" blokkra gorget (nem visz ki a Google-ra) -->
-      <a class="hero-ertekeles" href="#velemenyek" data-horgony="velemenyek"><img src="/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png" alt="" width="447" height="86" loading="lazy"><b>4,9 – 1 266 Google-értékelés</b></a>
+      <p class="hero-hely"><svg aria-hidden="true"><use href="#i-pin"/></svg><span>1023 Budapest, Bécsi út 2., Kolosy tér és Zsigmond tér között<button type="button" class="link-gomb" data-gorget="terkep">Megnézem a térképen <span class="le" aria-hidden="true">↓</span></button></span></p>
+      <!-- a Google-ertekeles az OLDALON BELUL a "Vendegeink velemenye" blokkra gorget (gomb, nem link: nem visz ki a Google-ra, az URL nem valtozik) -->
+      <button type="button" class="hero-ertekeles" data-gorget="velemenyek"><img src="/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png" alt="" width="447" height="86" loading="lazy"><b>4,9 – 1 266 Google-értékelés</b></button>
     </div>
     <div class="hero-galeria hero-egy">
       <div class="hg-sav">
