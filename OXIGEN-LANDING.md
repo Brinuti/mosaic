@@ -138,22 +138,53 @@ Szabályok / döntések:
 ## Férfi oxigén oldal (`/oxigenterapia-ferfiaknak`, 2026-10-17)
 
 A régi (Wixes) férfi oxigén oldal újrastílusa **ennek a landingnek a stílusában és komponenseivel** (`oxigen-landing.css` változatlanul), a tartalom **szó szerint a régi oldalból**
-(szöveg, kép, link, GYIK-válasz, ár – az elavult / hibás elemek is, lásd a PR „Észrevételek” részét). Folyamat: `docs/OLDAL_UJRASTILUS.md`.
+(szöveg, kép, GYIK-válasz; a 2026-10-20-i Feri-visszajelzés óta az elavult / hibás elemek javítva, lásd lent). Folyamat: `docs/OLDAL_UJRASTILUS.md`.
 
 | Mit | Hol |
 |---|---|
 | oldal | `foglalas/oxigenterapia-ferfiaknak.html` (egy fájl az asztalinak és a mobilnak; a build a `klon/` azonos nevű oldalait felülírja) |
 | kiegészítő stílus (önálló, a landing CSS-éhez nem nyúl) | `assets/css/oxigen-ferfi.css` |
+| az oldal saját, kis JS-e (nem mérőkód): belső görgetés + lapozható galéria | `assets/js/oxigen-ferfi.js` |
 | rejtett régi példány (noindex) | `klon/oxigenterapia-ferfiaknak-regi.html`, `klon/m/oxigenterapia-ferfiaknak-regi.html` (`tools/ujrastilus/regi-peldany.mjs`) |
 | teszt + a régi oldal kinyert tartalma | `tools/ujrastilus-teszt/oxigen-ferfi.test.mjs`, `tools/ujrastilus-teszt/forras/oxigen-ferfi.folyam.txt` |
 
 Szerkezet (a régi sorrendben): hero (egy kép a landing keretes galéria-dobozában) → „Így működik” (a landing zöld `.allapot` szekciója) → HAJ / ARC panaszok (kép + szöveg + pipa-lista) →
 4 eredmény-galéria (a landing lapozható `.ba` sora; a régi oldal galériái: 6 / 3 / 3 / 3 kép) → „3 ok” (`.miert-kartya`, 3 oszlop) → Trustindex (a régi oldal widgetje) → „Hány alkalom” →
-120 perces kezelés lépései → vegán termékek → árak (`.ar-kartya`, Haj csomag + Arc + Haj csomag) → palack / pisztoly → férfi vendégek → kezelőágy → szalon-galéria (a régi oldal **19 képes** galériája,
+80 perces kezelés lépései → vegán termékek → árak (`.ar-kartya`, Haj csomag + Arc + Haj csomag) → palack / pisztoly → férfi vendégek → kezelőágy → szalon-galéria (a régi oldal **19 képes** galériája,
 `assets/js/galeriak.js`, `comp-mnn4k98w5`) → SZÉP Kártya → GYIK (10 kérdés, a válaszok az `assets/js/gyik.js`-ből, `c2eb0f_193bec92…`) → „Itt találsz meg minket” + térkép.
 
-- Nincs mérés: nincs `data-cta`, dataLayer-esemény; a gombok a régi oldal linkjére (`/foglalo-motor?business=oxygen`) mutatnak.
-- Nincs mobil sticky sáv: az `oxigen-landing.js` a `.jelek` szekcióhoz kötné, a régi férfi oldalon ilyen nincs (és új szöveget sem találtunk ki).
-- A Google-térkép a `klon.js` hozzájárulás-kapus megoldása (`window.MH_TABLAK.beagyazasok` → `#terkep-doboz`); a Trustindex az `oxigen-landing.js` `#ti-doboz[data-forras]` keretében.
-- A „Google 4,9 - 891 értékelésből” szám élő (a build által feltett `google-szam.js` az aktuális darabszámra cseréli); a „közel 1.000 véleményből” cím `data-gv-ki` jelölést kap, hogy ne cserélődjön.
+- Nincs mérés: nincs `data-cta`, dataLayer-esemény.
 - A két dekorációs Wix szekció-háttérkép (GYIK: `nsplsh_38734f5a…`, térkép: `11062b_c6763028…`) nem került át (a landing stílusában nincsenek háttérképes szekciók).
+
+### 2026-10-20 Feri visszajelzés (élő oldal, azonnali élesítés)
+
+Feri szó szerinti kérései (hangalapú diktálás) és ami készült:
+
+| Kérés | Megoldás |
+|---|---|
+| A cím mobilon 3 soros, legyen 2; „nem kozmetika” nem elég erős | Új H1 (**egy** H1, a teljes mondat a cím része): `<span class="h1-fo">Hajgyógyászati kezelés</span>` nagy betűvel egy sorban + `<span class="h1-al">ami 2 millió kezelés alapján 95%-ban hatásos hajhullásra, ritkulásra és ritka szakállra*</span>` kiemelt alcímként. Mobilon (390 / 412 px) összesen 3 sor (1 + 2), 360 px-en 4; az alcím utolsó sora nem 1 szó. A vessző a H1 szövegében marad, de látványosan nem jelenik meg a nagy cím végén (`.h1-vessz`, képernyőolvasónak olvasható). A `*` lábjegyzete: „*Az Oxygeni statisztikája alapján” (ugyanígy szerepel az éles `/oxigenterapia-budapest` hero-jában). A meta title (59 kar.) / description (143 kar.) / og / twitter az új címhez igazodik, a betegség-felsorolás (seborrea, ekcéma, pikkelysömör) kikerült. |
+| Nem májusban 10% kedvezménnyel; nincs kedvezmény, semmi május | A „Májusban 10% kedvezménnyel!” felirat mind a **6** helyen törölve (hero, 2 árkártya, „Férfi vendégekre”, SZÉP, hely), az áthúzott „helyett” árak is (nincs kedvezmény). Üres cimke / sor nem maradt; a „11.000–21.000 Ft-os kedvezmény” és a „30.000 Ft-os Headspa” mondatrész is kikerült (lásd lent). |
+| Nézd az árakat | A fő `/oxigenterapia-budapest` (Salonic) szerint: hajkamera **4 990 Ft** (466147), első kezelés **29 900 Ft**, **80 perc** (466110), 2. alkalomtól **26 000 Ft** (466158). A „120 perces” kezelés kikerült (a Salonicból is, 468638). |
+| Szép kártya oké | Változatlan szöveg, a többi blokk formájára igazítva. |
+| Google értékelés ne vigyen ki az oldalról | A hero értékelés-sora és a „Lásd a térképen” / „Mutasd az eredményeket” **`<button data-gorget>`** (nincs `#hash`, mert a GTM History Change minden hash-változásra mérést indítana); az `oxigen-ferfi.js` `scrollIntoView`-val görget, az URL nem változik, a cél H2-re kerül a fókusz (`tabindex=-1`). A Trustindex a többi új oldal mintája (`#trustindex[data-embed]`, `.ti-hely`, `headspa-oldal.js`), a térkép `#terkep` + `#terkep-gomb` (`headspa-oldal.js`). Külső Google-link: csak az „Útvonaltervezés” gomb és a Trustindex betöltő-tartaléka. |
+| Felújított szalon galériába | Lapozható galéria (`.fgal`, `[data-galeria]`): a régi oldal mind a 19 képe, fix 3:2 arány, lusta betöltés; telefonon egy kép + a következő kikukucskál (CSS scroll-snap, érintéssel húzható), asztalon 3 kép, nyilak, pöttyös jelző, számláló, ←/→/Home/End billentyű, `role=region` + `aria-roledescription=carousel`, slide-ok `aria-label="3 / 19"`. |
+| Rövidebb oldal, főleg mobilon, szöveg kivétele nélkül | Mobil oldalmagasság 390 px-en **20 412 → ~16 100 px** (−21%): kisebb képek (16:9,4), vízszintes „3 ok” kártyák, kis kép + cím az árkártyák fejlécében, tömörebb eredmény-galériák (76%-os kártyák), szorosabb térközök, kártya nélküli szövegblokkok. |
+| Egymás melletti kép + szöveg hasábok asztalon mindig egyforma magasak | `grid` `align-items: stretch`, a kép a doboz teljes magasságát kitölti (`object-fit: cover`), a szöveg kártyában. Kivétel (nem vágjuk le): a feliratos ábrák (haj / arc panaszok, kezelőágy-infografika): `object-fit: contain` (a doboz szélét ugyanannak a képnek az elmosott változata tölti ki); a haj / arc ábrák blokkja 1250 px alatt egymás alatt (a szöveg magasabb a négyzetnél). A hero szövege és képe, az „Így működik”, az árkártyák, a „3 ok”, a hely + térkép is egyforma magas (teszt). |
+| Árva-sor (1–2 szó csúszik át) | `text-wrap: balance` minden rövid szövegre (címek, gombok, jelvények, listasorok, bekezdések; a Chromium legfeljebb 6 soros blokkot egyensúlyoz), a 6 sornál hosszabb bekezdésekre `pretty` (`.hosszu`). Árva-sor ellenőrző (360 / 390 / 412 px): **100 → 0**. |
+
+Új fő gombok: **Hajvizsgálat – 4 990 Ft** → `/foglalo-motor?business=oxygen&service=466147` (arany, fő) és **Első kezelés – 29 900 Ft** → `…&service=466110` (a hero-ban és a Haj csomag kártyán), a mobil sticky sáv (hajvizsgálat + első kezelés, `headspa-oldal.js`, a hero elgörgetése után, a „helyszín” blokknál eltűnik); a többi gomb (`IDŐPONTFOGLALÁS`, `FOGLALOK!`…) változatlanul `business=oxygen`. Fejléc / lábléc: `<!--mh-foglalas:business=oxygen&service=466147-->` (a FOGLALÁS menügomb, az Infó-ablak és a lábléc gombja a hajvizsgálat foglalójára mutat), `<!--mh-nyitvatartas:hetkoznap-->` (a lábléc + az Infó-ablak csak „Hétfő – Péntek: 8:00 – 20:00”; az oldal hely-blokkja is csak a hétköznapot írja).
+
+Elírások javítva: `hajhagymákat.Kopaszodás`, `sűrűsödő ő haj`, `Akorpától`, `termékekeit`, `megszáírtjuk`, `tiszító`, `etesén` (GYIK 4.), `peacmaker` / `asthma,COPD`, a „mi dolgozunk. A” törött bekezdés, „az határozza meg” (nyelvtan), „kezelőágy egy privát…”, `ph` → `pH`.
+
+**Megerősítésre vár (nem találtunk ki / nem írtunk ki új tényt):**
+- A **„2 millió kezelés / 95%”** Feri állítása (forrás: Oxygeni Hair); az éles `/oxigenterapia-budapest` ugyanígy, „Az Oxygeni statisztikája alapján” lábjegyzettel szerepel. Reklámállításként forrás-megjelölés / alátámasztás kellhet.
+- **Arc és Arc + Haj csomag** (39 900 Ft első alkalom, 34 900 Ft 2. alkalomtól, 120 perc): a Salonicban és a fő oldalon nincs (`docs/ARLISTA.md` 3. pont) – az árkártya a régi oldal árával maradt (áthúzott „helyett” nélkül), foglalás gombja az általános oxigén-foglaló. A hero-ból a „Csak Arc: 29.900 Ft” sor kikerült (nincs Salonic-ára). Létezik-e még az Arc-kezelés, és mi az ára?
+- A **„11.000–21.000 Ft-os kedvezmény”** (3 ok / 2.) és a **„30.000 Ft-os Relaxáló Headspa”** (3 ok / 1.) mondatrész a régi oldalról való, ma nem ellenőrizhető; kivettük (nincs kedvezmény), a „Nálunk nincs bérlet” helyett „Nincs kötelező bérlet” (a fő oldal szerint van opcionális bérlet).
+- A **„25%-kal kedvezőbben” Oxygeni termékek** (3 ok / 3.) a régi oldalról; változatlan.
+- **Szombat** nyitvatartás (a lábléc / lézer / oxigén szerint nyitva, a hair-oldalak szerint zárva): a jelölő + a hely-blokk csak a hétköznapot írja.
+- Az **Arc + Haj 120 perc** és „az alkalmak száma…” mondat jelentése (a „hanyadik az adott kezelés” szerinti alkalomszám) a régi oldalról való.
+- Értékelés-szám: a HTML tartaléka „1 266” (a többi új oldallal egyező), a build `google-szam.js` az élő számot írja (ma 1290).
+- Közös hiba (nem ezen az oldalon): a közös Wixes fejléc 768 px-en minden oldalon 980 px széles (vízszintes túlcsordulás).
+
+Tesztek: `tools/ujrastilus-teszt/oxigen-ferfi.test.mjs` (20 teszt: új H1 + soronkénti szám 360 / 390 / 412, nincs május / kedvezmény, árak a fő oldal forrásával egyezően, hero-sorrend, belső görgetés (nincs navigáció / hash / új lap), nincs külső Google-link a hero-ban / vélemény-blokkban, galéria (nyilak, pöttyök, billentyű, aria), asztali egyforma magasság, mobil oldalmagasság, árva-sor, vízszintes görgetés 360 – 1920, tartalom-hűség a régi oldalhoz a `VALTOZTATOTT` lista kivételével). Futtatás: `PLAYWRIGHT_UTVONAL=<node_modules> CHROME_UTVONAL=<chrome> node --test tools/ujrastilus-teszt/oxigen-ferfi.test.mjs`.
+
