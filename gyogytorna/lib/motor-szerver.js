@@ -11,7 +11,7 @@
 // Hibaban a vendeg foglalasa NEM akad el: ezek a vegpontok csak a merest szolgaljak, a foglalast a Salonic rogziti.
 import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok, GOOGLE_KATT, lpcFizetett, lpcCimke, lpcHozzarendel, erintesAdatok, nemFizetettCimke, diagnosztika, LPC_VERZIO } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
-import { gfeltoltesFut, gfeltoltesRiport, gfeltoltesMod, gfeltoltesKuld, googleAdsKuldo } from './gfeltoltes.js';
+import { gfeltoltesFut, gfeltoltesRiport, gfeltoltesMod, gfeltoltesKuld, googleAdsKuldo, zapKivalaszt, zapFazis } from './gfeltoltes.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesDiag, erintesek, erintesTorol, kattintasTorol, lpcHiba, motorStatNo } from './db.js';
@@ -339,6 +339,27 @@ export async function kampanyokVegpont({ request, env, deps = {} }) {
   await sema(db);
   await kampanyFrissit(db, lista, mostUnix(deps));
   return valasz(200, { ok: true, db: lista.length, brand: lista.filter((x) => x.brand).length });
+}
+
+// --- /api/gy-gads-zap (GY-26): a szerveres Google Ads feltoltes Zapier-vegpontja ------------------------------------------------------------------------------------------
+// A DONTEST (mit, mikor, hogyan ertekelunk) a Worker hozza, a Google Ads-hivast a Zapier vegzi a SAJAT kapcsolataval (nincs GOOGLE_ADS_* titok a Cloudflare-en).
+// Hitelesites: a meglevo x-gy-zap-kulcs (GY_ZAP_KULCS_HASH, mint az igazolasnal). GET = kivalasztas; POST {fazis:'validalt'|'vegleges', zar, http, valasz, request_id?}.
+// A teljes click-ID CSAK a GET valaszban (keres) es a validalt valaszban (eles_keres) megy ki (HTTPS, kulcsos, no-store); naplora, D1-hibauzenetre, riasztasra soha.
+export async function gadsZapVegpont({ request, env, deps = {} }) {
+  if (!['GET', 'POST'].includes(request.method)) return valasz(405, { ok: false });
+  if (!(await kulcsOk(request, env, 'x-gy-zap-kulcs', 'GY_ZAP_KULCS_HASH', { csakMasodik: true }))) return valasz(401, { ok: false });
+  const db = env.GY_DB;
+  if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
+  await sema(db);
+  const most = mostUnix(deps);
+  let r;
+  if (request.method === 'GET') r = await zapKivalaszt({ db, env, most, budapestIdo });
+  else {
+    const be = await jsonTest(request, 65536);
+    if (!be) return nincsKerelem('ervenytelen_torzs');
+    r = await zapFazis({ db, env, most, be });
+  }
+  return valasz(r.status, r.body);
 }
 
 // --- /api/gy-salonic-igazolas (Zapier: a Salonic ertesito e-mail alapjan) ---------------------------------------------------------------

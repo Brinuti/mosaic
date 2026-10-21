@@ -1399,3 +1399,108 @@ test('GY-25 ELES kuldo: ures / csomagolt / hosszeltero valasz NEM ad `elfogadva`
   assert.deepEqual(await allapotok(), ['varakozik', 'varakozik']);
   assert.equal(googleAdsKuldo({}, fetch), null);
 });
+
+// --- GY-26: Zapier-vegpont (/api/gy-gads-zap) -------------------------------------------------------------------------------------------------------------
+import { gadsZapVegpont } from '../lib/motor-szerver.js';
+import { vedohalo, valaszNormalizal } from '../lib/gfeltoltes.js';
+const zapKer = (metodus, body, kulcs = ZAP) => gadsZapVegpont({ request: kerelem('/api/gy-gads-zap', body, { metodus, fejlec: kulcs ? { 'x-gy-zap-kulcs': kulcs } : {} }), env: zapKer.env, deps: { most: () => zapKer.most * 1000, fetch: fetch } });
+async function zapKornyezet(n = 3) {
+  const env = await lpcKornyezet();
+  const E = { ...env, GY_GADS_FELTOLTES: 'eles' };
+  for (let i = 0; i < n; i += 1) await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}${i}`, uuid: `mb_zap0000000000000${i + 1}`, ms: i * 2000000 });
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  zapKer.env = E; zapKer.most = Math.floor(MOST / 1000) + (n - 1) * 2000 + 600 + GFELT.kesleltetes;
+  return E;
+}
+
+test('GY-26 Zapier-vegpont: kulcs nelkul / hamis kulccsal 401; dry modban nincs:true (semmi nem keszul); rossz modszer 405', async () => {
+  const E = await zapKornyezet(1);
+  assert.equal((await zapKer('GET', null, null)).status, 401);
+  assert.equal((await zapKer('GET', null, 'hamis')).status, 401);
+  assert.equal((await zapKer('POST', { fazis: 'validalt' }, null)).status, 401);
+  assert.equal((await zapKer('DELETE', null)).status, 405);
+  zapKer.env = { ...E, GY_GADS_FELTOLTES: 'dry' };
+  const r = await zapKer('GET', null); const j = await r.json();
+  assert.deepEqual(j, { ok: true, mod: 'dry', nincs: true });
+  assert.equal((await E.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_feltoltes').first()).n, 0); // dry modban a Zap-vegpont nem vesz fel sort
+  zapKer.env = { ...E, GY_GADS_FELTOLTES: 'ki' };
+  assert.equal((await (await zapKer('GET', null)).json()).nincs, true);
+});
+
+test('GY-26 Zapier-vegpont: GET (felvetel + lefoglalas + validateOnly torzs) -> POST validalt -> POST vegleges; hibas sor, ujrajatszas 409, nincs click-ID a D1-ben / riasztasban', async () => {
+  const E = await zapKornyezet(3);
+  const g = await zapKer('GET', null); const gj = await g.json();
+  assert.equal(g.status, 200);
+  assert.deepEqual([gj.ok, gj.mod, gj.sorIdk.length, gj.zar], [true, 'eles', 3, zapKer.most]);
+  assert.deepEqual(gj.cel, { ugyfel: '2596120588', api_verzio: 'v23', vegpont: 'customers/2596120588:uploadClickConversions' });
+  assert.deepEqual([gj.keres.partialFailure, gj.keres.validateOnly, gj.keres.conversions.length], [true, true, 3]);
+  assert.deepEqual(Object.keys(gj.keres.conversions[0]).sort(), ['conversionAction', 'conversionDateTime', 'conversionValue', 'currencyCode', 'gclid', 'orderId']);
+  assert.equal(gj.keres.conversions[0].conversionAction, 'customers/2596120588/conversionActions/7858300772');
+  assert.equal(vedohalo(gj.keres), null);
+  // masodik GET ugyanazt nem foglalja le ujra
+  assert.deepEqual(await (await zapKer('GET', null)).json(), { ok: true, mod: 'eles', nincs: true });
+  // 1. fazis kivul: vegleges nem johet validalt elott
+  assert.equal((await zapKer('POST', { fazis: 'vegleges', zar: gj.zar, http: 200, valasz: { results: [] } })).status, 409);
+  // validalt: a 2. sor EXPIRED_EVENT (vegleges hiba), a 3. CLICK_NOT_FOUND (atmeneti); Composio / Zapier-szeru csomagolt valasz is menjen
+  const hibas = { partialFailureError: { details: [{ errors: [{ errorCode: { conversionUploadError: 'EXPIRED_EVENT' }, message: JO_GCLID, location: { fieldPathElements: [{ fieldName: 'conversions', index: 1 }] } }, { errorCode: { conversionUploadError: 'CLICK_NOT_FOUND' }, location: { fieldPathElements: [{ fieldName: 'conversions', index: 2 }] } }] }] } };
+  const v = await zapKer('POST', { fazis: 'validalt', zar: gj.zar, http: 200, valasz: JSON.stringify({ data: hibas }) }); const vj = await v.json();
+  assert.equal(v.status, 200);
+  assert.deepEqual([vj.ok, vj.tiszta], [true, [0]]);
+  assert.deepEqual([vj.eles_keres.validateOnly, vj.eles_keres.partialFailure, vj.eles_keres.conversions.length], [false, true, 1]);
+  assert.equal(vj.eles_keres.conversions[0].gclid, gj.keres.conversions[0].gclid);
+  assert.equal(vedohalo(vj.eles_keres), null);
+  // ujrajatszott validalt: 409 (az indexek mar nem ervenyesek)
+  assert.equal((await zapKer('POST', { fazis: 'validalt', zar: gj.zar, http: 200, valasz: hibas })).status, 409);
+  const sorok = (await E.GY_DB.prepare('SELECT allapot, google_hibakod, hiba, kovetkezo_proba FROM gy_feltoltes ORDER BY id').all()).results;
+  assert.deepEqual([sorok[0].allapot, sorok[1].allapot, sorok[1].google_hibakod, sorok[2].allapot, sorok[2].hiba], ['kuldes_alatt', 'hiba', 'EXPIRED_EVENT', 'hiba', 'ujraproba']);
+  // vegleges: rossz alak (nincs results) -> nincs elfogadva, a sor visszaall; majd jo valasz -> elfogadva
+  const rossz = await (await zapKer('POST', { fazis: 'vegleges', zar: gj.zar, http: 200, valasz: { jobId: '1' } })).json();
+  assert.deepEqual([rossz.elfogadva, rossz.keres_hiba.kod], [0, 'VALASZ_ERTELMEZHETETLEN']);
+  assert.equal((await E.GY_DB.prepare('SELECT allapot FROM gy_feltoltes WHERE id = 1').first()).allapot, 'varakozik');
+  assert.equal((await zapKer('POST', { fazis: 'vegleges', zar: gj.zar, http: 200, valasz: { jobId: '1' } })).status, 409); // a futas lezarult
+  // uj futas: a visszaallt sor ujra kijon, vegig jo uton
+  zapKer.most += 5;
+  const g2 = await (await zapKer('GET', null)).json();
+  assert.equal(g2.keres.conversions.length, 1);
+  const v2 = await (await zapKer('POST', { fazis: 'validalt', zar: g2.zar, http: 200, valasz: { jobId: '7' } })).json();
+  assert.deepEqual(v2.tiszta, [0]);
+  const f = await zapKer('POST', { fazis: 'vegleges', zar: g2.zar, http: 200, valasz: { results: [{ gclid: 'x', conversionAction: 'y' }], jobId: '3681045654943144095' }, request_id: 'ignoralt' }); const fj = await f.json();
+  assert.deepEqual(fj, { ok: true, elfogadva: 1, hiba: 0, kihagyva: 0, jobId: '3681045654943144095' });
+  assert.deepEqual((await E.GY_DB.prepare("SELECT allapot, request_id FROM gy_feltoltes WHERE id = 1").first()), { allapot: 'elfogadva', request_id: '3681045654943144095' });
+  // nincs click-ID a naplozott / tarolt adatokban (a feltoltesi naplo, a riasztasok, a meta)
+  const kiir = JSON.stringify([(await E.GY_DB.prepare('SELECT * FROM gy_feltoltes').all()).results, (await E.GY_DB.prepare('SELECT * FROM gy_riasztas').all()).results, (await E.GY_DB.prepare('SELECT * FROM gy_meta').all()).results]);
+  assert.equal(kiir.includes(JO_GCLID), false);
+});
+
+test('GY-26 Zapier-vegpont: keres-szintu hiba (403) a sorokat nem rontja, riaszt; vedohalo elutasitja a nem megengedett torzset; ervenytelen kerelmek 400; lemondott sor nem megy ki', async () => {
+  const E = await zapKornyezet(2);
+  await E.GY_DB.prepare("UPDATE gy_foglalas SET allapot = 'lemondott' WHERE uuid = 'mb_zap00000000000002'").run();
+  // a lemondott foglalas sora mar naploban van (a sweep csak aktivat vesz fel) -> a GET kihagyja
+  const g = await (await zapKer('GET', null)).json();
+  assert.equal(g.keres.conversions.length, 1);
+  const k = await (await zapKer('POST', { fazis: 'validalt', zar: g.zar, http: 403, valasz: { error: { status: 'PERMISSION_DENIED' } } })).json();
+  assert.deepEqual([k.eles_keres, k.keres_hiba], [null, { http: 403, kod: 'PERMISSION_DENIED' }]);
+  assert.equal((await E.GY_DB.prepare('SELECT allapot FROM gy_feltoltes WHERE id = 1').first()).allapot, 'varakozik');
+  assert.equal((await E.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_riasztas WHERE tipus = 'gfeltoltes_keres_hiba'").first()).n, 1);
+  // ervenytelen kerelmek
+  for (const be of [{ fazis: 'x', zar: 1, http: 200, valasz: {} }, { fazis: 'validalt', zar: 'a', http: 200, valasz: {} }, { fazis: 'validalt', zar: 1, http: 'ok', valasz: {} }, { fazis: 'validalt', zar: 1, http: 200, valasz: 'nem json' }]) {
+    assert.equal((await zapKer('POST', be)).status, 400, JSON.stringify(be));
+  }
+  // vedohalo
+  const jo = { conversions: [{ gclid: JO_GCLID, conversionAction: 'customers/2596120588/conversionActions/7858300772', conversionDateTime: '2026-10-21 10:00:00+02:00', conversionValue: 19000, currencyCode: 'HUF', orderId: 'a'.repeat(64) }], partialFailure: true, validateOnly: true };
+  assert.equal(vedohalo(jo), null);
+  const m = (f) => { const x = JSON.parse(JSON.stringify(jo)); f(x); return vedohalo(x); };
+  assert.equal(m((x) => { x.conversions[0].conversionAction = 'customers/1/conversionActions/2'; }), 'akcio');
+  assert.equal(m((x) => { x.conversions[0].consent = { adUserData: 'GRANTED' }; }), 'ismeretlen_mezo');
+  assert.equal(m((x) => { x.conversions[0].userIdentifiers = []; }), 'ismeretlen_mezo');
+  assert.equal(m((x) => { delete x.conversions[0].gclid; x.conversions[0].gbraid = 'x'.repeat(30); }), 'ismeretlen_mezo');
+  assert.equal(m((x) => { x.partialFailure = false; }), 'partial_failure');
+  assert.equal(m((x) => { x.conversions[0].gclid = 'TESZT_GCLID_12345'; }), 'click_id');
+  assert.equal(m((x) => { x.conversions[0].conversionValue = 1; }), 'ertek');
+  assert.equal(m((x) => { x.customerId = '1'; }), 'ismeretlen_fomezo');
+  assert.equal(m((x) => { x.conversions = Array(11).fill(x.conversions[0]); }), 'adag');
+  // valasz-normalizalas
+  assert.deepEqual(valaszNormalizal('{"jobId":"1"}'), { jobId: '1' });
+  assert.deepEqual(valaszNormalizal({ body: '{"results":[{"a":1}]}' }), { results: [{ a: 1 }] });
+  assert.equal(valaszNormalizal('nem json'), null);
+});
