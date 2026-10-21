@@ -57,7 +57,7 @@ export function gfeltoltesPayload({ kattTipus, kattErtek, konverzioIdo, orderId 
 export const gfeltoltesKeres = (payloadok) => ({ conversions: payloadok, partialFailure: true, validateOnly: false });
 
 // Google ConversionUploadError / HTTP-hibak besorolasa. Atmeneti: ujraproba backoff-fal; vegleges: soha nem probaljuk ujra (pl. ervenytelen vagy 90 napnal regebbi click-ID).
-const ATMENETI_KODOK = new Set(['TOO_RECENT_EVENT', 'TOO_RECENT_CONVERSION_ACTION', 'CLICK_NOT_FOUND', 'INTERNAL_ERROR', 'TRANSIENT_ERROR', 'RESOURCE_EXHAUSTED', 'UNAVAILABLE', 'DEADLINE_EXCEEDED']);
+const ATMENETI_KODOK = new Set(['TOO_RECENT_EVENT', 'TOO_RECENT_CONVERSION_ACTION', 'CLICK_NOT_FOUND', 'INTERNAL_ERROR', 'TRANSIENT_ERROR', 'RESOURCE_EXHAUSTED', 'UNAVAILABLE', 'DEADLINE_EXCEEDED', 'VALASZ_ERTELMEZHETETLEN', 'VALASZ_URES_ELEM']);
 const MAR_MEGVAN_KODOK = new Set(['CLICK_CONVERSION_ALREADY_EXISTS', 'ORDER_ID_ALREADY_IN_USE']); // ugyanaz a konverzio / order_id mar bent van (pl. elveszett valasz utan ujrakuldve): a feltoltes kesz
 /**
  * Mi legyen egy sikertelen kiserlet utan? `proba` = hany ujraproba tortent MAR (0 az elso kiserlet utan).
@@ -140,7 +140,9 @@ export function kuldesKerelem(sorok, { validateOnly }) {
   };
 }
 
-const elsoKod = (ec) => { if (!ec || typeof ec !== 'object') return null; const v = Object.values(ec)[0]; return typeof v === 'string' ? v : null; };
+const KOD_MINTA = /^[A-Z0-9_]{1,64}$/;
+const joKod = (v) => (typeof v === 'string' && KOD_MINTA.test(v) ? v : null); // csak Google hibakod alak kerulhet a naploba (szabad szoveg / click-ID nem)
+const elsoKod = (ec) => { if (!ec || typeof ec !== 'object') return null; return joKod(Object.values(ec)[0]); };
 /** A Google valaszabol soronkenti hibakodok: Map<index, kod>. Keres-szintu hiba (nincs partialFailureError): { keresHiba }. Hibauzenet SOHA nem kerul tarolasra (click-ID-t idezhet). */
 export function valaszElemzes(http, json) {
   const j = json && typeof json === 'object' ? json : {};
@@ -154,8 +156,8 @@ export function valaszElemzes(http, json) {
   };
   gyujt(j.partialFailureError && j.partialFailureError.details);
   if (j.partialFailureError && !sorHibak.size) return { keresHiba: { http, kod: 'PARTIAL_FAILURE_ISMERETLEN_SOR' }, sorHibak };
-  if (http !== 200) {
-    let kod = (j.error && j.error.status) || null;
+  if (http !== 200 || j.error) { // a Zap sajat 200-as statusza mellett is: error torzs = keres-szintu hiba
+    let kod = joKod(j.error && j.error.status);
     for (const d of (j.error && j.error.details) || []) for (const e of (d && d.errors) || []) { kod = elsoKod(e.errorCode) || kod; }
     gyujt(j.error && j.error.details); // a keres-szintu hiba (pl. 400) is hivatkozhat egy konkret sorra: azt a sort jelolnek, a tobbi valtozatlan
     return { keresHiba: { http, kod: kod || null }, sorHibak };
@@ -179,7 +181,7 @@ export function valaszErtekel({ sorok, http, json, requestId = null, most, vegle
   // ELES hivas: a sor csak akkor `elfogadva`, ha a valasz `results` tombje a sorokkal egyezo hosszu es az adott elem nem ures (a hibas sor elemei uresek)
   if (vegleges) {
     const r = json && Array.isArray(json.results) ? json.results : null;
-    if (!r || r.length !== sorok.length) return { frissites: [], keresHiba: { http, kod: 'VALASZ_ERTELMEZHETETLEN' }, tiszta: [] };
+    if (!r || r.length !== sorok.length) return { frissites: sorok.map((s) => hibaFrissites(s, { http: null, kod: 'VALASZ_ERTELMEZHETETLEN', most, requestId })), keresHiba: { http, kod: 'VALASZ_ERTELMEZHETETLEN' }, tiszta: [] }; // lehet, hogy kiment: backoff-fal ujra, a Google a duplikatumot 'mar bent van'-kent adja
   }
   const frissites = [], tiszta = [];
   sorok.forEach((s, i) => {
@@ -309,8 +311,13 @@ export async function sorokZarral(db, zar) {
   return (await db.prepare(`SELECT ${SOR_OSZLOP} WHERE g.mod = 'eles' AND g.allapot = 'kuldes_alatt' AND g.utolso_hiba_ido = ?1 ORDER BY g.id`).bind(zar).all()).results || [];
 }
 const markerKulcs = (zar) => `gads_zap_${zar}`;
+/** A futas markere: CSAK az elso iro nyer (ket egyidejű GET nem kaphat kozos zar-t). @returns true, ha most jott letre */
+async function markerUj(db, zar, o) {
+  const r = await db.prepare('INSERT OR IGNORE INTO gy_meta (kulcs, ertek) VALUES (?1, ?2)').bind(markerKulcs(zar), JSON.stringify(o)).run();
+  return !!(r && r.meta && r.meta.changes);
+}
 async function markerIr(db, zar, o) {
-  await db.prepare("INSERT INTO gy_meta (kulcs, ertek) VALUES (?1, ?2) ON CONFLICT(kulcs) DO UPDATE SET ertek = excluded.ertek").bind(markerKulcs(zar), JSON.stringify(o)).run();
+  await db.prepare('INSERT INTO gy_meta (kulcs, ertek) VALUES (?1, ?2) ON CONFLICT(kulcs) DO UPDATE SET ertek = excluded.ertek').bind(markerKulcs(zar), JSON.stringify(o)).run();
 }
 async function markerOlvas(db, zar) {
   const r = await db.prepare('SELECT ertek FROM gy_meta WHERE kulcs = ?1').bind(markerKulcs(zar)).first();
@@ -321,6 +328,11 @@ async function visszaad(db, sorok, kesz, most, zar) {
   const k = new Set(kesz || []);
   await frissitMent(db, sorok.filter((s) => !k.has(s.id)).map((s) => ({ id: s.id, allapot: s.ujraprobalas ? 'hiba' : 'varakozik', hiba: null, ujraprobalas: s.ujraprobalas || 0, kovetkezo_proba: s.ujraprobalas ? most : null })), zar);
 }
+/** Vedohalo-hiba: a csomag sorai `kihagyva_vedohalo` (nem akasztjak a tobbit), riasztas. */
+async function vedohaloHiba(db, sorok, ok, most, zar) {
+  await frissitMent(db, sorok.map((s) => ({ id: s.id, allapot: 'kihagyva_vedohalo', hiba: ok, ujraprobalas: s.ujraprobalas || 0 })), zar);
+  await riaszt(db, 'gfeltoltes_vedohalo', { adat: ok, most });
+}
 
 /** GET: felvetel, lefoglalas, validateOnly kerestorzs. @returns {Promise<{status:number, body:object}>} */
 export async function zapKivalaszt({ db, env, most, budapestIdo }) {
@@ -329,6 +341,8 @@ export async function zapKivalaszt({ db, env, most, budapestIdo }) {
   const fut = await gfeltoltesFut({ db, env, most, budapestIdo });
   if (fut.hiba) return { status: 503, body: { ok: false, hiba: fut.hiba } };
   await db.prepare("DELETE FROM gy_meta WHERE kulcs LIKE 'gads_zap_%' AND CAST(json_extract(ertek, '$.ido') AS INTEGER) < ?1").bind(most - 86400).run();
+  // a futas azonositoja (zar) csak egy GET-e: ha mar van ilyen marker (egyidejű GET ugyanabban a masodpercben), ez a hivas nem foglal le semmit
+  if (!(await markerUj(db, most, { fazis: 'foglal', ido: most, idk: [], kihagyva: 0 }))) return { status: 200, body: { ok: true, mod, nincs: true } };
   const jeloltek = await kuldhetoSorok(db, { most });
   const lefoglalt = jeloltek.length ? await lefoglal(db, jeloltek, most) : [];
   const kuldendo = []; let kihagyva = 0;
@@ -336,27 +350,34 @@ export async function zapKivalaszt({ db, env, most, budapestIdo }) {
     const k = kuldesElotti(s);
     if (k) { await frissitMent(db, [{ id: s.id, allapot: k.allapot, hiba: k.hiba, ujraprobalas: s.ujraprobalas || 0 }], most); kihagyva += 1; } else kuldendo.push(s);
   }
-  if (!kuldendo.length) return { status: 200, body: { ok: true, mod, nincs: true } };
+  if (!kuldendo.length) { await markerIr(db, most, { fazis: 'kesz', ido: most, idk: [], kihagyva }); return { status: 200, body: { ok: true, mod, nincs: true } }; }
   const keres = kuldesKerelem(kuldendo, { validateOnly: true });
   const v = vedohalo(keres);
-  if (v) { await visszaad(db, kuldendo, [], most, most); return { status: 500, body: { ok: false, hiba: 'vedohalo', ok_kod: v } }; }
-  await markerIr(db, most, { fazis: 'lefoglalva', ido: most, db: kuldendo.length, kihagyva });
-  return { status: 200, body: { ok: true, mod, zar: most, sorIdk: kuldendo.map((s) => s.id), cel: { ugyfel: GFELT.ugyfel, api_verzio: env.GY_GADS_API_VERZIO || GFELT.apiVerzio, vegpont: `customers/${GFELT.ugyfel}:uploadClickConversions` }, keres } };
+  if (v) { await vedohaloHiba(db, kuldendo, v, most, most); await markerIr(db, most, { fazis: 'kesz', ido: most, idk: [], kihagyva }); return { status: 500, body: { ok: false, hiba: 'vedohalo', ok_kod: v } }; }
+  const idk = kuldendo.map((s) => s.id);
+  await markerIr(db, most, { fazis: 'lefoglalva', ido: most, idk, kihagyva });
+  return { status: 200, body: { ok: true, mod, zar: most, sorIdk: idk, cel: { ugyfel: GFELT.ugyfel, api_verzio: env.GY_GADS_API_VERZIO || GFELT.apiVerzio, vegpont: `customers/${GFELT.ugyfel}:uploadClickConversions` }, keres } };
 }
 
-/** A Zapier valaszanak normalizalasa: JSON-szoveg -> objektum; egy szintnyi csomagolas (body / data / response_data / json / response) kicsomagolasa. */
+const VALASZ_KULCSOK = ['results', 'partialFailureError', 'jobId', 'error'];
+/**
+ * A Zapier valaszanak normalizalasa: JSON-szoveg -> objektum; legfeljebb ket szintnyi csomagolas (body / data / response_data / json / response) kicsomagolasa.
+ * Egy kulcs csak NEM-null ertekkel szamit (a `{data:{..}, error:null}` burok nem a valasz). Ures objektum / ures szoveg = `{}`; ismeretlen alak -> null.
+ */
 export function valaszNormalizal(v) {
   let x = v;
-  if (typeof x === 'string') { try { x = JSON.parse(x); } catch (e) { return null; } }
-  for (let i = 0; i < 2; i += 1) {
+  for (let i = 0; i < 3; i += 1) {
+    if (typeof x === 'string') { if (!x.trim()) return {}; try { x = JSON.parse(x); } catch (e) { return null; } }
     if (!x || typeof x !== 'object' || Array.isArray(x)) return null;
-    if (['results', 'partialFailureError', 'jobId', 'error'].some((k) => k in x)) return x;
-    const bel = ['body', 'data', 'response_data', 'json', 'response'].map((k) => x[k]).find((y) => y && (typeof y === 'object' || typeof y === 'string'));
-    if (bel === undefined) return x; // ures / ismeretlen alak: nincs hiba-jelzes (a vegleges fazis a results tombbol ugyis ellenorzi)
-    x = typeof bel === 'string' ? (() => { try { return JSON.parse(bel); } catch (e) { return null; } })() : bel;
+    if (VALASZ_KULCSOK.some((k) => x[k] !== undefined && x[k] !== null)) return x;
+    if (!Object.keys(x).length) return x;
+    const bel = ['body', 'data', 'response_data', 'json', 'response'].map((k) => x[k]).find((y) => y !== undefined && y !== null && (typeof y === 'object' || typeof y === 'string'));
+    if (bel === undefined) return null;
+    x = bel;
   }
-  return x && typeof x === 'object' ? x : null;
+  return null;
 }
+const egeszSzam = (v) => (Number.isInteger(v) ? v : typeof v === 'string' && /^\d{1,12}$/.test(v) ? Number(v) : NaN); // a Zapier Webhooks szovegkent is kuldhet szamot
 
 /**
  * POST: fazis 'validalt' | 'vegleges'. be = { fazis, zar, http, valasz, request_id? }.
@@ -366,8 +387,8 @@ export function valaszNormalizal(v) {
 export async function zapFazis({ db, env, most, be }) {
   if (gfeltoltesMod(env) !== 'eles') return { status: 200, body: { ok: true, nincs: true } };
   const fazis = be && be.fazis;
-  const zar = be && be.zar;
-  const http = be && be.http;
+  const zar = egeszSzam(be && be.zar);
+  const http = egeszSzam(be && be.http);
   if (!['validalt', 'vegleges'].includes(fazis) || !Number.isInteger(zar) || !Number.isInteger(http) || http < 100 || http > 599) return { status: 400, body: { ok: false, hiba: 'ervenytelen_kerelem' } };
   const valasz = valaszNormalizal(be.valasz);
   if (!valasz) return { status: 400, body: { ok: false, hiba: 'ervenytelen_valasz' } };
@@ -375,8 +396,17 @@ export async function zapFazis({ db, env, most, be }) {
   const elvart = fazis === 'validalt' ? 'lefoglalva' : 'validalt';
   if (!m || m.fazis !== elvart) return { status: 409, body: { ok: false, hiba: 'fazis', jelenlegi: m ? m.fazis : null } };
   const sorok = await sorokZarral(db, zar);
+  // a Google valaszanak indexei a GET (illetve a validalt) altal kiadott sorokra vonatkoznak: ha a lefoglalt sorhalmaz mas, NEM ertekelunk
+  const vart = fazis === 'validalt' ? m.idk : m.tiszta_idk;
+  if (!Array.isArray(vart) || vart.length !== sorok.length || vart.some((id, i) => id !== sorok[i].id)) {
+    await visszaad(db, sorok, [], most, zar);
+    await markerIr(db, zar, { ...m, fazis: 'kesz' });
+    await riaszt(db, 'gfeltoltes_fazis_elteres', { adat: `${fazis}:${vart ? vart.length : 'x'}:${sorok.length}`, most });
+    return { status: 409, body: { ok: false, hiba: 'sorhalmaz_elter' } };
+  }
   if (!sorok.length) { await markerIr(db, zar, { ...m, fazis: 'kesz' }); return { status: 200, body: fazis === 'validalt' ? { ok: true, eles_keres: null, tiszta: [] } : { ok: true, elfogadva: 0, hiba: 0, kihagyva: m.kihagyva || 0, jobId: null } }; }
-  const e = valaszErtekel({ sorok, http, json: valasz, requestId: fazis === 'vegleges' ? String(valasz.jobId || be.request_id || '').replace(/[^0-9A-Za-z_-]/g, '').slice(0, 40) || null : null, most, vegleges: fazis === 'vegleges' });
+  const jobId = /^\d{1,20}$/.test(String(valasz.jobId ?? be.request_id ?? '')) ? String(valasz.jobId ?? be.request_id) : null;
+  const e = valaszErtekel({ sorok, http, json: valasz, requestId: fazis === 'vegleges' ? jobId : null, most, vegleges: fazis === 'vegleges' });
   if (e.keresHiba) { // hozzaferesi / konfiguracios / ertelmezhetetlen valasz: a nevesitett sorok mentve, a tobbi visszaall
     await frissitMent(db, e.frissites, zar);
     await visszaad(db, sorok, e.frissites.map((f) => f.id), most, zar);
@@ -386,16 +416,21 @@ export async function zapFazis({ db, env, most, be }) {
   }
   await frissitMent(db, e.frissites, zar);
   if (fazis === 'validalt') {
-    const tiszta = e.tiszta;
+    // a tiszta sorok kuldes elotti vegso ellenorzese ujra (a GET ota lemondhattak / teszt-jelolest kaphattak)
+    const tiszta = [];
+    for (const i of e.tiszta) {
+      const k = kuldesElotti(sorok[i]);
+      if (k) await frissitMent(db, [{ id: sorok[i].id, allapot: k.allapot, hiba: k.hiba, ujraprobalas: sorok[i].ujraprobalas || 0 }], zar); else tiszta.push(i);
+    }
     if (!tiszta.length) { await markerIr(db, zar, { ...m, fazis: 'kesz' }); return { status: 200, body: { ok: true, eles_keres: null, tiszta: [] } }; }
-    const eles = kuldesKerelem(tiszta.map((i) => sorok[i]), { validateOnly: false });
+    const kuldendo = tiszta.map((i) => sorok[i]);
+    const eles = kuldesKerelem(kuldendo, { validateOnly: false });
     const v = vedohalo(eles);
-    if (v) { await visszaad(db, sorok.filter((_, i) => tiszta.includes(i)), [], most, zar); await markerIr(db, zar, { ...m, fazis: 'kesz' }); return { status: 500, body: { ok: false, hiba: 'vedohalo', ok_kod: v } }; }
-    await markerIr(db, zar, { ...m, fazis: 'validalt' });
+    if (v) { await vedohaloHiba(db, kuldendo, v, most, zar); await markerIr(db, zar, { ...m, fazis: 'kesz' }); return { status: 500, body: { ok: false, hiba: 'vedohalo', ok_kod: v } }; }
+    await markerIr(db, zar, { ...m, fazis: 'validalt', tiszta_idk: kuldendo.map((s) => s.id) });
     return { status: 200, body: { ok: true, eles_keres: eles, tiszta } };
   }
   await markerIr(db, zar, { ...m, fazis: 'kesz' });
-  const jobId = String(valasz.jobId || be.request_id || '').replace(/[^0-9A-Za-z_-]/g, '').slice(0, 40) || null;
   return { status: 200, body: { ok: true, elfogadva: e.frissites.filter((f) => f.allapot === 'elfogadva').length, hiba: e.frissites.filter((f) => f.allapot === 'hiba').length, kihagyva: m.kihagyva || 0, jobId } };
 }
 
