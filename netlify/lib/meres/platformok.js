@@ -6,7 +6,7 @@
 //   Google Ads: csak a 7825199989-7825200916 "ARNYEK - ..." masodlagos UPLOAD_CLICKS akciok (Zapier-webhookon at); GA4: csak teszt-property (az elo G-H4206SQ0Q7 tiltott).
 import { metaNev } from './esemeny-modell.js';
 import { googleKattintas, metaFbc } from './erkezes.js';
-import { bongeszoMetaKulcs } from './meta-bongeszo-kulcs.js';
+import { bongeszoMetaKulcs, bongeszoMetaNev } from './meta-bongeszo-kulcs.js';
 
 export const ARNYEK = Object.freeze({
   meta: Object.freeze({ datasetId: '28616665324611098', nev: 'MOSAIC ARNYEK meres-teszt', apiVerzio: 'v23.0' }), // a Graph API verzio felulirhato: META_API_VERSION (a v21.0 2026 oktoberben lejar)
@@ -88,7 +88,7 @@ export function metaKerelem(e, ctx, env = {}) {
     ct: ctx.hash.ct && fh ? [ctx.hash.ct] : null, zp: ctx.hash.zp && fh ? [ctx.hash.zp] : null, // varos / iranyitoszam: csak az ajandekkartya-vasarlasnal van forras (a PI metadata); egyebkent kimarad
     fbc: metaFbc(ctx.erk, ctx.fk.ido * 1000),
   });
-  const nev = metaNev(e, ctx.fk.uzletag);
+  const nev = bongeszoMetaNev(e, ctx.fk.uzletag, env) || metaNev(e, ctx.fk.uzletag); // PMU: a Meta dedup (event_name + event_id) miatt a bongeszos nev, KAPCSOLO MOGOTT (alapbol ki; UJ-2 elofeltetel, #167 6319738112)
   // DECISION-keres (#167 6315883179, UJ-2): a motoros (mb_) alapesemeny event_id-ja a bongeszos tag 213 kulcsa (ARNYEK; hianyzo resz = marad az esemeny_id). sd_ / ajandekkartya / ernyo valtozatlan.
   const bongeszoKulcs = e.tipus === 'alap' && /^mb_/.test(String(ctx.fk.source_entity_id || '')) ? bongeszoMetaKulcs(ctx.bongeszo) : null;
   const adatEpit = (ud) => tisztit({
