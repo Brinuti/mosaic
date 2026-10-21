@@ -34,7 +34,8 @@ test('foto: hozzajarulassal pontosan 1 esemeny, zart mezokkel, szemelyes adat ne
   const e = dl()[0];
   assert.deepEqual(Object.keys(e).sort(), ['ag', 'business', 'event', 'event_id', 'foto_db', 'idopont_kert', 'lead_type', 'source_page'].sort());
   assert.deepEqual({ ...e }, { event: 'pmu_foto_lead', business: 'pmu', lead_type: 'foto', source_page: '/foglalo-pmu', event_id: id, ag: 'D', foto_db: 3, idopont_kert: 1 });
-  assert.equal(TILTOTT.test(JSON.stringify(Object.values(e))), false, JSON.stringify(e));
+  // a PII-minta az event_id nelkuli ertekeken fut (a veletlen hex azonosito szamjegy-sorozata fals talalat lenne); az event_id-t kulon regex ellenorzi
+  assert.equal(TILTOTT.test(JSON.stringify(Object.entries(e).filter(([k]) => k !== 'event_id').map(([, v]) => v))), false, JSON.stringify(e));
   assert.match(e.event_id, /^pl_[a-z0-9]{8,24}$/);
 });
 
@@ -83,7 +84,7 @@ test('azonos azonositoval masodszor nem pushol (beadasonkent egyszer); uj beadas
   // ervenytelen / kitalalt azonosito (pl. szemelyes adat) nem kerul az esemenybe
   pmuLead('visszahivas', { id: 'Teszt Elek 06201234567', napszak: 'Bármikor' });
   assert.match(dl()[2].event_id, /^pl_[a-z0-9]{8,24}$/);
-  assert.equal(TILTOTT.test(dl()[2].event_id), false);
+  assert.notEqual(dl()[2].event_id, 'Teszt Elek 06201234567');
 });
 
 test('tiltott localStorage: nem dob, az esemeny megy (nem proba)', () => {
