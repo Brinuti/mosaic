@@ -3,6 +3,7 @@
 // Nincs nev, e-mail, telefon, hash, teljes UUID; egyetlen kivetel a pre288 mintalista (legfeljebb 8 karakteres uuid-elotag). Nem ir semmit, nem hoz letre tablat.
 import { ARNYEK, ELO_CELOK, PLATFORMOK } from './platformok.js';
 import { cellaOsztaly } from './egyeztetes-sor.js';
+import { metaNevOsztaly, NEV_OSZTALYOK } from './meta-bongeszo-nev.js';
 
 export const QA_TIMEZONE = 'Europe/Budapest';
 /** 2026-10-13 09:53:07 UTC: a #288 (sd kornyezeti kapu) eles merge-enek pillanata; ez elott letrehozott foglalasokhoz nem keszult foglalas_vendeg hash-index sor. */
@@ -349,6 +350,17 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     }
     return t;
   }, hibak);
+  // UJ-12 (#167 6321101806): Meta nevegyezes - a motoros (mb_) elkuldott ARNYEK alapesemenyek szerveres neve vs a bongeszos tag 213 neve (a Meta dedup event_name + event_id parra megy). Csak darabszam, PII nelkul; a lampat nem erinti.
+  const metaNevegyezes = await vedett('meta_nevegyezes', async () => {
+    if (!kOszl.size || !(await oszlopok(db, 'meres_erkezes')).has('bongeszo')) return null;
+    const sorok = await mind(db, "SELECT k.uzletag AS uzletag, k.esemeny_nev AS nev, e.bongeszo AS bongeszo FROM meres_kuldes k LEFT JOIN meres_erkezes e ON e.source_id = k.source_id WHERE k.platform = 'meta' AND k.esemeny_tipus = 'alap' AND k.allapot = 'elkuldve' AND k.source_id LIKE 'mb\\_%' ESCAPE '\\' AND k.letrehozva >= ?1 AND k.letrehozva < ?2", from, to);
+    const m = { osszes: 0, ...Object.fromEntries(NEV_OSZTALYOK.map((o) => [o, 0])) };
+    for (const s of sorok) {
+      let b = null; try { b = s.bongeszo ? JSON.parse(s.bongeszo) : null; } catch (e) { b = null; }
+      m.osszes++; m[metaNevOsztaly({ uzletag: s.uzletag, esemenyNev: s.nev, bongeszo: b })]++;
+    }
+    return m;
+  }, hibak);
   if (!ismeretlenHasznalt) delete uz.ismeretlen;
   if (hibak.length && LAMPA_RANG[osszLampa] < LAMPA_RANG.sarga) osszLampa = 'sarga'; // hiányos szekcio nem lehet "zold"
   return {
@@ -359,6 +371,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     szekcio_hibak: hibak,
     proba_szabaly: PROBA_SZABALY, proba_megadva: [...probaSet],
     t2, // DECISION #213: a T2-szamlalo napi erteke (null: hianyzo sema / szekcio-hiba)
+    meta_nevegyezes: metaNevegyezes, // UJ-12: egyezik / pmu_lekepezes / besorolasi_elteres / kupon_utvonal (+ nincs_bongeszos_esemeny, nincs_erkezes) darabszam; null: hianyzo sema / szekcio-hiba
     osszes,
     uzletagak: uz,
   };
@@ -418,7 +431,7 @@ export async function t2Start(db, env, mostMs, { sha = null, zapRev = null } = {
     },
     arnyekcelok: {
       meta: { dataset: ARNYEK.meta.datasetId, nev: ARNYEK.meta.nev, api_verzio: e.META_API_VERSION ? String(e.META_API_VERSION).slice(0, 40) : ARNYEK.meta.apiVerzio, test_event_code: e.META_TESZT_KOD ? String(e.META_TESZT_KOD).slice(0, 40) : null },
-      tiktok: { pixel_code: ARNYEK.tiktok.pixelCode, pixel_id: ARNYEK.tiktok.pixelId, test_event_code: e.TIKTOK_TESZT_KOD ? String(e.TIKTOK_TESZT_KOD).slice(0, 40) : null },
+      tiktok: { pixel_code: ARNYEK.tiktok.pixelCode, pixel_id: ARNYEK.tiktok.pixelId, test_event_code: e.TIKTOK_TESZT_KOD ? String(e.TIKTOK_TESZT_KOD).slice(0, 40) : null, arnyek_eles: String(e.TIKTOK_ARNYEK_ELES || '') === '1' }, // arnyek_eles: Feri 10-20 (#453), tesztkod nelkul az ARNYEK pixelre
       ga4: e.GA4_TESZT_MEASUREMENT_ID && ELO_CELOK.ga4.includes(String(e.GA4_TESZT_MEASUREMENT_ID)) ? { measurement_id: null, hiba: 'a konfiguralt GA4 teszt measurement ID az ELO tiltolistan van (nem irjuk ki)' } : { measurement_id: e.GA4_TESZT_MEASUREMENT_ID ? String(e.GA4_TESZT_MEASUREMENT_ID).slice(0, 40) : null },
       google: { customer_id: ARNYEK.google.customerId, akciok: ARNYEK.google.akciok },
     },
