@@ -303,6 +303,13 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .urlap-cim { display: block; font: 700 17px/1.2 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; color: #2b2b38; letter-spacing: -.01em; }
 .urlap-ikon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #fff; color: #a35a4b; box-shadow: 0 3px 10px rgba(163, 90, 75, .16); }
 .urlap-ikon svg { width: 22px; height: 22px; }
+.urlap-figy { margin: 2px 0 10px; padding: 10px 14px; border-radius: 14px; background: #fff7e8; border: 1.5px solid #f0d9a8; color: #4a3a1c; font-size: 13.5px; line-height: 1.4; }
+.urlap-figy p { display: flex; align-items: flex-start; gap: 10px; margin: 0; }
+.urlap-figy p + p { margin-top: 7px; padding-top: 7px; border-top: 1px solid #f0d9a8; }
+.urlap-figy b { color: #2b2b38; }
+.urlap-figy .nowrap { white-space: nowrap; }
+.figy-ikon { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: #a35a4b; }
+.figy-ikon svg { width: 22px; height: 22px; }
 .urlap-menet { display: flex; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; counter-reset: none; }
 .urlap-menet li { flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 7px 6px; border-radius: 99px; background: #faf6f5; color: #454659; font: 600 12.5px/1.15 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; white-space: nowrap; }
 .urlap-menet b { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #d7aba8; color: #fff; font-size: 11px; }
@@ -333,6 +340,10 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .urlap-cim { font-size: 16px; }
   .urlap-ikon { width: 38px; height: 38px; }
   .urlap-menet { margin-bottom: 8px; }
+  .urlap-figy { margin-bottom: 8px; padding: 8px 11px; font-size: 13px; line-height: 1.35; }
+  .urlap-figy p { gap: 8px; }
+  .urlap-figy p + p { margin-top: 5px; padding-top: 5px; }
+  .figy-ikon, .figy-ikon svg { width: 20px; height: 20px; }
   .urlap-menet li { padding: 6px 4px; font-size: 12px; }
   .urlap { row-gap: 9px; column-gap: 10px; }
   .urlap-szakasz { margin-top: 2px; }
@@ -431,7 +442,9 @@ let ertekelesAdat = null, ertekelesKeres = null;
 const ertekelesBetolt = () => ertekelesKeres || (ertekelesKeres = fetch('/api/ertekeles').then((v) => (v.ok ? v.json() : null))
   .then((a) => { if (a && +a.db > 0) ertekelesAdat = { pont: String(a.pont || '4.8').replace('.', ','), db: +a.db }; return ertekelesAdat; }).catch(() => null));
 const ertekelesHtml = () => `<b class="pk-csillag" aria-hidden="true">★</b> ${ertekelesAdat ? `${ertekelesAdat.pont} · ${ertekelesAdat.db} <span class="pk-ertek-hosszu">Google-</span>értékelés` : '4,8 · Google-értékelések'}`;
-const TELEFON_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-1.9 1.3a12 12 0 0 0 6.5 6.5l1.3-1.9 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+const ORA_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const NAPTAR_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+const TELEFON_IKON ='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-1.9 1.3a12 12 0 0 0 6.5 6.5l1.3-1.9 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 // "Mire kérsz időpontot?" - a regi /kontroll legordulo 6 lehetosege (a szoveg valtozatlan: ez kerul a szalon e-mailjebe), tipusonkent
 const LEHETOSEG = {
   kontroll: ['Kontroll - Meglévő vendégeknek - 0 Ft', 'Konzultáció - Új vendégeknek - 5.000 Ft', 'Sebkezelés / Tisztítás  - 2.000 Ft'],
@@ -632,7 +645,11 @@ export function nyit(ctx) {
     const orszagok = (lista) => lista.map(([iso, , nev, hivo]) => `<option value="${esc(iso)}" title="${esc(nev)}"${iso === (adat.orszag || 'HU') ? ' selected' : ''}>${esc(iso)} ${esc(hivo)}</option>`).join('');
     // a tulajdonos kerese (2026-10-16: "a kontroll visszahivo urlap meg mindig nem az igazi"): fejlec ikonnal, "igy mukodik" sor, ket csoport (Elerhetoseged /
     // A piercingedrol), mintaszovegek, eros kuldes-gomb. A mezonevek es a sorrend VALTOZATLAN (a szalon e-mailje ugyanaz).
-    tartalom.innerHTML = `<div class="urlap-fej"><span class="urlap-ikon" aria-hidden="true">${TELEFON_IKON}</span><div><b class="urlap-cim">${esc(t.nev)}</b><p>Töltsd ki az űrlapot, és 24 órán belül visszahívunk, hogy egyeztessünk egy időpontot.</p></div></div>`
+    // a tulajdonos kerese (2026-10-21): a kontroll es a garancia csak H-Cs 8-14 ora kozott, es csak idopont-egyeztetessel van - az urlap felett, hogy a vendeg elobb ezt lassa
+    const figy = t.kod === 'ekszercsere' ? ''
+      : `<div class="urlap-figy" role="note"><p><span class="figy-ikon">${ORA_IKON}</span><span><b>Kontroll és garancia csak hétfőtől csütörtökig, <span class="nowrap">8:00–14:00</span> között.</b></span></p>`
+        + `<p><span class="figy-ikon">${NAPTAR_IKON}</span><span><b>Csak időpont-egyeztetéssel.</b> Időpont nélkül nem tudunk fogadni, ezért kérj visszahívást, és megbeszéljük az időpontot.</span></p></div>`;
+    tartalom.innerHTML = figy + `<div class="urlap-fej"><span class="urlap-ikon" aria-hidden="true">${TELEFON_IKON}</span><div><b class="urlap-cim">${esc(t.nev)}</b><p>Töltsd ki az űrlapot, és 24 órán belül visszahívunk, hogy egyeztessünk egy időpontot.</p></div></div>`
       + '<ol class="urlap-menet" aria-label="Így működik"><li><b>1</b>Kitöltöd</li><li><b>2</b>Visszahívunk</li><li><b>3</b>Egyeztetünk</li></ol>'
       + `<form class="urlap" novalidate><div class="csapda" aria-hidden="true"><label>Ne töltsd ki <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label></div>`
       + '<p class="urlap-szakasz">Elérhetőséged</p>'
