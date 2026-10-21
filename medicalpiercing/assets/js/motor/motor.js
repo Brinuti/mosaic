@@ -640,10 +640,9 @@ export function nyit(ctx) {
     const orszagok = (lista) => lista.map(([iso, , nev, hivo]) => `<option value="${esc(iso)}" title="${esc(nev)}"${iso === (adat.orszag || 'HU') ? ' selected' : ''}>${esc(iso)} ${esc(hivo)}</option>`).join('');
     // a tulajdonos kerese (2026-10-16: "a kontroll visszahivo urlap meg mindig nem az igazi"): fejlec ikonnal, "igy mukodik" sor, ket csoport (Elerhetoseged /
     // A piercingedrol), mintaszovegek, eros kuldes-gomb. A mezonevek es a sorrend VALTOZATLAN (a szalon e-mailje ugyanaz).
-    // a tulajdonos kerese (2026-10-21): a kontroll es a garancia csak H-Cs 8-14 ora kozott, es csak idopont-egyeztetessel van - az urlap felett, hogy a vendeg elobb ezt lassa
-    const figy = t.kod === 'ekszercsere' ? ''
-      : `<div class="urlap-figy" role="note"><p><span class="figy-ikon">${ORA_IKON}</span><span><b>Kontroll és garancia csak hétfőtől csütörtökig, <span class="nowrap">8:00–14:00</span> között.</b></span></p>`
-        + `<p><span class="figy-ikon">${NAPTAR_IKON}</span><span><b>Csak időpont-egyeztetéssel.</b> Időpont nélkül nem tudunk fogadni, ezért kérj visszahívást, és megbeszéljük az időpontot.</span></p></div>`;
+    // a tulajdonos kerese (2026-10-21): a kontroll, a garancia es az ekszercsere csak H-Cs 8-14 ora kozott, es csak elozetes idopont-egyeztetessel van - az urlap felett, hogy a vendeg elobb ezt lassa
+    const figy = `<div class="urlap-figy" role="note"><p><span class="figy-ikon">${ORA_IKON}</span><span><b>Kontroll, garancia és ékszercsere csak hétfőtől csütörtökig, <span class="nowrap">8:00–14:00</span> között.</b></span></p>`
+        + `<p><span class="figy-ikon">${NAPTAR_IKON}</span><span><b>Csak előzetes időpont-egyeztetéssel.</b> Időpont nélkül nem tudunk fogadni, ezért kérj visszahívást, és megbeszéljük az időpontot.</span></p></div>`;
     tartalom.innerHTML = figy + `<div class="urlap-fej"><span class="urlap-ikon" aria-hidden="true">${TELEFON_IKON}</span><div><b class="urlap-cim">${esc(t.nev)}</b><p>Töltsd ki az űrlapot, és 24 órán belül visszahívunk, hogy egyeztessünk egy időpontot.</p></div></div>`
       + `<form class="urlap" novalidate><div class="csapda" aria-hidden="true"><label>Ne töltsd ki <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label></div>`
       + '<p class="urlap-szakasz"><b>1</b>Elérhetőséged</p>'
