@@ -14,9 +14,12 @@ A Google-feltöltést egy Zapier-webhook végzi (`GOOGLE_ARNYEK_WEBHOOK_URL`); a
 ## Védett fájlok, hash
 `netlify/lib/meres/elosztas.js`: `f8a78f8430` (#458) → `8b15e0d11f`; `netlify/lib/meres/qa-nap.js`: `533adf86c6` (#460) → `079f69ded0`. A T2-rögzítő `sema_ujjlenyomat`-a a két új oszlop miatt szándékosan változik a deploy után (új T2-kiinduló rögzítés kell, ha a mérési oldal így akarja).
 
+## Zapier-draft (KÉSZ, nem publikált)
+A Zap egy durable workflow (kód); a módosítás a `docs/booking-engine/zapier/` mappában (eredeti = rollback-másolat, módosított, README). Zapier-draft ID `01a15f66-ef0c-7fa3-8246-4ef15e3eaa10` (az élő verzió `01a1122d-fc48-75d7-b7cf-69f4bf070aeb` változatlan). A Zapier Google Ads action a Google `partialFailure`-t nem adja vissza: a `""` kód = „a Zapier action nem dobott hibát”.
+
 ## Mit kell hozzá beállítani (élesítéskor, DECISION után)
 - Cloudflare Pages (Production, Secret): `MERES_GOOGLE_VALASZ_KULCS_HASH` = a Zapnek adott kulcs SHA-256-ja. A kulcs a Zapier Webhooks-lépés fejlécében él (a repóba/commitba/chatbe nem kerül).
-- A Zap: a Google Ads lépés után Webhooks POST (Zapier-draft; élő Zap változatlan): `esemeny_id` = a bemeneti `order_id`, `kod` = a partialFailure kód (üres, ha nincs hiba), `uzenet`, `elfogadva`/`elutasitva`; a hibaágon `kod` = `ZAP_HIBA`.
+- Zapier Storage: `mosaic_google_valasz_kulcs` (≥ 32 karakteres kulcs; SHA-256-ja az env-be). A Zap a Google Ads lépés után visszahív: `esemeny_id` = `order_id`, `kod` (`""` / `ZAP_HIBA` / `ZAP_KIHAGYVA`), `uzenet`, `elfogadva`/`elutasitva` – lásd a README-t.
 
 ## Tesztek
 `tools/test-google-valasz.mjs` (5 teszt, valódi SQLite): séma, küldéskori GRANTED/DENIED, rögzítés (OK / részleges hiba / első marad / maszkolás: click ID, e-mail, hash nem kerül a naplóba / hibás kód / ismeretlen sor / nem google sor), végpont (kulcs csak fejlécben, 404/405/400/413/503, siker), qa-nap sor + régi séma. A régi csomag zöld: test-qa-nap 45, test-meres 51, test-adatgazdagitas 21 (golden érintetlen), test-google-proba 26, test-meta-nevegyezes 6, test-meta-pmu-nev 7, test-meta-bongeszo-kulcs 22, test-booking-flow 41, test-lepes-meres 29, test-gclid-r1r3 14, test-lpt-forras 58.
