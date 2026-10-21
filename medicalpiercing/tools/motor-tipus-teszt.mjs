@@ -156,9 +156,9 @@ const LEHETOSEGEK = { kontroll: 3, ekszercsere: 4, garancia: 1 };
     ok(`F: ${tipus}: az urlap nyilik (nincs naptar)`, await varj(p, 'form.urlap'));
     const m = await sr(p, 'return { sav:[...r.querySelectorAll(".lepesek button")].map(x=>x.textContent.replace(/^\\d+\\.\\s*/,"").trim()), opciok:[...r.querySelectorAll("select[name=mire] option")].map(x=>x.textContent), mezok:["nev","tel","email","mikor","varos","mire","miben","kep","orszag"].filter(n=>!r.querySelector("[name="+n+"]")), nap: !!r.querySelector("[data-slot],[data-nap],[data-hely]"), gomb:(r.querySelector("[data-kuld]")||{}).textContent };');
     ok(`F: ${tipus}: 2 lepes (Szolgaltatas, Adatok), a mezok megvannak, a "Mire kersz idopontot?" ${db} lehetoseg`, JSON.stringify(m.sav) === JSON.stringify(['Szolgáltatás', 'Adatok']) && !m.mezok.length && !m.nap && m.opciok.length === db && m.gomb === 'Visszahívást kérek!', JSON.stringify({ sav: m.sav, hianyzo: m.mezok, opciok: m.opciok.length, gomb: m.gomb }));
-    // Feri kerese (2026-10-21): kontroll / garancia: az urlap felett a fogadasi ido es az idopont-egyeztetes (az ekszerceresnel nincs)
+    // Feri kerese (2026-10-21): kontroll / ekszercsere / garancia: az urlap felett a fogadasi ido es az elozetes idopont-egyeztetes
     const figy = await sr(p, 'const f=r.querySelector(".urlap-figy"); return f ? { szoveg: f.textContent, folotte: !!(f.compareDocumentPosition(r.querySelector("form.urlap")) & Node.DOCUMENT_POSITION_FOLLOWING) } : null;');
-    ok(`F: ${tipus}: ${tipus === 'ekszercsere' ? 'nincs' : 'az urlap folott latszik a'} "H-Cs 8-14 ora" es a "Csak idopont-egyeztetessel" figyelmeztetes`, tipus === 'ekszercsere' ? !figy : !!figy && figy.folotte && /hétfőtől csütörtökig/.test(figy.szoveg) && /8:00–14:00/.test(figy.szoveg) && /Csak időpont-egyeztetéssel/.test(figy.szoveg), JSON.stringify(figy));
+    ok(`F: ${tipus}: az urlap folott latszik a "H-Cs 8-14 ora" es a "Csak elozetes idopont-egyeztetessel" figyelmeztetes (mindharom tipusnal)`, !!figy && figy.folotte && /hétfőtől csütörtökig/.test(figy.szoveg) && /8:00–14:00/.test(figy.szoveg) && /Csak előzetes időpont-egyeztetéssel/.test(figy.szoveg) && /ékszercsere/.test(figy.szoveg), JSON.stringify(figy));
     await kattint(p, '[data-vissza]');
     if (!await varj(p, '[data-tipus]', 4000)) { ok(`F: ${tipus}: a vissza gomb a tipus-valasztora visz`, false); break; }
   }
