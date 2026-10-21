@@ -3004,11 +3004,13 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
     assert.equal(md().mer_kuldve, 'kihagyva:nincs_hozzajarulas');
   });
 
-  test('ismeretlen hozzajarulas (a bongeszo nem kuldte): semmi nem megy ki', async () => {
+  test('ismeretlen hozzajarulas (a bongeszo nem kuldte): alapbol elfogadott (DECISION #218, Feri "mindig granted") -> megy; hozz_adv: true a hookban', async () => {
     const { r, md } = await fizetesEsWebhook({ attr: MER_ATTR, mer: undefined });
     assert.equal(r.status, 200);
-    assert.equal(beerkezett.length, 0);
-    assert.equal(md().mer_kuldve, 'kihagyva:ismeretlen');
+    assert.equal(beerkezett.length, 1);
+    assert.equal(hookbol()[0].hozz_adv, true);
+    assert.notEqual(md().mer_kuldve, 'kihagyva:ismeretlen');
+    assert.ok(!String(md().mer_kuldve || '').startsWith('kihagyva'), 'nem kihagyva: ' + md().mer_kuldve);
   });
 
   test('MERES_HOOK_URL nelkul a lepes nem tesz semmit: nincs kuldes, nincs metadata-iras', async () => {
