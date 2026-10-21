@@ -19,7 +19,18 @@ async function kulcsEgyezik(request, env) {
   return d === 0 && a.length === hash.length;
 }
 // a Google / Zap uzenetbol kiszedjuk a click ID-ket es a hash-eket (a naploba nem kerulhetnek): hosszu hex (hash), gclid / gbraid / wbraid ertek, e-mail
-const uzenetTisztit = (s) => valaszMaszk(String(s || '')).replace(/\b(gclid|gbraid|wbraid)\b\s*[=:]?\s*[A-Za-z0-9_-]{8,}/gi, '$1=[click]').replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[email]').replace(/\s+/g, ' ').trim().slice(0, 300);
+// A click ID-t MINDEN alakban kivesszuk (review 6322303663): kulcs + barmilyen elvalaszto (szokoz, =, :, idezojel, JSON, URL-kodolt %3D / %22 / %3A) + ertek; googleClickId / wbraid is;
+// kulcs nelkuli ertek (pl. "UNPARSEABLE_GCLID EAIa...") es altalanos tartalek: minden >=20 karakteres vegyes kis/nagybetus, vagy >=24 karakteres szam+betu token.
+const CLICK_KULCS = '(gclid|gbraid|wbraid|googleclickid|google_click_id)';
+const ELVALASZTO = '[\\s"\':=,{}\\[\\]]*(?:%3[dD]|%22|%3[aA]|%27)*[\\s"\']*';
+const CLICK_RE = new RegExp(CLICK_KULCS + ELVALASZTO + '([A-Za-z0-9_-]{6,})', 'gi');
+const idSzeru = (x) => /\d/.test(x) || (/[a-z]/.test(x) && /[A-Z]/.test(x)); // "expired" / "not" nem click ID: csak a szam-tartalmu vagy vegyes kis/nagybetus ertek
+const hosszuToken = (x) => x.length >= 20 && ((/[a-z]/.test(x) && /[A-Z]/.test(x)) || (x.length >= 24 && /\d/.test(x) && /[A-Za-z]/.test(x)));
+const uzenetTisztit = (s) => valaszMaszk(String(s || ''))
+  .replace(CLICK_RE, (m, kulcs, ertek) => (idSzeru(ertek) ? kulcs + '=[click]' : m))
+  .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[email]')
+  .replace(/[A-Za-z0-9_-]{20,}/g, (x) => (hosszuToken(x) ? '[token]' : x))
+  .replace(/\s+/g, ' ').trim().slice(0, 300);
 const darab = (v) => (Number.isInteger(v) && v >= 0 && v <= 1000 ? v : null);
 
 /** A tiszta muvelet (tesztelheto): -> { status, body }. */
@@ -47,8 +58,8 @@ export async function googleValaszRogzit(db, o, now = Date.now()) {
 
 /** POST /api/meres-google-valasz */
 export async function kezelGoogleValasz(request, env, deps = {}) {
-  if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
-  if (!(await kulcsEgyezik(request, env))) return valasz(404, { ok: false });
+  if (!(await kulcsEgyezik(request, env))) return valasz(404, { ok: false }); // a kulcsellenorzes ELOL (kulcs nelkul mindig 404, a beallitasokrol / a D1-rol semmi nem derul ki)
+  if (!env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (request.method !== 'POST') return valasz(405, { ok: false });
   const szoveg = await request.text();
   if (szoveg.length > 4000) return valasz(413, { ok: false, miert: 'tul nagy' });

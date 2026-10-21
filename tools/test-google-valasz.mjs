@@ -111,3 +111,38 @@ test('qaNap.google_valasz: uzletagonkenti darabszamok (elkuldve / google_elfogad
   const regi = await qaNap(db, nap, { mostMs: NOW + 86400000 });
   assert.deepEqual(regi.google_valasz, { sema_hianyzik: true });
 });
+test('uzenet-maszkolas (review 6322303663): a click ID MINDEN alakban kimarad a platform_valasz-bol; a hasznos hibaszoveg megmarad', async () => {
+  const w = await vilag();
+  const CK = 'EAIaIQobChMIjP2zq9v8gAMV0QZ_AB1x7wO3EAAYASAAEgK-3fD_BwE'; // gclid-szeru
+  const BR = '0AAAAADcFKiYuh-Hh4gV1YtkWbg_SVNJ9'; // gbraid-szeru
+  const alakok = [
+    `hiba gbraid "${BR}" nem ertelmezheto`, // idezojeles
+    `{"gclid":"${CK}","x":1}`, // JSON
+    `{'wbraid': '${BR}'}`, // JSON, aposztrof
+    `googleClickId: ${CK}`, // googleClickId
+    `google_click_id=${CK}`,
+    `UNPARSEABLE_GCLID ${CK}`, // kulcs nelkuli ertek, a kod utan
+    `https://x.test/?a=1&gclid%3D${CK}&b=2`, // URL-kodolt
+    `gclid%22%3A%22${CK}%22`, // URL-kodolt JSON
+    `invalid click ${CK} for order`, // kulcs es kulcsszo nelkul: altalanos tartalek
+    `ALLAPOT ${BR}${BR}`, // hosszu szam+betu token
+  ];
+  for (const [i, uzenet] of alakok.entries()) {
+    const s = await googleSor(w, `mb_0muwq2ciorsos0tznsfy${String(i).padStart(3, '0')}`, { ana: true, adv: true, fun: true });
+    const r = await googleValaszRogzit(w.db, { id: s.id, kod: 'UNPARSEABLE_GCLID', uzenet }, NOW + 1000);
+    assert.equal(r.status, 200, uzenet);
+    const v = w.sql('SELECT platform_valasz AS v FROM meres_kuldes WHERE id = ?1', s.id)[0].v;
+    assert.ok(!v.includes(CK) && !v.includes(BR) && !v.includes(CK.slice(0, 18)) && !v.includes(BR.slice(0, 14)), `kiszivarog: ${uzenet} -> ${v}`);
+    assert.ok(/\[click\]|\[token\]/.test(v), `maszkolt jel hianyzik: ${v}`);
+  }
+  // a hasznos szoveg megmarad (nem maszkolunk mindent): kodok, rovid szavak, requestId
+  const s = await googleSor(w, 'mb_0muwq2ciorsos0tznsfy900', { ana: true, adv: true, fun: true });
+  await googleValaszRogzit(w.db, { id: s.id, kod: 'CONSENT_DENIED', uzenet: 'requestId=abc123def gclid expired; CONVERSION_ACTION_NOT_ELIGIBLE for gclid not found' }, NOW + 1000);
+  const v = w.sql('SELECT platform_valasz AS v FROM meres_kuldes WHERE id = ?1', s.id)[0].v;
+  assert.match(v, /requestId=abc123def/); assert.match(v, /gclid expired/); assert.match(v, /CONVERSION_ACTION_NOT_ELIGIBLE/); assert.match(v, /gclid not found/);
+});
+test('kezelGoogleValasz: kulcs nelkul MINDIG 404 (D1 nelkul is), a 503 csak ervenyes kulccsal', async () => {
+  assert.equal((await kezelGoogleValasz(new Request('https://x.test/a', { method: 'POST', body: '{}' }), { KULCS_DB: null, MERES_GOOGLE_VALASZ_KULCS_HASH: KULCS_HASH })).status, 404);
+  assert.equal((await kezelGoogleValasz(new Request('https://x.test/a', { method: 'POST', body: '{}' }), {})).status, 404);
+  assert.equal((await kezelGoogleValasz(new Request('https://x.test/a', { method: 'POST', headers: { 'x-meres-google-kulcs': KULCS }, body: '{}' }), { KULCS_DB: null, MERES_GOOGLE_VALASZ_KULCS_HASH: KULCS_HASH })).status, 503);
+});
