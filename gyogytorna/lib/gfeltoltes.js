@@ -57,7 +57,7 @@ export const gfeltoltesKeres = (payloadok) => ({ conversions: payloadok, partial
 
 // Google ConversionUploadError / HTTP-hibak besorolasa. Atmeneti: ujraproba backoff-fal; vegleges: soha nem probaljuk ujra (pl. ervenytelen vagy 90 napnal regebbi click-ID).
 const ATMENETI_KODOK = new Set(['TOO_RECENT_EVENT', 'TOO_RECENT_CONVERSION_ACTION', 'CLICK_NOT_FOUND', 'INTERNAL_ERROR', 'TRANSIENT_ERROR', 'RESOURCE_EXHAUSTED', 'UNAVAILABLE', 'DEADLINE_EXCEEDED']);
-const MAR_MEGVAN_KODOK = new Set(['ALREADY_IMPORTED', 'DUPLICATE_ORDER_ID']); // ugyanaz az order_id mar bent van: a feltoltes kesz
+const MAR_MEGVAN_KODOK = new Set(['CLICK_CONVERSION_ALREADY_EXISTS', 'ORDER_ID_ALREADY_IN_USE']); // ugyanaz a konverzio / order_id mar bent van (pl. elveszett valasz utan ujrakuldve): a feltoltes kesz
 /**
  * Mi legyen egy sikertelen kiserlet utan? `proba` = hany ujraproba tortent MAR (0 az elso kiserlet utan).
  * @returns {{allapot: 'elfogadva'|'hiba', kovetkezo: number|null, ok: string}} - `kovetkezo` = a kovetkezo kiserlet unix ideje (null: vegleges, nincs tobb proba)
@@ -144,18 +144,20 @@ const elsoKod = (ec) => { if (!ec || typeof ec !== 'object') return null; const 
 export function valaszElemzes(http, json) {
   const j = json && typeof json === 'object' ? json : {};
   const sorHibak = new Map();
-  const reszletek = (j.partialFailureError && j.partialFailureError.details) || [];
-  for (const d of reszletek) for (const e of (d && d.errors) || []) {
-    const fp = (e.location && e.location.fieldPathElements) || [];
-    const idx = fp.find((x) => x && x.fieldName === 'conversions');
-    const kod = elsoKod(e.errorCode) || 'ISMERETLEN';
-    if (idx && Number.isInteger(idx.index)) { if (!sorHibak.has(idx.index)) sorHibak.set(idx.index, kod); }
-  }
-  if (j.partialFailureError && !sorHibak.size) return { keresHiba: { http, kod: 'PARTIAL_FAILURE_ISMERETLEN_SOR' } };
+  const gyujt = (details) => {
+    for (const d of details || []) for (const e of (d && d.errors) || []) {
+      const fp = (e.location && e.location.fieldPathElements) || [];
+      const idx = fp.find((x) => x && x.fieldName === 'conversions');
+      if (idx && Number.isInteger(idx.index) && !sorHibak.has(idx.index)) sorHibak.set(idx.index, elsoKod(e.errorCode) || 'ISMERETLEN');
+    }
+  };
+  gyujt(j.partialFailureError && j.partialFailureError.details);
+  if (j.partialFailureError && !sorHibak.size) return { keresHiba: { http, kod: 'PARTIAL_FAILURE_ISMERETLEN_SOR' }, sorHibak };
   if (http !== 200) {
     let kod = (j.error && j.error.status) || null;
     for (const d of (j.error && j.error.details) || []) for (const e of (d && d.errors) || []) { kod = elsoKod(e.errorCode) || kod; }
-    return { keresHiba: { http, kod: kod || null } };
+    gyujt(j.error && j.error.details); // a keres-szintu hiba (pl. 400) is hivatkozhat egy konkret sorra: azt a sort jelolnek, a tobbi valtozatlan
+    return { keresHiba: { http, kod: kod || null }, sorHibak };
   }
   return { sorHibak };
 }
@@ -169,13 +171,25 @@ export function valaszErtekel({ sorok, http, json, requestId = null, most, vegle
   if (e.keresHiba) {
     const k = e.keresHiba;
     const sorSzintu = k.http === 429 || (k.http !== null && k.http >= 500) || k.http === null; // atmeneti: a sorok ujraprobalhatok
-    if (!sorSzintu) return { frissites: [], keresHiba: k, tiszta: [] };
-    return { frissites: sorok.map((s) => hibaFrissites(s, { http: k.http, kod: k.kod, most, requestId })), keresHiba: k, tiszta: [] };
+    if (sorSzintu) return { frissites: sorok.map((s) => hibaFrissites(s, { http: k.http, kod: k.kod, most, requestId })), keresHiba: k, tiszta: [] };
+    // hozzaferesi / konfiguracios / kerestorzs-hiba: a sorok NEM valtoznak (nem a konverziok hibaja) - kiveve, amelyiket a Google nevesitett (sor-index)
+    return { frissites: sorok.flatMap((s, i) => (e.sorHibak.has(i) ? [hibaFrissites(s, { http: null, kod: e.sorHibak.get(i), most, requestId })] : [])), keresHiba: k, tiszta: [] };
+  }
+  // ELES hivas: a sor csak akkor `elfogadva`, ha a valasz `results` tombje a sorokkal egyezo hosszu es az adott elem nem ures (a hibas sor elemei uresek)
+  if (vegleges) {
+    const r = json && Array.isArray(json.results) ? json.results : null;
+    if (!r || r.length !== sorok.length) return { frissites: [], keresHiba: { http, kod: 'VALASZ_ERTELMEZHETETLEN' }, tiszta: [] };
   }
   const frissites = [], tiszta = [];
   sorok.forEach((s, i) => {
     const kod = e.sorHibak.get(i);
-    if (!kod) { tiszta.push(i); if (vegleges) frissites.push({ id: s.id, allapot: 'elfogadva', hiba: null, google_hibakod: null, ujraprobalas: s.ujraprobalas || 0, utolso_hiba_ido: null, kovetkezo_proba: null, request_id: requestId }); return; }
+    if (!kod) {
+      const elem = vegleges ? json.results[i] : null;
+      if (vegleges && !(elem && typeof elem === 'object' && Object.keys(elem).length)) { frissites.push(hibaFrissites(s, { http: null, kod: 'VALASZ_URES_ELEM', most, requestId })); return; }
+      tiszta.push(i);
+      if (vegleges) frissites.push({ id: s.id, allapot: 'elfogadva', hiba: null, google_hibakod: null, ujraprobalas: s.ujraprobalas || 0, utolso_hiba_ido: null, kovetkezo_proba: null, request_id: requestId });
+      return;
+    }
     frissites.push(hibaFrissites(s, { http: null, kod, most, requestId }));
   });
   return { frissites, keresHiba: null, tiszta };
@@ -192,18 +206,19 @@ export async function lefoglal(db, sorok, most) {
   const ki = [];
   for (const s of sorok) {
     const r = await db.prepare(
-      `UPDATE gy_feltoltes SET allapot = 'kuldes_alatt', utolso_hiba_ido = ?2 WHERE id = ?1 AND (allapot IN ('varakozik','hiba') OR (allapot = 'kuldes_alatt' AND COALESCE(utolso_hiba_ido, 0) <= ?2 - ?3))`,
+      `UPDATE gy_feltoltes SET allapot = 'kuldes_alatt', utolso_hiba_ido = ?2 WHERE id = ?1 AND mod = 'eles' AND (allapot = 'varakozik' OR (allapot = 'hiba' AND kovetkezo_proba IS NOT NULL AND kovetkezo_proba <= ?2) OR (allapot = 'kuldes_alatt' AND COALESCE(utolso_hiba_ido, 0) <= ?2 - ?3))`,
     ).bind(s.id, most, GFELT.lezaras).run();
     if (r && r.meta && r.meta.changes) ki.push(s);
   }
   return ki;
 }
 
-export async function frissitMent(db, frissitesek) {
+/** Az eredmeny rogzitese: CSAK a `zar` idovel lefoglalt (kuldes_alatt) soron; ha kozben mas futas atvette / lezarta, nem ir felul. */
+export async function frissitMent(db, frissitesek, zar) {
   for (const f of frissitesek) {
     await db.prepare(
-      'UPDATE gy_feltoltes SET allapot = ?2, hiba = ?3, google_hibakod = ?4, ujraprobalas = ?5, utolso_hiba_ido = ?6, kovetkezo_proba = ?7, request_id = COALESCE(?8, request_id) WHERE id = ?1',
-    ).bind(f.id, f.allapot, f.hiba ?? null, f.google_hibakod ?? null, f.ujraprobalas ?? 0, f.utolso_hiba_ido ?? null, f.kovetkezo_proba ?? null, f.request_id ?? null).run();
+      "UPDATE gy_feltoltes SET allapot = ?2, hiba = ?3, google_hibakod = ?4, ujraprobalas = ?5, utolso_hiba_ido = ?6, kovetkezo_proba = ?7, request_id = COALESCE(?8, request_id) WHERE id = ?1 AND allapot = 'kuldes_alatt' AND utolso_hiba_ido = ?9",
+    ).bind(f.id, f.allapot, f.hiba ?? null, f.google_hibakod ?? null, f.ujraprobalas ?? 0, f.utolso_hiba_ido ?? null, f.kovetkezo_proba ?? null, f.request_id ?? null, zar).run();
   }
 }
 
@@ -216,7 +231,7 @@ export function googleAdsKuldo(env, fetchFn = globalThis.fetch) {
     if (!token) {
       const t = await fetchFn('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: env.GOOGLE_ADS_CLIENT_ID, client_secret: env.GOOGLE_ADS_CLIENT_SECRET, refresh_token: env.GOOGLE_ADS_REFRESH_TOKEN, grant_type: 'refresh_token' }) });
       const tj = await t.json().catch(() => ({}));
-      if (!t.ok || !tj.access_token) return { http: t.status === 400 || t.status === 401 ? 401 : t.status, json: { error: { status: 'UNAUTHENTICATED' } }, requestId: null };
+      if (!t.ok || !tj.access_token) return { http: 401, json: { error: { status: 'UNAUTHENTICATED' } }, requestId: null }; // a token-hiba nem a konverziok hibaja: a sorok valtozatlanok
       token = tj.access_token;
     }
     const fej = { authorization: `Bearer ${token}`, 'developer-token': env.GOOGLE_ADS_DEVELOPER_TOKEN, 'content-type': 'application/json' };
@@ -237,26 +252,28 @@ export async function gfeltoltesKuld({ db, env, most, kuldo }) {
   const jeloltek = await kuldhetoSorok(db, { most });
   if (!jeloltek.length) return ki;
   const lefoglalt = await lefoglal(db, jeloltek, most);
+  const ment = (f) => frissitMent(db, f, most);
   const kuldendo = [];
   for (const s of lefoglalt) {
     const k = kuldesElotti(s);
-    if (k) { await frissitMent(db, [{ id: s.id, allapot: k.allapot, hiba: k.hiba, ujraprobalas: s.ujraprobalas || 0 }]); ki.kihagyva += 1; } else kuldendo.push(s);
+    if (k) { await ment([{ id: s.id, allapot: k.allapot, hiba: k.hiba, ujraprobalas: s.ujraprobalas || 0 }]); ki.kihagyva += 1; } else kuldendo.push(s);
   }
   if (!kuldendo.length) return ki;
-  const visszaAd = async (sorok) => frissitMent(db, sorok.map((s) => ({ id: s.id, allapot: s.ujraprobalas ? 'hiba' : 'varakozik', hiba: null, ujraprobalas: s.ujraprobalas || 0, kovetkezo_proba: s.ujraprobalas ? most : null })));
+  // a nem nevesitett sorok visszaallnak (varakozik / esedekes ujraproba): keres-szintu hiba nem a konverzioke
+  const visszaAd = (sorok, fr) => { const kesz = new Set((fr || []).map((f) => f.id)); return ment(sorok.filter((s) => !kesz.has(s.id)).map((s) => ({ id: s.id, allapot: s.ujraprobalas ? 'hiba' : 'varakozik', hiba: null, ujraprobalas: s.ujraprobalas || 0, kovetkezo_proba: s.ujraprobalas ? most : null }))); };
   // 1) validateOnly
   const v = await kuldo(kuldesKerelem(kuldendo, { validateOnly: true }));
   const ve = valaszErtekel({ sorok: kuldendo, http: v.http, json: v.json, requestId: v.requestId, most, vegleges: false });
-  if (ve.keresHiba && !ve.frissites.length) { await visszaAd(kuldendo); return { ...ki, keresHiba: ve.keresHiba }; } // hozzaferes / konfiguracio hiba: a sorok varnak
-  await frissitMent(db, ve.frissites);
+  if (ve.keresHiba) { await ment(ve.frissites); await visszaAd(kuldendo, ve.frissites); return { ...ki, keresHiba: ve.keresHiba }; }
+  await ment(ve.frissites);
   const tiszta = ve.tiszta.map((i) => kuldendo[i]);
   ki.hiba += ve.frissites.filter((f) => f.allapot === 'hiba').length;
   if (!tiszta.length) return ki;
   // 2) eles hivas (partialFailure=true), csak a validalt sorokkal
   const e = await kuldo(kuldesKerelem(tiszta, { validateOnly: false }));
   const ee = valaszErtekel({ sorok: tiszta, http: e.http, json: e.json, requestId: e.requestId, most, vegleges: true });
-  if (ee.keresHiba && !ee.frissites.length) { await visszaAd(tiszta); return { ...ki, keresHiba: ee.keresHiba }; }
-  await frissitMent(db, ee.frissites);
+  if (ee.keresHiba) { await ment(ee.frissites); await visszaAd(tiszta, ee.frissites); return { ...ki, keresHiba: ee.keresHiba }; }
+  await ment(ee.frissites);
   ki.kuldve = tiszta.length;
   ki.elfogadva = ee.frissites.filter((f) => f.allapot === 'elfogadva').length;
   ki.hiba += ee.frissites.filter((f) => f.allapot === 'hiba').length;

@@ -1169,7 +1169,9 @@ test('GY-25 kiegeszites: ujraproba-szabaly (atmeneti hiba backoff-fal max 5x, ve
   for (const x of [{ kod: 'UNPARSEABLE_GCLID' }, { kod: 'EXPIRED_EVENT' }, { kod: 'CONVERSION_PRECEDES_EVENT' }, { kod: 'ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID' }, { http: 400 }, { http: 403, kod: 'USER_PERMISSION_DENIED' }]) {
     assert.deepEqual(ujraprobaDontes({ ...x, proba: 0, most }), { allapot: 'hiba', kovetkezo: null, ok: 'vegleges' }, JSON.stringify(x));
   }
-  assert.equal(ujraprobaDontes({ kod: 'ALREADY_IMPORTED', most }).allapot, 'elfogadva'); // ugyanaz az order_id mar bent van
+  assert.equal(ujraprobaDontes({ kod: 'CLICK_CONVERSION_ALREADY_EXISTS', most }).allapot, 'elfogadva'); // ugyanaz a konverzio mar bent van
+  assert.equal(ujraprobaDontes({ kod: 'ORDER_ID_ALREADY_IN_USE', most }).allapot, 'elfogadva');
+  assert.equal(ujraprobaDontes({ kod: 'DUPLICATE_ORDER_ID', most }).ok, 'vegleges'); // kereson belüli duplikatum: nem 'mar bent van'
   const k = gfeltoltesKeres([{ gclid: 'X' }]);
   assert.deepEqual(k, { conversions: [{ gclid: 'X' }], partialFailure: true, validateOnly: false });
 });
@@ -1299,7 +1301,7 @@ test('GY-25 ELES kuldo: validateOnly ELOSZOR, utana partialFailure=true csak a t
   const kuldo = async (k) => {
     hivasok.push(JSON.parse(JSON.stringify(k)));
     const hibak = k.validateOnly ? [[1, 'EXPIRED_EVENT'], [2, 'CLICK_NOT_FOUND']] : [];
-    return { http: 200, requestId: 'req-' + hivasok.length, json: { results: k.conversions.map(() => ({})), ...(hibak.length ? { partialFailureError: { details: [{ errors: hibak.map(([index, kod]) => ({ errorCode: { conversionUploadError: kod }, message: JO_GCLID, location: { fieldPathElements: [{ fieldName: 'conversions', index }] } })) }] } } : {}) } };
+    return { http: 200, requestId: 'req-' + hivasok.length, json: { results: k.conversions.map((c, i) => (!k.validateOnly || hibak.some(([x]) => x === i) ? (k.validateOnly ? {} : { gclid: c.gclid, conversionAction: c.conversionAction }) : {})), ...(hibak.length ? { partialFailureError: { details: [{ errors: hibak.map(([index, kod]) => ({ errorCode: { conversionUploadError: kod }, message: JO_GCLID, location: { fieldPathElements: [{ fieldName: 'conversions', index }] } })) }] } } : {}) } };
   };
   const ki = await gfeltoltesKuld({ db: env.GY_DB, env: E, most, kuldo });
   assert.equal(hivasok.length, 2);
@@ -1314,7 +1316,7 @@ test('GY-25 ELES kuldo: validateOnly ELOSZOR, utana partialFailure=true csak a t
   assert.deepEqual([s[2].allapot, s[2].hiba, s[2].google_hibakod, s[2].ujraprobalas, s[2].kovetkezo_proba], ['hiba', 'ujraproba', 'CLICK_NOT_FOUND', 1, most + 3600]);
   assert.equal(JSON.stringify(s).includes(JO_GCLID), false); // a Google hibauzenet (click-ID-t idezhet) nem tarolodik
   // nincs dupla kuldes: az elfogadott / vegleges sor soha nem megy ujra; az atmeneti csak a kovetkezo_proba utan
-  const hivasok2 = []; const kuldo2 = async (k) => { hivasok2.push(k); return { http: 200, requestId: 'r', json: { results: k.conversions.map(() => ({})) } }; };
+  const hivasok2 = []; const kuldo2 = async (k) => { hivasok2.push(k); return { http: 200, requestId: 'r', json: { results: k.conversions.map((c) => (k.validateOnly ? {} : { gclid: c.gclid, conversionAction: c.conversionAction })) } }; };
   assert.deepEqual(await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 60, kuldo: kuldo2 }), { kuldve: 0, elfogadva: 0, hiba: 0, kihagyva: 0 });
   assert.equal(hivasok2.length, 0);
   assert.deepEqual(await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 3600, kuldo: kuldo2 }), { kuldve: 1, elfogadva: 1, hiba: 0, kihagyva: 0 });
@@ -1353,6 +1355,47 @@ test('GY-25 ELES kuldo: kuldes elotti vegso ellenorzes (lemondott / teszt / hiba
   assert.deepEqual([k.partialFailure, k.validateOnly, k.conversions.length], [true, true, 1]);
   // valaszelemzes: sorhiba index, keres-szintu hiba
   assert.deepEqual([...valaszElemzes(200, { partialFailureError: { details: [{ errors: [{ errorCode: { conversionUploadError: 'CLICK_NOT_FOUND' }, location: { fieldPathElements: [{ fieldName: 'conversions', index: 4 }] } }] }] } }).sorHibak], [[4, 'CLICK_NOT_FOUND']]);
-  assert.deepEqual(valaszElemzes(401, { error: { status: 'UNAUTHENTICATED' } }), { keresHiba: { http: 401, kod: 'UNAUTHENTICATED' } });
+  assert.deepEqual(valaszElemzes(401, { error: { status: 'UNAUTHENTICATED' } }).keresHiba, { http: 401, kod: 'UNAUTHENTICATED' });
   assert.equal(valaszElemzes(200, {}).sorHibak.size, 0);
+});
+
+test('GY-25 ELES kuldo: ures / csomagolt / hosszeltero valasz NEM ad `elfogadva`-t; 400 sor-hivatkozassal csak azt a sort jeloli; elavult futas nem ir felul; token-hiba nem rontja a sorokat', async () => {
+  const env = await lpcKornyezet();
+  const E = { ...env, GY_GADS_FELTOLTES: 'eles' };
+  for (const [i, u] of ['mb_ert0000000000001', 'mb_ert0000000000002'].entries()) await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}${i}`, uuid: u, ms: i * 2000000 });
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const most = Math.floor(MOST / 1000) + 2000 + 600 + GFELT.kesleltetes;
+  await gfeltoltesFut({ db: env.GY_DB, env: E, most, budapestIdo });
+  const allapotok = async () => (await env.GY_DB.prepare('SELECT allapot, google_hibakod FROM gy_feltoltes ORDER BY id').all()).results.map((x) => x.allapot);
+  const valasz = (mit) => async (k) => (k.validateOnly ? { http: 200, requestId: 'v', json: {} } : { http: 200, requestId: 'e', json: mit });
+  // ures `{}` es Composio-csomag: nincs results -> NEM elfogadva, a sorok visszaallnak
+  for (const [i, mit] of [{}, { successful: true, data: { results: [{ gclid: 'x' }, { gclid: 'y' }] } }, { results: [{ gclid: 'x' }] }].entries()) {
+    const r = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + i, kuldo: valasz(mit) });
+    assert.deepEqual(r.keresHiba, { http: 200, kod: 'VALASZ_ERTELMEZHETETLEN' });
+    assert.deepEqual(await allapotok(), ['varakozik', 'varakozik']);
+  }
+  // results ures eleme = a sor nem ment at -> hiba (ujraproba), a masik elfogadva
+  const r2 = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 10, kuldo: valasz({ results: [{ gclid: 'x', conversionAction: 'y' }, {}] }) });
+  assert.deepEqual([r2.elfogadva, r2.hiba], [1, 1]);
+  assert.deepEqual(await allapotok(), ['elfogadva', 'hiba']);
+  // 400 sor-hivatkozassal: csak az a sor kap hibat, a tobbi valtozatlan
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'varakozik', hiba = NULL, google_hibakod = NULL, ujraprobalas = 0, kovetkezo_proba = NULL, utolso_hiba_ido = NULL").run();
+  const k400 = async () => ({ http: 400, requestId: 'q', json: { error: { status: 'INVALID_ARGUMENT', details: [{ errors: [{ errorCode: { conversionUploadError: 'UNPARSEABLE_GCLID' }, location: { fieldPathElements: [{ fieldName: 'conversions', index: 1 }] } }] }] } } });
+  const r3 = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 20, kuldo: k400 });
+  assert.equal(r3.keresHiba.http, 400);
+  const s = (await env.GY_DB.prepare('SELECT allapot, google_hibakod FROM gy_feltoltes ORDER BY id').all()).results;
+  assert.deepEqual([s[0].allapot, s[1].allapot, s[1].google_hibakod], ['varakozik', 'hiba', 'UNPARSEABLE_GCLID']);
+  // elavult futas: ha a sort kozben mas lefoglalta (mas zar-ido), az eredmeny nem ir felul
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'varakozik', hiba = NULL, google_hibakod = NULL, kovetkezo_proba = NULL, utolso_hiba_ido = NULL, request_id = NULL").run();
+  const lassu = async (k) => { await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'elfogadva', utolso_hiba_ido = NULL WHERE id = 1").run(); return { http: 200, requestId: 'z', json: k.validateOnly ? {} : { results: k.conversions.map((c) => ({ gclid: c.gclid })) } }; };
+  await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 30, kuldo: lassu });
+  assert.equal((await env.GY_DB.prepare('SELECT request_id FROM gy_feltoltes WHERE id = 1').first()).request_id, null); // az id=1 sort nem irta felul a lassu futas
+  // token-hiba (a Google Ads fele semmi nem ment): a sorok valtozatlanok
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'varakozik', request_id = NULL, utolso_hiba_ido = NULL").run();
+  const { googleAdsKuldo } = await import('../lib/gfeltoltes.js');
+  const kuldo = googleAdsKuldo({ GOOGLE_ADS_DEVELOPER_TOKEN: 'a', GOOGLE_ADS_CLIENT_ID: 'b', GOOGLE_ADS_CLIENT_SECRET: 'c', GOOGLE_ADS_REFRESH_TOKEN: 'd' }, async () => new Response('{}', { status: 503 }));
+  const r5 = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 40, kuldo });
+  assert.deepEqual(r5.keresHiba, { http: 401, kod: 'UNAUTHENTICATED' });
+  assert.deepEqual(await allapotok(), ['varakozik', 'varakozik']);
+  assert.equal(googleAdsKuldo({}, fetch), null);
 });

@@ -254,9 +254,11 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
     } else if (w) {
       forras = { ...forras, cimke: w.cimke, bizonyitek: w.bizonyitek, forras: azonositoVan ? 'suti' : null, kesoi_fizetett: w.kesoi_fizetett };
     } else forras = { ...forras, cimke: 'ismeretlen', bizonyitek: azonositoVan ? 'nincs_adat' : 'nincs_azonosito' };
-    if (String(forras.cimke || '').startsWith('google')) {
-      if (forras.forras === 'suti' && forras.latogato && forras.katt_ido) diagJson = await erintesDiag(db, forras.latogato, forras.katt_ido);
-      if (!diagJson && mb && mb.diag && fizetett(mb)) diagJson = JSON.stringify(mb.diag);
+    if (String(forras.cimke || '').startsWith('google')) { // a diagnosztika hibaja sosem rontja a forras-cimkezest
+      try {
+        if (forras.forras === 'suti' && forras.latogato && forras.katt_ido) diagJson = await erintesDiag(db, forras.latogato, forras.katt_ido);
+        if (!diagJson && mb && mb.diag && fizetett(mb)) diagJson = JSON.stringify(mb.diag);
+      } catch (e2) { diagJson = null; }
     }
   } catch (err) { await lpcHiba(db, most, 'hozzarendeles'); lpc = {}; forras = { ...forras, cimke: nemFizetettCimke(c.cimke) === 'ismeretlen' ? lpcCimke(c.cimke) : nemFizetettCimke(c.cimke), bizonyitek: c.bizonyitek, forras: 'munkamenet' }; }
   const hirdetes = { kampany: forras.kampany || null, hirdetescsoport: forras.hirdetescsoport || null, hirdetes: forras.hirdetes || null }; // szam-azonositok, nem szemelyes adat
@@ -448,6 +450,7 @@ export async function adminVegpont({ request, env, deps = {} }) {
     let kuldes = null; // ?kuld=1 (oraonkenti hivas): eles modban a Worker sajat OAuth-kuldojevel (GOOGLE_ADS_* titkok); titok nelkul a sorok `varakozik` allapotban a hidra varnak
     if (u.searchParams.get('kuld') === '1' && gfeltoltesMod(env) === 'eles') {
       try { kuldes = await gfeltoltesKuld({ db, env, most, kuldo: deps.kuldo || googleAdsKuldo(env, deps.fetch || globalThis.fetch) }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes_kuldes'); kuldes = { hiba: 'futasi_hiba' }; }
+      if (kuldes && kuldes.keresHiba) await riaszt(db, 'gfeltoltes_keres_hiba', { adat: `${kuldes.keresHiba.http}:${kuldes.keresHiba.kod}`, most }); // hozzaferesi / konfiguracios hiba: a sorok varnak, a riasztas jelzi
     }
     return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, kuldes, ...(await gfeltoltesRiport(db, { budapestIdo, most })) });
   }
