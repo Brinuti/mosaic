@@ -1494,7 +1494,10 @@ test('GY-26 Zapier-vegpont: keres-szintu hiba (403) a sorokat nem rontja, riaszt
   assert.equal(vedohalo(jo), null);
   const m = (f) => { const x = JSON.parse(JSON.stringify(jo)); f(x); return vedohalo(x); };
   assert.equal(m((x) => { x.conversions[0].conversionAction = 'customers/1/conversionActions/2'; }), 'akcio');
-  assert.equal(m((x) => { x.conversions[0].consent = { adUserData: 'GRANTED' }; }), 'ismeretlen_mezo');
+  assert.equal(m((x) => { x.conversions[0].consent = { adUserData: 'GRANTED' }; }), 'consent'); // DECISION #220: csak a teljes GRANTED / GRANTED par engedett
+  assert.equal(m((x) => { x.conversions[0].consent = { adUserData: 'GRANTED', adPersonalization: 'DENIED' }; }), 'consent');
+  assert.equal(m((x) => { x.conversions[0].consent = { adUserData: 'GRANTED', adPersonalization: 'GRANTED', extra: 1 }; }), 'consent');
+  assert.equal(m((x) => { x.conversions[0].consent = { adUserData: 'GRANTED', adPersonalization: 'GRANTED' }; }), null);
   assert.equal(m((x) => { x.conversions[0].userIdentifiers = []; }), 'ismeretlen_mezo');
   assert.equal(m((x) => { delete x.conversions[0].gclid; x.conversions[0].gbraid = 'x'.repeat(30); }), 'ismeretlen_mezo');
   assert.equal(m((x) => { x.partialFailure = false; }), 'partial_failure');
@@ -1555,4 +1558,38 @@ test('GY-26 Zapier-vegpont (ellenorzes utan): egyidejű GET ugyanabban a masodpe
   assert.equal(valaszNormalizal({ valami: 1 }), null);
   assert.deepEqual(valaszNormalizal(''), {});
   assert.deepEqual(valaszNormalizal({ successful: true, error: null, data: { jobId: '3' } }), { jobId: '3' });
+});
+
+// --- DECISION #220 (Feri 2026-10-21): a Google-feltoltes consent = GRANTED, kapcsolo mogott --------------------------------------------------------------------------
+test('GY-25 DECISION #220: GY_GADS_CONSENT=granted -> consent GRANTED / GRANTED a kerestorzsben (user_identifiers nelkul); kifejezett elutasitas (hozzajarulas=nem) elsobbseget el; kapcsolo nelkul valtozatlan; a vedohalo csak a pontos part engedi', async () => {
+  const GC = 'ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789';
+  const futtat = async (uuid, envPlusz, { hj = null } = {}) => {
+    const env = { ...(await lpcKornyezet()), ...envPlusz };
+    await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${GC}`, uuid });
+    await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1 WHERE uuid = ?1').bind(uuid).run();
+    if (hj) await env.GY_DB.prepare('UPDATE gy_foglalas SET hozzajarulas = ?2 WHERE uuid = ?1').bind(uuid, hj).run();
+    const most = unixMost + 600 + GFELT.kesleltetes;
+    const r = await gfeltoltesFut({ db: env.GY_DB, env, most, budapestIdo });
+    const sor = await env.GY_DB.prepare('SELECT * FROM gy_feltoltes').first();
+    const keres = kuldesKerelem([{ katt_tipus: sor.katt_tipus, katt_ertek: GC, konverzio_ido: sor.konverzio_ido, order_id: sor.order_id, consent: sor.consent }], { validateOnly: true });
+    return { r, sor, keres };
+  };
+  // kapcsolo nelkul (alapbol): nem_ismert, nincs consent mezo (a 2026-10-20-i allapot)
+  const ki = await futtat('mb_cons00000000000001', {});
+  assert.equal(ki.sor.consent, 'nem_ismert'); assert.equal('consent' in ki.keres.conversions[0], false); assert.equal(vedohalo(ki.keres), null);
+  // kapcsolo be: megadott, GRANTED / GRANTED, es ez a payload_hash-ben is latszik
+  const be = await futtat('mb_cons00000000000002', { GY_GADS_CONSENT: 'granted' });
+  assert.equal(be.sor.consent, 'megadott');
+  assert.deepEqual(be.keres.conversions[0].consent, { adUserData: 'GRANTED', adPersonalization: 'GRANTED' });
+  assert.deepEqual(Object.keys(be.keres.conversions[0]).sort(), ['consent', 'conversionAction', 'conversionDateTime', 'conversionValue', 'currencyCode', 'gclid', 'orderId']);
+  assert.equal(JSON.stringify(be.keres).includes('userIdentifiers'), false);
+  assert.equal(vedohalo(be.keres), null);
+  assert.notEqual(be.sor.payload_hash, ki.sor.payload_hash);
+  // a latogato kifejezett elutasitasa elsobbseget el: elutasitott, nincs consent mezo
+  const nem = await futtat('mb_cons00000000000003', { GY_GADS_CONSENT: 'granted' }, { hj: 'nem' });
+  assert.equal(nem.sor.consent, 'elutasitott'); assert.equal('consent' in nem.keres.conversions[0], false);
+  // csak a 'granted' ertek kapcsol be
+  for (const v of ['1', 'igen', '', 'GRANTED']) assert.equal((await futtat('mb_cons00000000000004', { GY_GADS_CONSENT: v })).sor.consent, 'nem_ismert', 'csak a "granted": ' + v);
+  // tobbi hozzajarulas-allapot (igen / nincs_dontes) megadott
+  assert.equal((await futtat('mb_cons00000000000005', { GY_GADS_CONSENT: 'granted' }, { hj: 'nincs_dontes' })).sor.consent, 'megadott');
 });
