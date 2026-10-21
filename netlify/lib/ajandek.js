@@ -1350,7 +1350,7 @@ async function alairasJo(fejlec, torzs, titkok, most) {
 // A bongeszos meres (GTM / pixel) reklamblokkolo, Safari-korlatozas vagy hibas rejtett koszonooldal miatt kimaradhat. Ez a SZERVER oldali
 // masodik ut: a sikeres fizetes utan egy Zapier "catch hook"-ra kuld egy lapos JSON-t (a hook cime a MERES_HOOK_URL titok, a repoban nincs).
 // SZABALYOK:
-//  - csak HIRDETESI (marketing) hozzajarulassal (PI metadata hozz_adv = '1', a bongeszo kuldte a rendeleskor); egyebkent SEMMI nem hagyja el a szerverunket
+//  - a hirdetesi hozzajarulas alapbol ELFOGADOTT (DECISION #218; hozz_adv = '1' VAGY ismeretlen); CSAK a kifejezett elutasitasnal (hozz_adv = '0') nem hagyja el semmi a szerverunket
 //    (a rendelesen 'mer_kuldve: kihagyva:...' jelzo marad, hogy lassuk a dontest);
 //  - a hirdetesi azonositok (gclid, gbraid, wbraid, fbclid, ttclid, fbp, fbc) amugy is csak hozzajarulassal kerultek a rendelesbe;
 //  - visszateritett / vitatott rendelesrol nem megy;
@@ -1381,8 +1381,10 @@ async function meresKuld(k, piId) {
       await jelol('kihagyva:teszt');
       return 'kihagyva';
     }
-    if (md.hozz_adv !== '1') {
-      await jelol(md.hozz_adv === '0' ? 'kihagyva:nincs_hozzajarulas' : 'kihagyva:ismeretlen');
+    // DECISION #218 / Feri 2026-10-21 ("mindig granted"): az ISMERETLEN hozzajarulas (a bongeszo nem kuldte) = alapbol elfogadott -> megy; CSAK a kifejezett elutasitas (hozz_adv = '0': a
+    // lablec "Suti beallitasok" menten rogzitett dontes) marad ki.
+    if (md.hozz_adv === '0') {
+      await jelol('kihagyva:nincs_hozzajarulas');
       return 'kihagyva';
     }
     if (ch && (ch.refunded || ch.disputed || Number(ch.amount_refunded) > 0)) {
