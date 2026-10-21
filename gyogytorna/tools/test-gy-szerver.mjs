@@ -1095,16 +1095,16 @@ test('GY-25: ?megtalalt= riport: platform / kampany / hirdetes, db, atlag nap; c
 import { gfeltoltesFut, gfeltoltesPayload, gfeltoltesKeres, ujraprobaDontes, GFELT, maszk } from '../lib/gfeltoltes.js';
 import { sema } from '../lib/db.js';
 test('GY-25 feltoltes: payload csak a megengedett mezokkel, consent nelkul; maszk; dry-run naplo idempotens, csak igazolt Google allapotfelmeres', async () => {
-  const p = gfeltoltesPayload({ kattTipus: 'gbraid', kattErtek: 'ABCDEFGH12345', konverzioIdo: '2026-10-20 10:00:00+02:00', orderId: 'x'.repeat(64) });
+  const p = gfeltoltesPayload({ kattTipus: 'gbraid', kattErtek: 'ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789', konverzioIdo: '2026-10-20 10:00:00+02:00', orderId: 'x'.repeat(64) });
   assert.deepEqual(Object.keys(p).sort(), ['conversionAction', 'conversionDateTime', 'conversionValue', 'currencyCode', 'gbraid', 'orderId']);
   assert.equal(p.conversionAction, 'customers/2596120588/conversionActions/7858300772');
   assert.equal(p.conversionValue, 19000);
   assert.equal(JSON.stringify(p).includes('consent'), false);
-  assert.equal(gfeltoltesPayload({ kattTipus: 'fbclid', kattErtek: 'ABCDEFGH12345' }), null);
+  assert.equal(gfeltoltesPayload({ kattTipus: 'fbclid', kattErtek: 'ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789' }), null);
   assert.equal(maszk('ABCDEFGH12345'), '*** (13)'); assert.equal(maszk('A'.repeat(24)), 'AAAA…AAA (24)');
 
   const env = await lpcKornyezet();
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345`, uuid: 'mb_gfel0000000000001' });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789`, uuid: 'mb_gfel0000000000001' });
   const letre = unixMost + 600; // a gadsFoglalas a kattintas utan 10 perccel foglal
   const futas = (mikor = letre + GFELT.kesleltetes) => gfeltoltesFut({ db: env.GY_DB, env, most: mikor, budapestIdo });
   assert.deepEqual(await futas(), { mod: 'dry', uj: 0 }); // meg nincs Salonic-igazolas
@@ -1113,18 +1113,18 @@ test('GY-25 feltoltes: payload csak a megengedett mezokkel, consent nelkul; masz
   assert.deepEqual(await futas(), { mod: 'dry', uj: 1 });
   assert.deepEqual(await futas(), { mod: 'dry', uj: 0 }); // idempotens
   const sor = await env.GY_DB.prepare('SELECT * FROM gy_feltoltes').first();
-  assert.deepEqual([sor.mod, sor.allapot, sor.katt_tipus, sor.katt_maszk, sor.ertek, sor.consent, sor.hiba], ['dry', 'dry', 'gclid', '*** (13)', 19000, 'nem_ismert', null]);
-  assert.equal(JSON.stringify(sor).includes('ABCDEFGH12345'), false);
+  assert.deepEqual([sor.mod, sor.allapot, sor.katt_tipus, sor.katt_maszk, sor.ertek, sor.consent, sor.hiba], ['dry', 'dry', 'gclid', maszk('ABCDEFGH12345'+'abcdefghijklmnopqrstuvwxyz0123456789'), 19000, 'nem_ismert', null]);
+  assert.equal(JSON.stringify(sor).includes('ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789'), false);
   assert.match(sor.order_id, /^[0-9a-f]{64}$/);
   const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: deps() })).json();
   assert.equal(rap.ok, true);
-  assert.equal(JSON.stringify(rap).includes('ABCDEFGH12345'), false);
+  assert.equal(JSON.stringify(rap).includes('ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789'), false);
   assert.equal(JSON.stringify(rap).includes('mb_gfel'), false);
-  // ki mod: semmi; eles mod: nincs halozati hivas, `eles_nincs_bekotve`
+  // ki mod: semmi; eles mod: a sor `varakozik` allapotba kerul (halozati hivas a naplo-futasbol nincs)
   const kesobb = letre + GFELT.kesleltetes;
   assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: { ...env, GY_GADS_FELTOLTES: 'ki' }, most: kesobb, budapestIdo }), { mod: 'ki', uj: 0 });
   assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: { ...env, GY_GADS_FELTOLTES: 'eles' }, most: kesobb, budapestIdo }), { mod: 'eles', uj: 1 });
-  assert.equal((await env.GY_DB.prepare("SELECT allapot FROM gy_feltoltes WHERE mod = 'eles'").first()).allapot, 'kihagyva_nincs_kuldo');
+  assert.equal((await env.GY_DB.prepare("SELECT allapot FROM gy_feltoltes WHERE mod = 'eles'").first()).allapot, 'varakozik');
   // lemondott foglalas nem kerul be
   await env.GY_DB.prepare("UPDATE gy_foglalas SET allapot = 'lemondott'").run();
   await env.GY_DB.prepare('DELETE FROM gy_feltoltes').run();
@@ -1134,10 +1134,10 @@ test('GY-25 feltoltes: payload csak a megengedett mezokkel, consent nelkul; masz
 // --- GY-25 kiegeszites (2026-10-21 11:40) ------------------------------------------------------------------------------------------------------------------------
 test('GY-25 kiegeszites: csak gbraid/wbraid = kihagyva_braid (dry es eles mod is); a kattintas KESOBBI, mint a foglalas = kihagyva_ido_sorrend; a naplo mezoi; nincs teljes click-ID / consent', async () => {
   const env = await lpcKornyezet();
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gbraid=GBRAIDTESZT12345`, uuid: 'mb_gbr00000000000001' });
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&wbraid=WBRAIDTESZT12345`, uuid: 'mb_gbr00000000000002', ms: 2000000 });
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345`, uuid: 'mb_gbr00000000000003', ms: 4000000 });
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ZZZZZZZZ99999`, uuid: 'mb_gbr00000000000004', ms: 6000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gbraid=GBRAIDABCD123456789012345`, uuid: 'mb_gbr00000000000001' });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&wbraid=WBRAIDABCD123456789012345`, uuid: 'mb_gbr00000000000002', ms: 2000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789`, uuid: 'mb_gbr00000000000003', ms: 4000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${BRAND}&gclid=ZZZZZZZZ99999abcdefghijklmnopqrstuvwxyz0123456789`, uuid: 'mb_gbr00000000000004', ms: 6000000 });
   await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
   // a 4. foglalas kattintasa KESOBBI a foglalasnal (hibas ido): nem kuldheto
   await env.GY_DB.prepare("UPDATE gy_foglalas SET gads_katt_ido = letrehozva + 100 WHERE uuid = 'mb_gbr00000000000004'").run();
@@ -1148,10 +1148,10 @@ test('GY-25 kiegeszites: csak gbraid/wbraid = kihagyva_braid (dry es eles mod is
   assert.equal(sorok[2].katt_ido, Math.floor(MOST / 1000) + 4000);
   assert.match(sorok[2].konverzio_ido, /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\+0[12]:00$/);
   assert.deepEqual([sorok[2].ujraprobalas, sorok[2].google_hibakod, sorok[2].request_id, sorok[2].utolso_hiba_ido, sorok[2].kovetkezo_proba], [0, null, null, null, null]);
-  assert.equal(JSON.stringify(sorok).includes('GBRAIDTESZT12345') || JSON.stringify(sorok).includes('ABCDEFGH12345'), false);
+  assert.equal(JSON.stringify(sorok).includes('GBRAIDABCD123456789012345') || JSON.stringify(sorok).includes('ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789'), false);
   // eles mod: a braid akkor sem megy ki (nincs kuldo es nincs dontes) - allapot kihagyva_braid
   assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: { ...env, GY_GADS_FELTOLTES: 'eles' }, most: mikor, budapestIdo }), { mod: 'eles', uj: 4 });
-  assert.deepEqual((await env.GY_DB.prepare("SELECT allapot FROM gy_feltoltes WHERE mod = 'eles' ORDER BY id").all()).results.map((x) => x.allapot), ['kihagyva_braid', 'kihagyva_braid', 'kihagyva_nincs_kuldo', 'kihagyva_ido_sorrend']);
+  assert.deepEqual((await env.GY_DB.prepare("SELECT allapot FROM gy_feltoltes WHERE mod = 'eles' ORDER BY id").all()).results.map((x) => x.allapot), ['kihagyva_braid', 'kihagyva_braid', 'varakozik', 'kihagyva_ido_sorrend']);
 });
 
 test('GY-25 kiegeszites: ujraproba-szabaly (atmeneti hiba backoff-fal max 5x, vegleges hiba / 90 napnal regebbi click-ID nincs ujra), ELES keres partial_failure=true, validate_only nincs', () => {
@@ -1169,28 +1169,30 @@ test('GY-25 kiegeszites: ujraproba-szabaly (atmeneti hiba backoff-fal max 5x, ve
   for (const x of [{ kod: 'UNPARSEABLE_GCLID' }, { kod: 'EXPIRED_EVENT' }, { kod: 'CONVERSION_PRECEDES_EVENT' }, { kod: 'ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID' }, { http: 400 }, { http: 403, kod: 'USER_PERMISSION_DENIED' }]) {
     assert.deepEqual(ujraprobaDontes({ ...x, proba: 0, most }), { allapot: 'hiba', kovetkezo: null, ok: 'vegleges' }, JSON.stringify(x));
   }
-  assert.equal(ujraprobaDontes({ kod: 'ALREADY_IMPORTED', most }).allapot, 'elfogadva'); // ugyanaz az order_id mar bent van
+  assert.equal(ujraprobaDontes({ kod: 'CLICK_CONVERSION_ALREADY_EXISTS', most }).allapot, 'elfogadva'); // ugyanaz a konverzio mar bent van
+  assert.equal(ujraprobaDontes({ kod: 'ORDER_ID_ALREADY_IN_USE', most }).allapot, 'elfogadva');
+  assert.equal(ujraprobaDontes({ kod: 'DUPLICATE_ORDER_ID', most }).ok, 'vegleges'); // kereson belüli duplikatum: nem 'mar bent van'
   const k = gfeltoltesKeres([{ gclid: 'X' }]);
   assert.deepEqual(k, { conversions: [{ gclid: 'X' }], partialFailure: true, validateOnly: false });
 });
 
 test('GY-25 kiegeszites: lefedettseg-riport (?gfeltoltes=1): naponta a Google-forrasu igazolt allapotfelmeresek, ebbol gclid / csak braid / nincs click-ID; organikus, teszt, lemondott nincs benne', async () => {
   const env = await lpcKornyezet();
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345`, uuid: 'mb_lef00000000000001' });
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gbraid=GBRAIDTESZT12345`, uuid: 'mb_lef00000000000002', ms: 2000000 });
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ZZZZZZZZ99999`, uuid: 'mb_lef00000000000003', ms: 4000000 });
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=YYYYYYYY88888`, uuid: 'mb_lef00000000000004', ms: 6000000 });
-  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=QQQQQQQQ77777`, uuid: 'mb_lef00000000000005', ms: 8000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789`, uuid: 'mb_lef00000000000001' });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gbraid=GBRAIDABCD123456789012345`, uuid: 'mb_lef00000000000002', ms: 2000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ZZZZZZZZ99999abcdefghijklmnopqrstuvwxyz0123456789`, uuid: 'mb_lef00000000000003', ms: 4000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=YYYYYYYY88888abcdefghijklmnopqrstuvwxyz0123456789`, uuid: 'mb_lef00000000000004', ms: 6000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=QQQQQQQQ77777abcdefghijklmnopqrstuvwxyz0123456789`, uuid: 'mb_lef00000000000005', ms: 8000000 });
   await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
   await env.GY_DB.prepare("UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL WHERE uuid = 'mb_lef00000000000003'").run(); // Google-forras, de nincs click-ID
   await env.GY_DB.prepare("UPDATE gy_foglalas SET cimke = 'organikus_direkt', gads_katt_ertek = NULL WHERE uuid = 'mb_lef00000000000004'").run(); // nem Google
   await env.GY_DB.prepare("UPDATE gy_foglalas SET allapot = 'lemondott' WHERE uuid = 'mb_lef00000000000005'").run();
   const d = deps(); d.most = () => MOST + 4 * 86400000;
   const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).json();
-  assert.deepEqual(rap.lefedettseg.osszes, { google_igazolt_allapotfelmeres: 3, gclid: 1, csak_braid: 1, nincs_click_id: 1 });
+  assert.deepEqual(rap.lefedettseg.osszes, { google_igazolt_allapotfelmeres: 3, gclid: 1, gyanus_click_id: 0, csak_braid: 1, nincs_click_id: 1 });
   assert.equal(rap.lefedettseg.naponta.length, 1);
   assert.equal(rap.lefedettseg.naponta[0].nap, '2026-10-14');
-  assert.equal(JSON.stringify(rap).includes('ABCDEFGH12345') || JSON.stringify(rap).includes('GBRAIDTESZT12345') || JSON.stringify(rap).includes('mb_lef'), false);
+  assert.equal(JSON.stringify(rap).includes('ABCDEFGH12345abcdefghijklmnopqrstuvwxyz0123456789') || JSON.stringify(rap).includes('GBRAIDABCD123456789012345') || JSON.stringify(rap).includes('mb_lef'), false);
 });
 
 test('GY-25 kiegeszites: a regi naplo allapot-nevei atnevezodnek (kesz -> dry, hibas_click_id -> kihagyva_click_id, eles_nincs_bekotve -> kihagyva_nincs_kuldo), a bovitett oszlopok megvannak', async () => {
@@ -1203,4 +1205,197 @@ test('GY-25 kiegeszites: a regi naplo allapot-nevei atnevezodnek (kesz -> dry, h
   assert.deepEqual((await env.GY_DB.prepare('SELECT allapot FROM gy_feltoltes ORDER BY id').all()).results.map((x) => x.allapot), ['dry', 'kihagyva_click_id', 'kihagyva_nincs_kuldo', 'dry']);
   const sor = await env.GY_DB.prepare('SELECT ujraprobalas, katt_ido, google_hibakod, request_id, utolso_hiba_ido, kovetkezo_proba FROM gy_feltoltes').first();
   assert.deepEqual(sor, { ujraprobalas: 0, katt_ido: null, google_hibakod: null, request_id: null, utolso_hiba_ido: null, kovetkezo_proba: null });
+});
+
+// --- GY-25 (2026-10-21 12:15 visszajelzes): teszt-kizaras, click-ID karanten, diagnosztika, eles kuldo -----------------------------------------------------------
+import { clickIdHiba, gfeltoltesKuld, valaszElemzes, kuldesKerelem, kuldhetoSorok } from '../lib/gfeltoltes.js';
+import { uaElemzes, diagnosztika } from '../lib/forras.js';
+const JO_GCLID = 'CjwKCAjw' + 'abcdefghijklmnopqrstuvwxyz0123456789' + 'ABCDEFG_-xyz';
+
+test('GY-25 karanten: click-ID epseg (gclid >= 30 karakter, csak [A-Za-z0-9_-], nem TEST/TESZT) - a hibas nem kuldheto, a tesztfoglalas kizarva', async () => {
+  assert.equal(clickIdHiba('gclid', JO_GCLID), null);
+  assert.equal(clickIdHiba('gclid', 'TESZT_GCLID_12345'), 'click_id_teszt');
+  assert.equal(clickIdHiba('gclid', 'x'.repeat(29)), 'click_id_rovid');
+  assert.equal(clickIdHiba('gclid', 'x'.repeat(30)), null);
+  assert.equal(clickIdHiba('gclid', 'a'.repeat(31) + ' b'), 'click_id_karakter');
+  assert.equal(clickIdHiba('gclid', 'a'.repeat(40) + 'Test' + 'b'.repeat(10)), 'click_id_teszt');
+  assert.equal(clickIdHiba('gclid', 'a'.repeat(40) + '=='), 'click_id_karakter');
+  assert.equal(clickIdHiba('gclid', ''), 'click_id_hianyzik');
+
+  const env = await lpcKornyezet();
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}`, uuid: 'mb_kar00000000000001' });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=TESZT_GCLID_12345`, uuid: 'mb_kar00000000000002', ms: 2000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=ROVIDGCLID123456`, uuid: 'mb_kar00000000000003', ms: 4000000 });
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const mikor = Math.floor(MOST / 1000) + 4000 + 600 + GFELT.kesleltetes;
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env, most: mikor, budapestIdo }), { mod: 'dry', uj: 3 });
+  const sorok = (await env.GY_DB.prepare('SELECT allapot, hiba, katt_maszk FROM gy_feltoltes ORDER BY id').all()).results;
+  assert.deepEqual(sorok.map((x) => [x.allapot, x.hiba]), [['dry', null], ['kihagyva_click_id', 'click_id_teszt'], ['kihagyva_click_id', 'click_id_rovid']]);
+  assert.equal(JSON.stringify(sorok).includes('TESZT_GCLID_12345'), false); // a naploban csak maszkolt
+  // a lefedettsegben a gyanus click-ID kulon sav, nem gclid
+  const d = deps(); d.most = () => MOST + 4 * 86400000;
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).json();
+  assert.deepEqual(rap.lefedettseg.osszes, { google_igazolt_allapotfelmeres: 3, gclid: 1, gyanus_click_id: 2, csak_braid: 0, nincs_click_id: 0 });
+  // teszt=1 foglalas: a mar naplozott sora `kihagyva_teszt`, a lefedettsegbol is kimarad
+  await env.GY_DB.prepare("UPDATE gy_foglalas SET teszt = 1 WHERE uuid = 'mb_kar00000000000002'").run();
+  await gfeltoltesFut({ db: env.GY_DB, env, most: mikor, budapestIdo });
+  assert.equal((await env.GY_DB.prepare("SELECT g.allapot FROM gy_feltoltes g JOIN gy_foglalas f ON f.uuid = g.uuid WHERE f.teszt = 1").first()).allapot, 'kihagyva_teszt');
+  const rap2 = await (await adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).json();
+  assert.deepEqual(rap2.lefedettseg.osszes, { google_igazolt_allapotfelmeres: 2, gclid: 1, gyanus_click_id: 1, csak_braid: 0, nincs_click_id: 0 });
+});
+
+test('GY-25 diagnosztika: UA-csalad (bongeszo / OS / eszkoz), a UA nem tarolodik; "UTM igen, click-ID nem" eset a foglalason es a riportban (iOS Safari gyanu, gad_jel, ismetelt, referrer-host)', async () => {
+  const IOS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+  const AND = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36';
+  const WIN = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0';
+  assert.deepEqual(uaElemzes(IOS), { bongeszo: 'safari', os: 'ios', eszkoz: 'mobil' });
+  assert.deepEqual(uaElemzes(AND), { bongeszo: 'chrome', os: 'android', eszkoz: 'mobil' });
+  assert.deepEqual(uaElemzes(WIN), { bongeszo: 'edge', os: 'windows', eszkoz: 'asztali' });
+  assert.equal(uaElemzes('Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/126.0 Mobile/15E148 Safari/604.1').bongeszo, 'chrome');
+  assert.equal(uaElemzes('Mozilla/5.0 (compatible; Googlebot/2.1)').bongeszo, 'bot');
+  assert.equal(uaElemzes('').bongeszo, 'nincs_ua');
+
+  const env = await lpcKornyezet();
+  const pingUa = (ms, search, ua, cookie = HJ_IGEN, referrer = '') => forrasVegpont({ request: kerelem('/api/gy-forras', { search, referrer, path: '/allapotfelmeres/' }, { cookie, fejlec: { 'user-agent': ua } }), env, deps: dAt(ms) });
+  // 1) iOS Safari: fizetett UTM + gad_source, DE nincs gclid
+  const r1 = await pingUa(0, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gad_source=1&gad_campaignid=${DSA}`, IOS, HJ_IGEN, 'https://www.google.com/');
+  assert.equal((await foglal(env, 600000, `${sutikBol(r1)}; ${HJ_IGEN}`, 'mb_dia00000000000001')).ok, true);
+  // 2) Android Chrome: van gclid
+  const r2 = await pingUa(2000000, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}`, AND);
+  assert.equal((await foglal(env, 2600000, `${sutikBol(r2)}; ${HJ_IGEN}`, 'mb_dia00000000000002')).ok, true);
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const f = (await env.GY_DB.prepare('SELECT uuid, cimke, bizonyitek, diag FROM gy_foglalas ORDER BY letrehozva').all()).results;
+  const d1 = JSON.parse(f[0].diag), d2 = JSON.parse(f[1].diag);
+  assert.deepEqual([f[0].cimke, f[0].bizonyitek], ['google_bizonytalan', 'kampany_katt_nelkul']);
+  assert.equal(d1.bongeszo, 'safari'); assert.equal(d1.os, 'ios'); assert.equal(d1.eszkoz, 'mobil');
+  assert.equal(d1.gad_jel, true); assert.equal(d1.privat_gyanu, true); assert.equal(d1.ismetelt, false); assert.equal(d1.ref_host, 'google.com'); assert.equal(d1.oldal, '/allapotfelmeres/');
+  assert.equal(d2.privat_gyanu, false); assert.equal(d2.gad_jel, false); assert.equal(d2.os, 'android');
+  assert.equal(f.map((x) => x.diag).join('').includes('Mozilla'), false); // a User-Agent maga nem tarolodik
+  assert.equal(f.map((x) => x.diag).join('').includes(JO_GCLID), false);
+  const d = deps(); d.most = () => MOST + 3 * 86400000;
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).json();
+  const ios = rap.diagnosztika.eszkoz.find((x) => x.os === 'ios');
+  assert.deepEqual([ios.click, ios.bongeszo, ios.privat_gyanu, ios.gad_jel, ios.ismetelt, ios.db], ['nincs_click_id', 'safari', '1', '1', '0', 1]);
+  assert.equal(rap.diagnosztika.eszkoz.find((x) => x.os === 'android').click, 'gclid');
+  assert.ok(rap.diagnosztika.forras.some((x) => x.click === 'nincs_click_id' && x.ref_host === 'google.com' && x.elso_oldal === '/allapotfelmeres/'));
+  assert.ok(rap.diagnosztika.bizonyitek.length >= 1);
+  assert.equal(JSON.stringify(rap).includes(JO_GCLID), false);
+  // ismetelt latogato: ugyanazzal a sutivel masodik (nem fizetett) belepes -> a diagnosztika `ismetelt`
+  const r3 = await pingUa(4000000, `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}`, IOS, `${sutikBol(r1)}; ${HJ_IGEN}`);
+  const dd = diagnosztika({ ua: IOS, b: { param_nevek: [], ref_kat: 'nincs', landing: '/', utm_medium: 'cpc', kattintas_param: null }, ismetelt: true });
+  assert.equal(dd.ismetelt, true); assert.equal(dd.privat_gyanu, true); assert.equal(r3.status, 200);
+});
+
+test('GY-25 ELES kuldo: validateOnly ELOSZOR, utana partialFailure=true csak a tiszta sorokkal; sorhiba (vegleges / atmeneti), hozzaferesi hiba, ujraproba, nincs dupla kuldes', async () => {
+  const env = await lpcKornyezet();
+  const E = { ...env, GY_GADS_FELTOLTES: 'eles' };
+  const ids = ['mb_kuld0000000000001', 'mb_kuld0000000000002', 'mb_kuld0000000000003'];
+  for (const [i, u] of ids.entries()) await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}${i}`, uuid: u, ms: i * 2000000 });
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const most = Math.floor(MOST / 1000) + 4000 + 600 + GFELT.kesleltetes;
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: E, most, budapestIdo }), { mod: 'eles', uj: 3 });
+  assert.deepEqual((await env.GY_DB.prepare('SELECT allapot FROM gy_feltoltes ORDER BY id').all()).results.map((x) => x.allapot), ['varakozik', 'varakozik', 'varakozik']);
+
+  // kuldo hamis: hivasonkent rogzit; a 2. sor vegleges hiba (EXPIRED_EVENT), a 3. atmeneti (CLICK_NOT_FOUND) a validalasnal
+  const hivasok = [];
+  const kuldo = async (k) => {
+    hivasok.push(JSON.parse(JSON.stringify(k)));
+    const hibak = k.validateOnly ? [[1, 'EXPIRED_EVENT'], [2, 'CLICK_NOT_FOUND']] : [];
+    return { http: 200, requestId: 'req-' + hivasok.length, json: { results: k.conversions.map((c, i) => (!k.validateOnly || hibak.some(([x]) => x === i) ? (k.validateOnly ? {} : { gclid: c.gclid, conversionAction: c.conversionAction }) : {})), ...(hibak.length ? { partialFailureError: { details: [{ errors: hibak.map(([index, kod]) => ({ errorCode: { conversionUploadError: kod }, message: JO_GCLID, location: { fieldPathElements: [{ fieldName: 'conversions', index }] } })) }] } } : {}) } };
+  };
+  const ki = await gfeltoltesKuld({ db: env.GY_DB, env: E, most, kuldo });
+  assert.equal(hivasok.length, 2);
+  assert.equal(hivasok[0].validateOnly, true); assert.equal(hivasok[0].partialFailure, true); assert.equal(hivasok[0].conversions.length, 3);
+  assert.equal(hivasok[1].validateOnly, false); assert.equal(hivasok[1].partialFailure, true); assert.equal(hivasok[1].conversions.length, 1); // csak a tiszta sor
+  assert.equal(hivasok[1].conversions[0].gclid, JO_GCLID + '0');
+  assert.equal(hivasok[1].conversions[0].conversionAction, 'customers/2596120588/conversionActions/7858300772');
+  assert.deepEqual(ki, { kuldve: 1, elfogadva: 1, hiba: 2, kihagyva: 0 });
+  const s = (await env.GY_DB.prepare('SELECT allapot, hiba, google_hibakod, ujraprobalas, kovetkezo_proba, request_id FROM gy_feltoltes ORDER BY id').all()).results;
+  assert.deepEqual([s[0].allapot, s[0].request_id], ['elfogadva', 'req-2']);
+  assert.deepEqual([s[1].allapot, s[1].hiba, s[1].google_hibakod, s[1].kovetkezo_proba], ['hiba', 'vegleges', 'EXPIRED_EVENT', null]);
+  assert.deepEqual([s[2].allapot, s[2].hiba, s[2].google_hibakod, s[2].ujraprobalas, s[2].kovetkezo_proba], ['hiba', 'ujraproba', 'CLICK_NOT_FOUND', 1, most + 3600]);
+  assert.equal(JSON.stringify(s).includes(JO_GCLID), false); // a Google hibauzenet (click-ID-t idezhet) nem tarolodik
+  // nincs dupla kuldes: az elfogadott / vegleges sor soha nem megy ujra; az atmeneti csak a kovetkezo_proba utan
+  const hivasok2 = []; const kuldo2 = async (k) => { hivasok2.push(k); return { http: 200, requestId: 'r', json: { results: k.conversions.map((c) => (k.validateOnly ? {} : { gclid: c.gclid, conversionAction: c.conversionAction })) } }; };
+  assert.deepEqual(await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 60, kuldo: kuldo2 }), { kuldve: 0, elfogadva: 0, hiba: 0, kihagyva: 0 });
+  assert.equal(hivasok2.length, 0);
+  assert.deepEqual(await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 3600, kuldo: kuldo2 }), { kuldve: 1, elfogadva: 1, hiba: 0, kihagyva: 0 });
+  assert.equal(hivasok2.length, 2); assert.equal(hivasok2[0].validateOnly, true); assert.equal(hivasok2[1].validateOnly, false);
+  assert.equal((await env.GY_DB.prepare('SELECT allapot FROM gy_feltoltes WHERE id = 3').first()).allapot, 'elfogadva');
+
+  // hozzaferesi hiba (403): a sorok NEM valtoznak (nem a konverzio hibaja), riport jelzi
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'varakozik', kovetkezo_proba = NULL, ujraprobalas = 0 WHERE id = 2").run();
+  const k403 = async () => ({ http: 403, requestId: null, json: { error: { status: 'PERMISSION_DENIED' } } });
+  const r403 = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 7200, kuldo: k403 });
+  assert.deepEqual(r403.keresHiba, { http: 403, kod: 'PERMISSION_DENIED' });
+  assert.equal((await env.GY_DB.prepare('SELECT allapot FROM gy_feltoltes WHERE id = 2').first()).allapot, 'varakozik');
+  // kuldo nelkul (nincs titok): a sorok varnak, halozati hivas nincs
+  assert.equal((await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 7200, kuldo: null })).nincsKuldo, true);
+  // dry modban sosem kuld
+  assert.deepEqual(await gfeltoltesKuld({ db: env.GY_DB, env, most: most + 7200, kuldo: k403 }), { kuldve: 0, elfogadva: 0, hiba: 0, kihagyva: 0 });
+});
+
+test('GY-25 ELES kuldo: kuldes elotti vegso ellenorzes (lemondott / teszt / hibas click-ID nem megy ki), kerelem-felepites, keres-szintu valaszelemzes', async () => {
+  const env = await lpcKornyezet();
+  const E = { ...env, GY_GADS_FELTOLTES: 'eles' };
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}A`, uuid: 'mb_el00000000000001' });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}B`, uuid: 'mb_el00000000000002', ms: 2000000 });
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const most = Math.floor(MOST / 1000) + 2000 + 600 + GFELT.kesleltetes;
+  await gfeltoltesFut({ db: env.GY_DB, env: E, most, budapestIdo });
+  await env.GY_DB.prepare("UPDATE gy_foglalas SET allapot = 'lemondott' WHERE uuid = 'mb_el00000000000001'").run(); // a naplozas UTAN lemondta
+  await env.GY_DB.prepare("UPDATE gy_foglalas SET gads_katt_ertek = 'TESZT_GCLID_12345' WHERE uuid = 'mb_el00000000000002'").run();
+  const hivasok = [];
+  const ki = await gfeltoltesKuld({ db: env.GY_DB, env: E, most, kuldo: async (k) => { hivasok.push(k); return { http: 200, json: {}, requestId: 'x' }; } });
+  assert.equal(hivasok.length, 0);
+  assert.equal(ki.kihagyva, 2);
+  assert.deepEqual((await env.GY_DB.prepare('SELECT allapot, hiba FROM gy_feltoltes ORDER BY id').all()).results.map((x) => [x.allapot, x.hiba]), [['kihagyva_lemondva', 'foglalas_nem_aktiv'], ['kihagyva_click_id', 'click_id_teszt']]);
+  // kerelem: partialFailure mindig true; validateOnly a paramtertol fugg
+  const k = kuldesKerelem([{ katt_tipus: 'gclid', katt_ertek: JO_GCLID, konverzio_ido: '2026-10-21 10:00:00+02:00', order_id: 'o'.repeat(64) }], { validateOnly: true });
+  assert.deepEqual([k.partialFailure, k.validateOnly, k.conversions.length], [true, true, 1]);
+  // valaszelemzes: sorhiba index, keres-szintu hiba
+  assert.deepEqual([...valaszElemzes(200, { partialFailureError: { details: [{ errors: [{ errorCode: { conversionUploadError: 'CLICK_NOT_FOUND' }, location: { fieldPathElements: [{ fieldName: 'conversions', index: 4 }] } }] }] } }).sorHibak], [[4, 'CLICK_NOT_FOUND']]);
+  assert.deepEqual(valaszElemzes(401, { error: { status: 'UNAUTHENTICATED' } }).keresHiba, { http: 401, kod: 'UNAUTHENTICATED' });
+  assert.equal(valaszElemzes(200, {}).sorHibak.size, 0);
+});
+
+test('GY-25 ELES kuldo: ures / csomagolt / hosszeltero valasz NEM ad `elfogadva`-t; 400 sor-hivatkozassal csak azt a sort jeloli; elavult futas nem ir felul; token-hiba nem rontja a sorokat', async () => {
+  const env = await lpcKornyezet();
+  const E = { ...env, GY_GADS_FELTOLTES: 'eles' };
+  for (const [i, u] of ['mb_ert0000000000001', 'mb_ert0000000000002'].entries()) await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}${i}`, uuid: u, ms: i * 2000000 });
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const most = Math.floor(MOST / 1000) + 2000 + 600 + GFELT.kesleltetes;
+  await gfeltoltesFut({ db: env.GY_DB, env: E, most, budapestIdo });
+  const allapotok = async () => (await env.GY_DB.prepare('SELECT allapot, google_hibakod FROM gy_feltoltes ORDER BY id').all()).results.map((x) => x.allapot);
+  const valasz = (mit) => async (k) => (k.validateOnly ? { http: 200, requestId: 'v', json: {} } : { http: 200, requestId: 'e', json: mit });
+  // ures `{}` es Composio-csomag: nincs results -> NEM elfogadva, a sorok visszaallnak
+  for (const [i, mit] of [{}, { successful: true, data: { results: [{ gclid: 'x' }, { gclid: 'y' }] } }, { results: [{ gclid: 'x' }] }].entries()) {
+    const r = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + i, kuldo: valasz(mit) });
+    assert.deepEqual(r.keresHiba, { http: 200, kod: 'VALASZ_ERTELMEZHETETLEN' });
+    assert.deepEqual(await allapotok(), ['varakozik', 'varakozik']);
+  }
+  // results ures eleme = a sor nem ment at -> hiba (ujraproba), a masik elfogadva
+  const r2 = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 10, kuldo: valasz({ results: [{ gclid: 'x', conversionAction: 'y' }, {}] }) });
+  assert.deepEqual([r2.elfogadva, r2.hiba], [1, 1]);
+  assert.deepEqual(await allapotok(), ['elfogadva', 'hiba']);
+  // 400 sor-hivatkozassal: csak az a sor kap hibat, a tobbi valtozatlan
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'varakozik', hiba = NULL, google_hibakod = NULL, ujraprobalas = 0, kovetkezo_proba = NULL, utolso_hiba_ido = NULL").run();
+  const k400 = async () => ({ http: 400, requestId: 'q', json: { error: { status: 'INVALID_ARGUMENT', details: [{ errors: [{ errorCode: { conversionUploadError: 'UNPARSEABLE_GCLID' }, location: { fieldPathElements: [{ fieldName: 'conversions', index: 1 }] } }] }] } } });
+  const r3 = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 20, kuldo: k400 });
+  assert.equal(r3.keresHiba.http, 400);
+  const s = (await env.GY_DB.prepare('SELECT allapot, google_hibakod FROM gy_feltoltes ORDER BY id').all()).results;
+  assert.deepEqual([s[0].allapot, s[1].allapot, s[1].google_hibakod], ['varakozik', 'hiba', 'UNPARSEABLE_GCLID']);
+  // elavult futas: ha a sort kozben mas lefoglalta (mas zar-ido), az eredmeny nem ir felul
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'varakozik', hiba = NULL, google_hibakod = NULL, kovetkezo_proba = NULL, utolso_hiba_ido = NULL, request_id = NULL").run();
+  const lassu = async (k) => { await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'elfogadva', utolso_hiba_ido = NULL WHERE id = 1").run(); return { http: 200, requestId: 'z', json: k.validateOnly ? {} : { results: k.conversions.map((c) => ({ gclid: c.gclid })) } }; };
+  await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 30, kuldo: lassu });
+  assert.equal((await env.GY_DB.prepare('SELECT request_id FROM gy_feltoltes WHERE id = 1').first()).request_id, null); // az id=1 sort nem irta felul a lassu futas
+  // token-hiba (a Google Ads fele semmi nem ment): a sorok valtozatlanok
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'varakozik', request_id = NULL, utolso_hiba_ido = NULL").run();
+  const { googleAdsKuldo } = await import('../lib/gfeltoltes.js');
+  const kuldo = googleAdsKuldo({ GOOGLE_ADS_DEVELOPER_TOKEN: 'a', GOOGLE_ADS_CLIENT_ID: 'b', GOOGLE_ADS_CLIENT_SECRET: 'c', GOOGLE_ADS_REFRESH_TOKEN: 'd' }, async () => new Response('{}', { status: 503 }));
+  const r5 = await gfeltoltesKuld({ db: env.GY_DB, env: E, most: most + 40, kuldo });
+  assert.deepEqual(r5.keresHiba, { http: 401, kod: 'UNAUTHENTICATED' });
+  assert.deepEqual(await allapotok(), ['varakozik', 'varakozik']);
+  assert.equal(googleAdsKuldo({}, fetch), null);
 });
