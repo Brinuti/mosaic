@@ -310,13 +310,11 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .urlap-figy .nowrap { white-space: nowrap; }
 .figy-ikon { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: #a35a4b; }
 .figy-ikon svg { width: 22px; height: 22px; }
-.urlap-menet { display: flex; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; counter-reset: none; }
-.urlap-menet li { flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 7px 6px; border-radius: 99px; background: #faf6f5; color: #454659; font: 600 12.5px/1.15 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; white-space: nowrap; }
-.urlap-menet b { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #d7aba8; color: #fff; font-size: 11px; }
-.urlap { column-gap: 12px; row-gap: 12px; font-family: 'Plus Jakarta Sans', 'helvetica-w01-light', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-.urlap-szakasz { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin: 4px 0 -2px; color: #a35a4b; font: 700 11.5px/1 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.urlap { column-gap: 12px; row-gap: 14px; font-family: 'Plus Jakarta Sans', 'helvetica-w01-light', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+.urlap-szakasz { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin: 6px 0 4px; color: #a35a4b; font: 700 12px/1 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .urlap-szakasz::after { content: ""; flex: 1; height: 1px; background: #efe4e1; }
-.urlap-szakasz:not(:first-of-type) { margin-top: 10px; }
+.urlap-szakasz:not(:first-of-type) { margin-top: 16px; }
+.urlap-szakasz b { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #d7aba8; color: #fff; font-size: 12px; letter-spacing: 0; }
 .mezo .cimke-szoveg { margin: 0 0 5px; font: 700 13px/1.3 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; color: #3f4053; }
 .mezo input, .mezo select, .mezo textarea { min-height: 46px; padding: 10px 14px; border: 1.5px solid #e6dcd9; border-radius: 12px; background: #fff; font-family: 'Plus Jakarta Sans', 'helvetica-w01-light', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; transition: border-color .15s, box-shadow .15s; }
 .mezo input::placeholder, .mezo textarea::placeholder { color: #a3a4b2; }
@@ -339,21 +337,18 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .urlap-fej { gap: 10px; margin-bottom: 10px; padding: 10px 12px; font-size: 13px; }
   .urlap-cim { font-size: 16px; }
   .urlap-ikon { width: 38px; height: 38px; }
-  .urlap-menet { margin-bottom: 8px; }
   .urlap-figy { margin-bottom: 8px; padding: 8px 11px; font-size: 13px; line-height: 1.35; }
   .urlap-figy p { gap: 8px; }
   .urlap-figy p + p { margin-top: 5px; padding-top: 5px; }
   .figy-ikon, .figy-ikon svg { width: 20px; height: 20px; }
-  .urlap-menet li { padding: 6px 4px; font-size: 12px; }
-  .urlap { row-gap: 9px; column-gap: 10px; }
-  .urlap-szakasz { margin-top: 2px; }
-  .urlap-szakasz:not(:first-of-type) { margin-top: 6px; }
+  .urlap { row-gap: 12px; column-gap: 10px; }
+  .urlap-szakasz { margin-top: 4px; margin-bottom: 2px; }
+  .urlap-szakasz:not(:first-of-type) { margin-top: 12px; }
   .mezo .cimke-szoveg { margin-bottom: 4px; font-size: 12.5px; }
   .mezo input, .mezo select, .mezo textarea { min-height: 44px; padding: 9px 12px; }
   .mezo input[type="date"] { height: 44px; }
   .mezo textarea { min-height: 64px; }
 }
-@media (max-width: 359px) { .urlap-menet li { font-size: 11px; gap: 4px; } .urlap-menet b { width: 17px; height: 17px; } }
 .kicsi { font-size: 13px; color: #6b6c80; }
 .kicsi.tovabbi { margin: -4px 0 6px; text-align: center; font-size: 12px; }
 
@@ -650,13 +645,12 @@ export function nyit(ctx) {
       : `<div class="urlap-figy" role="note"><p><span class="figy-ikon">${ORA_IKON}</span><span><b>Kontroll és garancia csak hétfőtől csütörtökig, <span class="nowrap">8:00–14:00</span> között.</b></span></p>`
         + `<p><span class="figy-ikon">${NAPTAR_IKON}</span><span><b>Csak időpont-egyeztetéssel.</b> Időpont nélkül nem tudunk fogadni, ezért kérj visszahívást, és megbeszéljük az időpontot.</span></p></div>`;
     tartalom.innerHTML = figy + `<div class="urlap-fej"><span class="urlap-ikon" aria-hidden="true">${TELEFON_IKON}</span><div><b class="urlap-cim">${esc(t.nev)}</b><p>Töltsd ki az űrlapot, és 24 órán belül visszahívunk, hogy egyeztessünk egy időpontot.</p></div></div>`
-      + '<ol class="urlap-menet" aria-label="Így működik"><li><b>1</b>Kitöltöd</li><li><b>2</b>Visszahívunk</li><li><b>3</b>Egyeztetünk</li></ol>'
       + `<form class="urlap" novalidate><div class="csapda" aria-hidden="true"><label>Ne töltsd ki <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label></div>`
-      + '<p class="urlap-szakasz">Elérhetőséged</p>'
+      + '<p class="urlap-szakasz"><b>1</b>Elérhetőséged</p>'
       + mezo('nev', 'Név', true, '<input id="mp-nev" type="text" name="nev" autocomplete="name" placeholder="Pl. Kovács Anna">', 'd')
       + mezo('tel', 'Telefonszám', true, `<div class="tel-sor"><select name="orszag" aria-label="Országkód">${orszagok(orszagLista)}</select><input id="mp-tel" type="tel" name="tel" inputmode="tel" autocomplete="tel-national" placeholder="30 123 4567"></div>`, 'd')
       + mezo('email', 'E-mail cím', true, '<input id="mp-email" type="email" name="email" autocomplete="email" placeholder="nev@email.hu">')
-      + '<p class="urlap-szakasz">A piercingedről</p>'
+      + '<p class="urlap-szakasz"><b>2</b>A piercingedről</p>'
       + mezo('mikor', 'Mikor voltál nálunk?', true, `<input id="mp-mikor" type="date" name="mikor" max="${maStr}">`, 'm')
       + mezo('varos', 'Melyik városban voltál?', true, `<input id="mp-varos" type="text" name="varos" list="mp-varosok" autocomplete="off" placeholder="Pl. Budapest"><datalist id="mp-varosok">${HELYSZIN_SORREND.map((id) => `<option value="${esc(HELYSZINEK[id].varos)}"></option>`).join('')}</datalist>`, 'm', 'Melyik városban?')
       + mezo('mire', 'Mire kérsz időpontot?', false, `<select id="mp-mire" name="mire">${lehet.map((o) => `<option value="${esc(o)}"${(adat.mire && lehet.includes(adat.mire) ? adat.mire : lehet[0]) === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`)
