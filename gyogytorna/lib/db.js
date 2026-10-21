@@ -56,6 +56,11 @@ export async function sema(db) {
   for (const oszlop of ['cimke_regi', 'bizonyitek_regi', 'bizonyitek_forras', 'lpc_platform', 'lpc_katt_tipus', 'lpc_katt_ertek']) { try { await db.prepare(`ALTER TABLE gy_foglalas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
   try { await db.prepare('ALTER TABLE gy_foglalas ADD COLUMN lpc_katt_ido INTEGER').run(); } catch (e) { /* mar megvan */ }
   try { await db.prepare('ALTER TABLE gy_foglalas ADD COLUMN lpc_latogato TEXT').run(); } catch (e) { /* mar megvan */ }
+  // GY-25 kiegeszites (2026-10-21): a feltoltesi naplo bovitese (kattintas ideje, Google hibakod, request ID, ujraprobalas-szamlalo, utolso hiba ideje, kovetkezo proba) + egysegesitett allapot-nevek
+  for (const oszlop of ['katt_ido', 'utolso_hiba_ido', 'kovetkezo_proba']) { try { await db.prepare(`ALTER TABLE gy_feltoltes ADD COLUMN ${oszlop} INTEGER`).run(); } catch (e) { /* mar megvan */ } }
+  for (const oszlop of ['google_hibakod', 'request_id']) { try { await db.prepare(`ALTER TABLE gy_feltoltes ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
+  try { await db.prepare('ALTER TABLE gy_feltoltes ADD COLUMN ujraprobalas INTEGER NOT NULL DEFAULT 0').run(); } catch (e) { /* mar megvan */ }
+  for (const [regi, uj] of [['kesz', 'dry'], ['hibas_click_id', 'kihagyva_click_id'], ['eles_nincs_bekotve', 'kihagyva_nincs_kuldo']]) { try { await db.prepare('UPDATE gy_feltoltes SET allapot = ?1 WHERE allapot = ?2').bind(uj, regi).run(); } catch (e) { /* */ } }
   for (const oszlop of ['email', 'surgosseg', 'hivhato']) { try { await db.prepare(`ALTER TABLE gy_visszahivas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_parosito_hely ON gy_foglalas (parosito_hely)').run(); } catch (e) { /* */ }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_salonic ON gy_foglalas (salonic_id)').run(); } catch (e) { /* */ }

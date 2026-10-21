@@ -391,7 +391,7 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   }
   if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length};${tobbOkkod};${oldalDiag}`.slice(0, 190), most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
-  try { await gfeltoltesFut({ db, env, most, budapestIdo, uuid: jeloltek[0].uuid }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); } // GY-25: dry-run (csak az igazolt foglalas; a visszameno feldolgozas az admin vegponton) napló; hiba SOHA nem erinti az igazolast
+  try { await gfeltoltesFut({ db, env, most, budapestIdo }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); } // GY-25: dry-run napló: a legalabb 1 oraja igazolt, meg nem naplozott foglalasokat veszi fel (az uj foglalas maga 1 ora mulva); hiba SOHA nem erinti az igazolast
   return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
 }
 
@@ -437,7 +437,7 @@ export async function adminVegpont({ request, env, deps = {} }) {
   if (u.searchParams.get('gfeltoltes')) { // GY-25: szerveres Google Ads feltoltes (dry-run) naploja; a hianyzo (visszameno) sorokat felveszi, majd riportol
     let fut = null;
     try { fut = await gfeltoltesFut({ db, env, most, budapestIdo }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); fut = { mod: gfeltoltesMod(env), hiba: 'futasi_hiba' }; }
-    return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, ...(await gfeltoltesRiport(db)) });
+    return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, ...(await gfeltoltesRiport(db, { budapestIdo, most })) });
   }
   if (u.searchParams.get('visszahivasok')) {
     const r = (await db.prepare('SELECT id, letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
