@@ -327,6 +327,28 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   for (const pl of PLATFORMOK) osszes.jogosultsag[pl].arany = hanyados(osszes.jogosultsag[pl].kuldve, osszes.jogosultsag[pl].jogosult);
   if (osszes.lefedettseg.elvart != null) osszes.lefedettseg.lefedettseg = hanyados(osszes.lefedettseg.lefedett, osszes.lefedettseg.elvart); // like-for-like ES uzletagonkent plafonozott: csak az elvart-tal rendelkezo uzletagak, es az egyik uzletag tulteljesitese nem fedi el a masik hianyat (lefedett = Σ min(latott, elvart))
   else { delete osszes.lefedettseg.elvart_hianyos; delete osszes.lefedettseg.latott_az_elvart_uzletagakban; delete osszes.lefedettseg.lefedett; }
+  // T2-szamlalo (DECISION #213): jogosult foglalas = Salonic-PAROSITOTT, konzultacio ES kupon nelkuli letrehozo level (t2_jogosult_parositott; ezt hasonlitjuk a T2_ACCEPTANCE kuszobhoz).
+  // A letrehozo-alapu szam (letrehozo level - konzultacio - kupon) csak tajekoztato (t2_jogosult_letrehozo). A jelleg a meres_jelleg tablabol (source_id = booking_id / sd_id);
+  // jelleg-sor nelkuli level jogosultnak szamit (konzervativ). A ?proba= levelek kimaradnak. Napi ertek: a T2 osszege a napi ertekek osszege.
+  const t2 = await vedett('t2', async () => {
+    if (!eOszl.size || !eOszl.has('booking_id') || !eOszl.has('sd_id')) return null;
+    const jOszl = await oszlopok(db, 'meres_jelleg');
+    const jvan = jOszl.has('source_id') && jOszl.has('jelleg') && jOszl.has('kupon');
+    const sorok = jvan
+      ? await mind(db, 'SELECT substr(e.uuid, 1, 8) AS u8, e.allapot AS allapot, j.jelleg AS jelleg, j.kupon AS kupon, (j.source_id IS NULL) AS nincs FROM foglalas_egyeztetes e LEFT JOIN meres_jelleg j ON j.source_id = COALESCE(e.booking_id, e.sd_id) WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2', from, to)
+      : await mind(db, 'SELECT substr(uuid, 1, 8) AS u8, allapot, NULL AS jelleg, NULL AS kupon, 1 AS nincs FROM foglalas_egyeztetes WHERE letrehozva >= ?1 AND letrehozva < ?2', from, to);
+    const t = { alap: 'jogosult_parositott', kuszob: T2_ACCEPTANCE.min_valos_jogosult_foglalas, t2_jogosult_parositott: 0, t2_jogosult_letrehozo: 0, letrehozo_level: 0, konzultacio: 0, kupon: 0, jelleg_nelkul: 0, jelleg_tabla: jvan, proba_kizarva: 0 };
+    for (const s of sorok) {
+      if (probaSet.has(s.u8)) { t.proba_kizarva++; continue; }
+      t.letrehozo_level++;
+      const konz = s.jelleg === 'konzultacio', kup = Number(s.kupon) === 1;
+      if (s.nincs) t.jelleg_nelkul++;
+      if (konz) t.konzultacio++;
+      if (kup) t.kupon++;
+      if (!konz && !kup) { t.t2_jogosult_letrehozo++; if (s.allapot === 'parositott') t.t2_jogosult_parositott++; }
+    }
+    return t;
+  }, hibak);
   if (!ismeretlenHasznalt) delete uz.ismeretlen;
   if (hibak.length && LAMPA_RANG[osszLampa] < LAMPA_RANG.sarga) osszLampa = 'sarga'; // hiányos szekcio nem lehet "zold"
   return {
@@ -336,6 +358,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     lampa: osszLampa,
     szekcio_hibak: hibak,
     proba_szabaly: PROBA_SZABALY, proba_megadva: [...probaSet],
+    t2, // DECISION #213: a T2-szamlalo napi erteke (null: hianyzo sema / szekcio-hiba)
     osszes,
     uzletagak: uz,
   };
@@ -346,7 +369,9 @@ export const PROBA_SZABALY = 'alapbol minden foglalas_egyeztetes sor valos; kiza
 
 // ---------- T2_START rogzito (a meresi oldal / GPT DECISION #166 3.) ----------
 /** A T2 kezdetekor rogzitendo allapot EGY hivasban: idopont + kod-ujjlenyomat (+ a hivo altal megadott production SHA) + D1 sema-ujjlenyomat + Zap revizio (a hivo adja) + kapcsolok + arnyekcel-ID-k. CSAK OLVAS, titok / PII nelkul (a titkokrol csak jelenlet-bit). */
-export const T2_ACCEPTANCE = Object.freeze({ min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 200 });
+// DECISION #212 (Feri, 2026-10-20 16:31): a mintaszam-kuszob 200 -> 140; DECISION #213 (Feri, 17:4x): a T2-szamlalo a PAROSITOTT jogosult foglalas (t2.t2_jogosult_parositott), a legkesobbi zaras 10-29 vege (max_nap 14 -> 15).
+// CSAK riport-konstans / -mezo, kuldest nem erint. ROLLBACK: kuszob 200, max_nap 14, es a t2 blokk szamlaloja a letrehozo-alapu szam (#212 elotti allapot).
+export const T2_ACCEPTANCE = Object.freeze({ min_nap: 7, max_nap: 15, min_valos_jogosult_foglalas: 140 });
 const KAPCSOLO_ENV = Object.freeze(['MERES_ELOSZTO', 'MERES_SALONIC_DIRECT', 'MERES_SD_INDEX', 'MERES_SD_NS', 'MERES_IRAS_KI', 'META_API_VERSION']);
 const TITOK_JELENLET = Object.freeze(['META_CAPI_TOKEN', 'TIKTOK_EVENTS_TOKEN', 'GA4_TESZT_API_SECRET', 'GOOGLE_ARNYEK_WEBHOOK_URL', 'SD_HMAC_KEY_V1', 'GUEST_HMAC_KEY_V1', 'EGYEZTETES_KULCS_HASH']);
 const T2_TABLAK = Object.freeze(['meres_kuldes', 'foglalas_egyeztetes', 'foglalas_vendeg', 'foglalas_reschedule', 'foglalas_lemondas', 'meres_erkezes', 'foglalas_kulcs']);
