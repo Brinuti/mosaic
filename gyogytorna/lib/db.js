@@ -61,6 +61,8 @@ export async function sema(db) {
   for (const oszlop of ['google_hibakod', 'request_id']) { try { await db.prepare(`ALTER TABLE gy_feltoltes ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
   try { await db.prepare('ALTER TABLE gy_feltoltes ADD COLUMN ujraprobalas INTEGER NOT NULL DEFAULT 0').run(); } catch (e) { /* mar megvan */ }
   for (const [regi, uj] of [['kesz', 'dry'], ['hibas_click_id', 'kihagyva_click_id'], ['eles_nincs_bekotve', 'kihagyva_nincs_kuldo']]) { try { await db.prepare('UPDATE gy_feltoltes SET allapot = ?1 WHERE allapot = ?2').bind(uj, regi).run(); } catch (e) { /* */ } }
+  // GY-25 diagnosztika (2026-10-21): bongeszo-/OS-/eszkoz-csalad, referrer-host, elso oldal (query nelkul), gad_jel, ismetelt, privat_gyanu - JSON, nem szemelyes adat
+  for (const t of ['gy_erintes', 'gy_foglalas']) { try { await db.prepare(`ALTER TABLE ${t} ADD COLUMN diag TEXT`).run(); } catch (e) { /* mar megvan */ } }
   for (const oszlop of ['email', 'surgosseg', 'hivhato']) { try { await db.prepare(`ALTER TABLE gy_visszahivas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_parosito_hely ON gy_foglalas (parosito_hely)').run(); } catch (e) { /* */ }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_salonic ON gy_foglalas (salonic_id)').run(); } catch (e) { /* */ }
@@ -119,12 +121,12 @@ export async function foglalasLetrehoz(db, f, most) {
     `INSERT OR IGNORE INTO gy_foglalas (uuid, letrehozva, frissitve, tipus, uj_vendeg, cimke, bizonyitek, hozzajarulas, allapot, salonic_id, igazolt, esemeny_kiadva, teszt, parosito, parosito_hely, kampany, hirdetescsoport, hirdetes,
        lpc_cimke, lpc_bizonyitek, lpc_kampany, lpc_hirdetescsoport, lpc_hirdetes, lpc_kora_nap, kesoi_fizetett, lpc_verzio,
        gads_katt_tipus, gads_katt_ertek, gads_katt_ido, gads_munkamenet, gads_szabaly, ertek,
-       cimke_regi, bizonyitek_regi, bizonyitek_forras, lpc_platform, lpc_katt_tipus, lpc_katt_ertek, lpc_katt_ido, lpc_latogato)
-     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36)`,
+       cimke_regi, bizonyitek_regi, bizonyitek_forras, lpc_platform, lpc_katt_tipus, lpc_katt_ertek, lpc_katt_ido, lpc_latogato, diag)
+     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37)`,
   ).bind(f.uuid, most, f.tipus, f.uj_vendeg, f.cimke, f.bizonyitek, f.hozzajarulas, f.allapot, f.teszt ? 1 : 0, f.parosito || null, f.parosito_hely || null, f.kampany || null, f.hirdetescsoport || null, f.hirdetes || null,
     f.lpc_cimke || null, f.lpc_bizonyitek || null, f.lpc_kampany || null, f.lpc_hirdetescsoport || null, f.lpc_hirdetes || null, Number.isInteger(f.lpc_kora_nap) ? f.lpc_kora_nap : null, f.kesoi_fizetett || null, f.lpc_verzio || null,
     f.gads_katt_tipus || null, f.gads_katt_ertek || null, Number.isInteger(f.gads_katt_ido) ? f.gads_katt_ido : null, f.gads_munkamenet || null, f.gads_szabaly || null, Number.isInteger(f.ertek) ? f.ertek : null,
-    f.cimke_regi || null, f.bizonyitek_regi || null, f.bizonyitek_forras || null, f.lpc_platform || null, f.lpc_katt_tipus || null, f.lpc_katt_ertek || null, Number.isInteger(f.lpc_katt_ido) ? f.lpc_katt_ido : null, f.lpc_latogato || null).run();
+    f.cimke_regi || null, f.bizonyitek_regi || null, f.bizonyitek_forras || null, f.lpc_platform || null, f.lpc_katt_tipus || null, f.lpc_katt_ertek || null, Number.isInteger(f.lpc_katt_ido) ? f.lpc_katt_ido : null, f.lpc_latogato || null, f.diag || null).run();
   return !!(r.meta && r.meta.changes);
 }
 
@@ -207,8 +209,13 @@ export async function erintesUtolso(db, latogato) {
 }
 export async function erintesIr(db, e) {
   await db.prepare(
-    `INSERT INTO gy_erintes (projekt, latogato, ido, cimke, bizonyitek, kampany, hirdetescsoport, hirdetes, oldal, hozzajarulas, szabaly_verzio, platform, katt_tipus, katt_ertek) VALUES ('gyogytorna', ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)`,
-  ).bind(e.latogato, e.ido, e.cimke, e.bizonyitek || null, e.kampany || null, e.hirdetescsoport || null, e.hirdetes || null, e.oldal || null, e.hozzajarulas || null, e.szabaly_verzio || null, e.platform || null, e.katt_tipus || null, e.katt_ertek || null).run();
+    `INSERT INTO gy_erintes (projekt, latogato, ido, cimke, bizonyitek, kampany, hirdetescsoport, hirdetes, oldal, hozzajarulas, szabaly_verzio, platform, katt_tipus, katt_ertek, diag) VALUES ('gyogytorna', ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)`,
+  ).bind(e.latogato, e.ido, e.cimke, e.bizonyitek || null, e.kampany || null, e.hirdetescsoport || null, e.hirdetes || null, e.oldal || null, e.hozzajarulas || null, e.szabaly_verzio || null, e.platform || null, e.katt_tipus || null, e.katt_ertek || null, e.diag || null).run();
+}
+/** A megadott erintes diagnosztikai rekordja (JSON szoveg) a latogato + idopont alapjan, vagy null. */
+export async function erintesDiag(db, latogato, ido) {
+  const r = await db.prepare('SELECT diag FROM gy_erintes WHERE latogato = ?1 AND ido = ?2 AND diag IS NOT NULL ORDER BY id DESC LIMIT 1').bind(latogato, ido).first();
+  return r ? r.diag : null;
 }
 /** A latogato fizetett erintesei az adott idopont (tol) utan, legujabb elol. */
 export async function erintesek(db, latogato, tol) {
