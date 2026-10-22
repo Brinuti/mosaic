@@ -10,6 +10,7 @@ const req = createRequire('/opt/node22/lib/node_modules/');
 let pw; try { pw = createRequire(import.meta.url)('playwright'); } catch { pw = req('playwright'); }
 const { chromium } = pw;
 const S = process.env.TMPDIR || '/tmp/';
+const BASE = process.argv[2] || 'http://localhost:4191';
 // minden *.salonic.hu keres: szerver-oldali (Node) lekeres, CORS-fejjel (a helyi oldal nem a mosaicheadspa.hu eredetrol fut)
 export async function oldal(b, { w = 390, h = 844 } = {}) {
   const ctx = await b.newContext({ viewport: { width: w, height: h } });
