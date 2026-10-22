@@ -122,7 +122,8 @@ test('R1 HOZZAJARULAS: marketing-hozzajarulas nelkul / elutasitva UTAN uresen te
 });
 test('R1: az attribucio.js exportja bovult, a tobbi (pillanatkep / hozzajarulas / kuld) valtozatlan', () => {
   const b = bongeszo({ ls: tarolo({ mh_cc: CC() }), search: `?gclid=${GCLID}` });
-  assert.deepEqual(Object.keys(b.win.mhAttribucio).sort(), ['googleAzonositok', 'hozzajarulas', 'kuld', 'pillanatkep']);
+  // 2026-10-19 (7 napos utolso fizetett kattintas, tools/test-lpt-forras.mjs): az export tovabb bovult (lptKlikk / lptKlikkVar / klikkAzonositok / klikkReszletes / lptJelol); a regi negy valtozatlan
+  assert.deepEqual(Object.keys(b.win.mhAttribucio).sort(), ['googleAzonositok', 'hozzajarulas', 'klikkAzonositok', 'klikkReszletes', 'kuld', 'lptJelol', 'lptKlikk', 'lptKlikkVar', 'pillanatkep']);
   assert.equal(JSON.parse(JSON.stringify(b.win.mhAttribucio.pillanatkep())).google.gclid.ertek, GCLID);
 });
 
@@ -208,7 +209,8 @@ test('R3 HOZZAJARULAS (N1): kifejezett elutasitas / statisztika-csak / dontes es
 });
 test('R3: PMU - a kod a szulo URL-jet / a nyers allapotot / a sutit KOZVETLENUL nem olvassa (csak a hozzajarulasi kapus googleAzonositok()-ot)', () => {
   const blokk = PMU_BLOKK(PMU).slice(PMU_BLOKK(PMU).indexOf('function googleAzonositokHozzaad'));
-  assert.match(blokk, /\.mhAttribucio\.googleAzonositok\(\)/);
+  // 2026-10-19: a PMU az attribucio.js hozzajarulasi kapus API-jan at olvas (klikkReszletes: a googleAzonositok() + Meta / TikTok + a sutibol potolt azonositok; regebbi szulo-szkriptnel googleAzonositok())
+  assert.match(blokk, /ma\.klikkReszletes\(\)/); assert.match(blokk, /ma\.googleAzonositok\(\)/); assert.match(blokk, /const ma = fo\.mhAttribucio/);
   for (const tilos of [/\.location\.search/, /URLSearchParams\(fo\./, /pillanatkep\s*\(/, /document\.cookie/, /localStorage/, /mh_attr/, /_gcl_/]) assert.ok(!tilos.test(blokk), 'tiltott kapu-megkerules: ' + tilos);
 });
 test('R3: PMU - hibas minta / hianyzo mhAttribucio / idegen eredetu szulo: az atiranyitas AZONOSITO NELKUL de HIBA NELKUL megy, a mh_proba marad; a "kozben elfogyott" ag valtozatlan', () => {
@@ -253,6 +255,6 @@ test('nem valtozik: a booking-launcher.js, a suti.js, a netlify/ es a functions/
   assert.match(ATTR, /function engedely\(\) \{\s*try \{ if \(w\.mhSuti && typeof w\.mhSuti\.engedely === 'function'\) return !!w\.mhSuti\.engedely\('adv'\);/);
   assert.match(ATTR, /function ment\(o\) \{ if \(!engedely\(\)\) return false;/);
   assert.match(ATTR, /function olvas\(\) \{\s*if \(!engedely\(\)\) \{ torol\(\); return \{ v: 1 \}; \}/);
-  assert.ok(!/localStorage\.setItem|setItem\(/.test(ATTR.slice(ATTR.indexOf('function googleAzonositok'))), 'a googleAzonositok nem ir tarolot');
+  assert.ok(!/localStorage\.setItem|setItem\(/.test(ATTR.slice(ATTR.indexOf('function googleAzonositok'), ATTR.indexOf('// ===================== 7 NAPOS'))), 'a googleAzonositok nem ir tarolot');
   assert.ok(!/document\.cookie\s*=|\.cookie\s*=/.test(ATTR), 'az attribucio.js nem allit sutit');
 });

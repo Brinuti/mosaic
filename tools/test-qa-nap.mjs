@@ -277,6 +277,9 @@ test('N11 arnyekCel: a kuldott kerelem csak az ARNYEK celpontokra "jo" (Meta tes
   assert.ok(!be('meta', { ...m, cel: { ...m.cel, dataset: ELO_CELOK.meta[0] } }));
   assert.ok(!be('meta', { url: `https://graph.facebook.com/v23.0/${ELO_CELOK.meta[0]}/events`, cel: m.cel }), 'az url-ben mas dataset');
   assert.ok(!be('tiktok', { cel: { pixel_code: ELO_CELOK.tiktok[0], test_event_code: 'T' } }));
+  assert.ok(be('tiktok', { cel: { pixel_code: ARNYEK.tiktok.pixelCode, test_event_code: null, arnyek_eles: true } }), 'Feri 10-20: ARNYEK pixel tesztkod nelkul (arnyek_eles) = arnyek cel');
+  assert.ok(!be('tiktok', { cel: { pixel_code: ELO_CELOK.tiktok[0], arnyek_eles: true } }), 'elo pixel arnyek_eles-szel sem');
+  assert.ok(!be('tiktok', { cel: { pixel_code: ARNYEK.tiktok.pixelCode } }), 'jelzo es tesztkod nelkul nem');
   assert.ok(!be('tiktok', { cel: { pixel_code: ARNYEK.tiktok.pixelCode } }), 'tesztkod nelkul nem');
   assert.ok(!be('google', { cel: { customer_id: ARNYEK.google.customerId, conversion_action_id: ELO_CELOK.google_primary[0] } }));
   assert.ok(!be('google', { cel: { customer_id: '1', conversion_action_id: '7825199989' } }));
@@ -580,7 +583,7 @@ test('N26 ?qa=t2start: ugyanaz a hozzaferes (401 / 403 / 405 / 429), no-store; i
   const r = await w.kerj('qa=t2start'); assert.equal(r.status, 200); assert.equal(r.headers.get('cache-control'), 'no-store');
   const j = await r.json();
   assert.equal(j.ok, true); assert.equal(j.qa, 't2start'); assert.equal(j.t2_start_utc, '2026-10-13T12:00:00Z'); assert.equal(j.t2_start_budapest, '2026-10-13 14:00');
-  assert.deepEqual(j.acceptance, { min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 200 }); assert.deepEqual(j.acceptance, T2_ACCEPTANCE);
+  assert.deepEqual(j.acceptance, { min_nap: 7, max_nap: 15, min_valos_jogosult_foglalas: 140 }); assert.deepEqual(j.acceptance, T2_ACCEPTANCE);
   assert.match(j.kod.kod_ujjlenyomat, /^[0-9a-f]{64}$/); assert.match(j.d1.sema_ujjlenyomat, /^[0-9a-f]{64}$/);
   assert.deepEqual(j.kod.elo_tiltolista_db, { meta: 5, tiktok: 1, ga4: 1, google_primary: 9 });
   assert.equal(j.kod.production_sha, null); assert.equal(j.kod.production_sha_forras, 'nincs'); assert.equal(j.zap.revizio, null);
@@ -917,3 +920,43 @@ test('N37 a re-review (aabcbaa) tesztlyukai: platform = "constructor" / "__proto
   assert.equal(Object.hasOwn(j.uzletagak.headspa.foglalas_vendeg, 'constructor'), false);
 });
 
+test('N36 (DECISION #213) t2 blokk: a T2-jogosult = PAROSITOTT, konzultacio es kupon nelkuli letrehozo level; a letrehozo-alapu szam (parositatlanokkal) csak tajekoztato; jelleg-sor nelkuli level jogosult; ?proba= kimarad; felig nyitott nap', async () => {
+  const w = await vilag();
+  w.futtat('CREATE TABLE IF NOT EXISTS meres_jelleg (source_id TEXT PRIMARY KEY, jelleg TEXT NOT NULL, kupon INTEGER NOT NULL, forras TEXT NOT NULL, ido INTEGER NOT NULL) WITHOUT ROWID');
+  const jelleg = (id, j, kupon, t) => w.futtat("INSERT INTO meres_jelleg (source_id, jelleg, kupon, forras, ido) VALUES (?, ?, ?, 'elso_level', ?)", id, j, kupon, t);
+  // a1, a2: normal, parositott -> t2 jogosult; a3: normal, jelleg-sor NELKUL, parositott -> jogosult (konzervativ); a4: normal, PAROSITATLAN -> csak letrehozo-alapu
+  w.egyeztetes({ uuid: w.uuid('a1'), kulcs: HEADSPA(21), t: FROM + 100, booking_id: 'mb_a1' }); jelleg('mb_a1', 'elso', 0, FROM + 100);
+  w.egyeztetes({ uuid: w.uuid('a2'), kulcs: HEADSPA(22), t: FROM + 110, booking_id: 'mb_a2' }); jelleg('mb_a2', 'visszajaro', 0, FROM + 110);
+  w.egyeztetes({ uuid: w.uuid('a3'), kulcs: FODRASZ(23), t: FROM + 120, booking_id: 'mb_a3' });
+  w.egyeztetes({ uuid: w.uuid('a4'), kulcs: HEADSPA(24), t: FROM + 130, allapot: 'parositatlan' });
+  // b1: konzultacio (kizart), b2: kupon (kizart), b3: kupon + parositatlan (kizart)
+  w.egyeztetes({ uuid: w.uuid('b1'), kulcs: HEADSPA(25), t: FROM + 140, booking_id: 'mb_b1' }); jelleg('mb_b1', 'konzultacio', 0, FROM + 140);
+  w.egyeztetes({ uuid: w.uuid('b2'), kulcs: HEADSPA(26), t: FROM + 150, booking_id: 'mb_b2' }); jelleg('mb_b2', 'elso', 1, FROM + 150);
+  w.egyeztetes({ uuid: w.uuid('b3'), kulcs: HEADSPA(27), t: FROM + 160, allapot: 'parositatlan', sd_id: 'sd_b3', sd_allapot: 'kesz' }); jelleg('sd_b3', 'elso', 1, FROM + 160);
+  // c1: ismert proba (kizarva); a nap hataran kivul: d1 (a nap vege = a kovetkezo nap), d2 (a nap elott)
+  const p1 = w.uuid('c1'); w.egyeztetes({ uuid: p1, kulcs: HEADSPA(28), t: FROM + 170, booking_id: 'mb_c1' }); jelleg('mb_c1', 'elso', 0, FROM + 170);
+  w.egyeztetes({ uuid: w.uuid('d1'), kulcs: HEADSPA(29), t: FROM + 86400, booking_id: 'mb_d1' }); jelleg('mb_d1', 'elso', 0, FROM + 86400);
+  w.egyeztetes({ uuid: w.uuid('d2'), kulcs: HEADSPA(30), t: FROM - 1, booking_id: 'mb_d2' }); jelleg('mb_d2', 'elso', 0, FROM - 1);
+  const j = await w.jelentes(`qa=nap&datum=${NAP}&proba=${p1.slice(0, 8)}`);
+  assert.ok(j.t2, 't2 blokk van');
+  assert.equal(j.t2.alap, 'jogosult_parositott'); assert.equal(j.t2.kuszob, T2_ACCEPTANCE.min_valos_jogosult_foglalas); assert.equal(j.t2.kuszob, 140);
+  assert.equal(j.t2.t2_jogosult_parositott, 3, 'a1 + a2 + a3 (jelleg-sor nelkuli is jogosult)');
+  assert.equal(j.t2.t2_jogosult_letrehozo, 4, 'a1..a4 (a parositatlan a4 csak a letrehozo-alapu szamba)');
+  assert.deepEqual([j.t2.letrehozo_level, j.t2.konzultacio, j.t2.kupon, j.t2.jelleg_nelkul, j.t2.proba_kizarva], [7, 1, 2, 2, 1], 'a1..a4 + b1..b3 = 7 (a c1 proba kizarva, d1 / d2 a napon kivul); jelleg-sor nelkul: a3 + a4');
+  assert.equal(j.t2.jelleg_tabla, true);
+  assert.equal(j.lampa === 'zold' || j.lampa === 'sarga' || j.lampa === 'piros', true);
+  assert.deepEqual(j.szekcio_hibak, [], 'a t2 szekcio nem hibazik');
+});
+
+test('N36b (DECISION #213) t2 blokk: meres_jelleg tabla nelkul (jelleg_tabla = false) minden level jelleg-sor nelkuli es jogosult; ures adatbazis / hianyzo sema: t2 = null, nem hiba; a szekcio csak SELECT', async () => {
+  const w = await vilag();
+  w.egyeztetes({ uuid: w.uuid('e1'), kulcs: HEADSPA(31), t: FROM + 100, booking_id: 'mb_e1' });
+  w.egyeztetes({ uuid: w.uuid('e2'), kulcs: HEADSPA(32), t: FROM + 110, allapot: 'parositatlan' });
+  const j = await w.jelentes(`qa=nap&datum=${NAP}`);
+  assert.equal(j.t2.jelleg_tabla, false);
+  assert.deepEqual([j.t2.t2_jogosult_parositott, j.t2.t2_jogosult_letrehozo, j.t2.jelleg_nelkul], [1, 2, 2]);
+  assert.equal(w.sql("SELECT name FROM sqlite_master WHERE name = 'meres_jelleg'").length, 0, 'a t2 szekcio nem hozott letre tablat');
+  const u = await vilag({ semak: false });
+  const ju = await u.jelentes(`qa=nap&datum=${NAP}`);
+  assert.equal(ju.t2, null);
+});

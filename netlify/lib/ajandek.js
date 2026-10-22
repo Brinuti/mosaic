@@ -97,12 +97,12 @@ const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
 const ATTR_KULCSOK = ['variant_id', 'gift_context', 'relationship', 'occasion', 'utm_source', 'utm_medium',
   'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'ttclid'];
-// Hirdetesi kattintas-azonositok: CSAK akkor kerulnek a rendelesbe (PI metadata), ha a vevo a marketing-sutit elfogadta
-// (a bongeszo kuldi a hozzajarulast; a szerver a hianyzo / hamis jelzest "nincs hozzajarulas"-nak veszi).
+// Hirdetesi kattintas-azonositok: a rendelesbe (PI metadata) kerulnek, KIVEVE ha a vevo kifejezetten elutasitotta a marketing-sutit
+// (DECISION #218 / Feri 2026-10-21: az ismeretlen / hianyzo hozzajarulas alapbol elfogadott).
 const HIRDETESI_AZONOSITOK = ['gclid', 'fbclid', 'ttclid', 'gbraid', 'wbraid'];
 // Meresi segedadatok a PI metadataban: a hozzajarulas allapota (hozz_ana / hozz_adv: '1' | '0' | hianyzik = ismeretlen)
 // MINDIG; a Meta-sutik (fbc, fbp) es a gbraid / wbraid csak hirdetesi hozzajarulassal. A szerveroldali vasarlasmeres
-// (Stripe -> Google Ads / Meta) ezekbol dolgozik, es hozz_adv != '1' eseten nem kuld hirdetesi rendszernek semmit.
+// (Stripe -> Google Ads / Meta) ezekbol dolgozik, es csak hozz_adv = '0' (kifejezett elutasitas) eseten nem kuld hirdetesi rendszernek semmit.
 const MER_KULCSOK = ['gbraid', 'wbraid', 'fbc', 'fbp', 'hozz_ana', 'hozz_adv'];
 // a /fizetes altal irt metadata-kulcsok (termekvaltaskor ezeket mind ujrairjuk / toroljuk)
 const FIZETES_META = ['forras', 'termek', 'product_type', ...ATTR_KULCSOK, ...MER_KULCSOK, 'oldal', 'nev', 'iranyitoszam',
@@ -457,17 +457,19 @@ function merAdat(m) {
   m = m && typeof m === 'object' && !Array.isArray(m) ? m : {};
   const ismert = typeof m.ana === 'boolean' || typeof m.adv === 'boolean';
   const ana = m.ana === true;
-  const adv = m.adv === true;
+  // DECISION #218 / Feri 2026-10-21 ("mindig granted"): a hirdetesi hozzajarulas alapbol ELFOGADOTT; csak a kifejezett elutasitas (adv === false) vag
+  const advKifejezett = typeof m.adv === 'boolean';
+  const adv = advKifejezett ? m.adv : true;
   const kisz = (x, re) => { const t = egysor(x); return adv && re.test(t) ? t : ''; };
   return {
     hozz_ana: ismert ? (ana ? '1' : '0') : '',
-    hozz_adv: ismert ? (adv ? '1' : '0') : '',
+    hozz_adv: advKifejezett ? (adv ? '1' : '0') : '',
     fbp: kisz(m.fbp, FBP_RE),
     fbc: kisz(m.fbc, FBC_RE),
     adv,
   };
 }
-// hirdetesi hozzajarulas nelkul a kattintas-azonositok nem kerulnek a rendelesbe
+// kifejezett hirdetesi elutasitas (adv === false) eseten a kattintas-azonositok nem kerulnek a rendelesbe (ismeretlen allapotnal igen: DECISION #218)
 function attrHozzajarulassal(attr, mer) {
   if (mer.adv) return attr;
   const ki = { ...attr };
@@ -1350,7 +1352,7 @@ async function alairasJo(fejlec, torzs, titkok, most) {
 // A bongeszos meres (GTM / pixel) reklamblokkolo, Safari-korlatozas vagy hibas rejtett koszonooldal miatt kimaradhat. Ez a SZERVER oldali
 // masodik ut: a sikeres fizetes utan egy Zapier "catch hook"-ra kuld egy lapos JSON-t (a hook cime a MERES_HOOK_URL titok, a repoban nincs).
 // SZABALYOK:
-//  - csak HIRDETESI (marketing) hozzajarulassal (PI metadata hozz_adv = '1', a bongeszo kuldte a rendeleskor); egyebkent SEMMI nem hagyja el a szerverunket
+//  - a hirdetesi hozzajarulas alapbol ELFOGADOTT (DECISION #218; hozz_adv = '1' VAGY ismeretlen); CSAK a kifejezett elutasitasnal (hozz_adv = '0') nem hagyja el semmi a szerverunket
 //    (a rendelesen 'mer_kuldve: kihagyva:...' jelzo marad, hogy lassuk a dontest);
 //  - a hirdetesi azonositok (gclid, gbraid, wbraid, fbclid, ttclid, fbp, fbc) amugy is csak hozzajarulassal kerultek a rendelesbe;
 //  - visszateritett / vitatott rendelesrol nem megy;
@@ -1381,8 +1383,10 @@ async function meresKuld(k, piId) {
       await jelol('kihagyva:teszt');
       return 'kihagyva';
     }
-    if (md.hozz_adv !== '1') {
-      await jelol(md.hozz_adv === '0' ? 'kihagyva:nincs_hozzajarulas' : 'kihagyva:ismeretlen');
+    // DECISION #218 / Feri 2026-10-21 ("mindig granted"): az ISMERETLEN hozzajarulas (a bongeszo nem kuldte) = alapbol elfogadott -> megy; CSAK a kifejezett elutasitas (hozz_adv = '0': a
+    // lablec "Suti beallitasok" menten rogzitett dontes) marad ki.
+    if (md.hozz_adv === '0') {
+      await jelol('kihagyva:nincs_hozzajarulas');
       return 'kihagyva';
     }
     if (ch && (ch.refunded || ch.disputed || Number(ch.amount_refunded) > 0)) {

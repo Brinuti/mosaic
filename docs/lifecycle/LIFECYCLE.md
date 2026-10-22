@@ -116,6 +116,15 @@ Munkatársi értesítők (DECISION #117): `LIFECYCLE_MUNKATARS_MOD` (`ki` | `fig
 Opcionális: `LIFECYCLE_SZALON_EMAIL` (alap: mosaicheadspa@gmail.com), `LIFECYCLE_TESZT_EMAIL`, `LIFECYCLE_TESZT_TELEFON`, `LIFECYCLE_NAPI_PLAFON` (alap 300 befogadott levél / nap; egy foglalás 2 levél), `LIFECYCLE_SMS_KUSZOB` (alacsony egyenleg-riasztás, alap 3000), `LIFECYCLE_BASE_URL`.
 Zapier: `lifecycle-bejovo` (id `01a1168a-afbf-7ee9-94c3-6e5be524b6be`) és `lifecycle-tick` (id `01a1169c-7353-708d-8801-912e783e8424`); a **cél-cím** (`CEL`) a kódjukban van: előnézet → éles átállásnál új verzióban `https://www.mosaicheadspa.hu`-ra kell átírni. A sandbox csak engedélyezett hosztokat ér el, ezért a hívás a „Webhooks by Zapier” (custom request) akción megy.
 
+## Leiratkozás az automatikus e-mailekről (Feri kérése, 2026-10-20)
+
+- **Minden vendégnek kimenő automatikus e-mail láblécében** van egy „Leiratkozás” link (`/u/<kód>`, a kód a foglalás tokenje, mint az `/f/` és `/m/` linkeknél), és a levél `List-Unsubscribe` + `List-Unsubscribe-Post` (RFC 8058, egykattintásos) fejlécet is kap, így a Gmail a saját „Leiratkozás” gombját is mutatja. A belső szalon-levelek (feladat, riasztás) nem kapnak ilyet.
+- **GET `/u/<kód>`** csak megerősítő oldalt ad (gombbal); **POST** hajtja végre (a gomb és a levelezők egykattintásos kérése). A levelezők linkellenőrző botjai így nem iratkoztatnak le senkit.
+- **Hatás:** az e-mail-cím a D1 `leiratkozasok` táblába kerül, **csak SHA-256 hash-ként** (kisbetűsítve); a cím minden függő e-mailje (bármely foglalásról) `torolve / leiratkozott` lesz, és a motor a küldés előtt is ellenőrzi (`kihagyva / leiratkozott`). Az SMS-ekre nem vonatkozik. A foglalás személyes adatainak 60 napos törlése a leiratkozást nem érinti.
+- **Kézi leiratkoztatás** (pl. a vendég kéri): `INSERT OR IGNORE INTO leiratkozasok (email_h, ido, forras) VALUES (sha256(kisbetűs cím), <epoch mp>, 'kezi')`; a hash kiszámítása: `printf '%s' '<cím kisbetűvel>' | sha256sum`. A tábla az első használatkor magától létrejön (`CREATE TABLE IF NOT EXISTS`, `sema.sql` is tartalmazza).
+- **Medical Piercing:** az MP-levelek kész HTML-sablonok (`mp_kimeno`), a lábléc-link és a leiratkozás-oldal az MP-oldalon külön feladat; a motor viszont az MP-címekre is ellenőrzi a listát.
+- Tesztek: `tools/lifecycle-teszt/leiratkozas.test.mjs` (a teljes katalógus lábléc-ellenőrzése, a motor, a végpont).
+
 ## Üzem
 
 - Állapot (személyes adat nélkül): `GET /api/lifecycle/allapot` + `x-lifecycle-kulcs` fejléc.

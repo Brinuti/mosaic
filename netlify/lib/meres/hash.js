@@ -47,3 +47,39 @@ export const hashEmail = async (e) => { const n = emailNormal(e); return n ? sha
 /** plusz=false: Meta (csak szamjegyek orszagkoddal); plusz=true: TikTok / Google (E.164, "+" jellel). */
 export const hashTelefon = async (t, { plusz = false } = {}) => { const n = telefonSzamjegy(t); return n ? sha256hex(plusz ? '+' + n : n) : null; };
 export const hashAzonosito = async (a) => (a ? sha256hex(String(a).trim().toLowerCase()) : null);
+
+// --- DECISION #202 (maximalis adatatadas): nev, Google-normalizalas, HMAC felhasznaloi azonosito ---------------------------------------------------
+// A nyers nev SOHA nem kerul kimeno kerelembe / naplora / D1-be: csak a normalizalt resz SHA-256-ja. Nev nelkul (hianyzo / null / ures / ertelmezhetetlen) NINCS nev-hash, a tobbi mezo megy.
+const TITULUSOK = new Set(['dr', 'prof', 'id', 'ifj', 'ozv', 'özv', 'mr', 'mrs', 'ms', 'mgr']);
+const betukSzo = (t) => String(t || '').normalize('NFC').toLowerCase().replace(/[^\p{L}]+/gu, ''); // Meta / GA4: kisbetu, irasjel es szamjegy nelkul; az ekezetes betuk UTF-8-ban maradnak
+/**
+ * Teljes nev -> { fn, ln } (normalizalt, a hash ELOTT) | null. Magyar sorrend alapbol (vezeteknev keresztnev: "Kovacs Anna" -> ln kovacs, fn anna); a keresztnev-elol sorrend: sorrend = 'keresztnev_elol'
+ * (env: MERES_NEV_SORREND). Titulus (dr, prof, id, ifj, ozv) es irasjel-tokenek (pl. "TESZT – Claude" kozti gondolatjel) kimaradnak; egyetlen token = csak fn; 6-nal tobb token / 40 karakternel hosszabb token = nem nev.
+ */
+export function nevReszek(nyers, sorrend = 'vezeteknev_elol') {
+  if (typeof nyers !== 'string') return null;
+  const t = nyers.slice(0, 200).split(/[\s,;]+/).map(betukSzo).filter((x) => x && !TITULUSOK.has(x));
+  if (!t.length || t.length > 6 || t.some((x) => x.length > 40)) return null;
+  if (t.length === 1) return { fn: t[0], ln: null };
+  return sorrend === 'keresztnev_elol' ? { fn: t[0], ln: t[t.length - 1] } : { fn: t[1], ln: t[0] };
+}
+/** Google Ads / GA4 e-mail-normalizalas: a gmail.com / googlemail.com helyi reszebol a pontok kimaradnak; plusz = true (Ads): az elso "+" es a utana levo resz is. Mas domain: csak kisbetu + trim. */
+export function emailGoogleNormal(e, { plusz = true } = {}) {
+  const n = emailNormal(e);
+  if (!n) return null;
+  const [helyi, domain] = n.split('@');
+  if (domain !== 'gmail.com' && domain !== 'googlemail.com') return n;
+  let h = helyi.replace(/\./g, '');
+  if (plusz) h = h.split('+')[0];
+  return h ? `${h}@${domain}` : n;
+}
+export const hashEmailGoogle = async (e, opciok) => { const n = emailGoogleNormal(e, opciok); return n ? sha256hex(n) : null; };
+/** Meta ct / zp: varos kisbetus, irasjel / szokoz / szamjegy nelkul (az ekezetes betuk maradnak); iranyitoszam kisbetus, szokoz / kotojel nelkul (3-10 karakter). null, ha nem hasznalhato. */
+export const varosNormal = (v) => { const s = betukSzo(v); return s && s.length <= 60 ? s : null; };
+export const iranyitoszamNormal = (v) => { const s = String(v || '').normalize('NFC').toLowerCase().replace(/[\s-]+/g, ''); return /^[0-9a-z]{3,10}$/.test(s) ? s : null; };
+/** HMAC-SHA-256 hex (a GUEST_HMAC_KEY_V1-hez: a GA4 user_id alvezetett, nem visszafejtheto azonositoja). */
+export async function hmacSha256Hex(titok, szoveg) {
+  const kulcs = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(titok)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const alairas = await crypto.subtle.sign('HMAC', kulcs, new TextEncoder().encode(String(szoveg)));
+  return [...new Uint8Array(alairas)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}

@@ -7,8 +7,8 @@
 //   - Prioritas: (kampany-ID + click-ID) > referrer. Az UTM onmagaban nem bizonyitek.
 //   - organikus: kereso / kozossegi referrer-domain, fizetett jel nelkul. direkt: nincs referrer es nincs jel. ismeretlen: hianyzo / ellentmondo adat.
 //   - A foglalasra a foglalas pillanataig az utolso FIZETETT forras kerul; direkt / organikus nem irja felul a fizetettet.
-// Meta es TikTok nincs (egeszsegugyi kategoria): fbclid / ttclid / utm_source=facebook stb. sehova nem megy, csak "nem Google fizetett jel"-kent
-// tekintjuk (ellentmondas-vizsgalathoz), az erteke sehol nem tarolodik.
+// GY-25 (Feri kerese, 2026-10-19): a Meta / TikTok fizetett erkezes is forras-cimke (meta | tiktok), a nyers fbclid / ttclid csak hirdetesi hozzajarulassal a naploba kerul;
+// platformnak semmi nem megy ki (egeszsegugyi kategoria: nev / e-mail / telefon / kezeles soha).
 
 export const CIMKEK = Object.freeze(['google_brand', 'google_nem_brand', 'google_bizonytalan', 'organikus', 'direkt', 'ismeretlen']);
 export const GOOGLE_KATT = Object.freeze(['gclid', 'gbraid', 'wbraid']);
@@ -16,7 +16,10 @@ const MAS_KATT = Object.freeze(['fbclid', 'ttclid', 'msclkid']);
 const MAS_PLATFORM = Object.freeze(['facebook', 'fb', 'meta', 'instagram', 'ig', 'tiktok', 'bing', 'microsoft']);
 export const UTM_MEZOK = Object.freeze(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content']);
 // A Google Ads UTM-sablon (Feri dontese, 2026-10-13): ?utm_source=google&utm_medium=cpc&utm_campaign={kampany-ID}&utm_content={hirdetes-ID}&gyt_ag={hirdetescsoport-ID}. Ezek szamok, nem szemelyes adatok.
-export const FIZETETT_MEDIUM = Object.freeze(['cpc', 'ppc', 'paid', 'paid_search', 'paidsearch']);
+export const FIZETETT_MEDIUM = Object.freeze(['cpc', 'ppc', 'paid', 'paid_search', 'paidsearch', 'paid_social', 'paidsocial', 'cpm']);
+const META_FORRAS = ['meta', 'facebook', 'fb', 'instagram', 'ig'];
+const TIKTOK_FORRAS = ['tiktok'];
+const GOOGLE_FORRAS = ['google', 'adwords', 'googleads'];
 const UTM_MINTA = /^[A-Za-z0-9._~:+-]{1,100}$/;
 const KATT_ERTEK = /^[A-Za-z0-9_-]{8,512}$/;
 const KAMPANY_ID = /^\d{6,15}$/;
@@ -91,11 +94,50 @@ export function belepes({ search = '', referrer = '', path = '/', sajatHostok } 
     const v = p.get(k);
     if (v && KATT_ERTEK.test(v)) { o.kattintas_param = k; o.kattintas_ertek = v; break; }
   }
-  if (!o.kattintas_param) for (const k of MAS_KATT) if (p.get(k)) { o.kattintas_param = k; break; } // csak a TIPUS (ellentmondas-vizsgalathoz), az ertek nem
+  // fbclid / ttclid / msclkid: a TIPUS mindig; az ERTEK (formatum- es hosszellenorzessel) a Meta / TikTok erintes-naplohoz (GY-25), csak hozzajarulassal kerul a naploba
+  if (!o.kattintas_param) for (const k of MAS_KATT) { const v = p.get(k); if (v) { o.kattintas_param = k; if (KATT_ERTEK.test(v) && k !== 'msclkid') o.kattintas_ertek = v; break; } }
   o.landing = typeof path === 'string' && /^\/[A-Za-z0-9/_\-.%]{0,200}$/.test(path) ? path.slice(0, 200) : '/';
   o.ref_domain = referrerDomain(referrer);
   o.ref_kat = referrerKategoria(o.ref_domain, sajatHostok);
   return o;
+}
+
+/**
+ * Diagnosztika a "UTM igen, click-ID nem" esetekhez (2026-10-21, Feri/Meresi Claude): CSAK csaladszintu, nem szemelyes adat - bongeszo-csalad, OS-csalad, eszkoztipus; a User-Agent
+ * maga SOHA nem kerul tarolasra. Nincs IP, nincs ujjlenyomat, nincs teljes URL.
+ */
+export function uaElemzes(ua) {
+  const u = String(ua || '').slice(0, 400);
+  const ios = /iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && /Mobile\//.test(u));
+  const android = /Android/.test(u);
+  const os = ios ? 'ios' : android ? 'android' : /Windows/.test(u) ? 'windows' : /Mac OS X|Macintosh/.test(u) ? 'macos' : /Linux|X11|CrOS/.test(u) ? 'linux' : 'egyeb';
+  const bongeszo = /bot|crawl|spider|Lighthouse|Google-InspectionTool|AdsBot|Mediapartners/i.test(u) ? 'bot'
+    : /FBAN|FBAV|FB_IAB|FBIOS/.test(u) ? 'facebook_app' : /Instagram/.test(u) ? 'instagram_app'
+      : /EdgA|EdgiOS|Edg\//.test(u) ? 'edge' : /OPR\/|Opera|OPT\//.test(u) ? 'opera' : /SamsungBrowser/.test(u) ? 'samsung'
+        : /Firefox|FxiOS/.test(u) ? 'firefox' : /CriOS|Chrome\//.test(u) ? 'chrome' : /Safari\//.test(u) ? 'safari' : u ? 'egyeb' : 'nincs_ua';
+  const eszkoz = /iPad|Tablet/.test(u) || (android && !/Mobile/.test(u)) ? 'tablet' : /Mobi|iPhone|iPod|Android/.test(u) ? 'mobil' : 'asztali';
+  return { bongeszo, os, eszkoz };
+}
+
+/**
+ * A belepes diagnosztikai rekordja: { bongeszo, os, eszkoz, ref_kat, ref_host, oldal, gad_jel, ismetelt, privat_gyanu }. `ismetelt` = volt mar (nem lejart) munkamenet-rekordja a latogatonak.
+ * `gad_jel` = a Google automatikus cimkezes MASIK parametere (gad_source / gad_campaignid) megvan, de a click-ID nincs: a kattintas Google-os volt, az azonosito lemaradt.
+ * `privat_gyanu` = iOS Safari + fizetett jel click-ID nelkul: az iOS "Link Tracking Protection" / privat bongeszes tipikus mintaja (SZERVEROLDALROL ez csak GYANU, nem bizonyitek).
+ */
+export function diagnosztika({ ua = '', b, ismetelt = false } = {}) {
+  const x = uaElemzes(ua);
+  const pn = (b && b.param_nevek) || [];
+  const gadJel = pn.includes('gad_source') || pn.includes('gad_campaignid');
+  const vanKatt = !!(b && GOOGLE_KATT.includes(b.kattintas_param));
+  return {
+    ...x,
+    ref_kat: (b && b.ref_kat) || 'nincs',
+    ref_host: b && b.ref_kat && b.ref_kat !== 'sajat' && b.ref_kat !== 'nincs' ? b.ref_domain : null,
+    oldal: (b && b.landing) || '/',
+    gad_jel: gadJel && !vanKatt,
+    ismetelt: !!ismetelt,
+    privat_gyanu: x.os === 'ios' && x.bongeszo === 'safari' && fizetett(b) && !vanKatt,
+  };
 }
 
 /** Fizetett-e a belepes: Google kattintas-azonosito VAGY fizetett utm_medium. (A nem Google kattintas-azonosito is "fizetett jel", de nem Google.) */
@@ -158,7 +200,6 @@ export function cimkez(b, t = {}) {
     return { cimke: 'google_bizonytalan', bizonyitek: katt ? (kid ? 'ismeretlen_kampany' : b.kampany_jel === 'konfliktus' ? 'kampany_konfliktus' : b.kampany_jel === 'szoveges' ? 'utm_campaign_szoveges' : b.utm_campaign ? 'katt_kampany_nelkul' : 'utm_campaign_hianyzik') : listas ? 'kampany_katt_nelkul' : 'utm_onmagaban', elavult };
   }
   if (googleUtm && fizetett(b)) return { cimke: 'google_bizonytalan', bizonyitek: 'utm_onmagaban', elavult };
-  if (b.kattintas_param === 'fbclid' && !googleUtm) return { cimke: 'social_meta', bizonyitek: 'fbclid_fizetett_ismeretlen', elavult }; // a Meta-hirdetes KI: az fbclid onmagaban nem dont a fizetett statuszrol; NEM organikus, NEM Google
   if (fizetett(b)) return { cimke: 'ismeretlen', bizonyitek: 'nem_google_fizetett', elavult };
   if (b.ref_kat === 'search' || b.ref_kat === 'social') return { cimke: 'organikus', bizonyitek: 'referrer', elavult };
   if (b.ref_kat === 'egyeb') return { cimke: 'organikus', bizonyitek: 'referrer_egyeb', elavult };
@@ -175,10 +216,36 @@ export function kattTorol(b) {
 // --- GY-22: 7 napos last paid click (ARNYEK) -----------------------------------------------------------------------------------
 export const LPC_VERZIO = 'lpc1';
 export const LPC_NAP = 7, KESOI_NAP = 30;
-/** Fizetett erintes-e (naplozando): Google kattintas-azonosito (gclid / gbraid / wbraid) VAGY utm_medium=cpc (fizetett medium). Mas platform click-ID-ja nem. */
-export const lpcFizetett = (b) => !!b && (googleKattintas(b) || FIZETETT_MEDIUM.includes(kis(b.utm_medium)));
+/** A fizetett erintes platformja (google | meta | tiktok) vagy null: ELOBB a kattintasi parameter, utana az utm_source (fizetett medium mellett). */
+export function fizetettPlatform(b) {
+  if (!fizetett(b)) return null;
+  const kp = b.kattintas_param;
+  if (GOOGLE_KATT.includes(kp)) return 'google';
+  if (kp === 'fbclid') return 'meta';
+  if (kp === 'ttclid') return 'tiktok';
+  const src = kis(b.utm_source);
+  if (META_FORRAS.includes(src)) return 'meta';
+  if (TIKTOK_FORRAS.includes(src)) return 'tiktok';
+  if (GOOGLE_FORRAS.includes(src)) return 'google';
+  return null;
+}
+/** Fizetett erintes-e (naplozando, GY-25): barmely platform kattintasi parametere (gclid / gbraid / wbraid / fbclid / ttclid / msclkid) VAGY fizetett utm_medium. */
+export const lpcFizetett = (b) => fizetett(b);
 /** A cimkez() kimenetenek normalizalasa a GY-22 cimkekre. */
 export const lpcCimke = (c) => ({ google_brand: 'google_markas', google_nem_brand: 'google_nem_markas', google_bizonytalan: 'google_bizonytalan' }[c] || 'ismeretlen');
+/** Egy fizetett belepes (belepes() kimenete) -> naplo-erintes adatai: { platform, cimke, bizonyitek, katt_tipus, katt_ertek } vagy null (nem fizetett). */
+export function erintesAdatok(b, t = {}) {
+  if (!fizetett(b)) return null;
+  const platform = fizetettPlatform(b);
+  const klick = { katt_tipus: b.kattintas_param || null, katt_ertek: b.kattintas_ertek || null };
+  const mediumFizetett = FIZETETT_MEDIUM.includes(kis(b.utm_medium));
+  if (platform === 'google') { const c = cimkez(b, t); return { platform, cimke: lpcCimke(c.cimke), bizonyitek: c.bizonyitek, ...klick }; }
+  if (platform === 'meta') return { platform, cimke: 'meta', bizonyitek: b.kattintas_param === 'fbclid' && !mediumFizetett ? 'fbclid_utm_nelkul' : 'meta_fizetett', ...klick };
+  if (platform === 'tiktok') return { platform, cimke: 'tiktok', bizonyitek: b.kattintas_param === 'ttclid' && !mediumFizetett ? 'ttclid_utm_nelkul' : 'tiktok_fizetett', ...klick };
+  return { platform: null, cimke: 'ismeretlen', bizonyitek: b.kattintas_param === 'msclkid' ? 'masik_platform_katt' : 'hianyos_utm', ...klick };
+}
+/** A korabbi (munkamenet-alapu) cimkez() kimenet -> a vegso cimke-szokincs (nem fizetett agak). */
+export const nemFizetettCimke = (c) => ({ organikus: 'organikus_direkt', direkt: 'organikus_direkt', ismeretlen: 'ismeretlen' }[c] || 'ismeretlen');
 /**
  * A foglalas pillanataban a latogato erintesei alapjan (legujabb elol): a legutolso, LPC_NAP napon beluli fizetett nyer; organikus / direkt visszateres NEM ir felul (nem is naplozzuk);
  * nincs fizetett -> organikus_direkt (ha van azonosito), kulonben ismeretlen. kesoi_fizetett: a 8-30 napos legutolso fizetett erintes cimkeje (kulon mezo).
@@ -199,7 +266,7 @@ export function lpcHozzarendel({ erintesek = [], most, lista, azonositoVan = fal
   const kesoiCimke = kesoi ? felold(kesoi).cimke : null;
   if (nyertes) {
     const f = felold(nyertes);
-    return { cimke: f.cimke, bizonyitek: f.bizonyitek, kampany: nyertes.kampany || null, hirdetescsoport: nyertes.hirdetescsoport || null, hirdetes: nyertes.hirdetes || null, kora_nap: Math.floor(kor(nyertes) / 86400), ido: nyertes.ido, kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
+    return { cimke: f.cimke, bizonyitek: f.bizonyitek, kampany: nyertes.kampany || null, hirdetescsoport: nyertes.hirdetescsoport || null, hirdetes: nyertes.hirdetes || null, kora_nap: Math.floor(kor(nyertes) / 86400), ido: nyertes.ido, platform: nyertes.platform || null, katt_tipus: nyertes.katt_tipus || null, katt_ertek: nyertes.katt_ertek || null, kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
   }
-  return { cimke: azonositoVan ? 'organikus_direkt' : 'ismeretlen', bizonyitek: azonositoVan ? 'nincs_fizetett_7_napon_belul' : 'nincs_azonosito', kampany: null, hirdetescsoport: null, hirdetes: null, kora_nap: null, kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
+  return { cimke: azonositoVan ? 'organikus_direkt' : 'ismeretlen', bizonyitek: azonositoVan ? 'nincs_fizetett_7_napon_belul' : 'nincs_azonosito', kampany: null, hirdetescsoport: null, hirdetes: null, kora_nap: null, platform: null, katt_tipus: null, katt_ertek: null, kesoi_fizetett: kesoiCimke, verzio: LPC_VERZIO };
 }

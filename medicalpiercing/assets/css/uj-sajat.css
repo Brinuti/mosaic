@@ -335,14 +335,17 @@
 
 /* --- Az oszi akcio oldala, 2. kor (a tulajdonos kerese, 2026-10-17: "kicsit szoljon a hidegeknek is"): a hos harom valodi fulfotoja valtakozva, a harmas
    csomagok (a "Tobb piercing = Erosebb hatas" szakaszban, a galeria alatt), a jeloles a piercing-kartyak kepen, a csapat lapozoja --- */
-/* a hos kepe: harom fulfoto (mindegyiken harom kozerzetjavito piercing); az elso all, a masik ketto lassan raattunik, majd mindketto eltunik (13,5 mp-es kor) */
+/* a hos kepe: az elso dia a "Poszt anyukaddal" negykepes kollazs (paros szuras; a tulajdonos kerese, 2026-10-20), utana harom fulfoto (mindegyiken harom kozerzetjavito piercing);
+   az elso all, a tobbi sorban raattunik (18 mp-es kor: kollazs ~3,6 mp, utana fulfotonkent ~4,5 mp), majd mind eltunik, es a kollazs ujra latszik */
 .belso .hos-racs>.hos-kep.hos-valto{position:relative;overflow:hidden;aspect-ratio:1/1;border-radius:30px;box-shadow:var(--sh)}
 .belso .hos-racs>.hos-kep.hos-valto>img{position:absolute;inset:0;width:100%;height:100%;max-height:none;--mh:100000px;aspect-ratio:auto;object-fit:cover;border-radius:0;box-shadow:none}
 .hos-valto>img:not(:first-child){opacity:0}
-.hos-valto>img:nth-child(2){animation:hosValto2 13.5s ease-in-out infinite}
-.hos-valto>img:nth-child(3){animation:hosValto3 13.5s ease-in-out infinite}
-@keyframes hosValto2{0%,28%{opacity:0}36%,92%{opacity:1}100%{opacity:0}}
-@keyframes hosValto3{0%,61%{opacity:0}69%,92%{opacity:1}100%{opacity:0}}
+.hos-valto>img:nth-child(2){animation:hosValto2 18s ease-in-out infinite}
+.hos-valto>img:nth-child(3){animation:hosValto3 18s ease-in-out infinite}
+.hos-valto>img:nth-child(4){animation:hosValto4 18s ease-in-out infinite}
+@keyframes hosValto2{0%,20%{opacity:0}26%,95%{opacity:1}100%{opacity:0}}
+@keyframes hosValto3{0%,45%{opacity:0}51%,95%{opacity:1}100%{opacity:0}}
+@keyframes hosValto4{0%,70%{opacity:0}76%,95%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.hos-valto>img:not(:first-child){animation:none}}
 /* a harmas csomagok: feher doboz, felul a ket leggyakoribb par (a "Tudtad, hogy...?" parjai), alatta 3 kartya; a kep a ful a csomag harom pontjaval (egeszben) */
 .csomagok{margin-top:26px;padding:30px;border:1px solid var(--line);border-radius:var(--r-l);background:#fff;box-shadow:var(--sh-s)}

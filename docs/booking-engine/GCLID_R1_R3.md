@@ -4,6 +4,8 @@
 
 A javítás **a vendég számára láthatatlan**: a foglalási lépések, gombok, szövegek, URL-ek és a hozzájárulási logika nem változnak; csak az attribúció (a `gclid` / `gbraid` / `wbraid`) átadása pótlódik, ahol eddig kimaradt.
 
+> **2026-10-19:** a motor kontextus-pótlása (R1) és a PMU átirányítása (R3) a 7 napos utolsó fizetett kattintás bevezetésekor kibővült: a szerver által írt `mh_lpt` sütiből visszanyert azonosítók (gclid / gbraid / wbraid **és** fbclid, ttclid) is bekerülnek a köszönőoldal URL-jébe, ha a böngészőből nem jöttek; részletek, hozzájárulási kapu és rollback: [FORRAS_LPT.md](FORRAS_LPT.md). Az alábbi R1–R3 leírás az eredeti (Google-azonosítós) állapotot rögzíti.
+
 ## Mi változott
 
 | Rés | Mi volt | Mi lett | Hol |

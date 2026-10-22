@@ -1,6 +1,9 @@
 /* MOSAIC /oxigenterapia-ferfiaknak - a regi (Wixes) ferfi oxigenterapia oldal ujrastilusa az oxigen landing (/oxigenterapia-budapest) komponenseivel.
    Az oxigen-landing.css-t (betuk, szinek, gombok, hero, allapot, eredmenyek, arak, GYIK ...) VALTOZATLANUL hasznaljuk; ez a fajl csak a ferfi oldal sajat kiegeszitoi
-   (egy-kepes hero, kep + szoveg blokkok, 3 oszlopos kartyasor, lepeslista, ketoszlopos arak, terkep-doboz). Onallo: mas oldal stilusat nem erinti. */
+   (hero, kep + szoveg blokkok, 3 ok, lepeslista, ketoszlopos arak, lapozhato galeria, terkep). Onallo: mas oldal stilusat nem erinti (csak ezen az oldalon toltodik be).
+   2026-10-20 (Feri visszajelzese): ASZTALON az egymas melletti kep + szoveg hasabok MINDIG egyforma magasak (grid align-items: stretch, a kep a doboz teljes magassagat kitolti: object-fit: cover);
+   MOBILON tomorebb blokkok (kisebb kepek, vizszintes "3 ok" kartyak, szorosabb terkozok), a hero sorrend: CIM, KEP, alcim, arak, gombok, ertekeles, hely;
+   sortores (a tulajdonos alapszabalya): ahol egy-ket szo csuszik at uj sorba, az legyen egy sor (text-wrap: balance / pretty, kisebb cim-meretek). */
 
 /* --- kozos --- */
 .bg1 { background: var(--krem); }
@@ -8,129 +11,182 @@
 /* a cimekben a <b> (a regi oldal kiemelt szavai): arany szin, a Playfair vastag valtozata nelkul (csak 400 / 500 toltodik be) */
 main h2 b { font-weight: 500; color: var(--arany); }
 .allapot h2 b { color: var(--arany-v); }
-.promo-sor { margin: 14px 0 0; text-align: center; }
-.promo { display: inline-block; background: var(--arany-gomb); color: #fff; font: 600 13.5px/1.2 var(--test); letter-spacing: .04em; padding: 9px 18px; border-radius: 999px; text-shadow: 0 1px 1px rgba(90, 62, 10, .25); box-shadow: 0 6px 14px rgba(160, 125, 40, .24); }
-.fcta { margin-top: 30px; text-align: center; }
+.fcta { margin-top: 28px; text-align: center; }
 .fcta .gomb { padding: 15px 38px; font-size: 16px; }
+#velemenyek, #eredmenyek, #helyszin, #arak { scroll-margin-top: 14px; }
+/* a belso gorgeto "link-gombok" (assets/js/oxigen-ferfi.js): kinezetre link, de nem visz el az oldalrol; a padding + negativ margo nagyobb erintesi feluletet ad, az elrendezes nem valtozik */
+main button.link-gomb { font: inherit; text-align: left; }
+.hero-link, .hero-ertekeles, .hero-hely .link-gomb { padding: 11px 6px; margin: -11px -6px; }
 
-/* --- hero: egy kep (a regi oldal egy hero-kepe) a landing keretes galeria-dobozaban --- */
-.hero-ferfi h1 { text-wrap: balance; }
-.hero-ferfi .hero-lead { max-width: 540px; margin-top: 16px; }
+/* sortores (a tulajdonos alapszabalya: ahol egy-ket szo csuszik at uj sorba, az legyen egy sor): MINDEN rovid szoveg (cim, gomb, jelveny, lista-sor, bekezdes) kiegyensulyozott sorokba torik
+   (text-wrap: balance; a Chromium legfeljebb 6 soros blokkot egyensuly), igy nem marad arva-szo; a 6 sornal hosszabb torzs-bekezdesek termeszetesen tordelnek (ott a pretty a tartalek). */
+main :is(h1, h2, h3, summary, .gomb, .c, .ar, .ar-badge, .sticky-cta a, p, li, dd, figcaption, .eredmeny-cim) { text-wrap: balance; }
+main :is(.fszoveg p, .allapot-szoveg p, .gyik-lista p, .miert-kartya p, .lepes-zaro) { text-wrap: balance; }
+.sticky-cta a { text-wrap: balance; }
+main :is(p, li).hosszu { text-wrap: pretty; }
+
+/* --- hero: a H1 ket resze (erős cim + kiemelt alcim ugyanabban a H1-ben), egy kep a landing keretes galeria-dobozaban --- */
+.hero-ferfi .hero-racs { padding: 44px 0 50px; }
+.hero-ferfi h1 { font-size: clamp(38px, 3.8vw, 52px); line-height: 1.05; text-wrap: balance; }
+.h1-fo { display: block; }
+.h1-vessz { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* a vessző a H1 szovegeben marad (olvasok), de a nagy cim vegen nem latszik */
+.h1-al { display: block; margin-top: 14px; max-width: 600px; font: 500 clamp(20px, 1.95vw, 26px)/1.3 var(--cim); letter-spacing: -.005em; color: #8a6c3e; text-wrap: balance; }
+.h1-csillag { margin-left: 1px; font-size: .62em; line-height: 0; vertical-align: super; }
+.hero-ferfi .hero-lead { max-width: 580px; margin-top: 22px; font-size: 18px; }
 .hero-ferfi .hero-lead b { font-weight: 600; color: #1f3333; }
-.hero-hely { margin: 10px 0 0; font-size: 14.5px; color: var(--halk); }
-.hero-arak { display: grid; gap: 10px; margin: 20px 0 0; max-width: 540px; }
-.hero-arak li { background: #fff; border: 1px solid #e3d6b8; border-radius: 14px; padding: 12px 18px; font-size: 16px; line-height: 1.4; color: var(--sotet); box-shadow: 0 4px 14px rgba(60, 40, 15, .06); }
-.hero-arak b { font-weight: 600; }
-.hero-arak s { color: var(--halk); text-decoration-color: #b89a52; }
-.hero-ferfi .promo-sor { text-align: left; margin-top: 16px; }
-.hero-ferfi .hero-cta { margin-top: 14px; }
-.hero-ferfi .hero-link { margin: 0; }
-.hero-ertekeles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 18px; text-decoration: none; color: var(--szoveg); font-size: 14.5px; }
-.hero-ertekeles:hover { text-decoration: underline; }
-.hero-ertekeles img { width: 107px; height: auto; }
-.hero-ertekeles b { font-weight: 600; }
-.hero-egy { align-self: start; }
-.hero-egy .hg-sav { display: block; overflow: visible; }
-.hero-egy .hg-kep { flex: none; min-height: 0; aspect-ratio: 1 / 1; }
+.hero-ferfi .hero-lab { margin-top: 8px; font-size: 13px; }
+.hero-ferfi .hero-szoveg { display: flex; flex-direction: column; align-self: stretch; }
+.hero-arak { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 12px; margin: 26px 0 0; }
+.hero-arak li { display: grid; gap: 4px; align-content: space-between; background: #fff; border: 1px solid #e3d6b8; border-radius: 14px; padding: 13px 20px 14px; box-shadow: 0 4px 14px rgba(60, 40, 15, .06); }
+.hero-arak span { font-size: 14px; line-height: 1.25; color: var(--halk); }
+.hero-arak small { font-size: inherit; }
+.hero-arak b { font: 500 25px/1.1 var(--cim); letter-spacing: -.01em; color: var(--sotet); white-space: nowrap; }
+.hero-ferfi .hero-cta { flex-direction: row; align-items: stretch; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
+.hero-ferfi .hero-cta .gomb { flex: 1 1 200px; max-width: 262px; padding: 15px 22px; }
+.hero-ferfi .gomb-ketsoros .c { font-size: 16px; }
+.hero-ferfi .gomb-ketsoros .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* a "–" csak az olvasoknak / a gomb szovegeben: "Hajkamerás felmérés – 4 990 Ft" (latva ket sor) */
+.hero-ferfi .gomb-ketsoros .ar { font-size: 16px; font-weight: 600; white-space: nowrap; }
+.hero-sor { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 26px; margin-top: 26px; }
+.hero-link { font-size: 15px; color: var(--sotet); text-decoration: none; cursor: pointer; }
+.hero-link u { text-underline-offset: 3px; font-weight: 500; white-space: nowrap; }
+.hero-link:hover u { color: var(--arany); }
+.hero-ertekeles { display: inline-flex; align-items: center; gap: 4px 12px; color: var(--szoveg); font-size: 15px; font-weight: 400; text-decoration: none; cursor: pointer; }
+.hero-ertekeles:hover .ert-szoveg { text-decoration: underline; text-underline-offset: 3px; }
+.hero-ertekeles img { width: 100px; height: auto; flex: none; }
+.ert-szoveg b { font-weight: 600; }
+.hero-hely { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 16px; font-size: 14.5px; line-height: 1.4; color: var(--halk); }
+.hero-hely .ikon-kor { width: 34px; height: 34px; }
+.hero-hely .ikon-kor svg { width: 17px; height: 17px; }
+.hero-hely .link-gomb { font-weight: 500; white-space: nowrap; cursor: pointer; }
+/* a kep a doboz teljes magassagat kitolti (a hero szovege mellett egyforma magas) */
+.hero-ferfi .hero-galeria.hero-egy { align-self: stretch; margin-top: 6px; }
+.hero-egy .hg-sav { flex: 1; display: flex; overflow: visible; }
+.hero-egy .hg-dia { flex: 1; }
+.hero-egy .hg-kep { flex: 1; aspect-ratio: 1 / 1; }
+.hero-egy .hg-kep img { object-position: 50% 42%; }
 
-/* --- "Igy mukodik" (sotet szekcio): a landing allapotfelmeres-szekcioja --- */
+/* --- "Igy mukodik" (sotet szekcio): a landing allapotfelmeres-szekcioja; asztalon a kep + szoveg egyforma magas --- */
+.mukodik .allapot-racs { align-items: stretch; padding: 48px 0; }
+@media (min-width: 1101px) { .mukodik .allapot-szoveg { align-self: stretch; display: flex; flex-direction: column; justify-content: center; } }
 .mukodik .allapot-szoveg > p b { color: #fff; font-weight: 600; }
-.mukodik .monitor img { aspect-ratio: 1.5; }
+.mukodik .monitor { display: flex; flex-direction: column; }
+.mukodik .monitor img { flex: 1; min-height: 0; height: auto; aspect-ratio: auto; }
 
-/* --- kep + szoveg blokkok (haj / arc panaszok, alkalom, lepesek, termekek, palack, ferfi vendegek) --- */
-.fblokk { padding: 60px 0; }
-.fblokk-racs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
+/* --- kep + szoveg blokkok (haj / arc panaszok, alkalom, lepesek, termekek, palack, ferfi vendegek, kezeloagy) ---
+   ASZTALON a ket oszlop egyforma magas: a kep a doboz teljes magassagat kitolti (object-fit: cover), a szoveg kartyaban, fuggolegesen kozepre igazitva. */
+.fblokk { padding: 52px 0; }
+.fblokk-racs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; align-items: stretch; }
 .fblokk-racs.kep-jobb .fkep { order: 2; }
-.fkep { margin: 0; min-width: 0; }
-.fkep img { width: 100%; height: auto; border-radius: 20px; background: #dde1d6; box-shadow: 0 18px 40px rgba(60, 40, 20, .16); }
-.fkep.allo img { max-width: 460px; margin: 0 auto; }
-.fszoveg { min-width: 0; }
-.fszoveg h2 { font-size: 38px; }
-.fszoveg p { margin-top: 14px; font-size: 16.5px; line-height: 1.6; color: #2f4040; }
+.fkep { position: relative; margin: 0; min-width: 0; min-height: 0; justify-self: stretch; align-self: stretch; aspect-ratio: 4 / 3; border-radius: 20px; overflow: hidden; background: #dde1d6; box-shadow: 0 18px 40px rgba(60, 40, 20, .16); }
+.fkep img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fkep.allo img { object-position: 50% 20%; }
+/* feliratos kep (a kezeloagy infografikaja): teljes egeszeben latszik (contain), a hatter a kep sajat sotet hattere */
+.fkep.info { aspect-ratio: 1500 / 1060; background: #07130f; }
+.fkep.info img { object-fit: contain; }
+/* a feliratos abrak (haj / arc panaszok) tobbi reszet nem szabad levagni: teljes kep (contain), a doboz fennmarado savja ugyanannak a kepnek az elmosott valtozata */
+.fkep.diagram { aspect-ratio: 1 / 1; }
+.fkep.diagram::before { content: ''; position: absolute; inset: -40px; background: var(--kep) center / cover no-repeat; filter: blur(24px); }
+.fkep.diagram img { object-fit: contain; }
+.fszoveg { min-width: 0; display: flex; flex-direction: column; justify-content: center; background: #fff; border: 1px solid #e8dcc0; border-radius: 20px; padding: 30px 38px; box-shadow: var(--arnyek); }
+.fszoveg h2 { font-size: 36px; line-height: 1.12; }
+.fszoveg p { margin-top: 11px; font-size: 16px; line-height: 1.55; color: #2f4040; }
+.fszoveg h2 + p { margin-top: 14px; }
 .fszoveg p b { font-weight: 600; color: var(--sotet); }
-.fszoveg .pipa-lista { margin-top: 12px; gap: 11px; }
-.fszoveg .pipa-lista li { font-size: 16px; line-height: 1.45; color: #2f4040; }
+.fszoveg .pipa-lista { margin-top: 12px; gap: 9px; }
+.fszoveg .pipa-lista li { font-size: 15.5px; line-height: 1.42; color: #2f4040; }
 .fszoveg .pipa-lista b { color: var(--sotet); }
-.eredmeny-cim { margin-top: 24px !important; font-size: 13.5px !important; letter-spacing: .14em; text-transform: uppercase; color: var(--arany) !important; }
+.eredmeny-cim { margin-top: 20px !important; font-size: 13.5px !important; letter-spacing: .14em; text-transform: uppercase; color: var(--arany) !important; }
 .eredmeny-cim b { color: inherit !important; font-weight: 600 !important; }
+.diagram-racs .fszoveg { padding: 24px 36px; }
+.diagram-racs .fszoveg p { margin-top: 9px; font-size: 15.5px; line-height: 1.5; }
+.diagram-racs .fszoveg h2 + p { margin-top: 11px; }
+.diagram-racs .fszoveg .eredmeny-cim { margin-top: 14px !important; }
+.diagram-racs .fszoveg .pipa-lista { margin-top: 9px; gap: 7px; }
+.diagram-racs .fszoveg .pipa-lista li { font-size: 15px; line-height: 1.38; }
 .fszoveg .fcta { margin-top: 22px; text-align: left; }
 .fszoveg .fcta .gomb { padding: 14px 30px; }
-.fszoveg .promo-sor { text-align: left; }
+.fblokk .alkalom-doboz.onallo { margin-top: 26px; }
+.lepes-lista { counter-reset: lepes; display: grid; gap: 10px; margin-top: 16px; }
+.lepes-lista li { counter-increment: lepes; position: relative; padding: 3px 0 3px 48px; min-height: 34px; font-size: 15.5px; line-height: 1.45; color: #2f4040; }
+.lepes-lista li::before { content: counter(lepes); position: absolute; left: 0; top: 0; width: 34px; height: 34px; border-radius: 50%; background: var(--arany-gomb); color: #fff; display: grid; place-items: center; font: 600 15px/1 var(--test); text-shadow: 0 1px 1px rgba(90, 62, 10, .28); }
+.lepes-lista b { font-weight: 600; color: var(--sotet); }
+.fszoveg p.lepes-zaro { margin-top: 18px; padding: 2px 0 2px 16px; border-left: 3px solid #d2ae5c; font-size: 16px; line-height: 1.5; }
 
-/* --- eredmenyek: a regi oldal 4 galeriaja (mindegyik sajat cim), a landing lapozhato soraval --- */
+/* --- eredmenyek: a regi oldal 4 galeriaja (mindegyik sajat cim), a landing lapozhato soraval (oxigen-landing.js) --- */
+.ferfi-eredmeny { padding-top: 50px; padding-bottom: 54px; }
 .ferfi-eredmeny .ba-csoport:first-child { margin-top: 0; }
-.ba-fej h2 { font-size: 30px; }
+.ba-fej h2 { font-size: 30px; line-height: 1.15; }
 .ba-fej h2 b { font-weight: 500; }
 
 /* --- 3 ok amiert minket valasztanak: a landing "miert maskepp" kartyai, kep a szimbolum helyen --- */
-.miert-ferfi { padding: 56px 0 60px; }
+.miert-ferfi { padding: 52px 0 56px; }
 .miert-ferfi h2 { font-size: 38px; }
-.miert-racs.harom { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 32px; }
-.miert-ferfi .miert-kartya { padding: 28px 24px 28px; }
-.miert-ferfi .miert-kartya img { width: 124px; height: 124px; margin: 0 auto 18px; border-radius: 50%; object-fit: cover; background: #fff; box-shadow: 0 0 0 4px #fff, 0 8px 20px rgba(60, 40, 15, .16); }
+.miert-racs.harom { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 28px; align-items: stretch; }
+.miert-ferfi .miert-kartya { padding: 26px 24px 28px; }
+.miert-ferfi .miert-kartya img { width: 124px; height: 124px; margin: 0 auto 16px; border-radius: 50%; object-fit: cover; background: #fff; box-shadow: 0 0 0 4px #fff, 0 8px 20px rgba(60, 40, 15, .16); }
 .miert-ferfi .miert-kartya h3 { font: 600 17px/1.3 var(--test); }
 .miert-ferfi .miert-kartya p { margin-top: 10px; font-size: 15.5px; line-height: 1.55; color: #3f4e4e; }
 .miert-ferfi .miert-kartya p b { font-weight: 600; color: var(--sotet); }
 
-/* --- vendegvelemenyek --- */
-.velemenyek.bg2, .velemenyek.bg1 { padding: 52px 0 52px; }
+/* --- vendegvelemenyek (Trustindex: headspa-oldal.js) --- */
+.velemenyek.bg1 { padding: 50px 0 50px; }
 .velemenyek h2 { font-size: 38px; }
+.ti-hely { min-height: 260px; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; background: #fff; border: 1px solid #dfe3d8; border-radius: 16px; padding: 30px; color: var(--halk); }
 
-/* --- alkalom + lepesek --- */
-.alkalom-doboz.onallo { margin-top: 38px; }
-.lepes-lista { counter-reset: lepes; display: grid; gap: 14px; margin-top: 22px; }
-.lepes-lista li { counter-increment: lepes; position: relative; padding: 4px 0 4px 54px; min-height: 38px; font-size: 16px; line-height: 1.5; color: #2f4040; }
-.lepes-lista li::before { content: counter(lepes); position: absolute; left: 0; top: 0; width: 38px; height: 38px; border-radius: 50%; background: var(--arany-gomb); color: #fff; display: grid; place-items: center; font: 600 16px/1 var(--test); text-shadow: 0 1px 1px rgba(90, 62, 10, .28); }
-.lepes-lista b { font-weight: 600; color: var(--sotet); }
-.fszoveg p.lepes-zaro { margin-top: 24px; padding: 2px 0 2px 16px; border-left: 3px solid #d2ae5c; font-size: 16.5px; line-height: 1.5; }
-
-/* --- arak: a landing arkartyai, ketto egymas mellett --- */
-.arak.ferfi-arak { padding: 58px 0 56px; }
+/* --- arak: a landing arkartyai, ketto egymas mellett (a fo oxigen-oldal arai; nincs kedvezmeny, nincs athuzott ar) --- */
+.arak.ferfi-arak { padding: 52px 0 52px; }
 .ferfi-arak h2 { font-size: 40px; }
-.arak-ketto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 1000px; margin: 34px auto 0; align-items: stretch; }
+.arak-ketto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 1000px; margin: 30px auto 0; align-items: stretch; }
 .arak-ketto .ar-kartya { padding: 24px 24px 22px; }
-.arak-ketto .ar-kep { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 16px; margin: 0 0 20px; box-shadow: var(--arnyek); }
+.arak-ketto .ar-kep { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 16px; margin: 0 0 18px; box-shadow: var(--arnyek); }
 .arak-ketto .ar-kartya h3 { font-size: 28px; }
 .arak-ketto .ar-kartya .rovid { margin-top: 12px; }
 .arak-ketto .ar-kartya .rovid b { font-weight: 600; color: var(--sotet); }
-.arak-ketto .ar-kartya .pipak { margin: 18px 4px 0; gap: 10px; font-size: 15px; }
+.arak-ketto .ar-kartya .pipak { margin: 16px 4px 0; gap: 9px; font-size: 15px; }
 .arak-ketto .ar-kartya .pipak b { font-weight: 600; color: var(--sotet); }
-.ar-plusz { margin: 16px 0 0; font-size: 15px; color: #3f4e4e; text-align: left; padding-left: 4px; }
-.ar-alja { margin-top: auto; padding-top: 22px; }
+.ar-plusz { margin: 14px 0 0; font-size: 15px; color: #3f4e4e; text-align: left; padding-left: 4px; }
+.ar-alja { margin-top: auto; padding-top: 20px; }
 .ferfi-ar { margin: 0; }
 .ferfi-ar span { display: block; font-size: 15px; color: #3f4e4e; }
-.ferfi-ar s { text-decoration-color: #b89a52; text-decoration-thickness: 1.5px; }
-.ferfi-ar b { display: block; margin-top: 2px; font: 500 46px/1.05 var(--cim); color: var(--sotet); letter-spacing: -.02em; }
+.ferfi-ar b { display: block; margin-top: 2px; font: 500 46px/1.05 var(--cim); color: var(--sotet); letter-spacing: -.02em; white-space: nowrap; }
 .ar-alja .masodik { margin: 12px 0 0; padding-top: 12px; }
 .ar-alja .idotartam { margin: 6px 0 0; font-size: 14.5px; color: var(--halk); }
-.ar-alja .gomb { margin-top: 18px; width: 100%; }
+.ar-alja .gomb { margin-top: 16px; width: 100%; }
+.ar-alja .gomb + .gomb { margin-top: 10px; }
 
-/* --- kezeloagy + szalon-kepek --- */
-.fagy .lead { max-width: 860px; margin: 14px auto 0; font-size: 17px; line-height: 1.6; color: #2f4040; }
-.fagy .lead b { font-weight: 600; color: var(--sotet); }
-.fagy figure { margin: 34px 0 0; }
-.fagy img { width: 100%; height: auto; border-radius: 20px; box-shadow: 0 18px 40px rgba(60, 40, 20, .16); }
-.fagy h2, .fszalon h2 { font-size: 38px; }
-.fszalon { padding: 56px 0 60px; }
-.fszalon .szalon-sor { margin-top: 30px; }
-@media (min-width: 701px) { .fszalon .ba-sav { grid-auto-columns: calc((100% - 20px) / 2); } }
+/* --- szalon: lapozhato galeria (egy / harom kep egyszerre; assets/js/oxigen-ferfi.js) --- */
+.fszalon { padding: 52px 0 56px; }
+.fszalon h2, .fszep h2, .hely h2 { font-size: 38px; }
+.fgal { position: relative; margin-top: 28px; }
+.fgal:focus-visible { outline: 2px solid var(--arany); outline-offset: 6px; border-radius: 16px; }
+.fgal-sav { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 32px) / 3); gap: 16px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px 2px 6px; }
+.fgal-sav::-webkit-scrollbar { display: none; }
+.fgal-dia { position: relative; margin: 0; aspect-ratio: 3 / 2; scroll-snap-align: start; scroll-snap-stop: always; border-radius: 14px; overflow: hidden; background: #dde1d6; box-shadow: var(--arnyek); }
+.fgal-dia img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fgal .lapozo { top: calc((100% - 40px) / 2); }
+.fgal-als { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; margin-top: 10px; }
+.fgal-pontok { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 6px; }
+.fgal-pontok button { position: relative; width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: #d9ccb0; cursor: pointer; }
+.fgal-pontok button::after { content: ''; position: absolute; inset: -9px -3px; }
+.fgal-pontok button[aria-current="true"] { background: #b89a52; transform: scale(1.35); }
+.fgal-szamlalo { margin: 0; font-size: 13px; color: var(--halk); font-variant-numeric: tabular-nums; }
 
 /* --- SZEP kartya --- */
-.fszep { padding: 44px 0 52px; }
+.fszep { padding: 40px 0 46px; }
 .szep-doboz { display: flex; align-items: center; justify-content: center; gap: 36px; max-width: 880px; margin: 0 auto; background: #fff; border: 1px solid #e3d6b8; border-radius: 20px; padding: 24px 32px; box-shadow: var(--arnyek); }
 .szep-doboz img { flex: none; width: 260px; height: auto; border-radius: 12px; }
 .szep-doboz h2 { font-size: 30px; }
 .szep-doboz .gomb { margin-top: 18px; }
-.szep-doboz .promo-sor { text-align: left; }
 
 /* --- GYIK --- */
+.gyik-szekcio { padding: 30px 0 56px; }
 .gyik-lista details > p strong { font-weight: 600; color: var(--szoveg); }
 .gyik-lista details > p + p { margin-top: -10px; }
 
-/* --- itt talalsz meg minket + terkep --- */
-.hely { padding: 56px 0 64px; }
-.hely h2 { font-size: 38px; }
-.hely-racs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 44px; align-items: start; margin-top: 32px; }
+/* --- itt talalsz meg minket + terkep (a terkep a doboz teljes magassagat kitolti) --- */
+.hely { padding: 52px 0 60px; }
+.hely-racs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 44px; align-items: stretch; margin-top: 28px; }
+.hely-adatok { display: flex; flex-direction: column; }
 .hely-sor { display: flex; align-items: flex-start; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--vonal); }
 .hely-sor:first-child { padding-top: 0; }
 .hely-sor .ikon-kor svg { width: 21px; height: 21px; }
@@ -139,55 +195,188 @@ main h2 b { font-weight: 500; color: var(--arany); }
 .hely-sor a { color: var(--sotet); text-underline-offset: 3px; }
 .hely-sor a:hover { color: var(--arany); }
 .nyitva { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 0 14px; margin-top: 4px; font-size: 16px; line-height: 1.55; color: #2f4040; }
-.nyitva:first-of-type { margin-top: 6px; }
-.hely-cta { padding-top: 22px; }
-.hely-cta .promo-sor { text-align: left; }
-.terkep-doboz { height: 420px; border-radius: 18px; overflow: hidden; background: #fff; border: 1px solid #dfe3d8; box-shadow: var(--arnyek); }
-.terkep-doboz iframe { display: block; width: 100%; height: 100%; border: 0; }
-.terkep-doboz .mh-helykitolto { height: 100%; display: grid; align-content: center; justify-items: center; gap: 14px; padding: 28px; text-align: center; color: var(--halk); font-size: 15px; line-height: 1.5; }
-.terkep-doboz .mh-helykitolto p { margin: 0; }
-.terkep-doboz .mh-helykitolto button { border: 1.5px solid var(--sotet); border-radius: 50px; background: transparent; color: var(--sotet); padding: 11px 24px; font: 600 14.5px/1.25 var(--test); cursor: pointer; }
-.terkep-doboz .mh-helykitolto button:hover { background: rgba(15, 58, 60, .06); }
-.terkep-doboz .mh-helykitolto a { color: var(--sotet); font-size: 14px; text-underline-offset: 3px; }
+.hely-cta { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 22px; margin-top: auto; }
+.terkep { position: relative; min-height: 380px; border-radius: 18px; overflow: hidden; background: #fff; border: 1px solid #dfe3d8; box-shadow: var(--arnyek); }
+.terkep iframe { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; }
+.terkep-hely { height: 100%; min-height: 380px; display: grid; align-content: center; justify-items: center; gap: 12px; padding: 28px; text-align: center; font-size: 15px; line-height: 1.5; }
+.terkep-hely p { margin: 0; }
+.terkep-hely .halk { font-size: 14px; max-width: 28em; }
 
-/* --- reszponziv --- */
+/* mobil sticky CTA: a lap aljan (oxigen-landing.css .sticky-cta); az elso gomb tobb helyet kap */
+.sticky-cta .gomb { min-width: 0; }
+
+/* ====== tablet ====== */
+@media (max-width: 1249px) {
+  /* a feliratos abrak (haj / arc) szovege magasabb lenne a negyzet kepnel: keskenyebb kepernyon egymas alatt (kep felul, kozepre) */
+  .diagram-racs { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .diagram-racs.kep-jobb .fkep { order: 0; }
+  .diagram-racs .fkep.diagram { max-width: 460px; width: 100%; margin: 0 auto; }
+}
 @media (max-width: 1100px) {
-  .fblokk-racs { gap: 40px; }
-  .fszoveg h2, .miert-ferfi h2, .velemenyek h2, .ferfi-arak h2, .fagy h2, .fszalon h2, .hely h2 { font-size: 34px; }
-  .hely-racs { gap: 32px; }
+  .hero-ferfi .hero-racs { padding: 30px 0 0; }
+  .hero-ferfi h1 { font-size: clamp(34px, 5.4vw, 44px); }
+  .h1-al { max-width: none; font-size: clamp(19px, 2.8vw, 24px); }
+  .hero-ferfi .hero-galeria.hero-egy { margin: 0 auto; max-width: 560px; }
+  .hero-hely { margin-top: 16px; padding-top: 0; }
+  .hero-egy .hg-kep { aspect-ratio: 1 / 1; min-height: 0; flex: none; }
+  .hero-egy .hg-sav, .hero-egy .hg-dia { flex: none; display: block; }
+  .fblokk-racs { gap: 30px; }
+  .fszoveg { padding: 28px 30px; }
+  .fszoveg h2, .miert-ferfi h2, .velemenyek h2, .ferfi-arak h2, .fszalon h2, .fszep h2, .hely h2 { font-size: 34px; }
+  .hely-racs { gap: 30px; }
   .szep-doboz { gap: 26px; }
+  .fgal-sav { grid-auto-columns: calc((100% - 16px) / 2); }
 }
 @media (max-width: 900px) {
-  .fblokk-racs { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .fblokk-racs { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .fblokk-racs.kep-jobb .fkep { order: 0; }
-  .fkep.allo img { max-width: 360px; }
-  .miert-racs.harom { grid-template-columns: minmax(0, 1fr); }
+  .fkep { aspect-ratio: 16 / 10; }
+  .fkep.diagram { aspect-ratio: 1 / 1; max-width: 460px; width: 100%; margin: 0 auto; }
+  .fkep.allo { aspect-ratio: 4 / 3; }
+  .fkep.info { aspect-ratio: 1500 / 1060; }
+  .miert-racs.harom { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .arak-ketto { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
   .hely-racs { grid-template-columns: minmax(0, 1fr); }
+  .terkep, .terkep-hely { min-height: 320px; }
   .szep-doboz { flex-direction: column; text-align: center; }
-  .szep-doboz .promo-sor { text-align: center; }
 }
+
+/* ====== telefon ====== */
 @media (max-width: 700px) {
-  .fblokk { padding: 42px 0; }
-  .fszoveg h2, .miert-ferfi h2, .velemenyek h2, .ferfi-arak h2, .fagy h2, .fszalon h2, .hely h2 { font-size: 28px; }
-  .fszoveg p, .fagy .lead { font-size: 16px; }
-  .fszoveg .fcta .gomb, .hely-cta .gomb { width: 100%; }
-  .fszoveg .fcta, .hely-cta .promo-sor, .fszoveg .promo-sor { text-align: center; }
-  .ba-fej h2 { font-size: 22px; }
-  .miert-ferfi { padding: 42px 0 44px; }
-  .velemenyek.bg2, .velemenyek.bg1 { padding: 40px 0 40px; }
-  .arak.ferfi-arak { padding: 42px 0 40px; }
-  .arak-ketto .ar-kartya h3 { font-size: 24px; }
+  /* hero: CIM (nagy cim + kiemelt alcim), KEP, alcim, arak, gombok, ertekeles, hely; a grid-areas sorrendet a landing CSS adja (cim, gal, szoveg) */
+  .hero-ferfi .hero-racs { padding: 14px 0 0; row-gap: 12px; }
+  .hero-ferfi h1 { font-size: clamp(24px, 7vw, 30px); line-height: 1.08; }
+  .h1-al { margin-top: 7px; font-size: clamp(15px, 4.35vw, 18px); line-height: 1.28; }
+  .hero-ferfi .hero-szoveg { padding: 2px 0 26px; }
+  .hero-ferfi .hero-lead { font-size: 15.5px; line-height: 1.45; margin-top: 0; }
+  .hero-ferfi .hero-lab { font-size: 12.5px; margin-top: 4px; }
+  .hero-arak { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+  .hero-arak li { padding: 8px 9px 9px; border-radius: 12px; gap: 3px; }
+  .hero-arak span { font-size: 12px; line-height: 1.2; }
+  .hero-arak b { font-size: 17px; }
+  .hero-ferfi .hero-cta { flex-wrap: nowrap; gap: 10px; margin-top: 14px; }
+  .hero-ferfi .hero-cta .gomb { flex: 1 1 0; max-width: none; min-width: 0; width: auto; padding: 11px 8px; }
+  .hero-ferfi .hero-cta { margin-top: 14px; gap: 10px; }
+  .hero-ferfi .gomb-ketsoros .c { font-size: 15.5px; white-space: normal; }
+  .hero-ferfi .gomb-ketsoros .ar { font-size: 15.5px; }
+  .hero-sor { justify-content: space-between; gap: 6px 14px; margin-top: 18px; }
+  .hero-link, .hero-ertekeles { font-size: 13px; }
+  .hero-ertekeles { font-size: 13px; }
+  .hero-ertekeles img { width: 78px; }
+  .hero-link { font-size: 13px; }
+  .hero-hely { gap: 10px; margin-top: 14px; font-size: 13.5px; align-items: flex-start; }
+  .hero-hely .ikon-kor { width: 30px; height: 30px; }
+  .hero-hely .ikon-kor svg { width: 15px; height: 15px; }
+  .hero-ferfi .hero-galeria.hero-egy { max-width: none; }
+  .hero-egy .hg-kep { aspect-ratio: 1 / 1; }
+
+  /* kep + szoveg blokkok: kisebb kepek, kartya nelkul, szorosabb terkozok */
+  .mukodik .allapot-racs { padding: 30px 0 32px; }
+  .allapot h2 { font-size: 27px; margin-bottom: 18px; }
+  .mukodik .monitor { padding: 8px 8px 20px; margin-bottom: 4px; }
+  .mukodik .monitor img { flex: none; aspect-ratio: 1.75; }
+  .allapot-szoveg > p { font-size: 15.5px; line-height: 1.5; margin-top: 12px; }
+  .fblokk { padding: 30px 0; }
+  .fblokk-racs { gap: 14px; }
+  .fkep { aspect-ratio: 16 / 9.4; border-radius: 16px; }
+  .fkep.diagram, .diagram-racs .fkep.diagram { aspect-ratio: 1 / 1; max-width: 300px; border-radius: 16px; }
+  .fkep.diagram::before { display: none; }
+  .fkep.allo { aspect-ratio: 16 / 10; }
+  .fkep.info { aspect-ratio: 1500 / 1060; }
+  .fkep.allo img { object-position: 50% 16%; }
+  .fszoveg { padding: 0; background: none; border: 0; box-shadow: none; border-radius: 0; }
+  .fszoveg h2, .fszalon h2, .fszep h2, .hely h2, .miert-ferfi h2, .velemenyek h2, .ferfi-arak h2 { font-size: 27px; line-height: 1.14; }
+  .fszoveg p { margin-top: 10px; font-size: 15.5px; line-height: 1.52; }
+  .fszoveg h2 + p { margin-top: 10px; }
+  .fszoveg .pipa-lista { margin-top: 10px; gap: 8px; }
+  .fszoveg .pipa-lista li { font-size: 15px; line-height: 1.4; gap: 10px; }
+  .eredmeny-cim { margin-top: 14px !important; font-size: 12.5px !important; }
+  .fszoveg .fcta { margin-top: 18px; text-align: center; }
+  .fszoveg .fcta .gomb { width: 100%; }
+  .fblokk .alkalom-doboz.onallo { margin-top: 18px; }
+  .lepes-lista { gap: 8px; margin-top: 12px; }
+  .lepes-lista li { padding: 2px 0 2px 42px; min-height: 30px; font-size: 15px; line-height: 1.42; }
+  .lepes-lista li::before { width: 30px; height: 30px; font-size: 14px; }
+  .fszoveg p.lepes-zaro { margin-top: 14px; font-size: 15.5px; }
+
+  /* eredmeny-galeriak: tomor fejlec, kisebb terkoz */
+  .ferfi-eredmeny { padding-top: 30px; padding-bottom: 30px; }
+  .ba-csoport { margin-top: 20px; }
+  .ba-fej { gap: 0 12px; margin-bottom: 6px; }
+  .ba-fej h2 { font-size: 21px; }
+  .ba-fej span { font-size: 12.5px; }
+  .ferfi-eredmeny .ba-sav { grid-auto-columns: 76%; padding-bottom: 8px; gap: 12px; }
+  .ba { padding: 6px; border-radius: 14px; }
+
+  /* 3 ok: vizszintes kompakt kartyak (kep balra, szoveg jobbra) */
+  .miert-ferfi { padding: 32px 0 34px; }
+  .miert-racs.harom { gap: 10px; margin-top: 18px; }
+  .miert-ferfi .miert-kartya { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 0 14px; align-items: start; padding: 14px 14px 16px; text-align: left; }
+  .miert-ferfi .miert-kartya img { width: 74px; height: 74px; margin: 2px 0 0; box-shadow: 0 0 0 3px #fff, 0 5px 12px rgba(60, 40, 15, .14); }
+  .miert-ferfi .miert-kartya h3 { font-size: 15px; line-height: 1.25; }
+  .miert-ferfi .miert-kartya p { margin-top: 6px; font-size: 14.5px; line-height: 1.48; }
+  .miert-ferfi .fcta { margin-top: 18px; }
+
+  /* velemenyek */
+  .velemenyek.bg1 { padding: 32px 0 32px; }
+  .ti-doboz { margin-top: 16px; }
+
+  /* arak: kompaktabb kartyak */
+  .arak.ferfi-arak { padding: 32px 0 32px; }
+  .arak-ketto { gap: 16px; margin-top: 20px; }
+  .arak-ketto .ar-kartya { padding: 16px 14px 16px; }
+  /* a kartya fejlece: kis kep balra (a kepen a csomag neve + arany keret van, ezert nem vagjuk), a cim + a bevezeto jobbra */
+  .arak-ketto .ar-kartya { display: grid; grid-template-columns: 104px minmax(0, 1fr); grid-template-rows: auto 1fr auto auto auto; gap: 0 12px; text-align: left; }
+  .arak-ketto .ar-kep { grid-column: 1; grid-row: 1 / span 2; width: 104px; margin: 0; border-radius: 10px; align-self: start; }
+  .arak-ketto .ar-kartya h3 { grid-column: 2; grid-row: 1; align-self: end; font-size: 22px; text-align: left; }
+  .arak-ketto .ar-kartya .rovid { grid-column: 2; grid-row: 2; margin-top: 6px; font-size: 14px; line-height: 1.42; text-align: left; }
+  .arak-ketto .ar-kartya .pipak, .arak-ketto .ar-kartya .ar-plusz, .arak-ketto .ar-kartya .ar-alja { grid-column: 1 / -1; }
+  .ferfi-ar, .ar-alja .masodik, .ar-alja .idotartam { text-align: center; }
+  .arak-ketto .ar-kartya .pipak { margin: 10px 2px 0; gap: 5px; font-size: 14.5px; }
+  .arak-ketto .ar-kartya .pipak li { gap: 9px; line-height: 1.28; }
+  .arak-ketto .ar-kartya .pipak li::before { width: 18px; height: 18px; }
+  .ar-plusz { margin-top: 10px; font-size: 14.5px; }
+  .ar-alja { padding-top: 14px; }
   .ferfi-ar b { font-size: 40px; }
-  .fszalon { padding: 42px 0 44px; }
-  .fszep { padding: 32px 0 40px; }
-  .szep-doboz { padding: 22px 20px; }
-  .szep-doboz img { width: 100%; max-width: 280px; }
-  .szep-doboz h2 { font-size: 25px; }
-  .szep-doboz .gomb { width: 100%; }
-  .hero-ferfi .promo-sor { text-align: center; }
-  .hero-ertekeles { justify-content: center; }
-  .hero-ferfi .hero-link { text-align: center; }
-  .hely { padding: 42px 0 48px; }
-  .terkep-doboz { height: 340px; }
+  .ferfi-ar span { font-size: 14.5px; }
+  .ar-alja .masodik { margin-top: 8px; padding-top: 10px; font-size: 15px; }
+  .ar-alja .gomb { margin-top: 12px; padding: 13px 12px; font-size: 15.5px; }
+  .ar-alja .gomb + .gomb { margin-top: 8px; }
+
+  /* szalon-galeria: egy kep egyszerre, a kovetkezo kikukucskal; nyilak a kepen */
+  .fszalon { padding: 32px 0 32px; }
+  .fgal { margin-top: 16px; }
+  .fgal-sav { grid-auto-columns: 88%; gap: 10px; }
+  .fgal-dia { border-radius: 12px; }
+  .fgal .lapozo { width: 36px; height: 36px; margin-top: -18px; }
+  .fgal .lapozo.elozo { left: 6px; }
+  .fgal .lapozo.kovetkezo { right: 6px; }
+
+  .fszep { padding: 24px 0 28px; }
+  .szep-doboz { padding: 18px 16px; gap: 14px; }
+  .szep-doboz img { width: 100%; max-width: 230px; }
+  .szep-doboz h2 { font-size: 24px; }
+  .szep-doboz .gomb { width: 100%; margin-top: 12px; }
+
+  .gyik-szekcio { padding: 18px 0 34px; }
+  .gyik-lista summary { padding: 12px 2px; font-size: 15px; }
+
+  .hely { padding: 32px 0 38px; }
+  .hely-racs { gap: 18px; margin-top: 18px; }
+  .hely-sor { gap: 12px; padding: 11px 0; }
+  .hely-sor h3 { font-size: 17px; }
+  .hely-sor p { font-size: 15.5px; }
+  .nyitva { font-size: 15.5px; }
+  .hely-cta { padding-top: 16px; gap: 10px; }
+  .hely-cta .gomb { width: 100%; }
+  .terkep, .terkep-hely { min-height: 300px; }
 }
+@media (max-width: 380px) {
+  .miert-ferfi .miert-kartya { grid-template-columns: 58px minmax(0, 1fr); gap: 0 10px; padding: 12px 12px 14px; }
+  .miert-ferfi .miert-kartya img { width: 58px; height: 58px; }
+  .hero-arak b { font-size: 16px; }
+  .hero-arak span { font-size: 11.5px; }
+  .hero-ferfi .gomb-ketsoros .c, .hero-ferfi .gomb-ketsoros .ar { font-size: 14.5px; }
+  .hero-ertekeles img { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .fgal-sav { scroll-behavior: auto; } }

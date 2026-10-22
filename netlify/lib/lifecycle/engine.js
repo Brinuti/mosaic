@@ -15,6 +15,7 @@ import { UUID_RE } from './elo.js';
 import { tervez, keres, KESES_PLAFON, surgos, esemenyIdk, esemenyUzenet } from './terv.js';
 import { ertekek, smsKirajzol, emailKirajzol, feladatKirajzol, ALAP_URL, velemenyKulcsok } from './render.js';
 import { helyi, helyiEpoch } from './ido.js';
+import { leiratkozott, leiratkozasUrl } from './leiratkozas.js';
 
 const NAP = 86400;
 
@@ -495,8 +496,10 @@ export async function tick(db, env, kuldok, most, opc = {}) {
         await lezar('elkuldve', null, { elkuldve: most, szolgaltato: v?.id, szegmens: ki.szegmens });
       } else if (uz.csatorna === 'email') {
         if (!r.email) { await lezar('kihagyva', 'nincs_email'); continue; }
+        if (await leiratkozott(db, r.email)) { await lezar('kihagyva', 'leiratkozott'); continue; } // a vendeg leiratkozott (/u/<kod>): vendeg-e-mail tobbet nem megy
+        if (!mp) ert._leiratkozas = leiratkozasUrl(base, r.token); // lablec-link (render.js); az MP-levelek kesz sablonok, a leiratkozas-oldal az MP-oldalon kulon feladat
         const ki = emailKirajzol(uz, ert, { surgos: tipus === 't0' && surgos(r.kezdet, r.letrehozva) });
-        const v = await kuldok.email({ to: r.email, targy: ki.targy, html: ki.html, szoveg: ki.szoveg, felado: UZLETAGAK[r.uzletag].nev, valasz: UZLETAGAK[r.uzletag].email || cfg.szalonEmail, uzletag: r.uzletag });
+        const v = await kuldok.email({ to: r.email, targy: ki.targy, html: ki.html, szoveg: ki.szoveg, felado: UZLETAGAK[r.uzletag].nev, valasz: UZLETAGAK[r.uzletag].email || cfg.szalonEmail, uzletag: r.uzletag, leiratkozas: mp ? null : ert._leiratkozas });
         await lezar('elkuldve', null, { elkuldve: most, szolgaltato: v?.id });
       } else { // feladat: belso level a szalonnak
         const ki = feladatKirajzol(uz, ert, f);

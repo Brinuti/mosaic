@@ -99,6 +99,8 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const ctx = F.parseContext(search !== null ? search : win.location.search, doc.referrer, win.location.origin, { defaultBusiness });
   // R1 (DECISION #196/1): ha az URL-ben nincs Google-azonosito, az oldal mentett allapotabol potoljuk (mh_attr / _gcl_aw; marketing-hozzajarulas nelkul ures; csak olvas)
   try { if (win.mhAttribucio && typeof win.mhAttribucio.googleAzonositok === 'function') F.fillGoogleIds(ctx.attribution, win.mhAttribucio.googleAzonositok()); } catch (e) { /* nem kritikus */ }
+  // 7 napos utolso fizetett kattintas: a szerver altal irt HttpOnly sutibol visszanyerheto kattintasazonositok lekerese (egyszer, azonos eredet, a foglalo indulasakor); az atadas (HANDOFF) a mar megjott eredmenyt hasznalja, nem var ra
+  try { if (win.mhAttribucio && typeof win.mhAttribucio.lptKlikk === 'function') win.mhAttribucio.lptKlikk(); } catch (e) { /* nem kritikus */ }
   let flow = ctx.business ? FLOWS[ctx.business] : null;
   const nowUnix = () => Math.floor(now() / 1000);
   const HANDOFF = F.shouldHandoff(win.location.hostname, win.location.search); // eles tartomanyon: atadas a meglevo koszonooldalnak
@@ -1054,7 +1056,11 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (!(v && v.ok)) track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
         filter: v ? Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') : undefined });
       // (a Salonic URL-je valtozatlan marad; csak a motor sajat URL-jen erkezett hirdetesi azonositok kerulnek a vegere, ha a Salonic nem hozta oket)
-      if (HANDOFF) { win.location.assign(F.withAttribution(href, F.handoffSearch(win.location.search, ctx.attribution))); return undefined; }
+      if (HANDOFF) {
+        F.lptPotlas(ctx.attribution, win.mhAttribucio); // a sutibol visszanyert kattintasazonositok (csak a hianyzok; hozzajarulas nelkul semmi): az URL-ben a GTM / pixel ELO esemenyeihez
+        win.location.assign(F.withAttribution(href, F.handoffSearch(win.location.search, ctx.attribution)));
+        return undefined;
+      }
       // elonezeten / helyben: a motor maga mutatja a sikert (a Salonic az eles koszonooldalra iranyit, onnan nem ertesithetne minket)
       return go(v && v.ok ? 'C6' : 'A3U', { replace: true });
     }

@@ -254,7 +254,7 @@ function blokkHtml(b, base) {
 }
 
 /** Teljes e-mail (HTML + szoveg): fejlec (a LOGO), blokkok, lablec (a "MOSAIC Head Spa and Hair" nev). base: az oldal eredete (a kepek / logo cime). */
-export function levelKirajzol({ elotag, blokkok, lablecMegjegyzes, base = ALAP_URL }) {
+export function levelKirajzol({ elotag, blokkok, lablecMegjegyzes, base = ALAP_URL, leiratkozas = null }) {
   const torzs = blokkok.map((b) => blokkHtml(b, base)).join('\n');
   const html = `<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:${SZIN.krem}">
@@ -263,7 +263,7 @@ export function levelKirajzol({ elotag, blokkok, lablecMegjegyzes, base = ALAP_U
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="width:100%;max-width:600px;background:#ffffff;border-radius:6px;overflow:hidden">
 <tr><td align="center" bgcolor="${SZIN.sotet}" style="background:${SZIN.sotet};padding:26px 28px"><a href="${esc(base)}" style="text-decoration:none"><img src="${esc(base + LOGO_UTVONAL)}" width="190" alt="MOSAIC Head Spa and Hair" style="display:block;width:190px;height:auto;border:0"></a></td></tr>
 <tr><td style="padding:30px 28px 22px">${torzs}</td></tr>
-<tr><td align="center" style="padding:20px 28px 26px;border-top:1px solid #eee6d5;${KIS};line-height:1.7"><div style="font:600 15px Georgia,serif;color:${SZIN.sotet}">MOSAIC Head Spa and Hair</div>${esc(SZALON.cim)} &middot; ${esc(SZALON.telefon)}<br><a href="https://www.mosaicheadspa.hu" style="color:${SZIN.arany};text-decoration:none">www.mosaicheadspa.hu</a><div style="padding-top:8px;font-size:12px">${esc(lablecMegjegyzes || 'Ezt az üzenetet a foglalásod miatt küldjük.')}</div></td></tr>
+<tr><td align="center" style="padding:20px 28px 26px;border-top:1px solid #eee6d5;${KIS};line-height:1.7"><div style="font:600 15px Georgia,serif;color:${SZIN.sotet}">MOSAIC Head Spa and Hair</div>${esc(SZALON.cim)} &middot; ${esc(SZALON.telefon)}<br><a href="https://www.mosaicheadspa.hu" style="color:${SZIN.arany};text-decoration:none">www.mosaicheadspa.hu</a><div style="padding-top:8px;font-size:12px">${esc(lablecMegjegyzes || 'Ezt az üzenetet a foglalásod miatt küldjük.')}</div>${leiratkozas ? `<div style="padding-top:6px;font-size:12px">Nem szeretnél több automatikus e-mailt kapni? <a href="${esc(leiratkozas)}" style="color:${SZIN.halk};text-decoration:underline">Leiratkozás</a></div>` : ''}</td></tr>
 </table></td></tr></table></body></html>`;
   const sz = [];
   for (const b of blokkok) {
@@ -282,6 +282,7 @@ export function levelKirajzol({ elotag, blokkok, lablecMegjegyzes, base = ALAP_U
     else if (b.t === 'ertekeles') sz.push(`${ERTEKELES_SZOVEG}: ${GOOGLE_VELEMENYEK_URL}`);
   }
   sz.push(`MOSAIC Head Spa and Hair\n${SZALON.cim} · ${SZALON.telefon}\nwww.mosaicheadspa.hu`);
+  if (leiratkozas) sz.push(`Nem szeretnél több automatikus e-mailt kapni? Leiratkozás: ${leiratkozas}`);
   return { html, szoveg: sz.join('\n\n') };
 }
 
@@ -335,7 +336,7 @@ export function emailKirajzol(uz, ert, { surgos = false } = {}) {
   const blokkok = blokkokKitolt(torzs, ert);
   const targy = sorKitolt(uz.targy, ert).szoveg;
   const elotag = uz.elotag ? sorKitolt(uz.elotag, ert).szoveg : '';
-  const lev = levelKirajzol({ elotag, blokkok, base: ert._base });
+  const lev = levelKirajzol({ elotag, blokkok, base: ert._base, leiratkozas: ert._leiratkozas || null }); // vendeg-level: lablec-link (a motor adja: engine.js tick)
   return { targy, elotag, ...lev };
 }
 

@@ -23,7 +23,11 @@ test('jogosultsag', () => {
   assert.deepEqual(arnyekJogosult(sor, UA), { ok: true });
   assert.equal(arnyekJogosult({ ...sor, kornyezet: 'elonezet' }, UA).miert, 'nem_eles');
   assert.equal(arnyekJogosult({ ...sor, hozzajarulas_hirdetes: 0 }, UA).miert, 'nincs_hozzajarulas');
-  assert.equal(arnyekJogosult({ ...sor, meta_fbc: null, meta_fbp: null }, UA).miert, 'nincs_meta_azonosito');
+  assert.equal(arnyekJogosult({ ...sor, meta_fbc: null, meta_fbp: null }, UA).miert, 'nincs_azonosito');
+  // 2026-10-20: fbc/fbp nelkul is jogosult, ha van ervenyes IP (+ UA) vagy external_id
+  assert.deepEqual(arnyekJogosult({ ...sor, meta_fbc: null, meta_fbp: null }, UA, '84.1.2.3'), { ok: true });
+  assert.deepEqual(arnyekJogosult({ ...sor, meta_fbc: null, meta_fbp: null }, UA, null, 'a'.repeat(64)), { ok: true });
+  assert.equal(arnyekJogosult({ ...sor, meta_fbc: null, meta_fbp: null }, UA, 'nem-ip', 'rossz').miert, 'nincs_azonosito');
   assert.equal(arnyekJogosult(sor, '').miert, 'nincs_ua');
 });
 
@@ -93,4 +97,71 @@ test('elonezet hoszton eles beallitas mellett sem kuld', async () => {
   assert.equal(arnyekTorzs(sor, 'UA', '84.1.2.3', h).data[0].user_data.external_id, h);
   assert.ok(!('external_id' in arnyekTorzs(sor, 'UA', '84.1.2.3', 'vendeg@pelda.hu').data[0].user_data));
   console.log('OK external_id');
+}
+
+// 2026-10-20: fbc/fbp nelkuli kuldes IP + UA alapjan, kihagyas-naplo, PII-tilalom
+{
+  const SOR0 = { ...sor, kulcs: '6029|222|1792000500', meta_fbc: null, meta_fbp: null };
+  const ELES = async () => { const db = d1(); db.raw.exec("INSERT INTO mp_beallitas VALUES ('meta_arnyek_mod','eles')"); return db; };
+  const jo = (testek) => async (u, o) => { testek.push({ u, torzs: JSON.parse(o.body) }); return { ok: true, status: 200, text: async () => JSON.stringify({ events_received: 1 }) }; };
+
+  test('fbc/fbp nelkul IP + UA-val -> elkuldve az ARNYEK adathalmazba; nincs em/ph/fn/ln', async () => {
+    const db = await ELES();
+    const hivasok = [];
+    const r = await metaArnyekLepes(db, { ...SOR0, email: 'v@x.hu', telefon: '06301234567', nev: 'Teszt Elek' }, UA, { META_CAPI_TOKEN: 'tok' }, 'www.medicalpiercing.hu', { fetchImpl: jo(hivasok), most: 1792000600, ip: '84.1.2.3' });
+    assert.equal(r.allapot, 'elkuldve');
+    assert.equal(hivasok.length, 1);
+    assert.ok(hivasok[0].u.includes(`/${ARNYEK_DATASET}/events`) && !hivasok[0].u.includes('2177829632420786'));
+    const u = hivasok[0].torzs.data[0].user_data;
+    assert.deepEqual(Object.keys(u).sort(), ['client_ip_address', 'client_user_agent']);
+    const s = JSON.stringify(hivasok[0].torzs);
+    for (const k of ['"em"', '"ph"', '"fn"', '"ln"', 'v@x.hu', '0630', 'Teszt Elek']) assert.ok(!s.includes(k), k);
+    const n = db.raw.prepare('SELECT * FROM mp_meta_arnyek').all();
+    assert.equal(n.length, 1); assert.equal(n[0].allapot, 'elkuldve'); assert.equal(n[0].van_fbc, 0);
+    assert.ok(!JSON.stringify(n).includes('84.1.2.3') && !JSON.stringify(n).includes('TesztUA'));
+  });
+
+  test('csak external_id-val is elkuldve', async () => {
+    const db = await ELES();
+    const hivasok = [];
+    const r = await metaArnyekLepes(db, SOR0, UA, { META_CAPI_TOKEN: 'tok' }, 'www.medicalpiercing.hu', { fetchImpl: jo(hivasok), most: 1792000600, ext: 'b'.repeat(64) });
+    assert.equal(r.allapot, 'elkuldve');
+    assert.deepEqual(Object.keys(hivasok[0].torzs.data[0].user_data).sort(), ['client_user_agent', 'external_id']);
+  });
+
+  test('azonosito nelkul -> kihagyva:nincs_azonosito naplozva (payload nelkul), kesobbi sikeres kuldes felulirja', async () => {
+    const db = await ELES();
+    const hivasok = [];
+    const r1 = await metaArnyekLepes(db, SOR0, UA, { META_CAPI_TOKEN: 'tok' }, 'www.medicalpiercing.hu', { fetchImpl: jo(hivasok), most: 1792000600 });
+    assert.equal(r1.kihagyva, 'nincs_azonosito');
+    assert.equal(hivasok.length, 0);
+    let n = db.raw.prepare('SELECT * FROM mp_meta_arnyek').all();
+    assert.equal(n.length, 1); assert.equal(n[0].allapot, 'kihagyva:nincs_azonosito'); assert.equal(n[0].valasz, null); assert.equal(n[0].mod, 'eles');
+    // ujabb kihagyas mas okkal: az ok frissul
+    await metaArnyekLepes(db, SOR0, '', { META_CAPI_TOKEN: 'tok' }, 'www.medicalpiercing.hu', { fetchImpl: jo(hivasok), most: 1792000650 });
+    assert.equal(db.raw.prepare('SELECT allapot FROM mp_meta_arnyek').get().allapot, 'kihagyva:nincs_ua');
+    // ugyanaz a kulcs kesobb IP-vel: kimegy, a kihagyva-sor felulirodik
+    const r2 = await metaArnyekLepes(db, SOR0, UA, { META_CAPI_TOKEN: 'tok' }, 'www.medicalpiercing.hu', { fetchImpl: jo(hivasok), most: 1792000700, ip: '84.1.2.3' });
+    assert.equal(r2.allapot, 'elkuldve');
+    n = db.raw.prepare('SELECT * FROM mp_meta_arnyek').all();
+    assert.equal(n.length, 1); assert.equal(n[0].allapot, 'elkuldve'); assert.equal(n[0].ido, 1792000700);
+    // elkuldott sort a kihagyas mar nem irja felul, es ujra sem kuld
+    const r3 = await metaArnyekLepes(db, SOR0, '', { META_CAPI_TOKEN: 'tok' }, 'www.medicalpiercing.hu', { fetchImpl: jo(hivasok), most: 1792000800 });
+    assert.equal(r3.kihagyva, 'mar_rogzitve');
+    assert.equal(db.raw.prepare('SELECT allapot FROM mp_meta_arnyek').get().allapot, 'elkuldve');
+    assert.equal(hivasok.length, 1);
+  });
+
+  test('hozzajarulas nelkul: nem kuld, kihagyva:nincs_hozzajarulas; elonezet / ki mod: nincs naplosor', async () => {
+    const db = await ELES();
+    let hivas = 0;
+    const r = await metaArnyekLepes(db, { ...sor, hozzajarulas_hirdetes: 0 }, UA, { META_CAPI_TOKEN: 'tok' }, 'www.medicalpiercing.hu', { fetchImpl: async () => { hivas++; }, most: 1792000600, ip: '84.1.2.3' });
+    assert.equal(r.kihagyva, 'nincs_hozzajarulas'); assert.equal(hivas, 0);
+    assert.equal(db.raw.prepare('SELECT allapot FROM mp_meta_arnyek').get().allapot, 'kihagyva:nincs_hozzajarulas');
+    const db2 = d1();
+    assert.equal((await metaArnyekLepes(db2, { ...sor, kornyezet: 'elonezet' }, UA, {}, '', { ip: '84.1.2.3' })).kihagyva, 'nem_eles');
+    const db3 = d1(); db3.raw.exec("INSERT INTO mp_beallitas VALUES ('meta_arnyek_mod','ki')");
+    assert.equal((await metaArnyekLepes(db3, SOR0, UA, {}, '', {})).kihagyva, 'ki');
+    assert.equal(db3.raw.prepare('SELECT count(*) n FROM mp_meta_arnyek').get().n, 0);
+  });
 }

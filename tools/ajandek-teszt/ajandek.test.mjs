@@ -2785,10 +2785,12 @@ describe('szerveroldali meres adatai a rendelesben (hozzajarulas-fuggo)', () => 
     for (const k of HIRDETESI) assert.equal(md[k], undefined, k);
   });
 
-  test('a hozzajarulas jelzese hianyzik vagy nem logikai ertek: nem engedelyezett, nincs hirdetesi adat, a jelzok nincsenek a metadataban', async () => {
+  test('a hozzajarulas jelzese hianyzik vagy nem logikai ertek (ismeretlen): alapbol elfogadott (DECISION #218, Feri "mindig granted") - a kattintas-azonositok megmaradnak, a jelzok nincsenek a metadataban', async () => {
     for (const mer of [undefined, null, 'igen', [true], 5, { adv: 'true' }, { ana: 1, adv: 1 }, {}]) {
       const md = metaAdat(await ujRendeles({ attr: MER_ATTR, mer }));
-      for (const k of HIRDETESI) assert.equal(md[k], undefined, `${JSON.stringify(mer)}: ${k}`);
+      for (const k of ['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid']) assert.equal(md[k], MER_ATTR[k], `${JSON.stringify(mer)}: ${k} megmarad`);
+      assert.equal(md.fbp, undefined, JSON.stringify(mer));
+      assert.equal(md.fbc, undefined, JSON.stringify(mer));
       assert.equal(md.hozz_ana, undefined, JSON.stringify(mer));
       assert.equal(md.hozz_adv, undefined, JSON.stringify(mer));
       assert.equal(md.utm_source, 'google');
@@ -3004,11 +3006,14 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
     assert.equal(md().mer_kuldve, 'kihagyva:nincs_hozzajarulas');
   });
 
-  test('ismeretlen hozzajarulas (a bongeszo nem kuldte): semmi nem megy ki', async () => {
+  test('ismeretlen hozzajarulas (a bongeszo nem kuldte): alapbol elfogadott (DECISION #218, Feri "mindig granted") -> megy; hozz_adv: true a hookban', async () => {
     const { r, md } = await fizetesEsWebhook({ attr: MER_ATTR, mer: undefined });
     assert.equal(r.status, 200);
-    assert.equal(beerkezett.length, 0);
-    assert.equal(md().mer_kuldve, 'kihagyva:ismeretlen');
+    assert.equal(beerkezett.length, 1);
+    assert.equal(hookbol()[0].hozz_adv, true);
+    assert.equal(hookbol()[0].gclid, MER_ATTR.gclid, 'a kattintas-azonosito ismeretlen hozzajarulasnal is kimegy (hogy a hirdetesre parosithato legyen)');
+    assert.notEqual(md().mer_kuldve, 'kihagyva:ismeretlen');
+    assert.ok(!String(md().mer_kuldve || '').startsWith('kihagyva'), 'nem kihagyva: ' + md().mer_kuldve);
   });
 
   test('MERES_HOOK_URL nelkul a lepes nem tesz semmit: nincs kuldes, nincs metadata-iras', async () => {

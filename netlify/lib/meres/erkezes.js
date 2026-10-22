@@ -51,9 +51,14 @@ export function googleKattintas(erk) {
   const lista = ['gclid', 'wbraid', 'gbraid'].filter((k) => g[k]).map((k) => ({ tipus: k, ertek: g[k].ertek, ts: g[k].ts || 0 }));
   return lista.sort((a, b) => b.ts - a.ts)[0] || null;
 }
-/** Meta fbc: a bongeszo sutijabol (fbc), tartalekban az fbclid-bol: fb.1.<ido ms>.<fbclid>. */
-export function metaFbc(erk) {
+/**
+ * Meta fbc: a bongeszo sutijabol (fbc), tartalekban az fbclid-bol: fb.1.<ido ms>.<fbclid>.
+ * tartalekMs (DECISION #202, opcionalis): ha az fbclid megvan, de nincs kattintas-idobelyeg (m.ts), ezt az idopontot (ms; az esemeny ideje) hasznaljuk - a Meta az fbc-ben
+ * barmilyen nem jovobeli "letrehozasi" idot elfogad; tartalekMs nelkul (regi hivasok) valtozatlan: idobelyeg nelkul nincs fbc.
+ */
+export function metaFbc(erk, tartalekMs) {
   const m = (erk && erk.meta) || {};
   if (m.fbc) return m.fbc;
-  return m.fbclid && m.ts ? `fb.1.${m.ts * 1000}.${m.fbclid}` : null;
+  const ido = m.ts ? m.ts * 1000 : Number.isFinite(tartalekMs) && tartalekMs > 0 ? Math.floor(tartalekMs) : null;
+  return m.fbclid && ido ? `fb.1.${ido}.${m.fbclid}` : null;
 }

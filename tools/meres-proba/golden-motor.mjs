@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { esemenyek } from '../../netlify/lib/meres/esemeny-modell.js';
-import { hashEmail, hashTelefon, sha256hex } from '../../netlify/lib/meres/hash.js';
+import { felhasznaloHash } from '../../netlify/lib/meres/felhasznalo-hash.js';
 import { erkezesTisztit } from '../../netlify/lib/meres/erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from '../../netlify/lib/meres/hozzajarulas.js';
 import { KEREM_EPITO, PLATFORMOK } from '../../netlify/lib/meres/platformok.js';
@@ -34,7 +34,7 @@ export const FK = (o = {}) => ({ tipus: 'foglalas', uzletag: 'headspa', source_e
 export async function ctxEpit(fkMod, hozz, erk) {
   const fk = FK(fkMod); const v = fk.vendeg; const h = hozzajarulasTisztit(hozz);
   return { fk, erk, ua: 'Mozilla/5.0 TESZT', ip: '203.0.113.7', oldal: 'https://www.mosaicheadspa.hu/koszonjuk', hozz: { meta: platformSzabaly('meta', h), tiktok: platformSzabaly('tiktok', h), google: platformSzabaly('google', h), ga4: platformSzabaly('ga4', h) },
-    hash: { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await sha256hex(v.email.toLowerCase()) } };
+    hash: await felhasznaloHash({ GUEST_HMAC_KEY_V1: 'golden-teszt-guest-hmac-kulcs-0123456789' }, v) }; // DECISION #202: ugyanaz a hash-bemenet, mint az elosztas()-ban (em / ph / ext + em_ads / em_ga4 / country / uid; nev nincs a fixture-vendegnek)
 }
 export function d1() {
   const db = new DatabaseSync(':memory:');
@@ -59,7 +59,7 @@ export function hamisFetch() {
 }
 
 /** A teljes golden-kep: (1) a platform-kerelem epitok kimenete a motoros esetek matrixara; (2) az elosztas() vegpontig menő HTTP-kereseit es a naplo REGI oszlopait. */
-export async function motorKepek() {
+export async function motorKepek(extraEnv = {}) { // extraEnv: pl. { MERES_GAZDAGITAS: '0' } - a visszagorgetes bajtra a PR-A elotti kepet kell adnia (tools/test-adatgazdagitas.mjs)
   const kerelmek = {};
   const valtozatok = { teljes: [{ ana: true, adv: true }, () => erkezesTisztit(BE(), NOW).adat], ures: [null, () => ({})], hozzajarulasNelkul: [{ ana: false, adv: false }, () => erkezesTisztit(BE(), NOW).adat] };
   const esetek = [];
@@ -70,7 +70,7 @@ export async function motorKepek() {
       const ctx = await ctxEpit(eset, hozz, erkF());
       for (const e of esemenyek(ctx.fk)) for (const p of PLATFORMOK) {
         const kulcs = [vnev, eset.uzletag, eset.tipus || eset.jelleg, eset.kupon ? 'kupon' : 'nemkupon', e.esemeny_id, p].join('|');
-        kerelmek[kulcs] = KEREM_EPITO[p](e, ctx, ENV);
+        kerelmek[kulcs] = KEREM_EPITO[p](e, ctx, { ...ENV, ...extraEnv });
       }
     }
   }
@@ -81,7 +81,7 @@ export async function motorKepek() {
     ['headspa_elso_uuid', { uuid: UUID_A }, {}], ['pmu_konzultacio_uuid', { uzletag: 'pmu', jelleg: 'konzultacio', ertek: 0, uuid: UUID_B }, { uzletag: 'pmu' }], ['fodrasz_visszajaro_uuid', { uzletag: 'fodrasz', jelleg: 'visszajaro', uuid: UUID_C.toUpperCase() }, { uzletag: 'fodrasz' }]]) {
     const db = d1(); const { f, hivasok } = hamisFetch();
     await erkezesMent(db, { source_id: BID, uzletag: 'headspa', attr: BE(), hozz: { ana: true, adv: true, fun: true }, ua: 'UA TESZT', ip: '203.0.113.7', oldal: 'https://www.mosaicheadspa.hu/koszonjuk', ...erkMod }, NOW);
-    const r = await elosztas(db, FK(fkMod), { env: TELJES_ENV, fetchImpl: f, now: () => NOW });
+    const r = await elosztas(db, FK(fkMod), { env: { ...TELJES_ENV, ...extraEnv }, fetchImpl: f, now: () => NOW });
     const sorok = db.db.prepare('SELECT esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, indok, ertek, penznem, hozzajarulas, kerelem, http_status, platform_valasz, kuldo, probalkozas, letrehozva, frissitve FROM meres_kuldes ORDER BY id').all().map((x) => ({ ...x }));
     elosztasok[nev] = { allapot: r.allapot, hivasok, sorok };
   }

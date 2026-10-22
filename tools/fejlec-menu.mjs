@@ -252,14 +252,24 @@ export const ANGOL_JELOLO = NYELV_EN;
 // A jelolo erteke szigoruan ellenorzott (csak a meglevo foglalo-paraméterek); hibas jelolonel a build hibaval all le (nem kerul ki rossz link).
 export const FOGLALAS_JELOLO = /<!--mh-foglalas:([^>]+?)-->/;
 const FOGLALAS_CEL_MINTA = /^business=(?:headspa|hair|oxygen|laser|pmu)(?:&(?:service|staff|category)=[A-Za-z0-9_.-]{1,40}){0,3}$/;
+// Az Info-ablak "Idopontfoglalas" (mhp-gomb) es a lablec "Idopontfoglalas" (mhl-gomb) gombja: a kozos darabokban business=headspa.
+const lablecGombCel = (html, cel) => html
+  .replace(/(class="mhp-gomb mhp-arany" )href="\/foglalo-motor\?business=headspa"/g, (m, a) => a + 'href="' + cel + '"')
+  .replace(/(class="mhl-gomb" )href="\/foglalo-motor\?business=headspa"/g, (m, a) => a + 'href="' + cel + '"');
 export function foglalasCel(html, jelolo) {
   if (!jelolo) return html;
   if (!FOGLALAS_CEL_MINTA.test(jelolo)) throw new Error('mh-foglalas jelolo ervenytelen: ' + jelolo);
   const cel = '/foglalo-motor?' + jelolo.replace(/&/g, '&amp;');
-  return html
-    .replace(/href="\/idpontfoglalas"/g, () => 'href="' + cel + '"')
-    .replace(/(class="mhp-gomb mhp-arany" )href="\/foglalo-motor\?business=headspa"/g, (m, a) => a + 'href="' + cel + '"')
-    .replace(/(class="mhl-gomb" )href="\/foglalo-motor\?business=headspa"/g, (m, a) => a + 'href="' + cel + '"');
+  return lablecGombCel(html.replace(/href="\/idpontfoglalas"/g, () => 'href="' + cel + '"'), cel);
+}
+
+// 2026-10-20 (Feri): a lablec es az Info-ablak "Idopontfoglalas" gombja <!--mh-foglalas:...--> jelolo NELKUL is az OLDAL uzletagara mutat (korabban minden oldalon a HeadSpa foglalora vitt).
+// Az uzletagat az oldal neve adja (tools/foglalo-atkotes.mjs oldalUzletag: ugyanaz a besorolas, mint a tartalmi foglalo-gomboknal); HeadSpa / besorolatlan oldal (blog, GYIK, kapcsolat, arlista, koszonooldalak ...): valtozatlan (HeadSpa).
+// A fejlec FOGLALAS menugombja (altalanos "Mit szeretnel foglalni?") marad; az explicit jelolo (foglalasCel) mar nem business=headspa gombot hagy, ezert ezen a lepesen nincs dolga (idempotens).
+export const UZLETAG_FOGLALAS = { fodraszat: 'business=hair', lezer: 'business=laser', oxigen: 'business=oxygen', pmu: 'business=pmu' };
+export function lablecFoglalasCel(html, uzletag) {
+  const j = UZLETAG_FOGLALAS[uzletag];
+  return j ? lablecGombCel(html, '/foglalo-motor?' + j.replace(/&/g, '&amp;')) : html;
 }
 
 // Nyitvatartas-jelolo: <!--mh-nyitvatartas:hetkoznap--> -> a lablec es az Info-ablak CSAK a hetkoznapi nyitvatartast irja ("Hetfo - Pentek: 8:00 - 20:00"); a szombatrol / vasarnaprol
