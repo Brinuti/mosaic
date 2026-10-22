@@ -6,6 +6,8 @@
 // Mit tarolunk (Cloudflare D1, wrangler.toml: SZAMLALO_DB): csak OSSZESITETT darabszamokat, naponta (Europe/Budapest) es uzletagankent:
 //   lepes_szamlalo(nap, uzletag, lepes, tipus, db)   lepesenkenti darabszam; hibaknal a tipus a hiba tipusa; bezarasnal a lepes, ahol bezartak
 //   betoltes_szamlalo(nap, uzletag, vedro, db, ossz_ms, max_ms)   az idopontok betoltesi ideje (eloszlas-vedrok + osszeg + maximum)
+// DECISION #205 (2026-10-19, CSAK-MERES): tovabbi, zart listas belso lepesek (lasd BELSO_205 lent): verify_check, success_unverified, kimenet_ido, recovered, a2_elofordulas, lepes_bontas, lepes_ido,
+//   c1_szabad, c1_elso_nap. Mind a LEGACY `lepes_szamlalo` tablaba kerul (nincs seema-valtozas): a lepes = a lepes neve, a tipus = a zart listak pontokkal osszefuzve. A GET riport additiv kulcsokat kap.
 // NEM tarolunk: sutit, azonositot (munkamenet / eszkoz / felhasznalo), IP-cimet, nevet, e-mailt, telefonszamot, oldal-URL-t, idobelyeget (csak a napot).
 // A kerest a szerver nem naplozza el (se console, se KV): az egyetlen nyom a D1 darabszam.
 //
@@ -36,6 +38,36 @@ function reszletTipus(t) {
   if (http !== '0' && kod !== 'HTTP' && kod !== 'API_STATUS') return null; // HTTP-statusz csak HTTP / API_STATUS kod mellett
   return t;
 }
+
+// --- DECISION #205 (2026-10-19): csak-meres bovites; a kliens (assets/js/booking-engine/lepes-meres.js) ugyanezeket a zart listakat ismeri (teszt: egyezes) ---------------------------------------------
+export const VERIFY_KODOK = Object.freeze(['params', 'place', 'service', 'slot', 'staff', 'price', 'no_expectation']);
+export const IDO_VODROK = Object.freeze([['lt5s', 5000], ['lt30s', 30000], ['lt60s', 60000], ['lt120s', 120000], ['lt300s', 300000], ['ge300s', Infinity]]);
+export const KIMENETEK = Object.freeze(['success', 'success_unverified', 'verify_failed', 'slot_lost', 'hold_expired', 'c4_close']);
+export const A2_OKOK = Object.freeze(['slot_lost', 'hold_expired']);
+export const A2_SORSZAMOK = Object.freeze(['1', '2', '3', '4', 'ge5']);
+export const RECOVERED_KIMENETEK = Object.freeze(['success', 'success_unverified']);
+export const FORRASOK = Object.freeze(['google', 'meta', 'tiktok', 'egyeb']);
+export const ESZKOZOK = Object.freeze(['mobil', 'asztali', 'tablet']);
+export const BONTAS_LEPESEK = Object.freeze(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'submit', 'success', 'success_unverified']);
+export const SZABAD_VODROK = Object.freeze(['0', '1-3', '4-10', '11-30', '31+']);
+export const ELSO_NAP_VODROK = Object.freeze(['ma', '1-2', '3-7', '8-14', '15+', 'nincs']);
+const IDO_VODOR_NEVEK = IDO_VODROK.map(([n]) => n);
+// a tipus: pontokkal elvalasztott tagok, tagonkent a hozzatartozo zart listabol (pontos tagszam; semmi mas nem fogadhato)
+const osszetett = (t, listak) => { if (typeof t !== 'string') return false; const r = t.split('.'); return r.length === listak.length && r.every((x, i) => listak[i].includes(x)); };
+// lepes -> tipus-ellenorzo; null = a lepesnek nincs tipusa. (A kulcsok szama zart: a leghosszabb, a lepes_bontas 9 x 4 x 3 = 108.)
+export const BELSO_205 = Object.freeze({
+  success_unverified: null, // a verify-bukas ellenere letrejott foglalas (foglalas = success + success_unverified)
+  verify_check: (t) => VERIFY_KODOK.includes(t),
+  kimenet_ido: (t) => osszetett(t, [KIMENETEK, IDO_VODOR_NEVEK]), // <kimenet>.<vodor>: a form_start -> kimenet idoeltolodas
+  recovered: (t) => osszetett(t, [A2_OKOK, RECOVERED_KIMENETEK]), // <A2 oka>.<kimenet>: A2 utan sikeres foglalasig jutott (ulesenkent egyszer)
+  a2_elofordulas: (t) => osszetett(t, [A2_OKOK, A2_SORSZAMOK]), // <A2 oka>.<sorszam az ulesben>: minden elofordulas (a GA4 egyszer-kapuja nelkul)
+  lepes_bontas: (t) => osszetett(t, [BONTAS_LEPESEK, FORRASOK, ESZKOZOK]), // <lepes>.<forras>.<eszkoz>
+  lepes_ido: (t) => osszetett(t, [BONTAS_LEPESEK.filter((l) => l !== 'open'), IDO_VODOR_NEVEK]), // <lepes>.<vodor>: a megnyitastol az adott lepesig
+  c1_szabad: (t) => SZABAD_VODROK.includes(t), // C1: a kovetkezo 7 nap szabad idopontjainak szama
+  c1_elso_nap: (t) => ELSO_NAP_VODROK.includes(t), // C1: a legkorabbi szabad nap
+});
+export const BELSO_KULCS_PLAFON = 150; // (nap, uzletag, lepes) szerint legfeljebb ennyi KULONBOZO kulcs: tartalek-vedelem a zart listak mellett (a legnagyobb zart ter 108)
+const belso205 = (lepes) => Object.prototype.hasOwnProperty.call(BELSO_205, lepes);
 const TIMEZONE = 'Europe/Budapest';
 const MAX_NAP = 93;
 
@@ -52,12 +84,19 @@ export function ervenyesit(torzs) {
   if (!o || typeof o !== 'object' || Array.isArray(o)) return { ok: false, miert: 'nem objektum' };
   const ismert = new Set(['lepes', 'uzletag', 'tipus', 'load_ms']);
   for (const k of Object.keys(o)) if (!ismert.has(k)) return { ok: false, miert: 'ismeretlen mezo: ' + k };
-  if (!LEPESEK.includes(o.lepes) && o.lepes !== RESZLET_LEPES) return { ok: false, miert: 'ismeretlen lepes' };
+  if (typeof o.lepes !== 'string') return { ok: false, miert: 'ismeretlen lepes' }; // tomb / szam / objektum nem lehet lepes (a hasOwnProperty sztringge alakitana)
+  if (!LEPESEK.includes(o.lepes) && o.lepes !== RESZLET_LEPES && !belso205(o.lepes)) return { ok: false, miert: 'ismeretlen lepes' };
   if (!UZLETAGAK.includes(o.uzletag)) return { ok: false, miert: 'ismeretlen uzletag' };
   let tipus = '';
   if (o.lepes === 'error') { if (!HIBA_TIPUSOK.includes(o.tipus)) return { ok: false, miert: 'ismeretlen hibatipus' }; tipus = o.tipus; }
   else if (o.lepes === RESZLET_LEPES) { const t = reszletTipus(o.tipus); if (!t) return { ok: false, miert: 'hibas hiba-reszlet' }; tipus = t; }
   else if (o.lepes === 'close') { if (typeof o.tipus !== 'string' || !BEZARAS_LEPES.test(o.tipus)) return { ok: false, miert: 'hibas bezaras-lepes' }; tipus = o.tipus; }
+  else if (belso205(o.lepes)) {
+    const ell = BELSO_205[o.lepes];
+    if (ell === null) { if (o.tipus !== undefined) return { ok: false, miert: 'ennel a lepesnel nincs tipus' }; }
+    else if (typeof o.tipus !== 'string' || !ell(o.tipus)) return { ok: false, miert: 'hibas ' + o.lepes };
+    else tipus = o.tipus;
+  }
   else if (o.tipus !== undefined) return { ok: false, miert: 'ennel a lepesnel nincs tipus' };
   let loadMs = null;
   if (o.lepes === 'slots_loaded') {
@@ -75,8 +114,10 @@ const SQL_RESZLET = 'INSERT INTO lepes_szamlalo (nap, uzletag, lepes, tipus, db)
 
 /** Egy esemeny beirasa (D1): atomikus novelés (nincs olvas-modosit-ir verseny). */
 export async function ir(db, adat, nap) {
-  const stmts = [adat.lepes === RESZLET_LEPES
-    ? db.prepare(SQL_RESZLET).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON, RESZLET_KULCS_PLAFON)
+  // a kulcsszam-plafonos ag (atomikus INSERT ... SELECT): a hiba-reszlet es a tipussal biro #205 lepesek; a tobbi lepes egyszeru novelo
+  const plafon = adat.lepes === RESZLET_LEPES ? RESZLET_KULCS_PLAFON : belso205(adat.lepes) && BELSO_205[adat.lepes] !== null ? BELSO_KULCS_PLAFON : null;
+  const stmts = [plafon !== null
+    ? db.prepare(SQL_RESZLET).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON, plafon)
     : db.prepare(SQL_LEPES).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON)];
   if (adat.loadMs !== null) stmts.push(db.prepare(SQL_BETOLTES).bind(nap, adat.uzletag, vedroNev(adat.loadMs), adat.loadMs, DB_PLAFON));
   await db.batch(stmts);
@@ -85,6 +126,11 @@ export async function ir(db, adat, nap) {
 const ures = () => ({ lepesek: {}, bezaras_lepesenkent: {}, hibak: {}, betoltes: { db: 0, atlag_ms: null, max_ms: 0, eloszlas: {} } });
 function hozzaad(cel, r) {
   if (r.t === 'lepes' && r.lepes === RESZLET_LEPES) { cel.hiba_reszlet ||= {}; cel.hiba_reszlet[r.tipus] = (cel.hiba_reszlet[r.tipus] || 0) + r.db; return; } // additiv kimeneti kulcs: csak ha van adat
+  if (r.t === 'lepes' && belso205(r.lepes)) { // #205: additiv kimeneti kulcsok (a lepes neve), csak ha van adat; a tolcser-szerkezetet (lepesek) nem erintik
+    if (r.lepes === 'success_unverified') cel.success_unverified = (cel.success_unverified || 0) + r.db;
+    else { const o = (cel[r.lepes] ||= {}); o[r.tipus] = (o[r.tipus] || 0) + r.db; }
+    return;
+  }
   if (r.t === 'lepes') {
     cel.lepesek[r.lepes] = (cel.lepesek[r.lepes] || 0) + r.db;
     if (r.lepes === 'close') cel.bezaras_lepesenkent[r.tipus] = (cel.bezaras_lepesenkent[r.tipus] || 0) + r.db;
@@ -93,7 +139,11 @@ function hozzaad(cel, r) {
     const b = cel.betoltes; b.db += r.db; b.ossz_ms = (b.ossz_ms || 0) + r.ossz_ms; b.max_ms = Math.max(b.max_ms, r.max_ms); b.eloszlas[r.vedro] = (b.eloszlas[r.vedro] || 0) + r.db;
   }
 }
-const lezar = (cel) => { const b = cel.betoltes; b.atlag_ms = b.db ? Math.round(b.ossz_ms / b.db) : null; delete b.ossz_ms; };
+const lezar = (cel) => {
+  const b = cel.betoltes; b.atlag_ms = b.db ? Math.round(b.ossz_ms / b.db) : null; delete b.ossz_ms;
+  const foglalas = (cel.lepesek.success || 0) + (cel.success_unverified || 0); // #205 (b): foglalas = success + success_unverified (additiv kulcs, csak ha van ilyen)
+  if (foglalas) cel.foglalas_osszes = foglalas;
+};
 
 /** A D1 sorokbol a kimeneti szerkezet: napok -> uzletagak -> {lepesek, bezaras_lepesenkent, hibak, betoltes}, + osszesen. */
 export function osszeallit(lepesSorok, betoltesSorok, tol, ig) {
@@ -118,12 +168,20 @@ export function csvbe(kimenet) {
     for (const [t, db] of Object.entries(v.hiba_reszlet || {})) sor.push([nap, u, RESZLET_LEPES, t, db].join(';'));
     for (const [vedro, db] of Object.entries(v.betoltes.eloszlas)) sor.push([nap, u, 'slots_loaded_ms', vedro, db].join(';'));
     if (v.betoltes.db) { sor.push([nap, u, 'slots_loaded_ms', 'atlag', v.betoltes.atlag_ms].join(';')); sor.push([nap, u, 'slots_loaded_ms', 'max', v.betoltes.max_ms].join(';')); }
+    // #205 (additiv sorok, a regiek utan): a tarolt sorok (lepes = a #205 lepes neve) + a foglalas osszesito
+    if (v.success_unverified) sor.push([nap, u, 'success_unverified', '', v.success_unverified].join(';'));
+    for (const l of Object.keys(BELSO_205)) for (const [t, db] of Object.entries(v[l] && typeof v[l] === 'object' ? v[l] : {})) sor.push([nap, u, l, t, db].join(';'));
+    if (v.foglalas_osszes) sor.push([nap, u, 'foglalas_osszes', '', v.foglalas_osszes].join(';'));
   }
   return sor.join('\n') + '\n';
 }
 
 const MEGNEVEZES = { open: 'Megnyitás', business: 'Üzletág', service: 'Szolgáltatás', slots_loaded: 'Időpontok betöltve', slot: 'Időpont', form_start: 'Űrlap', submit: 'Elküldés', success: 'Sikeres foglalás', close: 'Bezárás', error: 'Hiba' };
 const ESC = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// #205: a bovitett tabla oszlopai (kimeneti kulcs, fejlec); a tabla csak akkor jelenik meg, ha az adott napon / uzletagnal van ilyen adat
+const BOVITETT = [['foglalas_osszes', 'Foglalás összesen (siker + nem igazolt)'], ['success_unverified', 'Nem igazolt siker'], ['verify_check', 'Ellenőrzés-bukás (kód)'], ['a2_elofordulas', 'A2: elkelt / lejárt (előfordulás.sorszám)'],
+  ['recovered', 'Helyreállt (A2 után foglalt)'], ['kimenet_ido', 'Űrlaptól a kimenetig (kimenet.idő)'], ['lepes_bontas', 'Lépés (lépés.forrás.eszköz)'], ['lepes_ido', 'Lépés ideje a megnyitástól (lépés.idő)'],
+  ['c1_szabad', 'C1: szabad időpont a köv. 7 napra'], ['c1_elso_nap', 'C1: legkorábbi szabad nap']];
 /** Emberi nezet a tulajdonosnak: egy tabla naponta es uzletagankent. */
 export function htmlbe(kimenet) {
   const fejlec = LEPESEK.filter((l) => l !== 'close' && l !== 'error');
@@ -135,9 +193,15 @@ export function htmlbe(kimenet) {
       t += `<tr><td>${ESC(u)}</td>${fejlec.map((l) => `<td>${v.lepesek[l] || 0}</td>`).join('')}<td>${fel(v.bezaras_lepesenkent)}</td><td>${fel(v.hibak)}${v.hiba_reszlet ? '<br><small>' + fel(v.hiba_reszlet) + '</small>' : ''}</td><td>${v.betoltes.db ? `${v.betoltes.atlag_ms} / ${v.betoltes.max_ms}` : '–'}</td></tr>`;
     }
     t += '</table>';
+    const sorok = Object.entries(kimenet.napok[nap]).filter(([, v]) => BOVITETT.some(([k]) => v[k] !== undefined));
+    if (sorok.length) {
+      const cella = (x) => (x === undefined ? '–' : typeof x === 'object' ? Object.entries(x).map(([k, db]) => `${ESC(k)}: ${db}`).join(', ') : String(x));
+      t += `<h3>Bővített mérés (DECISION #205)</h3><table class="b"><tr><th>Üzletág</th>${BOVITETT.map(([, f]) => `<th>${ESC(f)}</th>`).join('')}</tr>`
+        + sorok.map(([u, v]) => `<tr><td>${ESC(u)}</td>${BOVITETT.map(([k]) => `<td><small>${cella(v[k])}</small></td>`).join('')}</tr>`).join('') + '</table>';
+    }
   }
   return `<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Foglaló napi számláló</title>`
-    + '<style>body{font:14px/1.4 system-ui,Arial,sans-serif;margin:16px;color:#1f2d2b}table{border-collapse:collapse;margin-bottom:16px}th,td{border:1px solid #ccc;padding:4px 8px;text-align:right}th:first-child,td:first-child,td:nth-last-child(-n+3){text-align:left}th{background:#f3f1ec}</style></head><body>'
+    + '<style>body{font:14px/1.4 system-ui,Arial,sans-serif;margin:16px;color:#1f2d2b}table{border-collapse:collapse;margin-bottom:16px}th,td{border:1px solid #ccc;padding:4px 8px;text-align:right}th:first-child,td:first-child,td:nth-last-child(-n+3){text-align:left}th{background:#f3f1ec}table.b td,table.b th{text-align:left;vertical-align:top}</style></head><body>'
     + `<h1>Foglaló napi számláló</h1><p>${ESC(kimenet.tol)} – ${ESC(kimenet.ig)} (budapesti idő). Névtelen, összesített darabszámok, sütik és azonosítók nélkül.</p>${t || '<p>Ebben az időszakban még nincs adat.</p>'}</body></html>`;
 }
 
