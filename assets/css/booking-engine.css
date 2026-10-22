@@ -68,6 +68,12 @@ a { color: inherit; }
 /* kep (vagy monogram) balra, cim + egy sor kozepen, jobbra az ar es a nyil - mint a PMU-foglalo kezelesvalasztoja */
 .be-choice { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 66px; text-align: left; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 12px; padding: 6px 12px 6px 6px; cursor: pointer; }
 .be-choice:focus-visible { border-color: var(--sotet); outline: none; }
+/* nem valaszthato kartya (pl. a valasztott fodraszNAL nem foglalhato hajhossz): halvany, nyil nelkul, nem kattinthato */
+.be-choice.be-tiltva { opacity: .5; cursor: default; background: var(--krem); }
+.be-choice.be-tiltva .be-chev { display: none; }
+.be-choice.be-tiltva .be-choice-img { filter: grayscale(.8); }
+.be-hossz-info { margin-top: 14px; }
+.be-hossz-info .be-note { margin-bottom: 12px; }
 .be-choice-img { flex: none; width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--krem); }
 .be-mono { display: grid; place-items: center; border-radius: 50%; font-size: 22px; color: var(--sotet); }
 .be-ikon { display: grid; place-items: center; color: var(--sotet); }

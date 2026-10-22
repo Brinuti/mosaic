@@ -155,9 +155,11 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   // (a hosszabb egysoros magyarazat a kartya aljan, teljes szelessegben all, nem a szuk szovegoszlopban)
   // resz: testresz-jelvenyek a kartya aljan, CSAK felirattal ([{ label }]; lezer-csomagok; 2026-10-13: a tulajdonos kerese, az ikonok zsufoltak voltak).
   // pre: a kartyahoz tartozo szolgaltatasok: ra-vitt egerre / erintesre az idopontjaik elore toltodnek (a naptar azonnal megnyilik)
-  const bigButton = (title, sub, onclick, { kep = null, ikon = null, ar = null, monogram = null, resz = null, pre = null } = {}) => {
+  // tiltva: a kartya latszik, de nem valaszthato (pl. a valasztott fodrasznal nem foglalhato hajhossz); a "sub" ilyenkor az indok
+  const bigButton = (title, sub, onclick, { kep = null, ikon = null, ar = null, monogram = null, resz = null, pre = null, tiltva = false } = {}) => {
     const wide = !!sub && (kep || ikon || monogram) && sub.length > 36;
-    return h('button', { type: 'button', class: 'be-choice', onclick, ...(pre ? { onpointerenter: () => prefetch(pre), ontouchstart: () => prefetch(pre) } : {}) },
+    if (tiltva) { ar = null; pre = null; }
+    return h('button', { type: 'button', class: 'be-choice' + (tiltva ? ' be-tiltva' : ''), ...(tiltva ? { disabled: true, 'aria-disabled': 'true' } : { onclick }), ...(pre ? { onpointerenter: () => prefetch(pre), ontouchstart: () => prefetch(pre) } : {}) },
       kep ? h('img', { class: 'be-choice-img', src: kepSrc(kep), alt: '', width: '56', height: '56', onerror: (e) => e.currentTarget.remove() })
         : ikon ? h('span', { class: 'be-choice-img be-ikon', 'aria-hidden': 'true' }, icon(IKONOK[ikon] || IKONOK.haj, 1.6))
           : monogram ? h('span', { class: 'be-choice-img be-mono', 'aria-hidden': 'true', text: monogram }) : null,
@@ -229,6 +231,12 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   };
   // A valasztott fodrasz kezelesei ("mindegy" = mind); a szolgaltatasok szakember-azonositoi a Salonic-listabol jonnek
   const poolServices = () => (S.staff ? S.services.filter((s) => (s.staffIds || []).map(String).includes(String(S.staff))) : S.services);
+  // Fodraszat: egy szandek (pl. "Balayage / szokites") kezelesei az OSSZES fodraszra. A hajhossz-valtozatok teljes listajahoz kell: ha a valasztott fodraszhoz kevesebb hossz
+  // tartozik (pl. Betti a teljes szokitesnel csak az extra hosszu hajat vallalja), a vendeg akkor is lassa, hogy mas hosszak is vannak, es ne kerulhessen csendben rossz hosszra.
+  const withAll = (o) => ({ ...o, all: F.intentServices(S.services, flow.intents, o.intent) });
+  const fullGroup = (g) => (S.intent && S.intent.all ? F.groupServices(S.intent.all).find((x) => x.key === g.key) : null) || g;
+  const needsLength = (g) => fullGroup(g).items.length > 1; // tobb hajhossz letezik: a vendeg valaszt, nem donthetunk helyette (akkor sem, ha a fodraszanal csak egy foglalhato)
+  const staffNameById = (id) => { const x = ((S.staffCache && S.staffCache.list) || []).find((y) => String(y.id) === String(id)); return x ? staffName(x.label) : null; };
   // Egy valasztokartya ara tobb szolgaltatas-valtozatnal: egyforma ar = az ar; kulonbozo = "X Ft-tol" (a Salonic aktualis araibol)
   const fromPrice = (svcs) => {
     const ps = svcs.map((s) => s.activePrice).filter((p) => p !== null && p !== undefined);
@@ -536,7 +544,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (snap.intentKey) {
         const intent = (flow.intents || []).find((i) => i.key === snap.intentKey);
         if (!intent) throw new Error('szandek');
-        S.intent = { intent, services: F.intentServices(poolServices(), flow.intents, intent) };
+        S.intent = withAll({ intent, services: F.intentServices(poolServices(), flow.intents, intent) });
       }
       if (snap.groupKey && S.intent) S.group = F.groupServices(S.intent.services).find((g) => g.key === snap.groupKey) || null;
       if (snap.areaKey) {
@@ -640,7 +648,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         if (exact) return go(F.next('HA0', 'service'), o);
         if (intent) { // kategoria-landing: a kezeles-pontositas a valasztott fodrasz kezeleseibol
           const services = F.intentServices(poolServices(), flow.intents, intent);
-          if (services.length) { S.intent = { intent, services }; return go(F.next('HA0', 'intent'), o); }
+          if (services.length) { S.intent = withAll({ intent, services }); return go(F.next('HA0', 'intent'), o); }
         }
         return go(F.next('HA0', 'all'), o);
       });
@@ -654,11 +662,11 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       return h('section', {}, title(flow.copy.introTitle), h('div', { class: 'be-list be-egyenlo be-suru' }, opts.map((o) => bigButton(o.intent.title, o.intent.sub, () => {
         track('booking_intent_selected', { step: 'HA1', reason: o.intent.key });
         if (o.intent.consult) return chooseService(o.services[0], { next: F.next('HA1', 'consult') });
-        S.intent = o;
-        // egyetlen kezelesnel / egyetlen hajhossz-csoportnal nincs mit pontositani: rogton tovabb
+        S.intent = withAll(o);
+        // egyetlen kezelesnel, amelynek csak egy hajhossza LETEZIK (az osszes fodrasznal egyutt), nincs mit pontositani: rogton tovabb
         const csoportok = F.groupServices(o.services);
         if (csoportok.length === 1) {
-          if (csoportok[0].items.length === 1) return chooseService(csoportok[0].items[0].service, { next: F.next('HA2', 'service') });
+          if (!needsLength(csoportok[0])) return chooseService(csoportok[0].items[0].service, { next: F.next('HA2', 'service') });
           S.group = csoportok[0];
           return go(F.next('HA2', 'group'));
         }
@@ -668,14 +676,32 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     // Kezelesek: ikon (nem mindenhova kell foto, de a kulonbseget segiti), cim, jobbra az ar; a rovid jellemzo az idotartam
     HA2: async () => h('section', {}, title(flow.copy.groupTitle), note(S.intent.intent.title),
       h('div', { class: 'be-list' }, F.groupServices(S.intent.services).map((g) => bigButton(g.title, groupDur(g), () => {
-        if (g.items.length === 1) return chooseService(g.items[0].service, { next: F.next('HA2', 'service') });
-        S.group = g; // tobb hajhossz-valtozat: HA2B
+        if (!needsLength(g)) return chooseService(g.items[0].service, { next: F.next('HA2', 'service') });
+        S.group = g; // tobb hajhossz-valtozat letezik (akkor is, ha a fodraszanal csak egy foglalhato): HA2B
         return go(F.next('HA2', 'group'));
       }, { kep: flow.kezelesKep ? flow.kezelesKep(g.title) : null, ikon: kezelesIkon(g.title), ar: groupFrom(g), pre: g.items.map((it) => it.service) })))),
-    // Hajhosszok: a hossz ikonja segiti a kulonbseget
-    HA2B: async () => { prefetch(S.group.items.map((it) => it.service)); return h('section', {}, title(flow.copy.lengthTitle), note(S.group.title),
-      h('div', { class: 'be-list' }, S.group.items.map((it) => bigButton(it.length || nameOf(it.service), durText(it.service), () => chooseService(it.service, { next: F.next('HA2B', 'service') }),
-        { kep: flow.hajhosszKep ? flow.hajhosszKep(S.intent && S.intent.intent.key, it.length) : null, ikon: hajhosszIkon(it.length), ar: staffPriceText(it.service) })))); },
+    // Hajhosszok: a hossz ikonja segiti a kulonbseget. MINDEN letezo hajhosszat mutatjuk; amit a valasztott fodrasz nem vallal, az szurkulten latszik (nem valaszthato),
+    // alatta a magyarazat es a "Masik fodraszt valasztok" gomb. Igy a vendeg sosem kerul csendben egy hossz nelkuli / rossz hosszu foglalasra (Betti, 2026-10-22).
+    HA2B: async () => {
+      const full = fullGroup(S.group);
+      const ok = new Set(S.group.items.map((it) => String(it.service.serviceId)));
+      prefetch(S.group.items.map((it) => it.service));
+      const nev = S.staff ? staffName(S.staffLabel) : null;
+      const hianyzo = full.items.filter((it) => !ok.has(String(it.service.serviceId)));
+      const kepOf = (it) => ({ kep: flow.hajhosszKep ? flow.hajhosszKep(S.intent && S.intent.intent.key, it.length) : null, ikon: hajhosszIkon(it.length) });
+      const masok = [...new Set(hianyzo.flatMap((it) => (it.service.staffIds || []).map(String)).filter((id) => id !== String(S.staff)).map(staffNameById).filter(Boolean))];
+      return h('section', {}, title(flow.copy.lengthTitle), note(S.group.title),
+        h('div', { class: 'be-list' }, full.items.map((it) => (ok.has(String(it.service.serviceId))
+          ? bigButton(it.length || nameOf(it.service), durText(it.service), () => chooseService(it.service, { next: F.next('HA2B', 'service') }), { ...kepOf(it), ar: staffPriceText(it.service) })
+          : bigButton(it.length || nameOf(it.service), nev ? `${nev} ennél nem foglalható` : 'Most nem foglalható', null, { ...kepOf(it), tiltva: true })))),
+        hianyzo.length && nev ? h('div', { class: 'be-hossz-info' },
+          note(`${nev} ennél a kezelésnél csak a kiválasztható hajhosszra foglalható online.${masok.length ? ` A többi hajhosszra ${masok.join(' és ')} foglalható.` : ''}`),
+          h('div', { class: 'be-actions' }, secondary('Másik fodrászt választok', () => {
+            // az explicit valasztas felulirja a linkben megadott fodraszt is (kulonben a ?staff= visszaugratna)
+            ctx.staffKey = null; S.staff = null; S.staffLabel = null; S.group = null; S.intent = null;
+            go('HA0');
+          }))) : null);
+    },
 
     // Lezer: konzultacio (egyenesen C1) / "Mar tudom" -> terulet -> kezeles / "Mar jarok" -> terulet -> kezeles (2. alkalomtol arak)
     LA1: async () => {
