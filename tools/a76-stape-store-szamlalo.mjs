@@ -160,6 +160,13 @@ for (const kol of vizsgalt) {
     ["POST", `/documents/filter`, { collection_name: kol, limit: 1000 }],
     ["GET", `/documents?collection_name=${e}&limit=1000`, undefined],
     ["GET", `/collections/${e}/documents?page=1&per_page=100`, undefined],
+    ["GET", `/collections/${e}/documents`, undefined],
+    ["POST", `/collections/${e}/documents/search`, { limit: 100 }],
+    ["POST", `/collections/${e}/filter`, { limit: 100 }],
+    ["POST", `/collections/${e}/search`, { limit: 100 }],
+    ["POST", `/collections/${e}/documents/list`, { limit: 100 }],
+    ["POST", `/documents/search`, { collection_name: kol, limit: 100 }],
+    ["POST", `/filter`, { collection_name: kol, limit: 100 }],
     ["V1GET", `/${e}`, undefined],
     ["V1POST", `/${e}/search`, {}],
   ];
