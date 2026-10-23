@@ -19,6 +19,8 @@ const TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|utm_[a-z_]+)$/i;
 const kikerulo = (href) => { try { const k = new URL(href); k.searchParams.set('mp_nincs_atiranyitas', '1'); return k.href; } catch (e) { return href; } };
 const KOSZONO_ORIGIN = /^https:\/\/(www\.)?medicalpiercing\.hu$/;
 const NAPOK = 100; // a Salonic ~65-80 napra elore ad idopontot (2026-10-11: legtavolabbi 80 nap); 100 nap bortonosen mindet lefedi
+const IDO_OPCIOK = Object.freeze({ days: NAPOK, firstDays: 21 });
+const TARTALEK_MS = 6000; // ennyi utan indul friss tartalek-keres, ha az idopontok elso resze meg nem jott meg (a normal valasz 0,5-2,5 mp) // az idopont-lepes es az elotoltes KOZOS beallitasa (azonos gyorsitotar-kulcs)
 const HONAP = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
 const NAP_ROVID = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
 const NAP_NEV = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
@@ -767,6 +769,21 @@ export function nyit(ctx) {
   // alatta MINDEN lehetoseg kartyaja. Minden kartyan ket gomb: "Részletek" (lenyitja: a pont helye valodi fulfotoval, mire jo, garancia; a csomagoknal a kedvezmeny
   // magyarazata) es "Időpontot választok" (a regi [data-szolg]: title = a teljes Salonic-nev, .nev > span = a rovid nev, .ar = az ar; a tesztek es a foglalasi logika
   // ugyanaz). A kartya feje is nyit / zar (data-nyit).
+  // Idopont-elotoltes (2026-10-23, Feri: "javitas, persze, de nagyon tesztelj"): a piercing-listan mar betoltjuk a valoszinu valasztas(ok)
+  // szabad idopontjait (0-21. es 21-100. nap), PONTOSAN azzal a kulccsal, amit az idopont-lepes kerne (IDO_OPCIOK) -> a naptar a gyorsitotarbol jon. Csak gyorsitotar-melegites:
+  // a foglalas utja, a lepesek, a meres NEM valtozik; hiba vagy lassu valasz eseten az idopont-lepes ugyanugy lekeri (a hibas kerest a gyorsitotar eldobja).
+  // Kimelet a Salonicnak: motor-megnyitasonkent legfeljebb ELOTOLT_MAX elotoltes (egyenkent 2 keres: 0-21. es 21-100. nap), egy helyszin+piercing parost egyszer.
+  const ELOTOLT_MAX = 4;
+  const elotoltve = new Set();
+  function elotolt(serviceId, placeId = all.placeId) {
+    try {
+      if (!serviceId || !placeId || placeId !== all.placeId || lezart || all.lepes !== 'szolg') return; // kozben masik helyszin / lepes: kimarad
+      const k = all.placeId + ':' + serviceId;
+      if (elotoltve.has(k) || elotoltve.size >= ELOTOLT_MAX) return;
+      elotoltve.add(k);
+      adapter.getAvailability(all.placeId, serviceId, IDO_OPCIOK).catch(() => {}); // a salonic-adapter.js valtozatlan (meresi fajl): ugyanaz a hivas, onMore nelkul
+    } catch (e) { /* az elotoltes soha nem akaszthatja meg a foglalot */ }
+  }
   function szolgRajzol() {
     const lista = tartalom._lista || [];
     // stabil rendezes (a Salonic sorrendje csoporton belul marad): elol a 3 es a 2 piercing (kiemelve), utana az 1 piercingek, a tipusoldal piercingje elol (pl. a lep-oldalrol
@@ -788,6 +805,9 @@ export function nyit(ctx) {
       + `<div class="pk-lista">${mutat.map((s) => pkKartya(s, csoport(s) !== 5, ajanlott(s))).join('')}</div>`;
     // ha az ertekeles meg nem jott meg: megjottekor a sor frissul
     if (!ertekelesAdat) ertekelesBetolt().then(() => { const el = tartalom.querySelector('.pk-ertek'); if (el && ertekelesAdat) el.innerHTML = ertekelesHtml(); });
+    // a lista elso ket kartyaja (a kiemelt 3 / 2 piercing, illetve a tipusoldal sajatja) elotoltve, kis kesleltetessel, hogy a lista rajzolasat ne lassitsa
+    const elsok = mutat.slice(0, 2).map((x) => x.serviceId), hely = all.placeId;
+    setTimeout(() => elsok.forEach((id) => elotolt(id, hely)), 300);
   }
   // a "Hogy néz ki egy szúrás?" videoja (a tulajdonos kerese, 2026-10-16): a TikTok-fiok legnezettebb organikus shenmen-szuras videoja
   // (7485452442327502102, 316 ezer megtekintes; ekszervalasztas, pontmeres, szuras), webes valtozat 540x960
@@ -884,11 +904,30 @@ export function nyit(ctx) {
     const kesz = () => { all.tovabbi = false; const a = $('.ablak'); if (a) a.dataset.tovabbi = '0'; };
     let elso;
     try {
-      elso = await adapter.getAvailability(all.placeId, s.serviceId, {
-        days: NAPOK, firstDays: 21, minLeadMinutes: 30,
+      const opciok = {
+        ...IDO_OPCIOK, minLeadMinutes: 30,
         onMore: (l) => { kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar(); },
+      };
+      // Tartalek-keres (2026-10-23, az elotoltes mellett): ha az elso resz TARTALEK_MS alatt nem jon meg (pl. egy beragadt elotoltott vagy lassu keres), egy friss keres
+      // indul mellette (fresh: a gyorsitotarat megkerulve), es amelyik elobb SIKERES, az rajzol. Mindketto hibaja eseten a regi hiba-kepernyo (hiba('idopontok')).
+      const elsoKeres = adapter.getAvailability(all.placeId, s.serviceId, opciok);
+      let ora, indit;
+      const tartalekKeres = new Promise((ok, nem) => {
+        let elindult = false;
+        indit = () => {
+          clearTimeout(ora);
+          if (elindult) return; elindult = true;
+          if (all.lepes !== 'ido' || all.szolg !== s || lezart) return nem(new Error('tartalek: mar nem az idopont-lepes'));
+          adapter.getAvailability(all.placeId, s.serviceId, { ...opciok, fresh: true }).then(ok, nem);
+        };
+        ora = setTimeout(indit, TARTALEK_MS);
       });
-    } catch (e) { kesz(); return hiba('idopontok', e); }
+      // az elso keres sikere: nincs tartalek; HIBAJA: a tartalek azonnal indul (egy ujraprobalas), es csak ha az is hibas, jon a hiba-kepernyo
+      elsoKeres.then(() => clearTimeout(ora), () => indit());
+      try { elso = await Promise.any([elsoKeres, tartalekKeres]); }
+      catch (agg) { clearTimeout(ora); throw (agg && agg.errors && agg.errors.find((x) => x && x.code)) || (agg && agg.errors && agg.errors[0]) || agg; }
+      clearTimeout(ora);
+    } catch (e) { kesz(); if (all.lepes !== 'ido' || all.szolg !== s || lezart) return; return hiba('idopontok', e); }
     if (all.lepes !== 'ido' || all.szolg !== s || lezart) return;
     all.slotok = elso; all.slotokKulcs = kulcs; all.slotokT = Date.now();
     naptar();
@@ -981,6 +1020,8 @@ export function nyit(ctx) {
   }
 
   // --- esemenyek ---
+  // elotoltes szandekra: az "Időpontot választok" gomb erintesekor / lenyomasakor (a kattintas elott ~100-300 ms-mal) – csak gyorsitotar, a kattintas utja valtozatlan
+  shadow.addEventListener('pointerdown', (e) => { try { const b = e.target.closest && e.target.closest('[data-szolg]'); if (b) elotolt(b.dataset.szolg); } catch (x) { /* soha nem akaszt */ } }, { passive: true });
   shadow.addEventListener('click', (e) => {
     if (e.target.classList && e.target.classList.contains('pk-felugro')) return szurasZar();
     const t = e.target.closest('button, a');
@@ -994,7 +1035,7 @@ export function nyit(ctx) {
     if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) return visszaLep(d.lepes);
     const hely = d.hely || d.terkepHely;
     if (hely) { all.placeId = +hely; all.szolg = null; all.nap = null; all.honap = null; all.staffId = null; return ugrik('szolg'); }
-    if (d.nyit) { all.nyitott = all.nyitott === d.nyit ? '' : d.nyit; szolgRajzol(); const k = shadow.querySelector(`.pk[data-pk="${d.nyit}"]`); if (k && all.nyitott) k.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
+    if (d.nyit) { elotolt(d.nyit); all.nyitott = all.nyitott === d.nyit ? '' : d.nyit; szolgRajzol(); const k = shadow.querySelector(`.pk[data-pk="${d.nyit}"]`); if (k && all.nyitott) k.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
     if (d.szuras !== undefined) return szurasNyit(t);
     if (d.szolg) { all.szolg = (tartalom._lista || []).find((x) => x.serviceId === d.szolg) || null; all.nap = null; all.honap = null; if (all.szolg) ugrik('ido'); return; }
     if (d.staff !== undefined) { all.staffId = d.staff || null; all.nap = null; all.honap = null; return naptar(); }
