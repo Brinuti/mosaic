@@ -71,8 +71,9 @@ export function vilag({ env = {}, sd = true, kapcsolo = 'mind' } = {}) {
   return v;
 }
 export const iso = (ms) => new Date(ms).toISOString().replace('.000Z', 'Z');
-/** A Salonic szalon-ertesito (letrehozo level) a Zap-lepes szerinti mezoivel. */
-export const level = (uuid, o = {}) => ({ uuid, host: 'mosaic-pmu.salonic.hu', felado: 'Mosaic PMU', szolgaltatas: 'Soft powder', idopont_szoveg: 'Október 20. (kedd) 16:00 - 17:00', munkatarsak: ['Teszt Mester'], ld: { startDate: '2026-10-20T16:00:00+02:00' }, level_datuma: iso(T0), vendeg: { ...VENDEG }, nev: NEV, uj_vendeg: false, megjegyzes: '', ...o });
+/** A Salonic szalon-ertesito (letrehozo level) a Zap-lepes szerinti mezoivel. DECISION #195 / 3: az alap PMU-szolgaltatasnak ISMERT ara van (`ar`, a Zap mezoje, exact): az ismeretlen PMU-ar HOLD (nem kuldes), ezert az ar-tol fuggetlen tesztek ismert arral futnak; ismeretlen arhoz: level(uuid, { ar: undefined }). */
+export const level = (uuid, o = {}) => ({ uuid, host: 'mosaic-pmu.salonic.hu', felado: 'Mosaic PMU', szolgaltatas: 'Soft powder', idopont_szoveg: 'Október 20. (kedd) 16:00 - 17:00', munkatarsak: ['Teszt Mester'], ld: { startDate: '2026-10-20T16:00:00+02:00' }, level_datuma: iso(T0), vendeg: { ...VENDEG }, nev: NEV, uj_vendeg: false, megjegyzes: '',
+  ...((o.host || 'mosaic-pmu.salonic.hu') === 'mosaic-pmu.salonic.hu' ? { ar: 25000 } : {}), ...o }); // PMU: ismert ar (lasd fent); mas uzletag: nincs alap-ar (a nevtabla / a teszt adja)
 /** A motoros parositas 4 probaja (0, +61, +181, +601 mp): a vegen "parositatlan" (nincs kulcs-iras); az ora a 4. proba idejen all. */
 export async function lezar(v, body) {
   const ered = [];

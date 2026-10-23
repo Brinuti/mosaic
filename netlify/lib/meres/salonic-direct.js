@@ -14,6 +14,7 @@
 //   7. kuldes: ugyanaz az elosztas() mint a motornal, de forras=salonic_direct, attr_minoseg=C_salonic_direct, sajat determinisztikus identity (sd_<24 hex>, HMAC)
 // A tarolt adat: HMAC-hash-ek (vendeg), a Salonic-UUID es a determinisztikus sd azonosito; nyers e-mail / telefon / nev / megjegyzes SOHA nincs a D1-ben vagy a valaszban.
 import { SALONIC_UZLETAG, foglalasJelleg, esemenyek, konzultacioTabla, kuponJelzes } from './esemeny-modell.js';
+import { ir as szamlaloIr, napBudapest } from '../foglalo-szamlalo.js'; // DECISION #195 / 3: a PMU ar-HOLD napi darabszama (lepes_szamlalo, SZAMLALO_DB)
 import { emailNormal, telefonSzamjegy } from './hash.js';
 import { elosztas, meresSema, kapcsolokOlvas } from './elosztas.js';
 import { jellegRogzit } from './jelleg-rogzites.js';
@@ -278,6 +279,26 @@ const allapotIr = (db, uuid, sdAllapot, t, riasztas) => db.prepare('UPDATE fogla
 
 const attrJelek = (v) => ({ forras: 'salonic_level', email_hash: !!emailNormal((v || {}).email), telefon_hash: !!telefonSzamjegy((v || {}).telefon), click_id: false, fbp: false, ttp: false, ga4_client_id: false, ip_ua: false });
 
+/**
+ * DECISION #195 / 3 (a meresi oldal 6243023279 + a Drive DECISION-LOG "## #195"; #98: az ertek a valos ar): a PMU konverzios esemeny, amelynek TENYLEGES ara ismeretlen (`unknown_price`), NEM megy ki ertek nelkul.
+ * HOLD: a cellak `halasztva` allapotot kapnak (0 kuldes minden platformra), az sd-sor `tartva` + riasztas (`pmu_ar_ismeretlen`), es napi hiba-szamlalo ir: `lepes_szamlalo` (SZAMLALO_DB) uzletag = pmu,
+ * lepes = meres_hold, tipus = unknown_price (olvasas: `SELECT nap, uzletag, tipus, db FROM lepes_szamlalo WHERE lepes = 'meres_hold'`). Foglalasonkent EGYSZER szamol (az ujrafuttatas nem noveli).
+ * Feloldas: az ar kesobb ismertte valik (nevtabla-frissites) -> a `tartva` sor ISMETELT `sd_atvetel` hivasa (a 48 oras kapun belul) a halasztott cellakat az igazi arral kuldi (a meglevo ujrafuttatasi ut).
+ * Hatokor: CSAK a PMU `elso` / `visszajaro` (a tenyleges arbol keszulo esemenyek); a konzultacio rogzitett tabla-erteket kap (exact), a `Korrekcio` 0 Ft exact, az ismert lista-ar exact - ezek valtozatlanok.
+ * Az oxigen / HeadSpa / fodrasz / szor ag es az `unknown_discount` (kedvezmeny-gyanu) valtozatlanul a #131 D5 szerint ertek nelkul megy.
+ */
+export const PMU_AR_HOLD_JELLEGEK = Object.freeze(['elso', 'visszajaro']);
+export const PMU_AR_HOLD_INDOK = 'pmu_unknown_price: HOLD, nincs automatikus kuldes (a PMU szolgaltatas ara ismeretlen: ertek nelkul nem kuldunk konverziot, DECISION #195)';
+export const PMU_AR_HOLD_SZAMLALO = Object.freeze({ lepes: 'meres_hold', uzletag: 'pmu', tipus: 'unknown_price' });
+export const pmuArHold = (uzletag, jelleg, minoseg) => uzletag === 'pmu' && minoseg === 'unknown_price' && PMU_AR_HOLD_JELLEGEK.includes(jelleg);
+async function pmuHoldSzamol(env, most) {
+  try {
+    if (!env || !env.SZAMLALO_DB) return false; // nincs szamlalo-kotes (helyi / nem beallitott kornyezet): a HOLD ettol nem valtozik
+    await szamlaloIr(env.SZAMLALO_DB, { ...PMU_AR_HOLD_SZAMLALO, loadMs: null }, napBudapest(new Date(most)));
+    return true;
+  } catch (e) { return false; } // a szamlalo hibaja sosem akadalyozhatja a meresi utat (a HOLD a meres_kuldes cellakban akkor is latszik)
+}
+
 /** A kuldesi lepes (idempotens: az elosztas a mar vegleges cellara nem kuld ujra). mod: 'normal' | 'confirmed' | 'suspected' | 'feloldva_confirmed' */
 async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggosegek, t0, mod, csere, szaraz }) {
   const v = (bejovo.vendeg && typeof bejovo.vendeg === 'object') ? bejovo.vendeg : {};
@@ -290,12 +311,22 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
     forras: 'salonic_direct', attr_minoseg: 'C_salonic_direct', attr_jelek: attrJelek(v), ertek_minoseg: ar.minoseg, ertek_forras_jel: ar.forras };
   if (mod === 'confirmed' || mod === 'feloldva_confirmed') fk.fixAllapot = { allapot: 'kihagyva', indok: `reschedule_confirmed${mod === 'feloldva_confirmed' ? ' (feloldva)' : ''}: nincs uj konverzio (korabbi foglalas: ${String((csere && csere.regi_uuid) || '?').slice(0, 8)})` };
   else if (mod === 'suspected') fk.fixAllapot = { allapot: 'halasztva', indok: (csere && csere.hianyzo ? 'hianyzo_mezo' : 'reschedule_suspected') + ': HOLD, nincs automatikus kuldes (' + String((csere && csere.ok) || 'csere-gyanu').slice(0, 120) + ')' };
+  else if (pmuArHold(uzletag, zar.jelleg, ar.minoseg)) fk.fixAllapot = { allapot: 'halasztva', indok: PMU_AR_HOLD_INDOK }; // DECISION #195 / 3: ismeretlen PMU-ar -> HOLD (a csere-dontes `confirmed` / `suspected` mod elsobbsegot elvez: ott mar van rogzitett allapot)
+  const arHold = !!fk.fixAllapot && fk.fixAllapot.indok === PMU_AR_HOLD_INDOK;
   const eredmeny = { jelleg: zar.jelleg, kupon: zar.kupon, uj_vendeg: ujVendeg, ertek_minoseg: ar.minoseg, ertek_forras: ar.forras };
   if (szaraz) {
     const lista = esemenyek({ ...fk, ertek: ar.ertek }, konzultacioTabla(env));
+    if (arHold) eredmeny.ar_hold = { hold: true, szamlalo: 'pmu.unknown_price', szamlalo_irva: false }; // a szaraz terv irasmentes: a szamlalo nem nő
     return { ...eredmeny, terv_esemenyek: lista.map((e) => ({ esemeny_id: e.esemeny_id, nev: e.nev, tipus: e.tipus, ertek: ar.minoseg === 'exact' || e.ertek_forras !== 'tenyleges_ar' ? e.ertek : null, nyitott: !!e.nyitott })), fix_allapot: fk.fixAllapot || null };
   }
+  const holdVolt = arHold ? !!(await db.prepare("SELECT 1 AS x FROM meres_kuldes WHERE source_id = ?1 AND allapot = 'halasztva' AND indok LIKE 'pmu_unknown_price%' LIMIT 1").bind(sdId).first()) : false;
   const r = await elosztas(db, fk, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, kuldo: fuggosegek.kuldo, eloEllenorzes: async () => (await foglalasAllapot({ host: mezok.host, uuid, fetchImpl: fuggosegek.fetchImpl })).allapot });
+  if (arHold) { // a HOLD szamlalo: foglalasonkent egyszer, csak ha a HOLD-cellak tenyleg megirodtak
+    const most2 = fuggosegek.now ? fuggosegek.now() : Date.now();
+    const holdVan = !!(await db.prepare("SELECT 1 AS x FROM meres_kuldes WHERE source_id = ?1 AND allapot = 'halasztva' AND indok LIKE 'pmu_unknown_price%' LIMIT 1").bind(sdId).first());
+    const irva = holdVan && !holdVolt ? await pmuHoldSzamol(env, most2) : false;
+    eredmeny.ar_hold = { hold: holdVan, szamlalo: 'pmu.unknown_price', szamlalo_irva: irva };
+  }
   return { ...eredmeny, esemeny_kuldes: r };
 }
 
@@ -527,17 +558,17 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
 }
 
 /**
- * sd-riasztasok (csak olvas; a regi foglalas elo allapotat ujraellenorzi): halasztva (reschedule_suspected) / tartva (az elo allapot nem ellenorizheto) / lejart / sd_atveve_serult;
+ * sd-riasztasok (csak olvas; a regi foglalas elo allapotat ujraellenorzi): halasztva (reschedule_suspected) / tartva (az elo allapot nem ellenorizheto, VAGY - pmu_ar_ismeretlen - a PMU ar ismeretlen HOLD, DECISION #195 / 3) / lejart / sd_atveve_serult;
  * old_booking_still_active (reschedule_confirmed, a regi foglalas meg el - az elo ujraellenorzes a riasztast megszunteti, ha kozben torolve lett); sd_hianyzik (a motoros parositas lezart, de a Zap 5. lepese nem jott).
  */
 export async function sdRiasztasok(db, env, { fetchImpl, now } = {}) {
   await parositasSema(db);
   const t = sec(now ? now() : Date.now());
   const lista = [];
-  const { results: sorok } = await db.prepare("SELECT e.uuid, e.sd_id, e.sd_allapot, e.sd_ido, e.frissitve, r.allapot AS csere_allapot, r.regi_uuid, r.regi_aktiv, r.reschedule_from, r.reschedule_to, r.ok AS csere_ok FROM foglalas_egyeztetes e LEFT JOIN foglalas_reschedule r ON r.uuid = e.uuid WHERE e.sd_id IS NOT NULL AND (e.sd_allapot IN ('halasztva', 'tartva', 'lejart', 'atveve') OR (e.sd_allapot = 'reschedule_confirmed' AND r.regi_aktiv IS NOT 0)) ORDER BY e.sd_ido DESC LIMIT 200").all();
+  const { results: sorok } = await db.prepare("SELECT e.uuid, e.sd_id, e.sd_allapot, e.sd_ido, e.frissitve, r.allapot AS csere_allapot, r.regi_uuid, r.regi_aktiv, r.reschedule_from, r.reschedule_to, r.ok AS csere_ok, (SELECT COUNT(*) FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.allapot = 'halasztva' AND k.indok LIKE 'pmu_unknown_price%') AS ar_hold FROM foglalas_egyeztetes e LEFT JOIN foglalas_reschedule r ON r.uuid = e.uuid WHERE e.sd_id IS NOT NULL AND (e.sd_allapot IN ('halasztva', 'tartva', 'lejart', 'atveve') OR (e.sd_allapot = 'reschedule_confirmed' AND r.regi_aktiv IS NOT 0)) ORDER BY e.sd_ido DESC LIMIT 200").all();
   let ellenorzes = 0;
   for (const s of sorok || []) {
-    let tipus = s.sd_allapot === 'reschedule_confirmed' ? 'old_booking_still_active' : s.sd_allapot === 'halasztva' ? (s.csere_allapot === 'hianyzo_mezo' ? 'hianyzo_mezo' : (s.csere_allapot === 'hianyzo_mezo_potolva' || s.csere_allapot === 'confirmed' || s.csere_allapot === 'feloldva_uj' || s.csere_allapot === 'feloldva_confirmed') ? 'atvetel_megszakadt' : 'reschedule_suspected') : s.sd_allapot === 'tartva' ? 'elo_allapot_nem_ellenorizheto' : s.sd_allapot === 'lejart' ? 'lejart_48_ora' : 'atvetel_megszakadt';
+    let tipus = s.sd_allapot === 'reschedule_confirmed' ? 'old_booking_still_active' : s.sd_allapot === 'halasztva' ? (s.csere_allapot === 'hianyzo_mezo' ? 'hianyzo_mezo' : (s.csere_allapot === 'hianyzo_mezo_potolva' || s.csere_allapot === 'confirmed' || s.csere_allapot === 'feloldva_uj' || s.csere_allapot === 'feloldva_confirmed') ? 'atvetel_megszakadt' : 'reschedule_suspected') : s.sd_allapot === 'tartva' ? (s.ar_hold > 0 ? 'pmu_ar_ismeretlen' : 'elo_allapot_nem_ellenorizheto') : s.sd_allapot === 'lejart' ? 'lejart_48_ora' : 'atvetel_megszakadt';
     if (tipus === 'old_booking_still_active' && s.regi_uuid && fetchImpl && ellenorzes < 20) { // elo ujraellenorzes: a regi foglalas kozben torolve lett?
       const uz = await db.prepare('SELECT uzletag FROM foglalas_vendeg WHERE uuid = ?1').bind(s.regi_uuid).first();
       const hostnev = uz ? Object.keys(SALONIC_UZLETAG).find((x) => SALONIC_UZLETAG[x] === uz.uzletag) : null; // a foglalas_vendeg.uzletag meres-nev (fodrasz / oxigen / szor), nem BUSINESSES-kulcs
@@ -547,7 +578,7 @@ export async function sdRiasztasok(db, env, { fetchImpl, now } = {}) {
         if (elo.allapot === 'torolve') { await db.prepare('UPDATE foglalas_reschedule SET regi_aktiv = 0, frissitve = ?2 WHERE uuid = ?1').bind(s.uuid, t).run(); await db.prepare('UPDATE foglalas_egyeztetes SET riasztas = 0, frissitve = ?2 WHERE uuid = ?1').bind(s.uuid, t).run(); continue; }
       }
     }
-    lista.push({ tipus, uuid: s.uuid, sd_id: s.sd_id, sd_allapot: s.sd_allapot, regi_uuid_elo8: s.regi_uuid ? String(s.regi_uuid).slice(0, 8) : null, reschedule_from: s.reschedule_from, reschedule_to: s.reschedule_to, ok: s.csere_ok, ido: s.sd_ido });
+    lista.push({ tipus, uuid: s.uuid, sd_id: s.sd_id, sd_allapot: s.sd_allapot, regi_uuid_elo8: s.regi_uuid ? String(s.regi_uuid).slice(0, 8) : null, reschedule_from: s.reschedule_from, reschedule_to: s.reschedule_to, ok: s.ar_hold > 0 && s.sd_allapot === 'tartva' ? 'DECISION #195: a PMU szolgaltatas ara ismeretlen (HOLD, 0 kuldes; feloldas: nevtabla-frissites utan a sor ismetelt sd_atvetel hivasa)' : s.csere_ok, ido: s.sd_ido });
   }
   // sd_hianyzik: a motoros parositas LEZART (parositatlan), nincs kuldes, nincs sd-atvetel, a letrehozo level 20 perc es 48 ora kozott van
   if (String((env && env.MERES_SALONIC_DIRECT) || '') === '1') {
