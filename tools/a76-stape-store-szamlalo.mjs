@@ -89,6 +89,48 @@ const budapestNap = (ms) =>
   new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Budapest" }).format(new Date(ms));
 
 console.log(`A76 Stape Store szamlalo – ${new Date().toISOString()} – ${NAPOK} nap`);
+
+// Nyilvanos OpenAPI-leiras (kulcs NELKUL): csak az utvonal-listat irjuk ki,
+// hogy a "Filter documents" pontos utvonala kiderudjon (fejleszto javaslata, #167 6362376438).
+const DOC_JELOLTEK = [
+  "https://store-api.stape.io/v2/doc/json",
+  "https://store-api.stape.io/v2/doc-json",
+  "https://store-api.stape.io/v2/openapi.json",
+  "https://store-api.stape.io/v2/swagger.json",
+  "https://store-api.stape.io/v2/docs/json",
+  "https://store-api.stape.io/doc-json",
+  "https://store-api.stape.io/v2/doc/openapi.json",
+  "https://store-api.stape.io/v2/doc/swagger.json",
+  "https://store-api.stape.io/v2/doc",
+];
+for (const url of DOC_JELOLTEK) {
+  let status = 0, json = null, tipus = "", szovegHossz = 0, hivatkozasok = [];
+  try {
+    const r = await fetch(url, { headers: { Accept: "application/json" } });
+    status = r.status;
+    tipus = r.headers.get("content-type") || "";
+    const t = await r.text();
+    szovegHossz = t.length;
+    try { json = JSON.parse(t); } catch {
+      // HTML eseten a beagyazott spec-hivatkozasokat irjuk ki (json/yaml)
+      hivatkozasok = [...new Set((t.match(/["'(][^"'()\s]*\.(?:json|ya?ml)[^"'()\s]*["')]/g) || []).map((s) => s.slice(1, -1)))].slice(0, 10);
+    }
+  } catch (e) { tipus = "hiba: " + (e && e.message ? e.message : e); }
+  console.log(`OPENAPI ${url} -> ${status} ${tipus} (${szovegHossz} karakter)${hivatkozasok.length ? " spec-hivatkozasok: " + hivatkozasok.join(" ") : ""}`);
+  if (json && json.paths && typeof json.paths === "object") {
+    for (const [p, ops] of Object.entries(json.paths)) {
+      for (const [m, op] of Object.entries(ops || {})) {
+        if (!/^(get|post|put|patch|delete)$/i.test(m)) continue;
+        const cim = (op && (op.summary || op.operationId)) || "";
+        console.log(`  ${m.toUpperCase()} ${p} – ${cim}`);
+        if (/filter|search|documents/i.test(p + " " + cim) && op && op.requestBody) {
+          console.log(`    body: ${JSON.stringify(op.requestBody).slice(0, 800)}`);
+        }
+      }
+    }
+    break;
+  }
+}
 const gyujt = await hiv("GET", "/collections");
 const gyujtLista = dokumentumok(gyujt.json);
 console.log(`GET /collections -> ${gyujt.status}${gyujtLista ? `, ${gyujtLista.length} kollekcio` : ""}${gyujt.hiba ? " " + gyujt.hiba : ""}`);
