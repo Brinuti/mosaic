@@ -904,10 +904,19 @@ export function nyit(ctx) {
     const kesz = () => { all.tovabbi = false; const a = $('.ablak'); if (a) a.dataset.tovabbi = '0'; };
     let elso;
     try {
-      const opciok = {
-        ...IDO_OPCIOK, minLeadMinutes: 30,
-        onMore: (l) => { kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar(); },
+      // a tavolabbi napok (21-100.) kesobb jonnek (onMore). Ha ez a resz hibas (2026-10-23: egy Salonic-hiba miatt a naptar csendben csak 3 hetet mutatott),
+      // EGYSZER friss keressel ujraprobaljuk; csak ennek hibajanal marad a 3 hetes naptar (mint eddig).
+      let tobbUjra = false, tobbMegvan = false;
+      const tobb = (l) => {
+        if (l) tobbMegvan = true; else if (tobbMegvan) return; // a parhuzamos (tartalek) keres mar meghozta
+        if (!l && !tobbUjra && all.lepes === 'ido' && all.szolg === s && !lezart) {
+          tobbUjra = true;
+          adapter.getAvailability(all.placeId, s.serviceId, { ...IDO_OPCIOK, minLeadMinutes: 30, fresh: true }).then(tobb, () => kesz());
+          return;
+        }
+        kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar();
       };
+      const opciok = { ...IDO_OPCIOK, minLeadMinutes: 30, onMore: tobb };
       // Tartalek-keres (2026-10-23, az elotoltes mellett): ha az elso resz TARTALEK_MS alatt nem jon meg (pl. egy beragadt elotoltott vagy lassu keres), egy friss keres
       // indul mellette (fresh: a gyorsitotarat megkerulve), es amelyik elobb SIKERES, az rajzol. Mindketto hibaja eseten a regi hiba-kepernyo (hiba('idopontok')).
       const elsoKeres = adapter.getAvailability(all.placeId, s.serviceId, opciok);

@@ -12,6 +12,7 @@
 //   D  lassu elotoltes (4 mp): a valasztas a mar futo kerest varja meg, nem indit ujat, a naptar megjelenik (nem ragad be), kozben latszik a toltes
 //   E  az elotoltes valasza 20 mp-ig nem jon: 6 mp utan friss tartalek-keres indul, a naptar ~7-8 mp alatt megjelenik (nem varja ki a 15 mp-es idokorlatot)
 //   I  a Salonic minden kerese hibas: a regi hiba-kepernyo (tartalek-link a Salonicra) megjelenik, nem ragad be a "betoltes"
+//   K  a tavolabbi napok (21-100.) kerese hibas: egyszer ujraproba, a naptarban a 3 heten tuli honapok is latszanak
 //   J  a valasztaskori (nem elotoltott) keres hibat kap, de az ujraprobalas sikeres: a naptar megjelenik, hiba-kepernyo nincs
 //   F  helyszincsere az elotoltes elott: a regi helyszinre nem megy elotoltes, az uj helyszin naptara jo helyszinrol jon
 //   G  vissza a listara, masik (elotoltott) piercing: azonnal megjelenik
@@ -37,8 +38,9 @@ async function kontextus() {
     if (!(req.method() === 'GET' && SZABAD.test(url))) return r.abort();
     if (!NAPTAR.test(url)) return r.continue();
     const q = new URL(url).searchParams;
-    const mod = zavar.db > 0 ? zavar.mod : 'normal';
-    if (zavar.db > 0 && zavar.mod !== 'normal') zavar.db--;
+    const talal = !zavar.days || +q.get('days') === zavar.days; // zavar.days: csak az ilyen hosszu (pl. 79 napos = 21-100.) keresek
+    const mod = zavar.db > 0 && talal ? zavar.mod : 'normal';
+    if (zavar.db > 0 && talal && zavar.mod !== 'normal') zavar.db--;
     naplo.push({ sid: q.get('serviceId'), place: q.get('placeId'), days: +q.get('days'), t: Date.now(), mod });
     if (mod === 'hiba') return r.fulfill({ status: 500, body: 'teszt-hiba' });
     if (mod.startsWith('lassu:')) { await alszik(+mod.slice(6)); try { return await r.continue(); } catch (e) { return; } }
@@ -205,6 +207,31 @@ const elotoltott = (k) => [...new Set(k.naplo.map((x) => x.sid))];
   const ido = await k.varj(NAPTAR_KESZ, null, 25000);
   ok('J: az elso keres hibaja utan a tartalek-keres a naptarat hozza', ido >= 0, `${ido} ms, ${keresek(k, nemElo, t0).length} keres`);
   ok('J: nincs JS-hiba', k.jsHiba.length === 0, k.jsHiba.join(' | '));
+  await k.ctx.close();
+}
+
+// K: a tavolabbi napok kerese hibas -> egyszer ujraprobalja
+{
+  const k = await kontextus();
+  await listaig(k);
+  const lista = await k.sr(SZOLGOK);
+  await alszik(2500);
+  const nemElo = lista.find((x) => !elotoltott(k).includes(x));
+  k.zavar.mod = 'hiba'; k.zavar.days = 79; k.zavar.db = 2; // a 21-100. nap kerese (es az adapter 1 ujraprobalasa) hibas
+  const t0 = Date.now();
+  await kattint(k, nemElo);
+  await k.varj(NAPTAR_KESZ, null, 25000);
+  await alszik(4000);
+  const honapok = new Set();
+  for (let i = 0; i < 6; i++) {
+    for (const n of await k.sr('return [...r.querySelectorAll("[data-nap]")].map(x => x.dataset.nap.slice(0, 7))')) honapok.add(n);
+    const tovabb = await k.sr('const b = r.querySelector(".honap-fej button:last-child"); if (!b || b.disabled || !b.dataset.honap) return false; b.click(); return true');
+    if (!tovabb) break; await alszik(300);
+  }
+  const k79 = keresek(k, nemElo, t0).filter((x) => x.days === 79);
+  ok('K: a 21-100. nap hibas kerese utan friss ujraprobalas ment, es sikerult', k79.some((x) => x.mod === 'hiba') && k79.some((x) => x.mod === 'normal'), k79.map((x) => x.mod).join(','));
+  ok('K: a naptarban a 3 heten tuli honap(ok) is latszanak', [...honapok].sort().pop() >= '2026-12', [...honapok].sort().join(','));
+  ok('K: nincs JS-hiba', k.jsHiba.length === 0, k.jsHiba.join(' | '));
   await k.ctx.close();
 }
 
