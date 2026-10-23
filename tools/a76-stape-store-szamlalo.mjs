@@ -91,25 +91,39 @@ console.log(`A76 Stape Store szamlalo – ${new Date().toISOString()} – ${NAPO
 const gyujt = await hiv("GET", "/collections");
 const gyujtLista = dokumentumok(gyujt.json);
 console.log(`GET /collections -> ${gyujt.status}${gyujtLista ? `, ${gyujtLista.length} kollekcio` : ""}${gyujt.hiba ? " " + gyujt.hiba : ""}`);
+const talaltNevek = [];
 if (gyujtLista) {
-  const nevek = gyujtLista.map((c) => (c && (c.name || c.id || c.collection)) || "?").slice(0, 50);
-  console.log(`  kollekcio-nevek: ${nevek.join(", ")}`);
+  const elso = gyujtLista[0];
+  console.log(`  kollekcio-objektum mezonevei: ${elso && typeof elso === "object" ? Object.keys(elso).join(", ") : typeof elso}`);
+  for (const c of gyujtLista.slice(0, 50)) {
+    if (typeof c === "string") { talaltNevek.push(c); continue; }
+    const nev = c && Object.entries(c).find(([k, v]) => /name|collection|title|slug|key/i.test(k) && typeof v === "string");
+    if (nev) talaltNevek.push(nev[1]);
+  }
+  console.log(`  kollekcio-nevek: ${talaltNevek.join(", ") || "-"}`);
 }
 
 const hatar = Date.now() - NAPOK * 86400000;
-for (const kol of KOLLEKCIOK) {
+const vizsgalt = [...new Set([...KOLLEKCIOK, ...talaltNevek.filter((n) => /a76/i.test(n))])];
+for (const kol of vizsgalt) {
   const e = encodeURIComponent(kol);
   const probak = [
     ["POST", `/collections/${e}/documents/filter`, { limit: 1000 }],
-    ["POST", `/collections/${e}/documents/filter`, {}],
+    ["POST", `/collections/${e}/documents/search`, { limit: 1000 }],
+    ["POST", `/collections/${e}/documents/list`, { limit: 1000 }],
     ["GET", `/collections/${e}/documents?limit=1000`, undefined],
-    ["GET", `/collections/${e}/documents`, undefined],
+    ["POST", `/collections/${e}/filter`, { limit: 1000 }],
+    ["POST", `/documents/filter`, { collection: kol, limit: 1000 }],
+    ["POST", `/documents/filter?collection=${e}`, { limit: 1000 }],
+    ["GET", `/documents?collection=${e}&limit=1000`, undefined],
+    ["GET", `/collections/${e}`, undefined],
   ];
   let docs = null;
   for (const [m, p, b] of probak) {
     const r = await hiv(m, p, b);
     const d = dokumentumok(r.json);
-    console.log(`${kol}: ${m} ${p.replace(e, "<kol>")} -> ${r.status}${d ? `, ${d.length} dokumentum` : ""}${r.hiba ? " " + r.hiba : ""}`);
+    const kulcsok = !d && r.json && typeof r.json === "object" ? ` (valasz-mezok: ${Object.keys(r.json).join(", ")})` : "";
+    console.log(`${kol}: ${m} ${p.split(e).join("<kol>")} -> ${r.status}${d ? `, ${d.length} dokumentum` : ""}${kulcsok}${r.hiba ? " " + r.hiba : ""}`);
     if (r.status >= 200 && r.status < 300 && d) { docs = d; break; }
   }
   if (!docs) { console.log(`${kol}: nem sikerult listazni.`); continue; }
