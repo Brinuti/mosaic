@@ -6,7 +6,7 @@
 // Mit tarolunk (Cloudflare D1, wrangler.toml: SZAMLALO_DB): csak OSSZESITETT darabszamokat, naponta (Europe/Budapest) es uzletagankent:
 //   lepes_szamlalo(nap, uzletag, lepes, tipus, db)   lepesenkenti darabszam; hibaknal a tipus a hiba tipusa; bezarasnal a lepes, ahol bezartak
 //   betoltes_szamlalo(nap, uzletag, vedro, db, ossz_ms, max_ms)   az idopontok betoltesi ideje (eloszlas-vedrok + osszeg + maximum)
-// DECISION #205 (2026-10-19, CSAK-MERES): tovabbi, zart listas belso lepesek (lasd BELSO_205 lent): verify_check, success_unverified, kimenet_ido, recovered, a2_elofordulas, lepes_bontas, lepes_ido,
+// DECISION #205 (2026-10-19, CSAK-MERES): tovabbi, zart listas belso lepesek (lasd BELSO_205 lent): verify_check, success_unverified, kimenet_ido, recovered, a2_elofordulas, lepes_bontas, lepes_ido, price_irany (HS-2),
 //   c1_szabad, c1_elso_nap. Mind a LEGACY `lepes_szamlalo` tablaba kerul (nincs seema-valtozas): a lepes = a lepes neve, a tipus = a zart listak pontokkal osszefuzve. A GET riport additiv kulcsokat kap.
 // NEM tarolunk: sutit, azonositot (munkamenet / eszkoz / felhasznalo), IP-cimet, nevet, e-mailt, telefonszamot, oldal-URL-t, idobelyeget (csak a napot).
 // A kerest a szerver nem naplozza el (se console, se KV): az egyetlen nyom a D1 darabszam.
@@ -42,6 +42,7 @@ function reszletTipus(t) {
 // --- DECISION #205 (2026-10-19): csak-meres bovites; a kliens (assets/js/booking-engine/lepes-meres.js) ugyanezeket a zart listakat ismeri (teszt: egyezes) ---------------------------------------------
 export const VERIFY_KODOK = Object.freeze(['params', 'place', 'service', 'slot', 'staff', 'price', 'no_expectation']);
 export const IDO_VODROK = Object.freeze([['lt5s', 5000], ['lt30s', 30000], ['lt60s', 60000], ['lt120s', 120000], ['lt300s', 300000], ['ge300s', Infinity]]);
+export const IRANYOK = Object.freeze(['lt', 'gt', 'eq', 'unknown']); // HS-2: a bukott price-ellenorzes iranya (jelentett ar a motor varthoz kepest)
 export const KIMENETEK = Object.freeze(['success', 'success_unverified', 'verify_failed', 'slot_lost', 'hold_expired', 'c4_close']);
 export const A2_OKOK = Object.freeze(['slot_lost', 'hold_expired']);
 export const A2_SORSZAMOK = Object.freeze(['1', '2', '3', '4', 'ge5']);
@@ -58,6 +59,7 @@ const osszetett = (t, listak) => { if (typeof t !== 'string') return false; cons
 export const BELSO_205 = Object.freeze({
   success_unverified: null, // a verify-bukas ellenere letrejott foglalas (foglalas = success + success_unverified)
   verify_check: (t) => VERIFY_KODOK.includes(t),
+  price_irany: (t) => IRANYOK.includes(t), // HS-2: lt / gt / eq / unknown; osszeg, szolgaltatas nelkul (a verify_check.price-szal egy idoben)
   kimenet_ido: (t) => osszetett(t, [KIMENETEK, IDO_VODOR_NEVEK]), // <kimenet>.<vodor>: a form_start -> kimenet idoeltolodas
   recovered: (t) => osszetett(t, [A2_OKOK, RECOVERED_KIMENETEK]), // <A2 oka>.<kimenet>: A2 utan sikeres foglalasig jutott (ulesenkent egyszer)
   a2_elofordulas: (t) => osszetett(t, [A2_OKOK, A2_SORSZAMOK]), // <A2 oka>.<sorszam az ulesben>: minden elofordulas (a GA4 egyszer-kapuja nelkul)
@@ -181,7 +183,7 @@ const ESC = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 // #205: a bovitett tabla oszlopai (kimeneti kulcs, fejlec); a tabla csak akkor jelenik meg, ha az adott napon / uzletagnal van ilyen adat
 const BOVITETT = [['foglalas_osszes', 'Foglalás összesen (siker + nem igazolt)'], ['success_unverified', 'Nem igazolt siker'], ['verify_check', 'Ellenőrzés-bukás (kód)'], ['a2_elofordulas', 'A2: elkelt / lejárt (előfordulás.sorszám)'],
   ['recovered', 'Helyreállt (A2 után foglalt)'], ['kimenet_ido', 'Űrlaptól a kimenetig (kimenet.idő)'], ['lepes_bontas', 'Lépés (lépés.forrás.eszköz)'], ['lepes_ido', 'Lépés ideje a megnyitástól (lépés.idő)'],
-  ['c1_szabad', 'C1: szabad időpont a köv. 7 napra'], ['c1_elso_nap', 'C1: legkorábbi szabad nap']];
+  ['c1_szabad', 'C1: szabad időpont a köv. 7 napra'], ['c1_elso_nap', 'C1: legkorábbi szabad nap'], ['price_irany', 'Ár-eltérés iránya (jelentett ár a motorhoz képest)']];
 /** Emberi nezet a tulajdonosnak: egy tabla naponta es uzletagankent. */
 export function htmlbe(kimenet) {
   const fejlec = LEPESEK.filter((l) => l !== 'close' && l !== 'error');

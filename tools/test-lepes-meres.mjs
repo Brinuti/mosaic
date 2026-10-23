@@ -399,6 +399,7 @@ test('#205 zart listak: a kliens es a szerver ugyanazt ismeri; a tolcser (LEPESE
   assert.deepEqual(K.VERIFY_KODOK, SZ.VERIFY_KODOK); assert.deepEqual(K.IDO_VODROK, SZ.IDO_VODROK); assert.deepEqual(K.KIMENETEK, SZ.KIMENETEK); assert.deepEqual(K.A2_OKOK, SZ.A2_OKOK);
   assert.deepEqual(K.A2_SORSZAMOK, SZ.A2_SORSZAMOK); assert.deepEqual(K.RECOVERED_KIMENETEK, SZ.RECOVERED_KIMENETEK); assert.deepEqual(K.FORRASOK, SZ.FORRASOK); assert.deepEqual(K.ESZKOZOK, SZ.ESZKOZOK);
   assert.deepEqual(K.BONTAS_LEPESEK, SZ.BONTAS_LEPESEK); assert.deepEqual(K.SZABAD_VODROK, SZ.SZABAD_VODROK); assert.deepEqual(K.ELSO_NAP_VODROK, SZ.ELSO_NAP_VODROK);
+  assert.deepEqual(K.IRANYOK, SZ.IRANYOK); assert.deepEqual(K.IRANYOK, ['lt', 'gt', 'eq', 'unknown']); // HS-2
   assert.deepEqual([...K.BELSO_LEPESEK].sort(), Object.keys(SZ.BELSO_205).sort(), 'a kliens es a szerver ugyanazokat a belso lepeseket ismeri');
   assert.equal(LEPESEK.length, 10); for (const l of K.BELSO_LEPESEK) { assert.ok(!LEPESEK.includes(l), l + ' nem tolcser-lepes'); assert.ok(!Object.values(ESEMENYEK).some((n) => n.includes(l)), l + ' nem GA4-esemeny'); }
   assert.deepEqual(K.FORRASOK, ['google', 'meta', 'tiktok', 'egyeb']); assert.deepEqual(K.ESZKOZOK, ['mobil', 'asztali', 'tablet']);
@@ -560,6 +561,35 @@ test('#205 A2: a belso szamlalo MINDEN elofordulast szamol sorszammal (a GA4 / a
   for (const jel of [null, undefined, 'x', 5, {}]) { const w3 = ablak205(); const m3 = createStepMeter({ win: w3, ctx: ctx(), ido: ora() }); m3.a2Ok(jel); m3.error('slot_lost', 'C4'); assert.deepEqual(ujak(w3).filter((x) => x.startsWith('a2_')), [], String(jel)); }
 });
 
+test('HS-2 price_irany: a bukott price-ellenorzes iranya (lt / gt / eq / unknown) zart nevkent; csak price-bukasnal; osszeg / szolgaltatas nem megy ki; hibaturo', () => {
+  const pi = K.priceIrany;
+  // a jelentett ar a vart (+ elfogadott) arakhoz kepest
+  assert.equal(pi({ expected: '26900', actual: 24900 }), 'lt'); assert.equal(pi({ expected: '26900', actual: 29900 }), 'gt');
+  assert.equal(pi({ expected: '26900 / 39900', actual: 19900 }), 'lt'); assert.equal(pi({ expected: '26900 / 39900', actual: 49900 }), 'gt');
+  assert.equal(pi({ expected: '26900 / 39900', actual: 30000 }), 'unknown', 'ket elfogadott ar KOZOTT: nem allapithato meg');
+  assert.equal(pi({ expected: '26900', actual: 26900 }), 'eq'); assert.equal(pi({ expected: '26900 / 39900', actual: 39900 }), 'eq');
+  assert.equal(pi({ expected: '26900', actual: '29900' }), 'gt', 'szam-szoveg is ertelmezheto');
+  for (const rossz of [undefined, null, {}, { expected: null, actual: 5 }, { expected: '26900', actual: null }, { expected: '26900' }, { expected: 'abc', actual: 5 }, { expected: '', actual: 5 }, { expected: '26900', actual: 'x' },
+    { expected: '26900', actual: NaN }, { expected: '26900', actual: Infinity }, { expected: '26900', actual: '1e9' }, { expected: '26900', actual: '12345678901' }, 5, 'x', []]) assert.equal(pi(rossz), 'unknown', JSON.stringify(rossz));
+  assert.doesNotThrow(() => pi({ get expected() { throw new Error('x'); }, actual: 1 })); assert.equal(pi({ get expected() { throw new Error('x'); }, actual: 1 }), 'unknown');
+  // a meter: csak a price-bukasnal kuld price_irany-t; a tobbi bukasnal / igazolt / null v nem; egyszer foglalasonkent; az osszeg SOHA nem kerul a kuldott torzsbe
+  const w = ablak205(); const m = createStepMeter({ win: w, ctx: ctx(), ido: ora() });
+  m.unverified({ ok: false, checks: { price: { status: 'fail', expected: '26900', actual: 39900 }, slot: { status: 'fail' } } }, 's1'); m.unverified({ ok: false, checks: { price: { status: 'fail', expected: '26900', actual: 39900 } } }, 's1');
+  assert.deepEqual(ujak(w).filter((x) => /^(verify_check|price_irany)/.test(x)), ['verify_check:price', 'verify_check:slot', 'price_irany:gt']);
+  assert.equal(ujak(w).filter((x) => x === 'price_irany:gt').length, 1, 'egyszer foglalasonkent');
+  const w2 = ablak205(); const m2 = createStepMeter({ win: w2, ctx: ctx(), ido: ora() });
+  m2.unverified({ ok: false, checks: { slot: { status: 'fail' }, price: { status: 'pass', expected: '1', actual: 2 } } }, 'a'); m2.unverified(null, 'b'); m2.unverified({ ok: true, checks: { price: { status: 'fail' } } }, 'c');
+  m2.unverified({ ok: false, checks: { price: { status: 'skipped', expected: null, actual: 5 } } }, 'd');
+  assert.ok(!ujak(w2).some((x) => x.startsWith('price_irany')), 'nem price-bukas: nincs irany');
+  const w3 = ablak205(); const m3 = createStepMeter({ win: w3, ctx: ctx(), ido: ora() });
+  m3.unverified({ ok: false, checks: { price: { status: 'fail', expected: '26900', actual: null } } }, 'e'); m3.unverified({ ok: false, checks: { price: { status: 'fail', expected: '26900', actual: 24900 } } }, 'f');
+  assert.deepEqual(ujak(w3).filter((x) => x.startsWith('price_irany')), ['price_irany:unknown', 'price_irany:lt']);
+  assert.ok(!JSON.stringify(w3.dataLayer).match(/price_irany|verify_check/), 'a GA4 nem kap uj esemenyt');
+  assert.ok(!/\d{4,}/.test(JSON.stringify(w3.kuldve)), 'osszeg (4+ szamjegy) nem kerul a kuldott torzsbe');
+  // a meter hibaja sosem akadalyozza a foglalast
+  for (const v of [{ ok: false, get checks() { throw new Error('c'); } }, { ok: false, checks: { price: { status: 'fail', get expected() { throw new Error('e'); }, actual: 1 } } }]) assert.doesNotThrow(() => createStepMeter({ win: ablak205(), ctx: ctx(), ido: ora() }).unverified(v, 'z'));
+});
+
 test('#205 recovered: A2 utan sikeres foglalas (success / success_unverified), ulesenkent egyszer; A2 nelkul vagy A2 ELOTT nincs; az A2 oka a tipusban', () => {
   const w = ablak205(); const m = createStepMeter({ win: w, ctx: ctx(), ido: ora() });
   m.success('ELSO'); // A2 elott: nem helyreallt
@@ -663,9 +693,9 @@ test('#205 ervenyesit: PONTOSAN a zart tipusok fogadhatok el (kimerito: minden l
   const ter = {
     verify_check: SZ.VERIFY_KODOK.map((x) => x), kimenet_ido: szorzat(SZ.KIMENETEK, ido).map((x) => x.join('.')), recovered: szorzat(SZ.A2_OKOK, SZ.RECOVERED_KIMENETEK).map((x) => x.join('.')),
     a2_elofordulas: szorzat(SZ.A2_OKOK, SZ.A2_SORSZAMOK).map((x) => x.join('.')), lepes_bontas: szorzat(SZ.BONTAS_LEPESEK, SZ.FORRASOK, SZ.ESZKOZOK).map((x) => x.join('.')),
-    lepes_ido: szorzat(SZ.BONTAS_LEPESEK.filter((l) => l !== 'open'), ido).map((x) => x.join('.')), c1_szabad: [...SZ.SZABAD_VODROK], c1_elso_nap: [...SZ.ELSO_NAP_VODROK],
+    lepes_ido: szorzat(SZ.BONTAS_LEPESEK.filter((l) => l !== 'open'), ido).map((x) => x.join('.')), c1_szabad: [...SZ.SZABAD_VODROK], c1_elso_nap: [...SZ.ELSO_NAP_VODROK], price_irany: [...SZ.IRANYOK],
   };
-  assert.deepEqual(Object.fromEntries(Object.entries(ter).map(([k, v]) => [k, v.length])), { verify_check: 7, kimenet_ido: 36, recovered: 4, a2_elofordulas: 10, lepes_bontas: 108, lepes_ido: 48, c1_szabad: 5, c1_elso_nap: 6 });
+  assert.deepEqual(Object.fromEntries(Object.entries(ter).map(([k, v]) => [k, v.length])), { verify_check: 7, kimenet_ido: 36, recovered: 4, a2_elofordulas: 10, lepes_bontas: 108, lepes_ido: 48, c1_szabad: 5, c1_elso_nap: 6, price_irany: 4 });
   for (const [lepes, lista] of Object.entries(ter)) for (const t of lista) assert.equal(ok(lepes, t), true, lepes + ' ' + t);
   assert.equal(ok('success_unverified'), true);
   // minden (lepes, tipus) kombinacio, ami NEM a sajat zart teret adja: elutasitva

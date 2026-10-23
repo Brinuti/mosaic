@@ -135,6 +135,18 @@ A PR revertje (egy commit) elég a kódhoz; a szerver bővített whitelistje **a
 
 Teszt: `node --test tools/test-lepes-meres.mjs` (a #205 esetek a „#205" előtagúak), `node tools/meres-proba/lepes-proba.mjs --overlay dist` (asztali és mobil; a 1., 3., 4. eset bővítve, új 6. = A2 kétszer + siker, 7. = nem igazolt siker), `node tools/meres-proba/engine-meter-diff.mjs`. Napló: `meres-naplo/2026-10-19-205-motor-meres.md`.
 
+## 5d. HS-2: `price_irany` (2026-10-23, Feri: „ok”) – MÉRÉS ÉRINTŐ, a foglalási folyamatot NEM érinti
+
+A `verify_check.price` bukásánál (a Salonic átirányításában jelentett ár nincs a motor által várt árak között) a belső számláló egy **névtelen irány-kulcsot** is kap, hogy a következő eltérésnél látszódjon, melyik oldal ára volt magasabb.
+
+| Lépés | Típus (zárt) | Mit számol |
+|---|---|---|
+| `price_irany` | `lt` · `gt` · `eq` · `unknown` | a **jelentett** ár (Salonic átirányítás) a motor **várt** (`activePrice` + `acceptablePrices`) árához képest: `lt` = az összes elfogadott ár alatt, `gt` = felette, `eq` = valamelyikkel egyezik (a bukott ellenőrzésnél nem fordulhat elő, csak védelem), `unknown` = nem állapítható meg (hiányzó / nem szám, két elfogadott ár között). Csak akkor megy, ha a `checks.price.status === 'fail'`; foglalásonként egyszer (a `success_unverified` kapuja alatt) |
+
+Az **összeg, a szolgáltatás, a név, az e-mail, a telefon, a foglalás-azonosító NEM kerül** a kérésbe; a GA4 / `dataLayer` semmit nem kap. A kliens (`priceIrany()` a `lepes-meres.js`-ben) és a szerver (`IRANYOK`, `BELSO_205.price_irany` a `netlify/lib/foglalo-szamlalo.js`-ben) ugyanazt a zárt listát ismeri (teszt: egyezés). Kulcsszám: 4 (a belső kulcs-plafon 150 alatt). A GET riport additív `price_irany` kulcsot kap; a HTML-táblában egy új oszlop.
+
+Kikapcsolás / rollback: a `lepes-meres.js` `unverified()` egy sora (`belso(IRANY_LEPES, …)`) törlése megszünteti; az adatbázisban a sorok maradhatnak (`DELETE FROM lepes_szamlalo WHERE lepes = 'price_irany'` mindkét D1-en).
+
 ## 6. Kikapcsolás
 
 - Számláló: a `wrangler.toml`-ból a `[[d1_databases]]` kötés törlése → a végpont `204`-et ad és semmit nem tárol (a foglaló ettől nem akad el).

@@ -13,7 +13,8 @@
 //
 // DECISION #205 (2026-10-19, CSAK-MERES; a foglalasi folyamatot nem erinti): tovabbi, CSAK a belso szamlalonak szolo lepesek (a GA4 ezekbol NEM kap esemenyt / parametert):
 //  verify_check (buko ellenorzes kodja), success_unverified (a verify-bukas ellenere letrejott foglalas), kimenet_ido (form_start -> kimenet idovodor), recovered (A2 utan sikeres),
-//  a2_elofordulas (minden slot_lost / hold_expired elofordulas), lepes_bontas (lepes x forras x eszkoz), lepes_ido (lepes x idovodor a megnyitastol), c1_szabad / c1_elso_nap (C1: szabad idopontok).
+//  a2_elofordulas (minden slot_lost / hold_expired elofordulas), lepes_bontas (lepes x forras x eszkoz), lepes_ido (lepes x idovodor a megnyitastol), c1_szabad / c1_elso_nap (C1: szabad idopontok),
+//  price_irany (HS-2, 2026-10-23: a verify_check.price bukasanal a Salonic altal jelentett ar iranya a motor varthoz kepest: lt / gt / eq / unknown; osszeg, szolgaltatas NEM).
 //  Zart listak, csak darabszam; az azonosito-ertek (gclid, fbclid, ttclid, utm) SOHA nem megy sehova, csak a 4 forras-kategoria neve. Lasd docs/booking-engine/LEPES_MERES.md 5c.
 //
 // booking_submit: az "Idopont lefoglalasa" gomb a Salonic beagyazott adatlapjan van (idegen eredet, nem megfigyelheto). A beadast onnan latjuk,
@@ -81,9 +82,12 @@ export const BONTAS_LEPES = 'lepes_bontas';
 export const IDO_LEPES = 'lepes_ido';
 export const C1_SZABAD_LEPES = 'c1_szabad';
 export const C1_ELSO_LEPES = 'c1_elso_nap';
-export const BELSO_LEPESEK = Object.freeze([VERIFY_LEPES, NEM_IGAZOLT_LEPES, KIMENET_LEPES, RECOVERED_LEPES, A2_LEPES, BONTAS_LEPES, IDO_LEPES, C1_SZABAD_LEPES, C1_ELSO_LEPES]);
+export const IRANY_LEPES = 'price_irany'; // HS-2: a bukott price-ellenorzes iranya (csak a verify_check.price-szal egy idoben)
+export const BELSO_LEPESEK = Object.freeze([VERIFY_LEPES, NEM_IGAZOLT_LEPES, KIMENET_LEPES, RECOVERED_LEPES, A2_LEPES, BONTAS_LEPES, IDO_LEPES, C1_SZABAD_LEPES, C1_ELSO_LEPES, IRANY_LEPES]);
 // a Salonic-atiranyitas ellenorzesenek (adapter.verifyConfirmation) bukhato ellenorzesei + a "nem volt mit ellenorizni" eset (S.expected hianya)
 export const VERIFY_KODOK = Object.freeze(['params', 'place', 'service', 'slot', 'staff', 'price', 'no_expectation']);
+// HS-2: a Salonic-atiranyitasban jelentett ar a motor varthoz kepest (lt = kisebb, gt = nagyobb, eq = egyezik, unknown = nem allapithato meg)
+export const IRANYOK = Object.freeze(['lt', 'gt', 'eq', 'unknown']);
 // form_start / megnyitas -> adott pillanat: zart idovodrok (a vodor-neve a hatar; a szerver ugyanezt a listat ismeri)
 export const IDO_VODROK = Object.freeze([['lt5s', 5000], ['lt30s', 30000], ['lt60s', 60000], ['lt120s', 120000], ['lt300s', 300000], ['ge300s', Infinity]]);
 export const KIMENETEK = Object.freeze(['success', 'success_unverified', 'verify_failed', 'slot_lost', 'hold_expired', 'c4_close']);
@@ -96,6 +100,25 @@ export const BONTAS_LEPESEK = Object.freeze(['open', 'business', 'service', 'slo
 export const SZABAD_VODROK = Object.freeze(['0', '1-3', '4-10', '11-30', '31+']); // C1: a kovetkezo 7 nap szabad idopontjainak szama
 export const ELSO_NAP_VODROK = Object.freeze(['ma', '1-2', '3-7', '8-14', '15+', 'nincs']); // C1: a legkorabbi szabad nap (hany nap mulva)
 export const ESZKOZ_KUSZOB = Object.freeze({ mobil: 700, tablet: 1100 }); // az ablak szelessege (px): < 700 mobil (mint az engine telefon-elrendezese), < 1100 tablet, egyebkent asztali
+
+/**
+ * HS-2: a bukott price-ellenorzes (verify.checks.price: { expected: "26900 / 39900", actual: 29900 }) iranya. A "expected" a vart ar + az elfogadott (szakemberi) arak,
+ * " / "-lel elvalasztva. lt: a jelentett ar az osszes elfogadott ar ALATT van; gt: FELETTE; eq: valamelyikkel egyezik (a bukott ellenorzesnel nem fordulhat elo, ez csak vedelem);
+ * minden mas (hianyzo / nem szam, ket elfogadott ar KOZOTT, nem ertelmezheto): unknown. Csak a zart nevet adja vissza, az osszeg SOHA nem hagyja el a bongeszot.
+ */
+export function priceIrany(c) {
+  try {
+    const szam = (x) => { const n = typeof x === 'number' ? x : /^\d{1,9}$/.test(String(x === null || x === undefined ? '' : x).trim()) ? Number(String(x).trim()) : NaN; return Number.isFinite(n) ? n : NaN; };
+    const jelentett = szam(c && c.actual);
+    if (Number.isNaN(jelentett)) return 'unknown';
+    const elfogadott = String(c && c.expected !== undefined && c.expected !== null ? c.expected : '').split('/').map((x) => szam(x)).filter((n) => !Number.isNaN(n));
+    if (!elfogadott.length) return 'unknown';
+    if (elfogadott.includes(jelentett)) return 'eq';
+    if (jelentett < Math.min(...elfogadott)) return 'lt';
+    if (jelentett > Math.max(...elfogadott)) return 'gt';
+    return 'unknown';
+  } catch (e) { return 'unknown'; }
+}
 
 /** Idotartam (ms) -> zart idovodor neve; nem szam: null (nincs mit kuldeni). */
 export function idoVodor(ms) {
@@ -303,6 +326,7 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
         belso(NEM_IGAZOLT_LEPES);
         if (!v) belso(VERIFY_LEPES, 'no_expectation');
         else for (const [kod, c] of Object.entries(v.checks || {})) if (c && c.status === 'fail' && kod !== 'no_expectation' && VERIFY_KODOK.includes(kod)) belso(VERIFY_LEPES, kod);
+        if (v && v.checks && v.checks.price && v.checks.price.status === 'fail') belso(IRANY_LEPES, priceIrany(v.checks.price)); // HS-2: csak a bukott price-ellenorzesnel; zart nev, osszeg nelkul
         bontas(NEM_IGAZOLT_LEPES, allapot.business);
         kimenetek(['success_unverified', 'verify_failed']); felgyogyult('success_unverified');
       } catch (e) { /* nem kritikus */ }
