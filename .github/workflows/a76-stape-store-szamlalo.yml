@@ -1,0 +1,53 @@
+name: A76 Stape Store szamlalo (csak olvas)
+
+# Csak kezzel inditható, csak olvas. A kimenet KIZAROLAG napi darabszam es zart
+# listas bontas; vendegadat (client_id, e-mail, telefon, booking_id, page_location)
+# soha nem kerul a naplora. A kulcs: Settings > Secrets > STAPE_A76_CONTAINER_KEY.
+on:
+  workflow_dispatch:
+    inputs:
+      nap:
+        description: 'Hany napra visszamenoleg (alap 7)'
+        required: false
+        default: '7'
+      probe:
+        description: 'Vegpont-felderites: csak statuszok es mezonevek (true/false)'
+        required: false
+        default: 'false'
+      list_method:
+        description: 'Lista-vegpont metodusa, ha mar ismert (GET/POST); ures = automatikus'
+        required: false
+        default: ''
+      list_path:
+        description: 'Lista-vegpont utvonala, {c} = gyujtemeny (pl. /collections/{c}/documents/filter); ures = automatikus'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  szamlalo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Szamlalo
+        env:
+          STAPE_A76_CONTAINER_KEY: ${{ secrets.STAPE_A76_CONTAINER_KEY }}
+          STAPE_A76_DOMAIN: https://stape.a76.hu
+          STORE_LIST_METHOD: ${{ inputs.list_method }}
+          STORE_LIST_PATH: ${{ inputs.list_path }}
+          NAP: ${{ inputs.nap }}
+          PROBE: ${{ inputs.probe }}
+        run: |
+          if [ -z "$STAPE_A76_CONTAINER_KEY" ]; then
+            echo "::error::Hianyzik a STAPE_A76_CONTAINER_KEY titok (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          ARGS="--nap ${NAP:-7}"
+          if [ "$PROBE" = "true" ]; then ARGS="$ARGS --probe"; fi
+          node tools/a76-stape-store-szamlalo.mjs $ARGS
