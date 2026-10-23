@@ -35,7 +35,7 @@ async function hivUrl(method, url, body) {
     const text = await r.text();
     let json = null;
     try { json = JSON.parse(text); } catch { /* nem JSON */ }
-    return { status: r.status, json };
+    return { status: r.status, json, hibaSzoveg: r.status >= 400 ? rejt(text).slice(0, 200) : "" };
   } catch (e) {
     return { status: 0, json: null, hiba: rejt(e && e.message ? e.message : e) };
   }
@@ -169,12 +169,19 @@ for (const kol of vizsgalt) {
     ["POST", `/filter`, { collection_name: kol, limit: 100 }],
     ["V1GET", `/${e}`, undefined],
     ["V1POST", `/${e}/search`, {}],
+    ["V1POST", `/${e}/search`, { filter: { conditions: [] }, pagination: { limit: 10 } }],
+    ["V1POST", `/${e}/search`, { collection_name: kol, filter: { conditions: [] }, pagination: { limit: 10 } }],
+    ["V1GET", `/${e}?limit=10`, undefined],
+    ["GET", `/documents/${e}`, undefined],
+    ["POST", `/documents/${e}/filter`, { filter: { conditions: [] }, pagination: { limit: 10 } }],
+    ["POST", `/collections/${e}/documents/filter`, { filter: { conditions: [] }, pagination: { limit: 10 } }],
   ];
   let docs = null;
   for (const [m, p, b] of probak) {
     const r = m.startsWith("V1") ? await hivUrl(m.slice(2), v1 + p, b) : await hiv(m, p, b);
     const d = dokumentumok(r.json);
-    const uzenet = r.json && typeof r.json === "object" && typeof (r.json.message || r.json.error) === "string" ? ` uzenet: ${rejt(String(r.json.message || r.json.error)).slice(0, 120)}` : "";
+    const em = r.json && typeof r.json === "object" ? (r.json.error && typeof r.json.error === "object" ? r.json.error.message : (r.json.message || r.json.error)) : null;
+    const uzenet = em ? ` uzenet: ${rejt(typeof em === "string" ? em : JSON.stringify(em)).slice(0, 200)}` : (r.hibaSzoveg ? ` szoveg: ${r.hibaSzoveg.replace(/\s+/g, " ")}` : "");
     const kulcsok = (!d && r.json && typeof r.json === "object" ? ` (valasz-mezok: ${Object.keys(r.json).join(", ")})` : "") + uzenet;
     console.log(`${kol}: ${m} ${p.split(e).join("<kol>")} -> ${r.status}${d ? `, ${d.length} dokumentum` : ""}${kulcsok}${r.hiba ? " " + r.hiba : ""}`);
     if (r.status >= 200 && r.status < 300 && d) { docs = d; break; }
