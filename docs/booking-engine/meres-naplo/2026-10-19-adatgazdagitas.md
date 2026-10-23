@@ -31,7 +31,7 @@ Vendegadat, kulcs, gclid, hash-ertek nincs benne.
 - D1 naplo (`sorok/*/kerelem`): a hash-ertekek `"[hash]"` (korabban a hex-ertek latszott), az uj mezok megjelennek; a regi oszlopok tobbi mezeje bajtra azonos.
 
 ## 5. Vedett elemek (blob-hash), PR-A -> PR-B (a main-hez kepest a PR-A naplo 4. pontja)
-- `netlify/lib/meres/qa-nap.js` 2334390be3 (valtozatlan), `esemeny-modell.js` 4342e6f09b (valtozatlan), `netlify/lib/foglalas-kulcs.js` e1448b4d13 (valtozatlan), `netlify/lib/meres/vegpontok.js` b5e3881fc7 (valtozatlan; a #418 modositja, kulon PR), `netlify/lib/meres/google-proba.js` f1bb0095f8 (valtozatlan a PR-A-hoz kepest).
+- `netlify/lib/meres/qa-nap.js` 2334390be3 (valtozatlan), `esemeny-modell.js` 4342e6f09b (valtozatlan), `netlify/lib/foglalas-kulcs.js` e1448b4d13 (valtozatlan), `netlify/lib/meres/vegpontok.js` b5e3881fc7 (a #418 azota mergelve: 085bed6aad, lasd 9.), `netlify/lib/meres/google-proba.js` f1bb0095f8 (valtozatlan a PR-A-hoz kepest).
 - Valtozik: `platformok.js` d38fa8e012 -> 91f9aeb2c5; `elosztas.js` 7ef66e862b -> 958f2c60dc; `erkezes.js` 7adace93a0 -> 496c3840ec (`metaFbc` opcionalis `tartalekMs`); `hash.js` 41cfe4f599 -> 19b6f27a19; `foglalas-esemeny.js` 3bc92b6a38 -> 1d8b43fa44; `salonic-direct.js` 885d5d777b -> 49680441c4; `ajandek-esemeny.js` fda79a3d16 -> 894e6ffd0f; `hozzajarulas.js` fbca9adeb9 -> 59633701a6 (csak komment); `wrangler.toml` 1dfae48853 -> e2d566144b (csak kommentelt `MERES_GAZDAGITAS` sorok a [vars] es a preview szekcioban), `tools/meres-proba/golden-motor.mjs` 88e80f2ab5 (`motorKepek(extraEnv)`); uj: `felhasznalo-hash.js` 083870c1bc, `vendeg-nev.js` 6d897dbc46; `tools/fixtures/golden-motor-kerelem.json` f01a959807 -> b489d8af0f (szandekos, lasd 4.).
 
 ## 6. Tesztek
