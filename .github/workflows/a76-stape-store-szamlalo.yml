@@ -1,0 +1,42 @@
+name: A76 Stape Store szamlalo (csak olvasas)
+
+# 01-MERES, A76-3: az A76 Stape Store naplo napi darabszama.
+# Csak kezzel indul (workflow_dispatch), csak olvas, csak darabszamot ir ki.
+# A kulcs a STAPE_A76_CONTAINER_KEY secretben van, a naploban maszkolva.
+
+on:
+  workflow_dispatch:
+    inputs:
+      napok:
+        description: "Hany napra visszamenoleg (1-60)"
+        required: false
+        default: "7"
+      kollekciok:
+        description: "Kollekciok vesszovel"
+        required: false
+        default: "a76_schedule_log,a76_foglalas_forras"
+
+permissions:
+  contents: read
+
+jobs:
+  szamlalo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Kulcs maszkolasa
+        env:
+          STAPE_KEY: ${{ secrets.STAPE_A76_CONTAINER_KEY }}
+        run: |
+          if [ -n "$STAPE_KEY" ]; then echo "::add-mask::$STAPE_KEY"; echo "kulcs: beallitva"; else echo "kulcs: HIANYZIK"; fi
+      - name: Szamlalas
+        env:
+          STAPE_KEY: ${{ secrets.STAPE_A76_CONTAINER_KEY }}
+          STAPE_BASE: https://stape.a76.hu
+          NAPOK: ${{ github.event.inputs.napok }}
+          KOLLEKCIOK: ${{ github.event.inputs.kollekciok }}
+        run: node tools/a76-stape-store-szamlalo.mjs
