@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ELO_CELOK, ARNYEK } from '../netlify/lib/meres/platformok.js';
 import { SD_MIN_KOR_MP } from '../netlify/lib/meres/salonic-direct.js';
+import { HOSTOK, nevtablaMent } from '../netlify/lib/foglalas-kulcs.js';
 import { ertekel, jeloltekSql, smokeSql, C4_MIN_MP, C4_TURES_MP } from './sd-smoke-ellenorzes.mjs';
 import { T0, VENDEG, level, lezar, vilag } from './lib-sd-teszt.mjs';
 
@@ -96,7 +97,7 @@ test('SM5 az sd 20 percnel KORABBAN jott (kor_ido) -> FAIL; HOLD (csere-gyanu, n
   assert.match(he.kriteriumok.find((x) => x.id === 'C3').reszlet, /halasztva/);
 });
 
-test('SM6 a motor parositott (nincs sd-atvetel): C3 / C4 NA, VERDIKT nem PASS (az sd smoke nem teljesult), megjegyzessel; nem pmu / oxigen level: C1 WARN', async () => {
+test('SM6 a motor parositott (nincs sd-atvetel): C3 / C4 NA, VERDIKT nem PASS (az sd smoke nem teljesult), megjegyzessel; nem tamogatott uzletagu level: C1 WARN', async () => {
   const v = vilag(); await v.kesz;
   const u = uuid('c0ffee07');
   await lezar(v, level(u, {}));
@@ -105,8 +106,10 @@ test('SM6 a motor parositott (nincs sd-atvetel): C3 / C4 NA, VERDIKT nem PASS (a
   assert.equal(allapotok(e).C3, 'NA'); assert.notEqual(e.verdikt, 'PASS'); assert.match(e.megjegyzes, /csak sd-atvetellel/);
   const w = vilag(); await w.kesz; await w.kapcsol('mind', true);
   const u2 = uuid('c0ffee08'); await lezar(w, level(u2, { host: 'mosaic-hair.salonic.hu' }));
+  w.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = '99999|1|1792000000' WHERE uuid LIKE 'c0ffee08%'").run(); // ismeretlen place
+  w.D.db.prepare('DELETE FROM foglalas_vendeg').run(); // es nincs hash-index uzletag sem
   const e2 = ertekel('c0ffee08', lefuttat(w, 'c0ffee08'), { mostSec: Math.floor(SD_ELOTT / 1000) });
-  assert.equal(allapotok(e2).C1, 'WARN', 'nem pmu / oxigen level, sd nelkul: C1 WARN (a verdikt ugyis FOLYAMATBAN)'); assert.notEqual(e2.verdikt, 'PASS'); assert.equal(ertekel('c0ffee99', lefuttat(w, 'c0ffee99')).verdikt, 'FAIL', 'ismeretlen u8 = FAIL');
+  assert.equal(allapotok(e2).C1, 'WARN', 'nem tamogatott (ismeretlen place, index nelkuli) level, sd nelkul: C1 WARN (a verdikt ugyis FOLYAMATBAN)'); assert.notEqual(e2.verdikt, 'PASS'); assert.equal(ertekel('c0ffee99', lefuttat(w, 'c0ffee99')).verdikt, 'FAIL', 'ismeretlen u8 = FAIL');
 });
 
 test('SM7 SZINTETIKUS HIBAK: nem ARNYEK cel, elo ID, duplikalt esemeny, az sd ES a motor is kuldott, hiba allapot, hianyzo platform, nem salonic_direct forras -> mind FAIL', () => {
@@ -156,7 +159,7 @@ test('SM8 PII-mentes kimenet: sem e-mail, sem telefon, sem nev, sem hash, sem te
   assert.equal(spawnSync(process.execPath, [cli, 'sql', 'rossz'], { encoding: 'utf8' }).status !== 0, true);
 });
 
-test('SM9 a jeloltek-lekerdezes: pmu / oxigen letrehozo levelek (a hair nem), csokkeno idorendben, max. 20', async () => {
+test('SM9 a jeloltek-lekerdezes: pmu / oxigen letrehozo levelek (a meg motoros uton levo fodrasz level nem), csokkeno idorendben, max. 20', async () => {
   const v = vilag(); await v.kesz;
   for (const [h, u8] of [['mosaic-pmu.salonic.hu', 'c0ffee11'], ['mosaic-hair.salonic.hu', 'c0ffee12'], ['mosaic-oxigen.salonic.hu', 'c0ffee13']]) { const u = uuid(u8); v.t.tick(60); await v.post(level(u, { host: h })); }
   v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = '14585|1|1792000000' WHERE uuid LIKE 'c0ffee11%'").run(); // a pmu level kulcsa (a prodban a Salonic-oldalbol szarmazik); az oxigen levelt a hash-index uzletagja talalja meg (nincs kulcsa)
@@ -166,7 +169,7 @@ test('SM9 a jeloltek-lekerdezes: pmu / oxigen letrehozo levelek (a hair nem), cs
   assert.ok(sorok[0].letrehozva >= sorok[1].letrehozva);
 });
 
-test('SM10 a REVIEW javitasai: hianyzo eredmeny-halmaz = FAIL (nem hallgatolagos PASS); ha a Meta / TikTok alap esemeny nem ment ki = FAIL; nem pmu / oxigen uzletagu sd-atvetel = FAIL; az sd-INSERT hozta sor (sd_ido = letrehozva) C4 WARN, nem hamis FAIL', async () => {
+test('SM10 a REVIEW javitasai: hianyzo eredmeny-halmaz = FAIL (nem hallgatolagos PASS); ha a Meta / TikTok alap esemeny nem ment ki = FAIL; nem tamogatott uzletagu sd-atvetel = FAIL; az sd-INSERT hozta sor (sd_ido = letrehozva) C4 WARN, nem hamis FAIL', async () => {
   const { v, u8 } = await termeszetes({ u8: 'c0ffee20' });
   const jo = lefuttat(v, u8); const ido = { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: { GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' } };
   assert.equal(ertekel(u8, jo, ido).verdikt, 'PASS');
@@ -182,8 +185,8 @@ test('SM10 a REVIEW javitasai: hianyzo eredmeny-halmaz = FAIL (nem hallgatolagos
   const et = ertekel(u8, tiltva, ido); assert.equal(et.verdikt, 'FAIL'); assert.equal(allapotok(et).C8, 'FAIL');
   // minden cella kihagyva (mind=0): ugyanez
   assert.equal(ertekel(u8, { ...jo, cellak: jo.cellak.map((c) => ({ ...c, allapot: 'kihagyva', url: null, cel: null })), kapcsolok: [{ kulcs: 'mind', be: 0 }] }, ido).verdikt, 'FAIL');
-  // sd-atvetel nem pmu / oxigen uzletagra
-  const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '10823|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'fodrasz' }));
+  // sd-atvetel nem tamogatott uzletagra
+  const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '99999|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'egyeb' }));
   const eh = ertekel(u8, hair, ido); assert.equal(eh.verdikt, 'FAIL'); assert.equal(allapotok(eh).C1, 'FAIL');
   // az sd INSERT-je hozta letre a sort
   const sdHozta = JSON.parse(JSON.stringify(jo)); sdHozta.level[0].letrehozva = sdHozta.level[0].sd_ido;
@@ -211,7 +214,7 @@ test('SM12 TERMESZETES HeadSpa sd-foglalas (a motor lezart, az sd atvette): mind
   assert.equal(allapotok(ertekel(u8, csakPmu, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C12, 'WARN');
 });
 
-test('SM13 HeadSpa kuponos sd-foglalas (DECISION #194: a kuponos foglalas nem konverzio): nincs esemeny-sor, ez SZABALYOS (C5 / C6 / C7 / C8 = NA, verdikt PASS); az e-mail mezobol (F1) van index-sor, C2 PASS; az F1 elotti (index nelkuli) kuponos sor C2 WARN, a verdikt PASS marad; ha a kuponos foglalasra mégis van esemeny-sor / kiment kerelem, C5 / C7 / C8 FAIL; a nem-HeadSpa/pmu/oxigen uzletag tovabbra is C1 FAIL', async () => {
+test('SM13 HeadSpa kuponos sd-foglalas (DECISION #194: a kuponos foglalas nem konverzio): nincs esemeny-sor, ez SZABALYOS (C5 / C6 / C7 / C8 = NA, verdikt PASS); az e-mail mezobol (F1) van index-sor, C2 PASS; az F1 elotti (index nelkuli) kuponos sor C2 WARN, a verdikt PASS marad; ha a kuponos foglalasra mégis van esemeny-sor / kiment kerelem, C5 / C7 / C8 FAIL; az ismeretlen uzletag tovabbra is C1 FAIL', async () => {
   const { v, u8 } = await termeszetes({ host: HS_LEVEL.host, uzletag: 'headspa', u8: 'c0ffee41', lev: { ...HS_LEVEL, szolgaltatas: 'KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás (kupon)', vendeg: { email: 'teszt.claude@example.com Kuponkód: ABC123', telefon: VENDEG.telefon } } });
   const jo0 = lefuttat(v, u8);
   assert.equal(jo0.cellak.length, 0, 'a kuponos foglalas nem kuld esemenyt'); assert.equal(Number(jo0.level[0].kupon), 1, 'a level sor kupon-jele a meres_jelleg-bol');
@@ -228,8 +231,8 @@ test('SM13 HeadSpa kuponos sd-foglalas (DECISION #194: a kuponos foglalas nem ko
   const rossz = JSON.parse(JSON.stringify(jo)); rossz.cellak = [{ platform: 'meta', uzletag: 'headspa', esemeny_tipus: 'alap', esemeny_nev: 'FoglalasElso', allapot: 'elkuldve', forras: 'salonic_direct', indok: null, url: 'https://graph.facebook.com/v21.0/28616665324611098/events', cel: null }];
   const er = ertekel(u8, rossz, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV });
   assert.equal(er.verdikt, 'FAIL'); assert.deepEqual(['C5', 'C7', 'C8'].map((id) => allapotok(er)[id]), ['FAIL', 'FAIL', 'FAIL'], 'kuponos foglalas + esemeny-sor -> FAIL');
-  const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '10823|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'fodrasz' }));
-  assert.equal(allapotok(ertekel(u8, hair, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C1, 'FAIL');
+  const ismeretlen = JSON.parse(JSON.stringify(jo)); ismeretlen.level[0].kulcs = '99999|1|1792000000'; ismeretlen.index = []; ismeretlen.cellak = ismeretlen.cellak.map((c) => ({ ...c, uzletag: 'egyeb' }));
+  assert.equal(allapotok(ertekel(u8, ismeretlen, { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV })).C1, 'FAIL', 'ismeretlen uzletag (place 99999) tovabbra is C1 FAIL');
 });
 
 test('SM14 a jeloltek-lekerdezes a HeadSpa-nal CSAK a motoron kivuli sorokat adja (sd-atvett / parositatlan / ellentmondo); a motor altal parositott HeadSpa-foglalas nem jelolt', async () => {
@@ -251,4 +254,60 @@ test('SM14 a jeloltek-lekerdezes a HeadSpa-nal CSAK a motoron kivuli sorokat adj
   v.D.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, letrehozva, frissitve, forras, salonic_uuid) VALUES ('e1','FoglalasElso','alap','meta','headspa','sd_x','elkuldve',1,1,'salonic_direct', ?1)").run(sd);
   const sorok2 = v.D.db.prepare(q.sql).all(...q.params).map((r) => ({ ...r }));
   assert.ok(sorok2.map((r) => r.u8).includes('c0ffee50'), 'a kulcs es index nelkuli HeadSpa sd-sor is jelolt');
+});
+
+// ---- fodrasz + szor (a meresi oldal kerese, #167 6266078609, 2026-10-19): a salonic_direct:fodrasz / :szor bekapcsolasanak ELOKESZITESE; az eszkoz ugyanugy mukodik (a bekapcsolas kulon, jovahagyott dontes) ----
+const FS_ESETEK = [
+  { uzletag: 'fodrasz', host: 'mosaic-hair.salonic.hu', felado: 'Mosaic Hair', szolg: 'Tőfestés + Szárítás - Hosszú haj', ar: 18900, kulcs: '10823|1|1792000000', u8: 'c0ffee60' },
+  { uzletag: 'szor', host: 'mosaic-elysion.salonic.hu', felado: 'Mosaic Elysion', szolg: 'Lézeres szőrtelenítés - Hónalj', ar: 12900, kulcs: '14586|1|1792000000', u8: 'c0ffee61' },
+];
+async function termeszetesFs(e) {
+  const v = vilag(); await v.kesz; await v.kapcsol(e.uzletag, true);
+  const hely = HOSTOK[e.host];
+  await nevtablaMent(v.db, { helyek: [{ placeId: hely.placeId, nev: e.felado }], munkatarsak: [], szolgaltatasok: [{ placeId: hely.placeId, serviceId: '77', nev: e.szolg }], arak: [{ placeId: hely.placeId, serviceId: '77', ar: e.ar }] }, T0);
+  const u = uuid(e.u8); const b = level(u, { host: e.host, felado: e.felado, szolgaltatas: e.szolg, uj_vendeg: true });
+  await lezar(v, b); v.t.set(SD_ELOTT);
+  const r = await v.sd(b);
+  return { v, u, b, r };
+}
+
+test('SM15 TERMESZETES fodrasz / szor sd-foglalas (a motor lezart, az sd atvette): minden kriterium PASS, az uzletag a levelbol; a C12 a salonic_direct:<uzletag> sort nezi (a masik uzletag kapcsoloja nem szamit)', async () => {
+  const ido = { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: GA4_ENV };
+  for (const e of FS_ESETEK) {
+    const { v, r } = await termeszetesFs(e);
+    assert.equal(r.allapot, 'kesz', e.uzletag); assert.equal(r.uzletag, e.uzletag);
+    assert.match(smokeSql(e.u8).find((q) => q.nev === 'kapcsolok').sql, new RegExp('salonic_direct:' + e.uzletag));
+    const jo = lefuttat(v, e.u8);
+    const x = ertekel(e.u8, jo, ido);
+    assert.equal(x.verdikt, 'PASS', e.uzletag + ' ' + JSON.stringify(x.kriteriumok.filter((q) => q.allapot !== 'PASS')));
+    assert.deepEqual(allapotok(x), { C1: 'PASS', C2: 'PASS', C3: 'PASS', C4: 'PASS', C5: 'PASS', C6: 'PASS', C7: 'PASS', C8: 'PASS', C9: 'PASS', C10: 'PASS', C11: 'PASS', C12: 'PASS' }, e.uzletag);
+    assert.match(x.kriteriumok.find((q) => q.id === 'C1').reszlet, new RegExp('^' + e.uzletag));
+    assert.match(x.kriteriumok.find((q) => q.id === 'C12').reszlet, new RegExp('salonic_direct:' + e.uzletag + '=1'));
+    // a sajat kapcsolo hianyaban (csak a pmu sor) a C12 nem PASS (az sd alapbol KI)
+    const csakPmu = { ...jo, kapcsolok: [{ kulcs: 'mind', be: 1 }, { kulcs: 'salonic_direct:pmu', be: 1 }] };
+    assert.equal(allapotok(ertekel(e.u8, csakPmu, ido)).C12, 'WARN', e.uzletag);
+    // csak a MASIK uzletag kapcsoloja be (fodrasz <-> szor): sem PASS
+    const masik = { ...jo, kapcsolok: [{ kulcs: 'mind', be: 1 }, { kulcs: 'salonic_direct:' + (e.uzletag === 'fodrasz' ? 'szor' : 'fodrasz'), be: 1 }] };
+    assert.equal(allapotok(ertekel(e.u8, masik, ido)).C12, 'WARN', e.uzletag + ': a masik uzletag kapcsoloja nem szamit');
+  }
+});
+
+test('SM16 a jeloltek-lekerdezes fodraszra / szorre is CSAK a motoron kivuli sorokat adja (sd-atvett / parositatlan / ellentmondo); a motor altal parositott es a meg futo (fuggoben) nem jelolt', async () => {
+  const v = vilag(); await v.kesz; await v.kapcsol('fodrasz', true); await v.kapcsol('szor', true);
+  const sorok = [
+    ['c0ffee70', FS_ESETEK[0], 'parositatlan'], ['c0ffee71', FS_ESETEK[0], 'parositott'], ['c0ffee72', FS_ESETEK[0], 'fuggoben'], ['c0ffee73', FS_ESETEK[0], 'ellentmondas'],
+    ['c0ffee80', FS_ESETEK[1], 'parositatlan'], ['c0ffee81', FS_ESETEK[1], 'parositott'], ['c0ffee82', FS_ESETEK[1], 'fuggoben'],
+  ];
+  for (const [u8, e] of sorok) { v.t.tick(60); await v.post(level(uuid(u8), { host: e.host, felado: e.felado, szolgaltatas: e.szolg, uj_vendeg: true })); v.D.db.prepare('UPDATE foglalas_egyeztetes SET kulcs = ?2 WHERE uuid LIKE ?1 || \'%\'').run(u8, e.kulcs); }
+  for (const [u8, , allapot] of sorok) v.D.db.prepare("UPDATE foglalas_egyeztetes SET allapot = ?2 WHERE uuid LIKE ?1 || '%'").run(u8, allapot);
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET booking_id = 'mb_' || substr(uuid, 1, 8), kuldve = 1 WHERE allapot = 'parositott'").run();
+  v.D.db.prepare('DELETE FROM foglalas_vendeg').run(); // a jelolt a kulcsbol (place) kerul be
+  const q = jeloltekSql(Math.floor(T0 / 1000) - 10);
+  const talalt = v.D.db.prepare(q.sql).all(...q.params).map((r) => r.u8).sort();
+  assert.deepEqual(talalt, ['c0ffee70', 'c0ffee73', 'c0ffee80'], 'a parositatlan es az ellentmondo igen; a motoros parositott es a fuggoben nem');
+  // sd-atvett sor kulcs nelkul: az sd cellakbol (uzletag = fodrasz / szor) talaljuk meg
+  v.D.db.prepare("UPDATE foglalas_egyeztetes SET kulcs = NULL, allapot = 'parositott', booking_id = NULL, kuldve = NULL WHERE uuid LIKE 'c0ffee71%'").run();
+  v.D.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, letrehozva, frissitve, forras, salonic_uuid) SELECT 'e1', 'FoglalasElso', 'alap', 'meta', 'fodrasz', 'sd_x', 'elkuldve', 1, 1, 'salonic_direct', uuid FROM foglalas_egyeztetes WHERE uuid LIKE 'c0ffee71%'").run();
+  const talalt2 = v.D.db.prepare(q.sql).all(...q.params).map((r) => r.u8);
+  assert.ok(talalt2.includes('c0ffee71'), 'a kulcs nelkuli fodrasz sd-sor is jelolt (sd cellakbol)');
 });
