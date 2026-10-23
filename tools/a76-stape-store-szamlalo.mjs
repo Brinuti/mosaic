@@ -24,9 +24,10 @@ if (!KEY) {
 const api = `${BASE}/stape-api/${KEY}/v2/store`;
 const rejt = (s) => String(s).split(KEY).join("***");
 
-async function hiv(method, path, body) {
+async function hiv(method, path, body) { return hivUrl(method, api + path, body); }
+async function hivUrl(method, url, body) {
   try {
-    const r = await fetch(api + path, {
+    const r = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -107,22 +108,25 @@ const hatar = Date.now() - NAPOK * 86400000;
 const vizsgalt = [...new Set([...KOLLEKCIOK, ...talaltNevek.filter((n) => /a76/i.test(n))])];
 for (const kol of vizsgalt) {
   const e = encodeURIComponent(kol);
+  const v1 = api.replace(/\/v2\/store$/, "/v1/store");
   const probak = [
     ["POST", `/collections/${e}/documents/filter`, { limit: 1000 }],
-    ["POST", `/collections/${e}/documents/search`, { limit: 1000 }],
-    ["POST", `/collections/${e}/documents/list`, { limit: 1000 }],
-    ["GET", `/collections/${e}/documents?limit=1000`, undefined],
-    ["POST", `/collections/${e}/filter`, { limit: 1000 }],
-    ["POST", `/documents/filter`, { collection: kol, limit: 1000 }],
-    ["POST", `/documents/filter?collection=${e}`, { limit: 1000 }],
-    ["GET", `/documents?collection=${e}&limit=1000`, undefined],
-    ["GET", `/collections/${e}`, undefined],
+    ["POST", `/${e}/documents/filter`, { limit: 1000 }],
+    ["POST", `/${e}/filter`, { limit: 1000 }],
+    ["GET", `/${e}/documents`, undefined],
+    ["GET", `/${e}`, undefined],
+    ["POST", `/documents/filter`, { collection_name: kol, limit: 1000 }],
+    ["GET", `/documents?collection_name=${e}&limit=1000`, undefined],
+    ["GET", `/collections/${e}/documents?page=1&per_page=100`, undefined],
+    ["V1GET", `/${e}`, undefined],
+    ["V1POST", `/${e}/search`, {}],
   ];
   let docs = null;
   for (const [m, p, b] of probak) {
-    const r = await hiv(m, p, b);
+    const r = m.startsWith("V1") ? await hivUrl(m.slice(2), v1 + p, b) : await hiv(m, p, b);
     const d = dokumentumok(r.json);
-    const kulcsok = !d && r.json && typeof r.json === "object" ? ` (valasz-mezok: ${Object.keys(r.json).join(", ")})` : "";
+    const uzenet = r.json && typeof r.json === "object" && typeof (r.json.message || r.json.error) === "string" ? ` uzenet: ${rejt(String(r.json.message || r.json.error)).slice(0, 120)}` : "";
+    const kulcsok = (!d && r.json && typeof r.json === "object" ? ` (valasz-mezok: ${Object.keys(r.json).join(", ")})` : "") + uzenet;
     console.log(`${kol}: ${m} ${p.split(e).join("<kol>")} -> ${r.status}${d ? `, ${d.length} dokumentum` : ""}${kulcsok}${r.hiba ? " " + r.hiba : ""}`);
     if (r.status >= 200 && r.status < 300 && d) { docs = d; break; }
   }
