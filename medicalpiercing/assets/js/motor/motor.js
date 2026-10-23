@@ -20,6 +20,8 @@ const kikerulo = (href) => { try { const k = new URL(href); k.searchParams.set('
 const KOSZONO_ORIGIN = /^https:\/\/(www\.)?medicalpiercing\.hu$/;
 const NAPOK = 100; // a Salonic ~65-80 napra elore ad idopontot (2026-10-11: legtavolabbi 80 nap); 100 nap bortonosen mindet lefedi
 const IDO_OPCIOK = Object.freeze({ days: NAPOK, firstDays: 21 });
+// Promise.any helyett (ES2021; regi iOS / bongeszo nem ismeri): az elso SIKERES; ha mind hibas, { errors } elutasitas
+const elsoSikeres = (ps) => new Promise((ok, nem) => { let n = ps.length; const h = []; ps.forEach((p, i) => Promise.resolve(p).then(ok, (e) => { h[i] = e; if (!--n) nem({ errors: h }); })); });
 const TARTALEK_MS = 6000; // ennyi utan indul friss tartalek-keres, ha az idopontok elso resze meg nem jott meg (a normal valasz 0,5-2,5 mp) // az idopont-lepes es az elotoltes KOZOS beallitasa (azonos gyorsitotar-kulcs)
 const HONAP = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
 const NAP_ROVID = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
@@ -906,10 +908,10 @@ export function nyit(ctx) {
     try {
       // a tavolabbi napok (21-100.) kesobb jonnek (onMore). Ha ez a resz hibas (2026-10-23: egy Salonic-hiba miatt a naptar csendben csak 3 hetet mutatott),
       // EGYSZER friss keressel ujraprobaljuk; csak ennek hibajanal marad a 3 hetes naptar (mint eddig).
-      let tobbUjra = false, tobbMegvan = false;
+      let tobbUjra = false, tobbMegvan = false, tartalekIndult = false;
       const tobb = (l) => {
         if (l) tobbMegvan = true; else if (tobbMegvan) return; // a parhuzamos (tartalek) keres mar meghozta
-        if (!l && !tobbUjra && all.lepes === 'ido' && all.szolg === s && !lezart) {
+        if (!l && !tobbUjra && !tartalekIndult && all.lepes === 'ido' && all.szolg === s && !lezart) {
           tobbUjra = true;
           adapter.getAvailability(all.placeId, s.serviceId, { ...IDO_OPCIOK, minLeadMinutes: 30, fresh: true }).then(tobb, () => kesz());
           return;
@@ -922,10 +924,9 @@ export function nyit(ctx) {
       const elsoKeres = adapter.getAvailability(all.placeId, s.serviceId, opciok);
       let ora, indit;
       const tartalekKeres = new Promise((ok, nem) => {
-        let elindult = false;
         indit = () => {
           clearTimeout(ora);
-          if (elindult) return; elindult = true;
+          if (tartalekIndult) return; tartalekIndult = true; // a tartalek maga is teljes (onMore-os) keres: mellette nincs kulon tavolabbi-napok ujraproba
           if (all.lepes !== 'ido' || all.szolg !== s || lezart) return nem(new Error('tartalek: mar nem az idopont-lepes'));
           adapter.getAvailability(all.placeId, s.serviceId, { ...opciok, fresh: true }).then(ok, nem);
         };
@@ -933,7 +934,7 @@ export function nyit(ctx) {
       });
       // az elso keres sikere: nincs tartalek; HIBAJA: a tartalek azonnal indul (egy ujraprobalas), es csak ha az is hibas, jon a hiba-kepernyo
       elsoKeres.then(() => clearTimeout(ora), () => indit());
-      try { elso = await Promise.any([elsoKeres, tartalekKeres]); }
+      try { elso = await elsoSikeres([elsoKeres, tartalekKeres]); }
       catch (agg) { clearTimeout(ora); throw (agg && agg.errors && agg.errors.find((x) => x && x.code)) || (agg && agg.errors && agg.errors[0]) || agg; }
       clearTimeout(ora);
     } catch (e) { kesz(); if (all.lepes !== 'ido' || all.szolg !== s || lezart) return; return hiba('idopontok', e); }
