@@ -158,7 +158,7 @@ const elotoltott = (k) => [...new Set(k.naplo.map((x) => x.sid))];
   ok('D: kozben a "betoltes" latszik', !!(await k.sr('return !!r.querySelector(".toltes")')));
   const ido = await k.varj(NAPTAR_KESZ, null, 25000);
   ok('D: a naptar megjelenik (nem ragad be)', ido >= 0, `${ido} ms`);
-  ok('D: a valasztas a futo kerest varta meg, nem inditott ujat', keresek(k, lista[0], t0).length === 0, `${keresek(k, lista[0], t0).length} uj keres`);
+  ok('D: a valasztas a futo kerest varta meg (uj keres csak a 6 mp-es tartalek, ha a Salonic lassabb)', keresek(k, lista[0], t0).length === 0 || (ido >= 6000 && keresek(k, lista[0], t0).every((x) => x.t - t0 >= 5900)), `${keresek(k, lista[0], t0).length} uj keres, ${ido} ms`);
   ok('D: nem lassabb, mint a lassu keres maga (4 mp kesleltetes + a Salonic valaszideje, < 7 mp)', ido >= 0 && ido < 7000, `${ido} ms`);
   ok('D: nincs JS-hiba', k.jsHiba.length === 0, k.jsHiba.join(' | '));
   await k.ctx.close();
