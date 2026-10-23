@@ -19,7 +19,7 @@ MÉRÉST ÉRINT (belső számláló, védett fájlok). **Csak mérés: a foglal�
 
 ## Bizonyíték
 - **Piros → zöld:** a `main` kódján az új teszt (#40) és a két bővített teszt (#30 zárt lista, #47 kimerítő érvényesítő) elbukik (48 pass / 3 fail); az új kódon `tools/test-lepes-meres.mjs`: **51 / 51 zöld**.
-- **Teljes csomag:** `node --test tools/test-*.mjs`: 661 teszt, 655 PASS, 3 FAIL, 3 SKIP; a 3 FAIL pontosan ugyanaz, mint a `main`-en (660 teszt, 654 PASS, 3 FAIL: kliens-kód „nincs közvetlen Salonic-link”, „nincs közös adatbázis”, `test-hair-hajhossz`): új hiba nincs.
+- **Teljes csomag:** `node --test tools/test-*.mjs`: 661 teszt, 3 FAIL, a PASS/SKIP megoszlas kornyezetfuggo (itt 655 PASS + 3 SKIP, a fuggetlen review-nal 657 PASS + 1 SKIP); a 3 FAIL pontosan ugyanaz, mint a `main`-en (660 teszt, 654 PASS, 3 FAIL: kliens-kód „nincs közvetlen Salonic-link”, „nincs közös adatbázis”, `test-hair-hajhossz`): új hiba nincs.
 - **Böngészős próba:** `node tools/netlify-build.mjs` + `lepes-proba.mjs --overlay dist`: **asztali 46 ellenőrzés, 0 hiba; mobil (`--mobil 1`) 46 ellenőrzés, 0 hiba** (korábban 45). A 7. forgatókönyv (a jelentett ár 7 Ft): `price_irany` = `["lt"]`, az összeg nem kerül a beaconba, nincs JS-hiba. Lokális, kimenő mérés tiltva; élő oldalon nem futott.
 - Az irány a bukott `checks.price`-ból (`expected` = „26900 / 39900”, `actual` = jelentett ár) számolódik; a `null` / nem szám / két érték közti ár `unknown`.
 
