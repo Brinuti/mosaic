@@ -1154,6 +1154,60 @@ test('GY-25 kiegeszites: csak gbraid/wbraid = kihagyva_braid (dry es eles mod is
   assert.deepEqual((await env.GY_DB.prepare("SELECT allapot FROM gy_feltoltes WHERE mod = 'eles' ORDER BY id").all()).results.map((x) => x.allapot), ['kihagyva_braid', 'kihagyva_braid', 'varakozik', 'kihagyva_ido_sorrend']);
 });
 
+import { gbraidBe, kuldesElotti as gKuldesElotti } from '../lib/gfeltoltes.js';
+test('GY-GYT braid: GY_GADS_BRAID=be -> a gbraid / wbraid foglalas is varakozik (egy click-ID, vedohalo engedi); alapbol (ki) valtozatlan; a regi kihagyva_braid sor ujra felvetelre kerul', async () => {
+  assert.deepEqual([gbraidBe({}), gbraidBe({ GY_GADS_BRAID: 'ki' }), gbraidBe({ GY_GADS_BRAID: 'BE' }), gbraidBe({ GY_GADS_BRAID: 'igen' })], [false, false, true, false]);
+  // vedohalo: kapcsolo nelkul a braid-mezo ismeretlen; kapcsoloval pontosan egy click-ID, hosszkorlat (braid >= 20)
+  const alap = { conversionAction: 'customers/2596120588/conversionActions/7858300772', conversionDateTime: '2026-10-24 10:00:00+02:00', conversionValue: 19000, currencyCode: 'HUF', orderId: 'a'.repeat(64) };
+  const kerj = (c) => ({ conversions: [{ ...alap, ...c }], partialFailure: true, validateOnly: false });
+  const GB = 'GBRAIDABCD123456789012345', WB = 'WBRAIDABCD123456789012345';
+  assert.equal(vedohalo(kerj({ gbraid: GB })), 'ismeretlen_mezo');
+  assert.equal(vedohalo(kerj({ gbraid: GB }), { braid: true }), null);
+  assert.equal(vedohalo(kerj({ wbraid: WB }), { braid: true }), null);
+  assert.equal(vedohalo(kerj({ gclid: JO_GCLID }), { braid: true }), null);
+  assert.equal(vedohalo(kerj({ gclid: JO_GCLID, gbraid: GB }), { braid: true }), 'click_id'); // egyszerre csak egy
+  assert.equal(vedohalo(kerj({ gbraid: 'RIVID' }), { braid: true }), 'click_id');
+  assert.equal(vedohalo(kerj({ gbraid: 'TESZT_GBRAID_123456789012' }), { braid: true }), 'click_id');
+  assert.equal(vedohalo(kerj({}), { braid: true }), 'click_id');
+  assert.equal(vedohalo(kerj({ gbraid: GB, userIdentifiers: [] }), { braid: true }), 'ismeretlen_mezo');
+  // kuldes elotti vegso ellenorzes
+  const sor = { teszt: 0, foglalas_allapot: 'aktiv', katt_tipus: 'gbraid', katt_ertek: GB };
+  assert.deepEqual(gKuldesElotti(sor), { allapot: 'kihagyva_braid', hiba: null });
+  assert.equal(gKuldesElotti(sor, true), null);
+  assert.equal(gKuldesElotti({ ...sor, katt_ertek: 'RIVID' }, true).allapot, 'kihagyva_click_id');
+  // felvetel
+  const env = await lpcKornyezet();
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gbraid=${GB}`, uuid: 'mb_bra00000000000001' });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&wbraid=${WB}`, uuid: 'mb_bra00000000000002', ms: 2000000 });
+  await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gbraid=${GB.replace('ABCD', 'TEST')}`, uuid: 'mb_bra00000000000003', ms: 4000000 });
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const mikor = Math.floor(MOST / 1000) + 4000 + 600 + GFELT.kesleltetes;
+  const eles = { ...env, GY_GADS_FELTOLTES: 'eles' };
+  // kapcsolo nelkul: kihagyva_braid (a regi viselkedes)
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: eles, most: mikor, budapestIdo }), { mod: 'eles', uj: 3 });
+  const rendez = async () => (await env.GY_DB.prepare("SELECT allapot, katt_tipus FROM gy_feltoltes WHERE mod = 'eles' ORDER BY id").all()).results.map((x) => [x.allapot, x.katt_tipus]);
+  assert.deepEqual(await rendez(), [['kihagyva_braid', 'gbraid'], ['kihagyva_braid', 'wbraid'], ['kihagyva_click_id', 'gbraid']]);
+  // kapcsoloval: a friss kihagyva_braid sorok torlodnek es ujra felvetelre kerulnek (varakozik); a teszt-jeloltu click-ID karanten marad
+  const be = { ...eles, GY_GADS_BRAID: 'be' };
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: be, most: mikor + 60, budapestIdo }), { mod: 'eles', uj: 2 });
+  assert.deepEqual(await rendez(), [['kihagyva_click_id', 'gbraid'], ['varakozik', 'gbraid'], ['varakozik', 'wbraid']]);
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: be, most: mikor + 120, budapestIdo }), { mod: 'eles', uj: 0 }); // idempotens
+  // a kuldheto sorokbol epitett kerestorzs: egy click-ID soronkent, a vedohalo (braid) engedi, gclid-es sor valtozatlan
+  const kuldheto = await kuldhetoSorok(env.GY_DB, { most: mikor + 120 });
+  const keres = kuldesKerelem(kuldheto, { validateOnly: true });
+  assert.deepEqual(keres.conversions.map((c) => ['gclid', 'gbraid', 'wbraid'].filter((k) => k in c)), [['gbraid'], ['wbraid']]);
+  assert.equal(vedohalo(keres, { braid: true }), null);
+  assert.equal(vedohalo(keres), 'ismeretlen_mezo'); // kapcsolo nelkul a vedohalo megfogna
+  // a kapcsolo `be` allasaban nincs tobb kihagyva_braid sor (a friss sorok ujra felvetelre kerultek)
+  assert.equal((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_feltoltes WHERE allapot = 'kihagyva_braid'").first()).n, 0);
+  // az ujrafelvetel CSAK a kihagyva_braid sorokat erinti: egy elfogadva allapotu braid sor es egy dry mod-beli kihagyva_braid sor megmarad
+  await env.GY_DB.prepare("INSERT INTO gy_feltoltes (uuid, mod, letrehozva, allapot, katt_tipus, katt_maszk, order_id, konverzio_ido, ertek) VALUES ('mb_bra00000000000090', 'eles', ?1, 'elfogadva', 'gbraid', 'x', ?2, '2026-10-24 10:00:00+02:00', 19000), ('mb_bra00000000000091', 'dry', ?1, 'kihagyva_braid', 'wbraid', 'x', ?3, '2026-10-24 10:00:00+02:00', 19000), ('mb_bra00000000000092', 'eles', ?1, 'kihagyva_braid', 'wbraid', 'x', ?4, '2026-10-24 10:00:00+02:00', 19000)").bind(mikor, 'b'.repeat(64), 'c'.repeat(64), 'd'.repeat(64)).run();
+  await gfeltoltesFut({ db: env.GY_DB, env: be, most: mikor + 180, budapestIdo });
+  assert.deepEqual((await env.GY_DB.prepare("SELECT uuid, mod, allapot FROM gy_feltoltes WHERE uuid IN ('mb_bra00000000000090','mb_bra00000000000091','mb_bra00000000000092') ORDER BY uuid").all()).results.map((x) => [x.mod, x.allapot]), [['eles', 'elfogadva'], ['dry', 'kihagyva_braid']]); // a 92. sor torlodott (nincs hozza foglalas, ezert nem jon vissza) - az elfogadva es a dry sor megmaradt
+  assert.equal(JSON.stringify(keres.conversions).includes(GB), true); // a kerestorzs hordozza a click-ID-t (naplozni tilos - a naplo-sorokban nincs, lasd lent)
+  assert.equal(JSON.stringify((await env.GY_DB.prepare('SELECT * FROM gy_feltoltes').all()).results).includes(GB), false);
+});
+
 test('GY-25 kiegeszites: ujraproba-szabaly (atmeneti hiba backoff-fal max 5x, vegleges hiba / 90 napnal regebbi click-ID nincs ujra), ELES keres partial_failure=true, validate_only nincs', () => {
   const most = 1000000;
   assert.deepEqual(GFELT.ujraproba.varakozas, [3600, 10800, 21600, 43200, 86400]);
@@ -1592,4 +1646,247 @@ test('GY-25 DECISION #220: GY_GADS_CONSENT=granted -> consent GRANTED / GRANTED 
   for (const v of ['1', 'igen', '', 'GRANTED']) assert.equal((await futtat('mb_cons00000000000004', { GY_GADS_CONSENT: v })).sor.consent, 'nem_ismert', 'csak a "granted": ' + v);
   // tobbi hozzajarulas-allapot (igen / nincs_dontes) megadott
   assert.equal((await futtat('mb_cons00000000000005', { GY_GADS_CONSENT: 'granted' }, { hj: 'nincs_dontes' })).sor.consent, 'megadott');
+});
+
+// --- GY-27: Google Ads konverzio-kiigazitas (RETRACTION) ---------------------------------------------------------------------------------------------------------
+import { GKIIG, gkiigazitasMod, gkiigazitasFut, kiigazitasPayload, kiigazitasKeres, vedohaloKiigazitas, kuldesElotti as kiigKuldesElotti, ujraprobaDontes as kiigUjraproba, gkiigazitasRiport } from '../lib/gkiigazitas.js';
+import { gadsKiigazitasVegpont } from '../lib/motor-szerver.js';
+import { takarit } from '../lib/db.js';
+const ORA = 3600;
+const kiigKer = (metodus, body, kulcs = ZAP) => gadsKiigazitasVegpont({ request: kerelem('/api/gy-gads-kiigazitas', body, { metodus, fejlec: kulcs ? { 'x-gy-zap-kulcs': kulcs } : {} }), env: kiigKer.env, deps: { most: () => kiigKer.most * 1000, fetch: fetch } });
+/** n igazolt foglalas, mindegyik ELES feltoltese `elfogadva` (t0-kor naplozva). A foglalasok MEG AKTIVAK. */
+async function kiigKornyezet(n, felul = {}) {
+  const env = await lpcKornyezet();
+  const E = { ...env, GY_GADS_FELTOLTES: 'eles', ...felul };
+  const uuidok = [];
+  for (let i = 0; i < n; i += 1) { const u = `mb_kiig00000000000${i + 1}`.slice(0, 20); uuidok.push(u); await gadsFoglalas(env, { search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&gclid=${JO_GCLID}${i}`, uuid: u, ms: i * 2000000 }); }
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET igazolt = 1').run();
+  const t0 = Math.floor(MOST / 1000) + (n - 1) * 2000 + 600 + GFELT.kesleltetes;
+  assert.deepEqual(await gfeltoltesFut({ db: env.GY_DB, env: E, most: t0, budapestIdo }), { mod: 'eles', uj: n });
+  await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'elfogadva'").run();
+  return { env, E, uuidok, t0 };
+}
+const lemond = (env, uuid, ido) => env.GY_DB.prepare("UPDATE gy_foglalas SET allapot = 'lemondott', frissitve = ?2 WHERE uuid = ?1").bind(uuid, ido).run();
+const kiigSorok = async (env) => (await env.GY_DB.prepare('SELECT uuid, mod, allapot, hiba, google_hibakod, ujraprobalas, kovetkezo_proba, request_id, order_id FROM gy_kiigazitas ORDER BY id').all()).results;
+
+test('GY-27 kiigazitas: kapcsolo alapertelmezese `ki`; a payload CSAK 4 mezo (nincs click-ID / ertek / consent); vedohalo; ujraproba-dontes', () => {
+  assert.equal(gkiigazitasMod({}), 'ki'); assert.equal(gkiigazitasMod({ GY_GADS_KIIGAZITAS: 'valami' }), 'ki');
+  assert.equal(gkiigazitasMod({ GY_GADS_KIIGAZITAS: 'DRY' }), 'dry'); assert.equal(gkiigazitasMod({ GY_GADS_KIIGAZITAS: 'eles' }), 'eles');
+  const oid = 'a1'.repeat(32), ido = '2026-10-20 10:00:00+02:00';
+  const p = kiigazitasPayload({ orderId: oid, ido });
+  assert.deepEqual(p, { conversionAction: 'customers/2596120588/conversionActions/7858300772', adjustmentType: 'RETRACTION', orderId: oid, adjustmentDateTime: ido });
+  assert.equal(kiigazitasPayload({ orderId: 'rovid', ido }), null); assert.equal(kiigazitasPayload({ orderId: oid, ido: '2026-10-20' }), null);
+  const k = kiigazitasKeres([{ order_id: oid }], ido);
+  assert.deepEqual([k.partialFailure, k.validateOnly, k.conversionAdjustments.length], [true, false, 1]);
+  assert.equal(vedohaloKiigazitas(k), null);
+  const s = JSON.stringify(k);
+  for (const tilos of ['gclid', 'gbraid', 'wbraid', 'conversionValue', 'consent', 'userIdentifiers', 'restatementValue']) assert.equal(s.includes(tilos), false, tilos);
+  const rossz = (f) => { const x = JSON.parse(JSON.stringify(k)); f(x); return vedohaloKiigazitas(x); };
+  assert.equal(rossz((x) => { x.conversionAdjustments[0].gclid = 'x'; }), 'ismeretlen_mezo');
+  assert.equal(rossz((x) => { x.conversionAdjustments[0].adjustmentType = 'RESTATEMENT'; }), 'tipus');
+  assert.equal(rossz((x) => { x.conversionAdjustments[0].conversionAction = 'customers/1/conversionActions/2'; }), 'akcio');
+  assert.equal(rossz((x) => { x.conversionAdjustments[0].orderId = 'nem-hex'; }), 'order_id');
+  assert.equal(rossz((x) => { x.partialFailure = false; }), 'partial_failure');
+  assert.equal(rossz((x) => { x.extra = 1; }), 'ismeretlen_fomezo');
+  assert.equal(rossz((x) => { x.conversionAdjustments = []; }), 'adag');
+  assert.equal(rossz((x) => { x.conversionAdjustments = Array(GKIIG.adag + 1).fill(x.conversionAdjustments[0]); }), 'adag');
+  // ujraproba: ALREADY_RETRACTED = kesz; NOT_FOUND / TOO_RECENT a feltoltes utan 72 oraig atmeneti, utana vegleges; ismeretlen kod vegleges; halozati hiba atmeneti; limit
+  const most = 1000000, f0 = most - 50 * ORA;
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_ALREADY_RETRACTED', most, feltoltesIdo: f0 }).allapot, 'elkuldve');
+  assert.deepEqual(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: f0 }), { allapot: 'hiba', kovetkezo: most + 3600, ok: 'ujraproba' });
+  assert.equal(kiigUjraproba({ kod: 'TOO_RECENT_CONVERSION', proba: 2, most, feltoltesIdo: f0 }).kovetkezo, most + 21600);
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 73 * ORA }).allapot, 'nincs_konverzio');
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 72 * ORA }).allapot, 'hiba'); // pontosan 72 ora: meg atmeneti
+  // DECISION #227: ha van kiigazitasi sor ideje, az ablak onnan 72 ora, de a feltoltestol legfeljebb 120 ora
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 100 * ORA, kiigIdo: most - 10 * ORA }).allapot, 'hiba'); // min(most+62h, most+20h): atmeneti
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 120 * ORA, kiigIdo: most - 72 * ORA }).allapot, 'hiba'); // pontosan a hataron: meg atmeneti
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 121 * ORA, kiigIdo: most - 10 * ORA }).allapot, 'nincs_konverzio'); // a 120 oras felso korlat
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 100 * ORA, kiigIdo: most - 73 * ORA }).allapot, 'nincs_konverzio'); // a sor felvetelétol 72 ora lejart
+  assert.equal(kiigUjraproba({ kod: 'INVALID_CONVERSION_ACTION_TYPE', most, feltoltesIdo: f0 }).ok, 'vegleges');
+  assert.equal(kiigUjraproba({ http: 503, most, feltoltesIdo: f0 }).ok, 'ujraproba'); assert.equal(kiigUjraproba({ http: null, most, feltoltesIdo: f0 }).ok, 'ujraproba');
+  assert.equal(kiigUjraproba({ kod: 'INTERNAL_ERROR', proba: GKIIG.ujraproba.max, most, feltoltesIdo: f0 }).ok, 'ujraproba_kimerult');
+  // teljes lanc (review-javitas): a sor a legkorabbi idopontban (felt+48h) jon letre, a NOT_FOUND ujraprobak 5-ig kimerulnek -> nincs_konverzio (nem hiba/ujraproba_kimerult)
+  {
+    let t = f0 + 48 * ORA; let proba = 0; let d;
+    for (let i = 0; i < 10; i++) {
+      d = kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', proba, most: t, feltoltesIdo: f0, kiigIdo: f0 + 48 * ORA });
+      if (!d.kovetkezo) break;
+      t = d.kovetkezo; proba += 1;
+    }
+    assert.equal(d.allapot, 'nincs_konverzio');
+    assert.equal(proba, GKIIG.ujraproba.max);
+    assert.equal(d.ok, 'nincs_konverzio_ujraproba_kimerult');
+  }
+  assert.deepEqual(kiigKuldesElotti({ teszt: 0, foglalas_allapot: 'lemondott' }), null);
+  assert.equal(kiigKuldesElotti({ teszt: 1, foglalas_allapot: 'lemondott' }).allapot, 'kihagyva_teszt');
+  assert.equal(kiigKuldesElotti({ teszt: 0, foglalas_allapot: 'aktiv' }).allapot, 'kihagyva_aktiv');
+});
+
+test('GY-27 kiigazitas: jeloltek CSAK a feltoltes UTAN lemondott, nem teszt, ELES+elfogadott feltoltesu foglalasok; 48 ora / 50 nap kapu; `ki` mod nem ir; dry/eles kulon sor; idempotens', async () => {
+  const { env, E, uuidok, t0 } = await kiigKornyezet(5);
+  const [b1, b2, b3, b4, b5] = uuidok;
+  await lemond(env, b1, t0 + ORA);                       // jelolt: a feltoltes utan lemondva
+  // b2: aktiv marad -> nem jelolt
+  await lemond(env, b3, t0 - 100);                       // a lemondas a feltoltes naplozasa ELOTTI idopontra esik -> nem jelolt (a feltoltes eleve nem tett volna fel lemondott foglalast)
+  await env.GY_DB.prepare('UPDATE gy_foglalas SET teszt = 1 WHERE uuid = ?1').bind(b4).run(); await lemond(env, b4, t0 + ORA); // teszt foglalas -> nem jelolt
+  await lemond(env, b5, t0 + ORA); await env.GY_DB.prepare("UPDATE gy_feltoltes SET allapot = 'hiba' WHERE uuid = ?1").bind(b5).run(); // a Google nem fogadta el a feltoltest -> nincs mit visszavonni
+  const fut = (mod, most) => gkiigazitasFut({ db: env.GY_DB, env: { ...E, GY_GADS_KIIGAZITAS: mod }, most });
+  const kapu = t0 + GKIIG.varakozas;
+  assert.deepEqual(await fut('ki', kapu + 10), { mod: 'ki', uj: 0 });
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_kiigazitas').first()).n, 0); // `ki`: semmi nem iródik
+  assert.deepEqual(await fut('dry', kapu - 1), { mod: 'dry', uj: 0 });     // 48 ora meg nem telt le
+  assert.deepEqual(await fut('dry', kapu), { mod: 'dry', uj: 1 });
+  assert.deepEqual(await fut('dry', kapu), { mod: 'dry', uj: 0 });         // idempotens
+  assert.deepEqual(await fut('eles', kapu), { mod: 'eles', uj: 1 });       // eles mod kulon sor (UNIQUE uuid+tipus+mod)
+  const s = await kiigSorok(env);
+  assert.deepEqual(s.map((x) => [x.uuid, x.mod, x.allapot]), [[b1, 'dry', 'dry'], [b1, 'eles', 'varakozik']]);
+  assert.match(s[0].order_id, /^[0-9a-f]{64}$/);
+  assert.equal(s[0].order_id, (await env.GY_DB.prepare("SELECT order_id FROM gy_feltoltes WHERE uuid = ?1").bind(b1).first()).order_id); // ugyanaz az order_id, mint a feltolteskor
+  assert.equal(JSON.stringify(s).includes(JO_GCLID), false); // click-ID sehol
+  // 50 napnal regebbi feltoltes mar nem jelolt
+  await env.GY_DB.prepare('DELETE FROM gy_kiigazitas').run();
+  assert.deepEqual(await fut('eles', t0 + GKIIG.maxKor + 1), { mod: 'eles', uj: 0 });
+  assert.deepEqual(await fut('eles', t0 + GKIIG.maxKor), { mod: 'eles', uj: 1 });
+  // a riport csak szamlalo
+  const r = await gkiigazitasRiport(env.GY_DB); assert.deepEqual(r.sorok, [{ mod: 'eles', allapot: 'varakozik', db: 1 }]);
+  // dupla lemondas / ujra-lemondas: tovabbra is egyetlen sor
+  await lemond(env, b1, t0 + 2 * ORA); assert.deepEqual(await fut('eles', t0 + GKIIG.maxKor), { mod: 'eles', uj: 0 });
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_kiigazitas').first()).n, 1);
+});
+
+test('GY-27 Zapier-vegpont: kulcs nelkul 401; `ki` / `dry` modban nincs:true es semmi nem keszul; GET -> POST egy fazisban; sorhibak; ujrajatszas 409; nincs click-ID', async () => {
+  const { env, E, uuidok, t0 } = await kiigKornyezet(3);
+  for (const u of uuidok) await lemond(env, u, t0 + ORA);
+  const kapu = t0 + GKIIG.varakozas + 10;
+  kiigKer.env = { ...E, GY_GADS_KIIGAZITAS: 'eles' }; kiigKer.most = kapu;
+  assert.equal((await kiigKer('GET', null, null)).status, 401); assert.equal((await kiigKer('GET', null, 'hamis')).status, 401);
+  assert.equal((await kiigKer('POST', { zar: 1, http: 200, valasz: {} }, null)).status, 401); assert.equal((await kiigKer('DELETE', null)).status, 405);
+  for (const mod of ['ki', 'dry', undefined]) {
+    kiigKer.env = { ...E, ...(mod ? { GY_GADS_KIIGAZITAS: mod } : {}) };
+    const j = await (await kiigKer('GET', null)).json();
+    assert.deepEqual(j, { ok: true, mod: mod || 'ki', nincs: true });
+    assert.equal((await kiigKer('POST', { zar: kapu, http: 200, valasz: {} })).status, 200);
+  }
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_kiigazitas').first()).n, 0); // se felvetel, se marker
+  assert.equal((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_meta WHERE kulcs LIKE 'gads_kiig_%'").first()).n, 0);
+
+  kiigKer.env = { ...E, GY_GADS_KIIGAZITAS: 'eles' };
+  const g = await kiigKer('GET', null); const gj = await g.json();
+  assert.equal(g.status, 200);
+  assert.deepEqual([gj.ok, gj.mod, gj.sorIdk.length, gj.zar], [true, 'eles', 3, kapu]);
+  assert.deepEqual(gj.cel, { ugyfel: '2596120588', api_verzio: 'v23', vegpont: 'customers/2596120588:uploadConversionAdjustments' });
+  assert.deepEqual([gj.keres.partialFailure, gj.keres.validateOnly, gj.keres.conversionAdjustments.length], [true, false, 3]);
+  assert.deepEqual(Object.keys(gj.keres.conversionAdjustments[0]).sort(), ['adjustmentDateTime', 'adjustmentType', 'conversionAction', 'orderId']);
+  assert.equal(gj.keres.conversionAdjustments[0].adjustmentDateTime, budapestIdo(kapu));
+  assert.equal(vedohaloKiigazitas(gj.keres), null);
+  assert.equal(JSON.stringify(gj).includes(JO_GCLID), false); // a kiigazitas keresben nincs click-ID
+  assert.deepEqual(await (await kiigKer('GET', null)).json(), { ok: true, mod: 'eles', nincs: true }); // a masodik GET semmit nem foglal le
+  assert.equal((await kiigKer('POST', { zar: gj.zar + 1, http: 200, valasz: {} })).status, 409);       // ismeretlen futas
+  // 1. sor ok; 2. sor CONVERSION_NOT_FOUND (atmeneti: a feltoltes utan meg csak 48 ora); 3. sor CONVERSION_ALREADY_RETRACTED (kesz)
+  const hiba = (index, kod) => ({ errorCode: { conversionAdjustmentUploadError: kod }, message: 'a Google uzenete: ' + JO_GCLID, location: { fieldPathElements: [{ fieldName: 'conversion_adjustments', index }] } });
+  const valasz = { results: [{ conversionAction: 'x', adjustmentType: 'RETRACTION' }, {}, {}], partialFailureError: { details: [{ errors: [hiba(1, 'CONVERSION_NOT_FOUND'), hiba(2, 'CONVERSION_ALREADY_RETRACTED')] }] } };
+  const p = await kiigKer('POST', { zar: gj.zar, http: 200, valasz: JSON.stringify({ data: valasz }), request_id: 'ignoralt' }); const pj = await p.json();
+  assert.equal(p.status, 200);
+  assert.deepEqual([pj.ok, pj.elkuldve, pj.hiba, pj.nincs_konverzio], [true, 2, 1, 0]);
+  const s = await kiigSorok(env);
+  assert.deepEqual([s[0].allapot, s[0].hiba], ['elkuldve', null]);
+  assert.deepEqual([s[1].allapot, s[1].hiba, s[1].google_hibakod, s[1].ujraprobalas, s[1].kovetkezo_proba], ['hiba', 'ujraproba', 'CONVERSION_NOT_FOUND', 1, kapu + 3600]);
+  assert.deepEqual([s[2].allapot, s[2].hiba, s[2].google_hibakod], ['elkuldve', 'mar_visszavonva', 'CONVERSION_ALREADY_RETRACTED']);
+  assert.equal(JSON.stringify(s).includes(JO_GCLID), false); // a Google hibauzenet (click-ID-t idezhet) nem tarolodik
+  assert.equal((await kiigKer('POST', { zar: gj.zar, http: 200, valasz })).status, 409); // ujrajatszas
+  // a hiba sor az ujraproba idejeig nem megy ki; a 72 oras hataron tul NOT_FOUND = nincs_konverzio (vegleges)
+  kiigKer.most = kapu + 60; assert.deepEqual(await (await kiigKer('GET', null)).json(), { ok: true, mod: 'eles', nincs: true });
+  kiigKer.most = t0 + 121 * ORA; // DECISION #227: a NOT_FOUND a feltoltestol szamitott 120 oraig atmeneti (a kiigazitasi sor felvetelétol 72 ora, de legfeljebb a feltoltestol 120 ora)
+  const g2 = await (await kiigKer('GET', null)).json();
+  assert.equal(g2.keres.conversionAdjustments.length, 1);
+  const p2 = await (await kiigKer('POST', { zar: g2.zar, http: 200, valasz: { results: [{}], partialFailureError: { details: [{ errors: [hiba(0, 'CONVERSION_NOT_FOUND')] }] } } })).json();
+  assert.deepEqual([p2.elkuldve, p2.hiba, p2.nincs_konverzio], [0, 0, 1]);
+  assert.deepEqual((await kiigSorok(env)).map((x) => x.allapot), ['elkuldve', 'nincs_konverzio', 'elkuldve']);
+  kiigKer.most = t0 + 200 * ORA; assert.deepEqual(await (await kiigKer('GET', null)).json(), { ok: true, mod: 'eles', nincs: true }); // kesz sor nem megy ujra
+});
+
+test('GY-27 Zapier-vegpont: kuldes elotti ujraellenorzes (ujra aktiv / teszt), hozzaferesi hiba (a sorok visszaallnak + riasztas), ertelmezhetetlen valasz, sorhalmaz-elteres', async () => {
+  const { env, E, uuidok, t0 } = await kiigKornyezet(2);
+  const [b1, b2] = uuidok;
+  for (const u of uuidok) await lemond(env, u, t0 + ORA);
+  const kapu = t0 + GKIIG.varakozas + 10;
+  const EE = { ...E, GY_GADS_KIIGAZITAS: 'eles' };
+  kiigKer.env = EE; kiigKer.most = kapu;
+  // felveszi a jelolteket, majd az egyik foglalas ujra aktiv lesz a kuldes elott -> kihagyva_aktiv, a masik megy
+  await gkiigazitasFut({ db: env.GY_DB, env: EE, most: kapu });
+  await env.GY_DB.prepare("UPDATE gy_foglalas SET allapot = 'aktiv', frissitve = ?2 WHERE uuid = ?1").bind(b1, kapu).run();
+  const g = await (await kiigKer('GET', null)).json();
+  assert.equal(g.keres.conversionAdjustments.length, 1);
+  assert.deepEqual((await kiigSorok(env)).map((x) => [x.uuid, x.allapot]), [[b1, 'kihagyva_aktiv'], [b2, 'kuldes_alatt']]);
+  // keres-szintu hozzaferesi hiba: a sor visszaall `varakozik`-ra, riasztas, a lezart futas nem ertekelheto ujra
+  const p = await (await kiigKer('POST', { zar: g.zar, http: 403, valasz: { error: { status: 'PERMISSION_DENIED' } } })).json();
+  assert.deepEqual([p.ok, p.elkuldve, p.keres_hiba], [true, 0, { http: 403, kod: 'PERMISSION_DENIED' }]);
+  assert.deepEqual((await kiigSorok(env)).map((x) => x.allapot), ['kihagyva_aktiv', 'varakozik']);
+  assert.equal((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_riasztas WHERE tipus = 'gkiigazitas_keres_hiba'").first()).n, 1);
+  assert.equal((await kiigKer('POST', { zar: g.zar, http: 200, valasz: { results: [{ a: 1 }] } })).status, 409);
+  // ertelmezhetetlen valasz (results hossza nem egyezik): a sor `hiba` + ujraproba, NEM elkuldve
+  kiigKer.most = kapu + 5;
+  const g2 = await (await kiigKer('GET', null)).json();
+  const p2 = await (await kiigKer('POST', { zar: g2.zar, http: 200, valasz: { jobId: '1' } })).json();
+  assert.deepEqual([p2.elkuldve, p2.hiba, p2.keres_hiba.kod], [0, 1, 'VALASZ_ERTELMEZHETETLEN']); // nincs results: lehet, hogy kiment -> NEM elkuldve, backoff-fal ujra (a Google a mar visszavontat ALREADY_RETRACTED-kent adja)
+  const u = (await kiigSorok(env))[1]; assert.deepEqual([u.allapot, u.google_hibakod, u.ujraprobalas, u.kovetkezo_proba], ['hiba', 'VALASZ_ERTELMEZHETETLEN', 1, kapu + 5 + 3600]);
+  // rossz bemenetek
+  assert.equal((await kiigKer('POST', { zar: 'x', http: 200, valasz: {} })).status, 400);
+  assert.equal((await kiigKer('POST', { zar: g2.zar, http: 99, valasz: {} })).status, 400);
+  assert.equal((await kiigKer('POST', { zar: g2.zar, http: 200, valasz: 'nem json' })).status, 400);
+});
+
+test('GY-27 (DECISION #227): a feltoltes ujraprobalassal lett elfogadva -> a kiigazitasi sor `kockazat_ujraproba` jelolest kap (dry-ben szamolt, a csendes nincs_konverzio kockazata); a riport szamolja', async () => {
+  const { env, E, uuidok, t0 } = await kiigKornyezet(2);
+  await env.GY_DB.prepare('UPDATE gy_feltoltes SET ujraprobalas = 2 WHERE uuid = ?1').bind(uuidok[0]).run();
+  for (const u of uuidok) await lemond(env, u, t0 + ORA);
+  const kapu = t0 + GKIIG.varakozas;
+  assert.deepEqual(await gkiigazitasFut({ db: env.GY_DB, env: { ...E, GY_GADS_KIIGAZITAS: 'dry' }, most: kapu }), { mod: 'dry', uj: 2 });
+  const s = await env.GY_DB.prepare('SELECT uuid, allapot, hiba FROM gy_kiigazitas ORDER BY id').all();
+  assert.deepEqual(s.results.map((x) => [x.uuid, x.allapot, x.hiba]), [[uuidok[0], 'dry', 'kockazat_ujraproba'], [uuidok[1], 'dry', null]]);
+  assert.deepEqual((await gkiigazitasRiport(env.GY_DB)).kockazat_ujraproba, 1);
+  // eles modban a sor kuldheto marad (a jelzes nem akadaly), a sikeres kuldes torli a hiba mezot
+  await gkiigazitasFut({ db: env.GY_DB, env: { ...E, GY_GADS_KIIGAZITAS: 'eles' }, most: kapu });
+  assert.deepEqual((await env.GY_DB.prepare("SELECT allapot, hiba FROM gy_kiigazitas WHERE mod = 'eles' AND uuid = ?1").bind(uuidok[0]).first()), { allapot: 'varakozik', hiba: 'kockazat_ujraproba' });
+});
+
+test('GY-27 megorzes es torles: a gy_kiigazitas 90 nap utan torlodik; a visszavont hozzajarulas a kiigazitasi sort is torli; az endpoint-fajl a burokot hasznalja', async () => {
+  const { env, uuidok, t0 } = await kiigKornyezet(1);
+  const { kattintasTorol } = await import('../lib/db.js');
+  await env.GY_DB.prepare("INSERT INTO gy_kiigazitas (uuid, tipus, mod, letrehozva, allapot, order_id) VALUES (?1, 'RETRACTION', 'dry', ?2, 'dry', ?3)").bind(uuidok[0], t0, 'b2'.repeat(32)).run();
+  await env.GY_DB.prepare("INSERT INTO gy_kiigazitas (uuid, tipus, mod, letrehozva, allapot, order_id) VALUES ('regi', 'RETRACTION', 'dry', ?1, 'dry', ?2)").bind(t0 - 100 * 86400, 'c3'.repeat(32)).run();
+  await takarit(env.GY_DB, t0);
+  assert.deepEqual((await kiigSorok(env)).map((x) => x.uuid), [uuidok[0]]); // a 100 napos sor torolve, a friss marad
+  const lp = (await env.GY_DB.prepare('SELECT lpc_latogato AS h FROM gy_foglalas WHERE uuid = ?1').bind(uuidok[0]).first()).h;
+  assert.ok(lp);
+  await kattintasTorol(env.GY_DB, [lp]);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_kiigazitas').first()).n, 0);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_feltoltes').first()).n, 0);
+  const fajl = await (await import('node:fs/promises')).readFile(new URL('../functions/api/gy-gads-kiigazitas.js', import.meta.url), 'utf8');
+  assert.match(fajl, /burok\('gy-gads-kiigazitas', gadsKiigazitasVegpont\)/);
+});
+
+test('GY-27 review-javitasok: `ki` modban az admin ?gfeltoltes=1 valasza nem kap `kiigazitas` mezot (bajtra a regi), `dry` modban kap; sorszintu vegleges hiba riasztast ad (kod nelkul)', async () => {
+  const { env, E, uuidok, t0 } = await kiigKornyezet(2);
+  const admin = (e) => adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env: e, deps: deps() }).then((r) => r.json());
+  const ki = await admin({ ...E });
+  assert.equal('kiigazitas' in ki, false);
+  const dry = await admin({ ...E, GY_GADS_KIIGAZITAS: 'dry' });
+  assert.ok(dry.kiigazitas && dry.kiigazitas.fut.mod === 'dry');
+  // vegleges sorszintu hiba (INVALID_CONVERSION_ACTION_TYPE) + nincs_konverzio -> riasztas darabszammal
+  for (const u of uuidok) await lemond(env, u, t0 + ORA);
+  const kapu = t0 + GKIIG.varakozas + 10;
+  kiigKer.env = { ...E, GY_GADS_KIIGAZITAS: 'eles' }; kiigKer.most = kapu;
+  const g = await (await kiigKer('GET', null)).json();
+  const hiba = (index, kod) => ({ errorCode: { conversionAdjustmentUploadError: kod }, location: { fieldPathElements: [{ fieldName: 'conversionAdjustments', index }] } });
+  const p = await (await kiigKer('POST', { zar: g.zar, http: 200, valasz: { results: [{}, {}], partialFailureError: { details: [{ errors: [hiba(0, 'INVALID_CONVERSION_ACTION_TYPE'), hiba(1, 'INVALID_CONVERSION_ACTION_TYPE')] }] } } })).json();
+  assert.equal(p.hiba, 2);
+  const r = (await env.GY_DB.prepare("SELECT tipus, adat FROM gy_riasztas WHERE tipus = 'gkiigazitas_vegleges_hiba'").all()).results;
+  assert.deepEqual(r.map((x) => x.adat), ['db=2']);
+  assert.deepEqual((await kiigSorok(env)).map((x) => [x.allapot, x.hiba, x.kovetkezo_proba]), [['hiba', 'vegleges', null], ['hiba', 'vegleges', null]]);
+  // kihagyva_hibas: nem 64 hex order_id nem kuldheto
+  const { env: env2, E: E2, uuidok: u2, t0: tt } = await kiigKornyezet(1);
+  await env2.GY_DB.prepare("UPDATE gy_feltoltes SET order_id = 'rossz'").run(); await lemond(env2, u2[0], tt + ORA);
+  assert.deepEqual(await gkiigazitasFut({ db: env2.GY_DB, env: { ...E2, GY_GADS_KIIGAZITAS: 'eles' }, most: tt + GKIIG.varakozas }), { mod: 'eles', uj: 1 });
+  assert.deepEqual((await kiigSorok(env2)).map((x) => [x.allapot, x.hiba]), [['kihagyva_hibas', 'order_id']]);
 });

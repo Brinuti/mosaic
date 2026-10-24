@@ -13,7 +13,7 @@ import { koszonoOldal, foglalasKulcs, ertekFeloldas, tarolhatoTipus, HELYSZINEK,
 import { levelErtelmezes } from './igazolas.js';
 import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, elesKuldesE, maszk, ELES_HOST } from './google-ads.js';
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
-import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
+import { tiktokLepes, tiktokMod, hatalyosMod, TIKTOK_SEMA } from './tiktok.js';
 import { metaArnyekLepes, ARNYEK_SEMA } from './meta.js';
 /** IP + user agent a foglalas pillanatabol, legfeljebb 48 oraig (TikTok-kuldeshez). Vendegnev / e-mail / telefon NINCS. */
 export const KONTEXTUS_SEMA = 'CREATE TABLE IF NOT EXISTS mp_kontextus (kulcs TEXT PRIMARY KEY, ip TEXT, ua TEXT, ido INTEGER NOT NULL, ext TEXT)';
@@ -80,6 +80,8 @@ export const BOVITES = [
 const PLATFORM_ID_OSZLOPOK = ['meta_fbc', 'meta_fbp', 'tiktok_ttclid', 'tiktok_ttp'];
 /** Ennyi ido utan a meg nem igazolt sor 'nem_igazolt' lesz (a Salonic-level / Zapier kesese ennel joval rovidebb). */
 export const IGAZOLAS_HATARIDO = 48 * 3600;
+/** A kihagyas-naplo fuggvenyek (nemIgazoltNaplo, igazoltKihagyasNaplo) kerelmenkenti naplosor-korlatja. Soronkent ~4 D1-lekerdezes + fuggvenyenkent 2 (mod, tabla); egy foglalas-kerelem alapterhe ~36 lekerdezes, a Cloudflare ingyenes csomag hivasonkenti korlatja 50 -> kerelmenkent EGY naplosor, es a ket fuggveny egymas UTAN, de csak az egyik naploz (lasd foglalasErkezes). */
+export const NAPLO_KORLAT = 1;
 const MEGORZES_NAP = 120; // a rekord ennyi nap utan torlodik; a kattintasazonosito 90 nap utan (a Google ennyit fogad)
 
 let semaKesz = false;
@@ -108,6 +110,30 @@ function tiktokInditas(db, sor, env, host, opts, waitUntil) {
   try { p = tiktokLepes(db, sor, env, host, opts).catch((e) => console.error('mp-meres: tiktok hiba', String(e && e.message || e).slice(0, 200))); } catch (e) { return Promise.resolve(); }
   if (typeof waitUntil === 'function') { waitUntil(p); return Promise.resolve(); }
   return p;
+}
+
+/**
+ * Salonic-forrasu (nem motoros) foglalas, amely nem lett Salonic-igazolt: a TikTok-lepes (tiktokInditas) csak igazolaskor indul, ezert eddig NEM maradt nyoma.
+ * Itt `kihagyva:nem_igazolt` naplosor keszul a mp_tiktok_feltoltes tablaba (payload nelkul, ugyanazzal a tiktokLepes-szel, mint minden mas kihagyas). KULDES NEM VALTOZIK:
+ * csak naplo; a sor kesobbi igazolas eseten felulirhato (tiktokLepes: a kihagyva-sor nem akadaly), ki modban semmi nem tortenik. Idempotens (csak a naplosor nelkuli sorok),
+ * a hiba elnyelt. Jelolt: a 48 oras hatarido utan meg igazolatlan (a karbantartas ezt `nem_igazolt`-ra allitja) VAGY mar `nem_igazolt` sor, legfeljebb 14 napos, naplosor nelkul.
+ */
+export async function nemIgazoltNaplo(db, env, host, { most, fetchImpl } = {}) {
+  try {
+    // elobb a (olcso) jeloltlekerdezes: ures hatralekkel 1 D1-lekerdezes (a tabla hianya = nincs mit naplozni, a catch elnyeli; a tabla az elso TikTok-lepessel jon letre)
+    const sorok = (await db.prepare(`SELECT * FROM mp_foglalas f WHERE f.kornyezet = 'eles' AND f.forras = 'salonic' AND f.letrehozva >= ?1
+      AND ((f.igazolas IS NULL AND f.letrehozva < ?2) OR f.igazolas = 'nem_igazolt')
+      AND NOT EXISTS (SELECT 1 FROM mp_tiktok_feltoltes t WHERE t.kulcs = f.kulcs) ORDER BY f.letrehozva LIMIT ${NAPLO_KORLAT}`).bind(most - 14 * 86400, most - IGAZOLAS_HATARIDO).all()).results || [];
+    if (!sorok.length) return { naplozva: 0 };
+    if (hatalyosMod(await tiktokMod(db), env, host) === 'ki') return { naplozva: 0 };
+    await db.prepare(TIKTOK_SEMA).run();
+    let n = 0;
+    for (const sor of sorok) {
+      const r = await tiktokLepes(db, { ...sor, igazolas: 'nem_igazolt' }, env, host, { fetchImpl, most });
+      if (r && r.kihagyva && r.kihagyva !== 'mar_rogzitve') n += 1;
+    }
+    return { naplozva: n };
+  } catch (e) { console.error('mp-meres: nem_igazolt naplo hiba', String(e && e.message || e).slice(0, 200)); return { naplozva: 0 }; }
 }
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -267,6 +293,10 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       if (typeof waitUntil === 'function') waitUntil(feltolt); else await feltolt;
       await tiktokInditas(db, sor, env, host, { fetchImpl, most }, waitUntil);
     }
+    // 2026-10-24 (GY/MP naplo): az igazolatlan Salonic-forrasu foglalasok TikTok-kihagyas naploja (csak naplo; a karbantartas ELOTT, mert az allitja `nem_igazolt`-ra)
+    // CSAK ha ehhez a kerelemhez nem volt Salonic-level (`ig`): az igazolas-agnak mar ~12 lekerdezese van (a kerelem alapterhe ilyenkor ~46-48, a Cloudflare ingyenes csomag hivasonkenti korlatja 50)
+    const pn = ig ? Promise.resolve() : nemIgazoltNaplo(db, env, host, { most, fetchImpl }); // soha nem dob; hatralek eseten kerelmenkent legfeljebb NAPLO_KORLAT sor (D1-lekerdezesszam), a foglalas valaszat nem kesleltetheti
+    if (typeof waitUntil === 'function') waitUntil(pn); else await pn;
     // karbantartas: regi rekordok es a 90 napnal regebbi kattintasazonositok torlese
     const karb = db.batch([
       db.prepare('DELETE FROM mp_foglalas WHERE letrehozva < ?').bind(most - MEGORZES_NAP * 86400),
