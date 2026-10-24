@@ -23,7 +23,7 @@ export const VALASZ_SEMA = `CREATE TABLE IF NOT EXISTS mp_google_valasz (
 
 const sha256hex = async (s) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map((b) => b.toString(16).padStart(2, '0')).join('');
 async function kulcsEgyezik(request, env) {
-  const hash = String((env && env.MP_GOOGLE_VALASZ_KULCS_HASH) || '').toLowerCase();
+  const hash = String((env && env.MP_GOOGLE_VALASZ_KULCS_HASH) || '').trim().toLowerCase(); // a Secretbe kerult zaro ujsor ne tegye siketce a vegpontot
   const adott = request.headers.get('x-mp-google-kulcs') || ''; // CSAK fejlecben (a query-kulcs naplokba kerulhet)
   if (!hash || !adott) return false;
   const a = await sha256hex(adott); let d = 0;
@@ -31,18 +31,23 @@ async function kulcsEgyezik(request, env) {
   return d === 0 && a.length === hash.length;
 }
 
-// A Google / Zap uzenetbol kiszedjuk a kattintasazonositot (minden alakban: kulcs + barmilyen elvalaszto + ertek, URL-kodolt is; kulcs nelkuli token is), az e-mailt, a hash-t
+// A Google / Zap uzenetbol kiszedjuk a kattintasazonositot (kulcs + barmilyen elvalaszto + ertek, URL-kodolt is; kulcs nelkuli token is), az e-mailt, a hash-t es a telefonszamot.
+// Hatar (dokumentalt): a szetvagott (szokozzel / sortorassel darabolt) azonosito tortrese es a 20+ karakteres, CSAK kis- vagy CSAK nagybetus token megmarad (valodi click ID ilyen nincs); a Zap egyik sem kuld ilyet.
+// Sorrend fontos: URL-dekodolas -> hash (nincs \b: "em_<hex>" is) -> click ID -> e-mail -> token -> telefon. A bemenet a maszkolas ELOTT 1000 karakterre vagva (a CPU-korlat miatt).
 const CLICK_KULCS = '(gclid|gbraid|wbraid|googleclickid|google_click_id)';
 const ELVALASZTO = '[\\s"\':=,{}\\[\\]]*(?:%3[dD]|%22|%3[aA]|%27)*[\\s"\']*';
 const CLICK_RE = new RegExp(CLICK_KULCS + ELVALASZTO + '([A-Za-z0-9_-]{6,})', 'gi');
 const idSzeru = (x) => /\d/.test(x) || (/[a-z]/.test(x) && /[A-Z]/.test(x)); // "expired" / "not" nem click ID
 const hosszuToken = (x) => x.length >= 20 && ((/[a-z]/.test(x) && /[A-Z]/.test(x)) || (x.length >= 24 && /\d/.test(x) && /[A-Za-z]/.test(x)));
-export const uzenetTisztit = (s) => String(s || '')
+const EMAIL_KARAKTER = '[^\\s@"\'<>()\\[\\],;:]';
+export const uzenetTisztit = (s) => String(s || '').slice(0, 1000)
+  .replace(/%2B/gi, '+').replace(/%20/g, ' ').replace(/%40/g, '@')
+  .replace(/[0-9a-fA-F]{32,}/g, '[hash]')
   .replace(CLICK_RE, (m, kulcs, ertek) => (idSzeru(ertek) ? kulcs + '=[click]' : m))
-  .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[email]')
-  .replace(/\b[0-9a-fA-F]{32,}\b/g, '[hash]')
-  .replace(/\+?\d[\d\s-]{8,}\d/g, '[szam]')
+  .replace(/"[^"]{1,64}"@\S+/g, '[email]')
+  .replace(new RegExp(EMAIL_KARAKTER + '+@' + EMAIL_KARAKTER + '+\\.' + EMAIL_KARAKTER + '{2,}', 'g'), '[email]')
   .replace(/[A-Za-z0-9_-]{20,}/g, (x) => (hosszuToken(x) ? '[token]' : x))
+  .replace(/\+?\d[\d\s().\/-]{7,}\d/g, '[szam]')
   .replace(/\s+/g, ' ').trim().slice(0, 300);
 const darab = (v) => (Number.isInteger(v) && v >= 0 && v <= 1000 ? v : null);
 
@@ -62,6 +67,7 @@ export async function googleValaszRogzit(db, o, most = Math.floor(Date.now() / 1
   const r = await db.prepare('INSERT OR IGNORE INTO mp_google_valasz (kulcs, akcio_id, kod, request_id, elfogadva, elutasitva, uzenet, ido) VALUES (?,?,?,?,?,?,?,?)')
     .bind(kulcs, akcio, kod, rid, darab(o.elfogadva), darab(o.elutasitva), uzenetTisztit(o.uzenet) || null, most).run();
   const rogzitve = !!(r.meta && r.meta.changes > 0);
+  try { await db.prepare('DELETE FROM mp_google_valasz WHERE ido < ?').bind(most - MEGORZES_NAP * 86400).run(); } catch (e) { /* a karbantartas hibaja nem akadalyozhatja a rogzitest */ } // megorzes: mint az mp_feltoltes (120 nap)
   return { status: 200, body: rogzitve ? { ok: true, rogzitve: true, kod } : { ok: true, rogzitve: false, mar_rogzitve: true } }; // az elso visszajelzes marad
 }
 
@@ -77,7 +83,8 @@ export async function googleValaszRiport(db, nap = 7, most = Math.floor(Date.now
       SUM(v.kod IS NULL) AS nincs_visszajelzes
     FROM mp_feltoltes t LEFT JOIN mp_google_valasz v ON v.kulcs = t.kulcs AND v.akcio_id = t.akcio_id
     WHERE t.mod = 'eles' AND t.allapot = 'elkuldve' AND t.ido >= ? GROUP BY t.akcio_id ORDER BY t.akcio_id`).bind(tol).all();
-  const k = await db.prepare("SELECT kod, COUNT(*) AS db FROM mp_google_valasz WHERE kod <> '' AND ido >= ? GROUP BY kod ORDER BY db DESC LIMIT 20").bind(tol).all();
+  const k = await db.prepare(`SELECT v.kod AS kod, COUNT(*) AS db FROM mp_feltoltes t JOIN mp_google_valasz v ON v.kulcs = t.kulcs AND v.akcio_id = t.akcio_id
+    WHERE t.mod = 'eles' AND t.allapot = 'elkuldve' AND t.ido >= ? AND v.kod <> '' GROUP BY v.kod ORDER BY db DESC LIMIT 20`).bind(tol).all(); // ugyanaz az idoablak (t.ido), mint a darabszamoknal
   const sorok = (t.results || []).map((x) => ({ akcio: x.akcio, elkuldve: x.elkuldve, google_elfogadta: x.google_elfogadta || 0, reszleges_hiba: x.reszleges_hiba || 0, nincs_visszajelzes: x.nincs_visszajelzes || 0 }));
   const osszes = sorok.reduce((a, s) => ({ elkuldve: a.elkuldve + s.elkuldve, google_elfogadta: a.google_elfogadta + s.google_elfogadta, reszleges_hiba: a.reszleges_hiba + s.reszleges_hiba, nincs_visszajelzes: a.nincs_visszajelzes + s.nincs_visszajelzes }), { elkuldve: 0, google_elfogadta: 0, reszleges_hiba: 0, nincs_visszajelzes: 0 });
   return { nap, akciok: sorok, osszes, hibakodok: k.results || [] };

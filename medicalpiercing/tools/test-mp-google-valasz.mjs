@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { googleValaszRogzit, googleValaszRiport, googleValaszVegpont, uzenetTisztit } from '../lib/meres/google-valasz.js';
+import { googleValaszRogzit, googleValaszRiport, googleValaszVegpont, uzenetTisztit, VALASZ_SEMA } from '../lib/meres/google-valasz.js';
 import { SEMA, _semaTorles } from '../lib/meres/lanc.js';
 import { MP_GADS } from '../lib/meres/google-ads.js';
 
@@ -61,6 +61,28 @@ test('rogzites: OK (kod ures) / reszleges hiba / elso visszajelzes marad / reque
   assert.equal(w.sql('SELECT kod FROM mp_google_valasz WHERE kulcs = ? AND akcio_id = ?', KULCS, AKCIO)[0].kod, '');
 });
 
+test('rogzites: a TAROLT uzenet maszkolt (nyers gclid / e-mail / hash nem kerul a tablaba); hibas request_id nem tarolodik', async () => {
+  const w = await vilag();
+  const nyers = `gclid=${GCLID} bela@example.com ${'ab'.repeat(32)} +36 30 123 4567 requestId=abc123def`;
+  const r = await googleValaszRogzit(w.db, { order_id: KULCS, conversion_action_id: AKCIO, kod: 'UNPARSEABLE_GCLID', uzenet: nyers, request_id: 'rossz id!' }, MOST);
+  assert.equal(r.status, 200);
+  const sor = w.sql('SELECT uzenet, request_id FROM mp_google_valasz')[0];
+  assert.ok(!sor.uzenet.includes(GCLID) && !sor.uzenet.includes('bela@example.com') && !sor.uzenet.includes('ab'.repeat(32)) && !sor.uzenet.includes('123 4567'), `tarolt uzenet: ${sor.uzenet}`);
+  assert.match(sor.uzenet, /requestId=abc123def/);
+  assert.equal(sor.request_id, null, 'hibas request_id nem tarolodik');
+});
+test('megorzes: a 120 napnal regebbi visszajelzes torlodik; a riport csak az eles, elkuldott feltoltest szamolja es az idoablakon belul', async () => {
+  const w = await vilag();
+  w.db._s.exec(VALASZ_SEMA);
+  w.db._s.prepare('INSERT INTO mp_google_valasz (kulcs, akcio_id, kod, ido) VALUES (?,?,?,?)').run('regi|1|2', AKCIO, 'EXPIRED_EVENT', MOST - 121 * 86400);
+  await googleValaszRogzit(w.db, { order_id: KULCS, conversion_action_id: AKCIO, kod: '' }, MOST);
+  assert.deepEqual(w.sql('SELECT kulcs FROM mp_google_valasz').map((x) => x.kulcs), [KULCS], 'a regi sor torlodott');
+  // riport: hiba-allapotu es idoablakon kivuli feltoltes nem szamit
+  w.db._s.prepare('INSERT INTO mp_feltoltes (kulcs, akcio_id, mod, kuldo, allapot, http_status, ido) VALUES (?,?,?,?,?,?,?)').run('hiba|1|2', AKCIO, 'eles', 'zapier', 'hiba', 500, MOST - 60);
+  w.db._s.prepare('INSERT INTO mp_feltoltes (kulcs, akcio_id, mod, kuldo, allapot, http_status, ido) VALUES (?,?,?,?,?,?,?)').run('regi|3|4', AKCIO, 'eles', 'zapier', 'elkuldve', 200, MOST - 30 * 86400);
+  const r = await googleValaszRiport(w.db, 7, MOST);
+  assert.equal(r.osszes.elkuldve, 3, 'a hiba-allapotu es a 30 napos sor nincs benne');
+});
 test('rogzites: hibas bemenet / ismeretlen sor / proba-sor / nem MP akcio', async () => {
   const w = await vilag();
   const r = (o) => googleValaszRogzit(w.db, o, MOST);
@@ -82,12 +104,19 @@ test('uzenet-maszkolas: a kattintasazonosito MINDEN alakban kimarad; a hasznos s
     `hiba gbraid "${BR}" nem ertelmezheto`, `{"gclid":"${CK}","x":1}`, `{'wbraid': '${BR}'}`, `googleClickId: ${CK}`, `google_click_id=${CK}`,
     `UNPARSEABLE_GCLID ${CK}`, `https://x.test/?a=1&gclid%3D${CK}&b=2`, `gclid%22%3A%22${CK}%22`, `invalid click ${CK} for order`, `ALLAPOT ${BR}${BR}`,
     `kapcsolat: teszt.vendeg@example.com ${'a'.repeat(64)} +36 30 123 4567`,
+    '+36 (30) 123-4567', '06/30/123-4567', '0630/1234567', '+36.30.123.4567', '(06-30) 123-4567', '06 30 / 123 45 67', '%2B36%2030%20123%204567',
+    'bela%40gmail.com', 'email=bela%40gmail.com', '\u0151@gmail.com', 'info@p\u00e9lda.hu', '"kis bela"@example.com', 'kov\u00e1cs.b\u00e9la@gmail.com',
+    `em_${'ab12'.repeat(16)}`, `x${'cd34'.repeat(16)}`,
   ];
   for (const u of alakok) {
     const v = uzenetTisztit(u);
     assert.ok(!v.includes(CK) && !v.includes(BR) && !v.includes(CK.slice(0, 18)) && !v.includes(BR.slice(0, 14)), `kiszivarog: ${u} -> ${v}`);
-    assert.ok(!v.includes('@') && !v.includes('a'.repeat(32)) && !v.includes('123 4567'), `szemelyes adat: ${u} -> ${v}`);
+    assert.ok(!v.includes('@') && !v.includes('a'.repeat(32)) && !v.includes('123 4567') && !/\d{3}[\s/.-]?\d{4}/.test(v) && !/(ab12|cd34){4}/.test(v) && !/bela|vendeg|kov/i.test(v), `szemelyes adat: ${u} -> ${v}`);
   }
+  // CPU-vedelem: a tamado bemenet 1000 karakterre vagva, es gyors
+  const t0 = performance.now();
+  uzenetTisztit('gclid' + ' '.repeat(3990)); uzenetTisztit('a@'.repeat(2000)); uzenetTisztit('gclid "'.repeat(600));
+  assert.ok(performance.now() - t0 < 100, 'tamado bemenet lassu');
   const jo = uzenetTisztit('requestId=abc123def gclid expired; CONVERSION_ACTION_NOT_ELIGIBLE for gclid not found');
   assert.match(jo, /requestId=abc123def/); assert.match(jo, /gclid expired/); assert.match(jo, /CONVERSION_ACTION_NOT_ELIGIBLE/); assert.match(jo, /gclid not found/);
   assert.ok(uzenetTisztit('x '.repeat(400)).length <= 300);
@@ -102,6 +131,7 @@ test('vegpont: kulcs csak fejlecben (rossz / hianyzo / query / beallitas nelkul 
   assert.equal((await h(kerj(torzs, { 'x-mp-google-kulcs': 'rossz' }))).status, 404);
   assert.equal((await h(kerj(torzs, {}, 'POST', `https://x.test/api/mp-google-valasz?kulcs=${TITOK}`))).status, 404, 'a query-kulcs nem fogadhato el');
   assert.equal((await h(kerj(torzs), { ...env, MP_GOOGLE_VALASZ_KULCS_HASH: '' })).status, 404, 'beallitas nelkul nincs vegpont');
+  assert.equal((await h(kerj({ ...torzs, order_id: KULCS2 }), { ...env, MP_GOOGLE_VALASZ_KULCS_HASH: TITOK_HASH + '\n' })).status, 200, 'a Secret zaro ujsora nem teszi siketce');
   assert.equal((await h(kerj(torzs), { MP_GOOGLE_VALASZ_KULCS_HASH: TITOK_HASH })).status, 503, 'D1 nelkul csak ervenyes kulccsal 503');
   assert.equal((await h(new Request('https://x.test/a', { method: 'POST', body: '{}' }), { MP_GOOGLE_VALASZ_KULCS_HASH: TITOK_HASH })).status, 404, 'kulcs nelkul D1 nelkul is 404');
   assert.equal((await h(kerj(null, { 'x-mp-google-kulcs': TITOK }, 'PUT'))).status, 405);
@@ -109,15 +139,15 @@ test('vegpont: kulcs csak fejlecben (rossz / hianyzo / query / beallitas nelkul 
   assert.equal((await h(kerj('x'.repeat(5000)))).status, 413);
   const ok = await h(kerj(torzs));
   assert.equal(ok.status, 200); assert.deepEqual(await ok.json(), { ok: true, rogzitve: true, kod: '' });
-  assert.equal(w.sql('SELECT COUNT(*) AS n FROM mp_google_valasz')[0].n, 1);
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM mp_google_valasz')[0].n, 2, 'a trim-es kulcsu hivas (KULCS2) es a siker-hivas (KULCS)');
 });
 
-test('D1-keret: egy visszahivas legfeljebb 3 lekerdezes (tabla, keresés, beiras)', async () => {
+test('D1-keret: egy visszahivas legfeljebb 4 lekerdezes (tabla, kereses, beiras, megorzes-torles)', async () => {
   const w = await vilag();
   let n = 0;
   const szamolo = { prepare: (sql) => { n++; return w.db.prepare(sql); } };
   await googleValaszVegpont({ request: kerj({ order_id: KULCS, conversion_action_id: AKCIO, kod: 'EXPIRED_EVENT' }), env: { MP_MERES_DB: szamolo, MP_GOOGLE_VALASZ_KULCS_HASH: TITOK_HASH } }, { most: MOST });
-  assert.ok(n <= 3, `D1-lekerdezesek: ${n}`);
+  assert.ok(n <= 4, `D1-lekerdezesek: ${n}`); // tabla, kereses, beiras, megorzes-torles
 });
 
 test('riport (admin): darabszamok akciónként, nincs nyers azonosito; a tabla hianyaban sema_hianyzik', async () => {
