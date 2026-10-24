@@ -1,0 +1,11 @@
+# MP-T-S: igazolt, de TikTok-naplosor nelkuli foglalasok (2026-10-24, draft)
+
+**Kerdes (01-MERES, #167 6383110530, 5. pont):** 10-18..24 241 eles `mp_foglalas` sorbol 10-hez nincs `mp_tiktok_feltoltes` sor; mi a 6 igazolt kihagyasanak oka, es kaphat-e minden kihagyas ok-kodos sort?
+
+**TENY (D1 `mp-meres`, csak szamok, vendegadat nelkul):** a 10 hianyzo sor: 7 `motor`-forrasu igazolt (10-18: 3, 10-19: 4; ebbol 3 `ful` tipusu - 1 lemondva), 2 `salonic` nem_igazolt (10-18, 10-21), 1 friss Salonic-sor (10-23, igazolas meg NULL). Mind a 7 igazolt sor 10-18 / 10-19-i, vagyis a 2026-10-20-i kihagyas-naplo (`7d91af15`) ELOTTI; ttclid egyiknek sincs, `_ttp` 3-nak; a 4 NULL tipusu sor kontextus-sor (IP/UA) nelkuli.
+**HIPOTEZIS (a kod alapjan):** a 3 `ful` sor akkor is `divat_fulpiercing` kihagyas lett volna (a szabaly 10-13 ota), de a kihagyas-naplo (10-20) elott nem maradt nyoma; a 4 NULL tipusu sor a 10-19-i "ttclid nelkul is mehet" szabalyvaltas elotti (ttclid nelkul kihagyva) vagy ures-user kihagyas lehetett - pontos okot a naplo hianya miatt utolag nem lehet bizonyitani.
+
+**Mit csinal a PR (a #480 tetejen, `claude/mp-kihagyas-potlas`):** uj `igazoltKihagyasNaplo` (`lanc.js`): a nem-motoros-forras megkotes nelkul, `igazolas='igazolt'`, naplosor nelkuli, <= 14 napos sorra a meglevo `tiktokLepes`-t hivja - de CSAK akkor, ha a sor MOST IS kihagyando (`jogosult().ok === false`); a kuldheto sort nem naplozza es NEM kuldi (nincs visszamenoleges kuldes). Eredmeny: `kihagyva:<ok>` sor (payload nelkul), kerelmenkent legfeljebb 10, ki modban semmi, idempotens, hiba elnyelt.
+**Hatas a 10 sorra:** a 3 `ful` -> `kihagyva:divat_fulpiercing`; a 4 NULL tipusu igazolt sor jelenleg jogosult (ablakon belul, `ttclid` nem kell) -> ITT nem naplozodik es nem kuldodik; az ablak lejarta (7 nap, 10-25 / 10-26) utan `kihagyva:ablakon_kivul` sort kap; a 2 nem_igazolt a #477 naploba (az kesz a #480-ban); az 1 friss sor igazolasig / 48 oraig varakozik, utana `nem_igazolt`.
+**Aktiv meres:** csak naplosor; a TikTok kuldes, a foglalasi folyamat, a Google/Meta lanc nem valtozik. Vedett: `lanc.js` `b4d12b4046` -> lasd PR; `tiktok.js` `5fc76b1a5c`, `meta.js` `447fa9e81c` valtozatlan.
+**Rollback:** a PR revertje; a naplosorok artalmatlanok (90 nap).
