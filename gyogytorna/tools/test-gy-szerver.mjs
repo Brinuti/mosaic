@@ -1198,8 +1198,12 @@ test('GY-GYT braid: GY_GADS_BRAID=be -> a gbraid / wbraid foglalas is varakozik 
   assert.deepEqual(keres.conversions.map((c) => ['gclid', 'gbraid', 'wbraid'].filter((k) => k in c)), [['gbraid'], ['wbraid']]);
   assert.equal(vedohalo(keres, { braid: true }), null);
   assert.equal(vedohalo(keres), 'ismeretlen_mezo'); // kapcsolo nelkul a vedohalo megfogna
-  // dry mod: a regi sorok nem torlodnek (csak eles modban)
+  // a kapcsolo `be` allasaban nincs tobb kihagyva_braid sor (a friss sorok ujra felvetelre kerultek)
   assert.equal((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_feltoltes WHERE allapot = 'kihagyva_braid'").first()).n, 0);
+  // az ujrafelvetel CSAK a kihagyva_braid sorokat erinti: egy elfogadva allapotu braid sor es egy dry mod-beli kihagyva_braid sor megmarad
+  await env.GY_DB.prepare("INSERT INTO gy_feltoltes (uuid, mod, letrehozva, allapot, katt_tipus, katt_maszk, order_id, konverzio_ido, ertek) VALUES ('mb_bra00000000000090', 'eles', ?1, 'elfogadva', 'gbraid', 'x', ?2, '2026-10-24 10:00:00+02:00', 19000), ('mb_bra00000000000091', 'dry', ?1, 'kihagyva_braid', 'wbraid', 'x', ?3, '2026-10-24 10:00:00+02:00', 19000), ('mb_bra00000000000092', 'eles', ?1, 'kihagyva_braid', 'wbraid', 'x', ?4, '2026-10-24 10:00:00+02:00', 19000)").bind(mikor, 'b'.repeat(64), 'c'.repeat(64), 'd'.repeat(64)).run();
+  await gfeltoltesFut({ db: env.GY_DB, env: be, most: mikor + 180, budapestIdo });
+  assert.deepEqual((await env.GY_DB.prepare("SELECT uuid, mod, allapot FROM gy_feltoltes WHERE uuid IN ('mb_bra00000000000090','mb_bra00000000000091','mb_bra00000000000092') ORDER BY uuid").all()).results.map((x) => [x.mod, x.allapot]), [['eles', 'elfogadva'], ['dry', 'kihagyva_braid']]); // a 92. sor torlodott (nincs hozza foglalas, ezert nem jon vissza) - az elfogadva es a dry sor megmaradt
   assert.equal(JSON.stringify(keres.conversions).includes(GB), true); // a kerestorzs hordozza a click-ID-t (naplozni tilos - a naplo-sorokban nincs, lasd lent)
   assert.equal(JSON.stringify((await env.GY_DB.prepare('SELECT * FROM gy_feltoltes').all()).results).includes(GB), false);
 });
