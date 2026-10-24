@@ -174,7 +174,10 @@ export function ujraprobaDontes({ http = null, kod = null, proba = 0, most, felt
     const hatar = Math.min((Number.isInteger(kiigIdo) ? kiigIdo : feltoltesIdo) + GKIIG.vegleges, feltoltesIdo + GKIIG.felsoKorlat);
     if (most > hatar) return { allapot: 'nincs_konverzio', kovetkezo: null, ok: 'nincs_konverzio_ablak' };
   }
-  if (proba >= GKIIG.ujraproba.max) return { allapot: 'hiba', kovetkezo: null, ok: 'ujraproba_kimerult' };
+  if (proba >= GKIIG.ujraproba.max) { // az utolso ujraproba is NOT_FOUND / TOO_RECENT: a konverzio nincs a Google-ben (nem technikai hiba)
+    if (kod === 'CONVERSION_NOT_FOUND' || kod === 'TOO_RECENT_CONVERSION') return { allapot: 'nincs_konverzio', kovetkezo: null, ok: 'nincs_konverzio_ujraproba_kimerult' };
+    return { allapot: 'hiba', kovetkezo: null, ok: 'ujraproba_kimerult' };
+  }
   return { allapot: 'hiba', kovetkezo: most + GKIIG.ujraproba.varakozas[proba], ok: 'ujraproba' };
 }
 

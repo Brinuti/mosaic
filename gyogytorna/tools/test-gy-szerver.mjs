@@ -1651,6 +1651,18 @@ test('GY-27 kiigazitas: kapcsolo alapertelmezese `ki`; a payload CSAK 4 mezo (ni
   assert.equal(kiigUjraproba({ kod: 'INVALID_CONVERSION_ACTION_TYPE', most, feltoltesIdo: f0 }).ok, 'vegleges');
   assert.equal(kiigUjraproba({ http: 503, most, feltoltesIdo: f0 }).ok, 'ujraproba'); assert.equal(kiigUjraproba({ http: null, most, feltoltesIdo: f0 }).ok, 'ujraproba');
   assert.equal(kiigUjraproba({ kod: 'INTERNAL_ERROR', proba: GKIIG.ujraproba.max, most, feltoltesIdo: f0 }).ok, 'ujraproba_kimerult');
+  // teljes lanc (review-javitas): a sor a legkorabbi idopontban (felt+48h) jon letre, a NOT_FOUND ujraprobak 5-ig kimerulnek -> nincs_konverzio (nem hiba/ujraproba_kimerult)
+  {
+    let t = f0 + 48 * ORA; let proba = 0; let d;
+    for (let i = 0; i < 10; i++) {
+      d = kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', proba, most: t, feltoltesIdo: f0, kiigIdo: f0 + 48 * ORA });
+      if (!d.kovetkezo) break;
+      t = d.kovetkezo; proba += 1;
+    }
+    assert.equal(d.allapot, 'nincs_konverzio');
+    assert.equal(proba, GKIIG.ujraproba.max);
+    assert.equal(d.ok, 'nincs_konverzio_ujraproba_kimerult');
+  }
   assert.deepEqual(kiigKuldesElotti({ teszt: 0, foglalas_allapot: 'lemondott' }), null);
   assert.equal(kiigKuldesElotti({ teszt: 1, foglalas_allapot: 'lemondott' }).allapot, 'kihagyva_teszt');
   assert.equal(kiigKuldesElotti({ teszt: 0, foglalas_allapot: 'aktiv' }).allapot, 'kihagyva_aktiv');
