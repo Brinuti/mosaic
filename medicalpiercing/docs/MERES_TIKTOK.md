@@ -73,3 +73,7 @@ A napi riport (`riport.js`) soronként `tiktok_naplo` számot ad (az adott napon
 ## Élesítés
 
 - 2026-10-13: Feri beállította a `TIKTOK_EVENTS_TOKEN` titkot (Production). `mp_beallitas.tiktok_mod = 'eles'`. Az esemény neve `IgazoltFoglalas` (másodlagos, a kampány optimalizációs eseménye változatlan). Visszakapcsolás: `tiktok_mod = 'naplo'`.
+
+## Igazolatlan Salonic-forrású foglalás: `kihagyva:nem_igazolt` napló (2026-10-24, DRAFT)
+
+A TikTok-lépés csak Salonic-igazoláskor indul (`lanc.js` `igazolasErkezes` / új foglalásnál `if (ig)`), ezért a Salonic-forrású (booking_id nélküli, `forras='salonic'`) foglalásnak, amelyhez nem érkezik igazolás, eddig nem maradt nyoma a `mp_tiktok_feltoltes` táblában. Új: `nemIgazoltNaplo` (`lanc.js`), a karbantartás előtt fut egy új foglalás rögzítésekor: az éles, `forras='salonic'`, legfeljebb 14 napos, napló-sor nélküli foglalásokra, amelyek 48 óra után igazolatlanok (vagy már `nem_igazolt`), a meglévő `tiktokLepes`-t hívja `igazolas='nem_igazolt'`-tal → `kihagyva:nem_igazolt` sor, payload nélkül (a fül típus a meglévő sorrend szerint `kihagyva:divat_fulpiercing`). **Küldés nem változik**: az `igazolas` mezőt csak a hívás másolatán állítja, a táblát a karbantartás állítja; ki módban semmi nem történik; a hiba elnyelt; idempotens. Későbbi igazolás esetén a `naplozva` sor felülírja a kihagyva-sort (meglévő viselkedés).

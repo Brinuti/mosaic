@@ -306,3 +306,73 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
   assert.deepEqual(await tiktokLepes(db, alapSor({ kornyezet: 'elonezet' }), {}, HOST, { most: MOST }), { kihagyva: 'nem_eles' });
   assert.equal((await naploSorok(db).catch(() => [])).length, 0);
 });
+
+// ---- 2026-10-24: igazolatlan Salonic-forrasu foglalas -> kihagyva:nem_igazolt naplosor (csak naplo, kuldes nem valtozik) ----
+{
+  const { nemIgazoltNaplo } = await import('../lib/meres/lanc.js');
+  const sorBeszur = async (db, o) => {
+    const x = { kulcs: KULCS, salonic_id: null, forras: 'salonic', kornyezet: 'eles', letrehozva: MOST - 3 * 86400, igazolas: null, hozzajarulas_dontott: 1, hozzajarulas_hirdetes: 1, hozzajarulas_analitika: 1, tipus: 'migren', ...o };
+    const oszl = Object.keys(x);
+    await db.prepare(`INSERT INTO mp_foglalas (${oszl.join(',')}) VALUES (${oszl.map(() => '?').join(',')})`).bind(...oszl.map((k) => x[k])).run();
+  };
+  const alap = async (mod) => { _semaTorles(); const db = await ujDb(mod); const { semaBiztos } = await import('../lib/meres/lanc.js'); await semaBiztos(db); return db; };
+  const f = (h) => async (url) => { h.push(String(url)); return new Response('{}', { status: 200 }); };
+
+  test('nem_igazolt naplo: 48 ora utan igazolatlan Salonic-forrasu sor -> kihagyva:nem_igazolt (payload nelkul), fetch nincs, idempotens', async () => {
+    const db = await alap(); const h = [];
+    await sorBeszur(db, {});
+    assert.deepEqual(await nemIgazoltNaplo(db, { TIKTOK_EVENTS_TOKEN: 't' }, HOST, { most: MOST, fetchImpl: f(h) }), { naplozva: 1 });
+    assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot, x.payload_maszkolt, x.mod]), [[KULCS, 'kihagyva:nem_igazolt', null, 'naplo']]);
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 60, fetchImpl: f(h) }), { naplozva: 0 }); // idempotens
+    assert.equal((await naploSorok(db)).length, 1); assert.equal(h.length, 0, 'halozati hivas nincs');
+    // a sor igazolasa NEM valtozik (a karbantartas dolga), a mp_foglalas erintetlen
+    assert.equal((await db.prepare('SELECT igazolas FROM mp_foglalas').first()).igazolas, null);
+  });
+
+  test('nem_igazolt naplo: mar nem_igazolt sor visszamenoleg is (14 nap), 48 oranal frissebb / motoros / igazolt / elonezet / 14 napnal regebbi sor nem', async () => {
+    const db = await alap();
+    await sorBeszur(db, { kulcs: 'k|regi|1', igazolas: 'nem_igazolt', letrehozva: MOST - 10 * 86400 });
+    await sorBeszur(db, { kulcs: 'k|friss|2', letrehozva: MOST - 3600 });                       // meg a 48 oras ablakban
+    await sorBeszur(db, { kulcs: 'k|motor|3', forras: 'motor', salonic_id: 'b1', igazolas: 'nem_igazolt' }); // nem Salonic-forrasu
+    await sorBeszur(db, { kulcs: 'k|igazolt|4', igazolas: 'igazolt' });
+    await sorBeszur(db, { kulcs: 'k|elonezet|5', kornyezet: 'elonezet', igazolas: 'nem_igazolt' });
+    await sorBeszur(db, { kulcs: 'k|nagyonregi|6', igazolas: 'nem_igazolt', letrehozva: MOST - 20 * 86400 });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST }), { naplozva: 1 });
+    assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot]), [['k|regi|1', 'kihagyva:nem_igazolt']]);
+  });
+
+  test('nem_igazolt naplo: ki mod -> semmi; fulpiercing = divat_fulpiercing ok; kesobbi igazolas a kihagyva-sort felulirja (a kuldes folyamata valtozatlan)', async () => {
+    const dbKi = await alap('ki'); await sorBeszur(dbKi, {});
+    assert.deepEqual(await nemIgazoltNaplo(dbKi, {}, HOST, { most: MOST }), { naplozva: 0 });
+    assert.equal((await dbKi.prepare('SELECT COUNT(*) AS n FROM mp_tiktok_feltoltes').first()).n, 0);
+    const db = await alap(); await sorBeszur(db, { tipus: 'ful' });
+    await nemIgazoltNaplo(db, {}, HOST, { most: MOST });
+    assert.deepEqual((await naploSorok(db)).map((x) => x.allapot), ['kihagyva:divat_fulpiercing']);
+    // kesobb igazolt + jogosult sor: a tiktokLepes a kihagyva-sort naplozva-ra irja (meglevo viselkedes)
+    const db2 = await alap(); await sorBeszur(db2, {}); await nemIgazoltNaplo(db2, {}, HOST, { most: MOST });
+    assert.deepEqual((await naploSorok(db2)).map((x) => x.allapot), ['kihagyva:nem_igazolt']);
+    const r = await tiktokLepes(db2, alapSor({ kulcs: KULCS }), {}, HOST, { most: MOST + 120 });
+    assert.equal(r.allapot, 'naplozva'); assert.deepEqual((await naploSorok(db2)).map((x) => x.allapot), ['naplozva']);
+  });
+
+  test('nem_igazolt naplo: foglalasErkezes vegig - az igazolatlan Salonic-forrasu sor a KOVETKEZO foglalas karbantartasakor naplozodik, a valasz es a Google-folyamat valtozatlan; hiba nem allitja meg', async () => {
+    _semaTorles(); const db = d1();
+    const env = { MP_MERES_DB: db, MP_IGAZOLAS_TITOK: 'ig-TITOK', MP_GADS_MOD: 'validate' };
+    const h = []; const fe = f(h);
+    // 1. foglalas (booking_id nelkul = salonic-forras), 3 nappal kesobb a 2. foglalas karbantartasa
+    const nelkul = () => new Request(`https://${HOST}/api/mp-foglalas`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: `mp_suti=v1-s1-m1-t${MOST}` },
+      body: JSON.stringify({ ut: '/foglalas-ok-mi', p: { price: '24900', first_booking: 'true', placeId: '12169', employeeId: '555', startDate: '1791900000' }, kattintas: { ttclid: { ertek: TTCLID, ido: MOST - 1800 } } }) });
+    const a = await (await foglalasErkezes({ request: nelkul(), env }, { fetchImpl: fe, most: MOST })).json();
+    assert.equal(a.uj, true); assert.equal((await naploSorok(db)).length, 0);
+    await db.prepare("UPDATE mp_foglalas SET forras = 'salonic', salonic_id = NULL").run();
+    const mp = await foglalasErkezes({ request: foglalKeres(`mp_suti=v1-s1-m1-t${MOST + 3 * 86400}`), env }, { fetchImpl: fe, most: MOST + 3 * 86400 });
+    assert.equal(mp.status, 200);
+    const n = await naploSorok(db);
+    assert.ok(n.some((x) => x.allapot === 'kihagyva:nem_igazolt' && x.payload_maszkolt === null), 'az 1. foglalas naplozva');
+    assert.equal(h.filter((u) => u.includes('tiktok')).length, 0, 'TikTok-hivas nincs');
+    assert.equal((await db.prepare("SELECT igazolas FROM mp_foglalas ORDER BY letrehozva LIMIT 1").first()).igazolas, 'nem_igazolt', 'a karbantartas valtozatlanul nem_igazolt-ra allitja');
+    // eltort naplo: a fuggveny nem dob
+    const rossz = { prepare: () => { throw new Error('db hiba'); } };
+    assert.deepEqual(await nemIgazoltNaplo(rossz, {}, HOST, { most: MOST }), { naplozva: 0 });
+  });
+}
