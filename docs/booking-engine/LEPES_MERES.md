@@ -69,7 +69,7 @@ A `salonic_api` hibatípus eddig nem árulta el, **melyik nézetben** és **mily
 
 - `lepes = error_reszlet`, `tipus = <hibatípus>.<nézet-kód>.<hibakód>.<http>`, pl. `salonic_api.C1.HTTP.503`.
   - `<nézet-kód>`: a foglaló nézetének kódja (C1, HS1, A3_SENT, … : nagybetű + nagybetű/szám/aláhúzás, legfeljebb 12 karakter), egyébként `ismeretlen`.
-  - `<hibakód>` és `<hibatípus>` zárt párok: `timeout` → `TIMEOUT`; `client_error` → `NONE` (nincs adapter-hibakód); `salonic_api` → az adapter hibakódja (`HTTP`, `PARSE`, `API_STATUS`, `SERVICE_NOT_FOUND`, `NO_CALENDAR`, `UNKNOWN_BUSINESS`, `NOT_SUPPORTED`; ismeretlen kód: `OTHER`). A többi hibatípus (`no_slots`, `slot_lost`, …) nem hordoz részletet.
+  - `<hibakód>` és `<hibatípus>` zárt párok: `timeout` → `TIMEOUT`; `client_error` → `NONE` (nincs adapter-hibakód); `salonic_api` → az adapter hibakódja (`HTTP`, `PARSE`, `REDIRECT`, `EMPTY`, `API_STATUS`, `SERVICE_NOT_FOUND`, `NO_CALENDAR`, `UNKNOWN_BUSINESS`, `NOT_SUPPORTED`; ismeretlen kód: `OTHER`). A többi hibatípus (`no_slots`, `slot_lost`, …) nem hordoz részletet.
   - `<http>`: kanonikusan `0` vagy `100`–`599` (nincs `00` / `000` / vezető nulla), és csak `HTTP` vagy `API_STATUS` kód mellett lehet nem nulla. **A `0` azt jelenti: nincs HTTP-státusz** (pl. a kérés nem jutott el a Salonic-hoz: hálózati hiba, CORS, megszakítás; vagy a hibakód nem HTTP-eredetű). Ha a Salonic API `status` mezője szám, az `API_STATUS.<szám>` alakban jelenik meg: ez az API saját státusza, **nem** HTTP-státusz; a szöveges API-státusz `API_STATUS.0`.
 - **Nincs benne** URL, hibaüzenet, azonosító, süti, időbélyeg, személyes adat; a szerver zárt alakot fogad el (`ervenyesit`), minden más `400`; a kliens kimenete a szerver által elfogadott halmaz része (teszt: kliens ⊆ szerver).
 - **Mikor megy:** csak a nézet-betöltési hibánál (`engine.js` `catch`), a hibatípus egyszer-kapuján belül (ugyanaz a (típus, nézet, szolgáltatás) hármas legfeljebb egyszer: egy második, más kódú hiba ugyanarra a hármasra nem kerül be), próbából és robotból nem. A kliens a hiba-részletet saját `try`-blokkban küldi, hibája sosem akadályozza a foglalást.
@@ -146,6 +146,18 @@ A `verify_check.price` bukásánál (a Salonic átirányításában jelentett á
 Az **összeg, a szolgáltatás, a név, az e-mail, a telefon, a foglalás-azonosító NEM kerül** a kérésbe; a GA4 / `dataLayer` semmit nem kap. A kliens (`priceIrany()` a `lepes-meres.js`-ben) és a szerver (`IRANYOK`, `BELSO_205.price_irany` a `netlify/lib/foglalo-szamlalo.js`-ben) ugyanazt a zárt listát ismeri (teszt: egyezés). Kulcsszám: 4 (a belső kulcs-plafon 150 alatt). A GET riport additív `price_irany` kulcsot kap; a HTML-táblában egy új oszlop.
 
 Kikapcsolás / rollback: a `lepes-meres.js` `unverified()` egy sora (`belso(IRANY_LEPES, …)`) törlése megszünteti; az adatbázisban a sorok maradhatnak (`DELETE FROM lepes_szamlalo WHERE lepes = 'price_irany'` mindkét D1-en).
+
+## 5e. Szolgáltatás-lista betöltési hiba: automatikus újrapróba + a PARSE okának szétválasztása (2026-10-24, UJ-51, Feri „Igen, mehet”) – MÉRÉST ÉS FOGLALÁSI FOLYAMATOT ÉRINT
+
+**Probléma (TÉNY, #167 6380763889, 6381121380):** a Salonic `selectSpecialization` oldala bizonyos kliensekre (curl, keresőrobot, közösségi előnézet) 302-vel a főoldalra visz; a főoldalon nincs kategória-link → az adapter `servicesRaw()` 0 szolgáltatást talál → `PARSE`. A Mosaic-motorok betöltési hibaaránya 10-17..24: oxigén ~10%, szőr 2%, HeadSpa 0,4%, fodrász/PMU 0%.
+
+**Változás (`salonic-adapter.js`):**
+- Üres szolgáltatás-listánál (`PARSE` / `REDIRECT` / `EMPTY`) **egyszer, 700 ms múlva automatikusan újrapróbál** (az egész lekérdezés elölről; `parseRetries` = 1, `parseRetryMs` = 700 az adapter opciói). A hálózati/5xx hibára meglévő újrapróba (`retries`) és a 404-kezelés változatlan. A sikeres eredmény a meglévő gyorsítótárba kerül (nincs további lekérés); a hibás nem.
+- A hiba oka külön kódot kap: **`REDIRECT`** = az oldal más útvonalra irányított át (a fetch `redirected` + `url` alapján) és nincs szolgáltatás; **`PARSE`** = 200-as oldal, de nincs benne kategória / szolgáltatás; **`EMPTY`** = van kategória (vagy konfigurált `specIds`), de egyik oldalon sincs szolgáltatás.
+- A kód a meglévő `error_reszlet` zárt listájába (kliens `lepes-meres.js` `HIBA_KODOK`, szerver `foglalo-szamlalo.js` `HIBA_KODOK` + `RESZLET_PAROK`) került: `salonic_api.<nézet>.REDIRECT.0`, `...EMPTY.0` (HTTP-státusz csak `HTTP` / `API_STATUS` mellett lehet nem nulla). Szabad szöveg, URL, azonosító nincs benne.
+- Ami **nem** változik: a vendég képernyője (`loadError`), az „Újrapróbálom” gomb, a foglalási lépések, a GA4/Meta/TikTok/Google események, a lépés-számlálók szerkezete.
+
+**Tesztek:** `tools/test-salonic-adapter.mjs` (+4), `tools/test-lepes-meres.mjs` (a zárt listák bővítése), böngészős: `tools/meres-proba/salonic-ujraproba-proba.mjs` (mind az 5 motor, mockolt Salonic 302 / üres oldal; asztali + mobil).
 
 ## 6. Kikapcsolás
 
