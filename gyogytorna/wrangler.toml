@@ -12,7 +12,9 @@ GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
 GY_ZAP_KULCS_HASH_2 = "7d34e0e8c5127b878a8e24017b800d5f91736f899b762cf0fe774b4a0006d5be"  # Zap-kulcs rotacio: a MASODIK egyszerre ervenyes kulcs SHA-256 hash-e (nem titok); csere utan a regi GY_ZAP_KULCS_HASH torolheto
 GY_SAV_KI = "1"             # sutisav KI: dontes nelkul az alapertelmezes "megadott" (Feri dontese, 2026-10-14); vesz-kikapcsolas: "0" (a suti.js-ben is SAV_KI = false)
 GY_GADS_FELTOLTES = "eles"       # GY-25: ki | dry (csak naplo) | eles (Feri 2026-10-21: MEHET, KIZAROLAG a masodlagos 7858300772 akcioba; kuldo: Worker GOOGLE_ADS_* titkokkal VAGY tools/gfeltoltes-hid.mjs)
+GY_GADS_KIIGAZITAS = "ki"       # GY-27: ki | dry (csak naplo) | eles. ALAPERTEK ki: a lemondott foglalasok RETRACTION kiigazitasa (uploadConversionAdjustments) nincs bekapcsolva; dry / eles CSAK kulon DECISION / Feri mondata utan
 GY_GADS_CONSENT = "granted"      # DECISION #220 (Feri 2026-10-21): a feltoltes consent.adUserData / adPersonalization = GRANTED (a latogato kifejezett elutasitasa elsobbseget el); csak az UJ sorokra; rollback: ez a sor torlese (a Zap vedohalo visszafele kompatibilis, v01a15fa3)
+GY_GADS_BRAID = "ki"           # gbraid / wbraid feltoltes: ki (alap: kihagyva_braid) | be (csak a gbraid / wbraid kattintasu foglalasok is mennek, egyszerre egy click-ID); bekapcsolas elott a Zap vedohalojanak is engednie kell; rollback: "ki"
 
 # A titkok a Cloudflare felueleten, Secret tipussal, kornyezetenkent: GY_HMAC_KULCS (tranzakcio_id es parosito), GY_ADMIN_KULCS_HASH (a /api/gy-admin es
 # /api/gy-kampanyok kulcsanak SHA-256 hash-e).
@@ -30,6 +32,8 @@ GY_ATTR_NELKUL = "1"
 GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
 GY_SAV_KI = "1"
 GY_GADS_FELTOLTES = "dry"        # GY-25: az ELOSZEMLE SOHA nem kuld a Google-nek (ki | dry)
+GY_GADS_KIIGAZITAS = "ki"       # GY-27: az eloszemle sem kuld kiigazitast
+GY_GADS_BRAID = "ki"
 GY_ZAP_KULCS_HASH_2 = "7d34e0e8c5127b878a8e24017b800d5f91736f899b762cf0fe774b4a0006d5be"
 GY_TESZT_G = "g:pw-proba"
 
