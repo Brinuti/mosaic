@@ -175,7 +175,7 @@ test('belsoCel: fomenu FOGLALAS = altalanos; a gombok az oldal uzletagara; onhiv
     assert.equal(k('/idpontfoglalas', fajl, 'Foglalás'), 'fejlec', fajl);
   }
   const FEJ = { 'oxigenterapia-budapest': 'oxygen', 'oxigenterapia-ferfiaknak-regi': 'oxygen', 'lezeres-szortelenites-budapest': 'laser', 'lezeres-ajandekkartya': 'laser', 'szortelenites-zsofi-rovid': 'laser', 'vegleges-szortelenites-ferfiaknak': 'laser',
-    'noi-fodraszat-budapest': 'hair', 'noi-fodrasz-budapest-balayage-hajfestes': 'hair', 'balayage-haj-festes-budapest': 'hair', 'noi-hajfestes-budapest': 'hair', 'sminktetovalas-budapest': 'pmu' };
+    'noi-fodraszat-budapest': 'hair', 'noi-fodrasz-budapest-balayage-hajfestes': 'hair', 'balayage-haj-festes-budapest': 'hair', 'noi-hajfestes-budapest': 'hair', 'sminktetovalas-budapest-rovid': 'pmu' };
   for (const [fajl, b] of Object.entries(FEJ)) {
     for (const felirat of ['FOGLALÁS', 'Foglalás']) {
       assert.equal(c('/idpontfoglalas', fajl, felirat), `/foglalo-motor?business=${b}`, fajl);
