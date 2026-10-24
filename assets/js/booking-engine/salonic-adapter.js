@@ -44,7 +44,7 @@ export class SalonicError extends Error {
   constructor(code, message, extra = {}) {
     super(message);
     this.name = 'SalonicError';
-    this.code = code; // NOT_SUPPORTED | UNKNOWN_BUSINESS | SERVICE_NOT_FOUND | HTTP | PARSE | NO_CALENDAR | API_STATUS | TIMEOUT
+    this.code = code; // NOT_SUPPORTED | UNKNOWN_BUSINESS | SERVICE_NOT_FOUND | HTTP | PARSE | REDIRECT | EMPTY | NO_CALENDAR | API_STATUS | TIMEOUT
     Object.assign(this, extra);
   }
 }
@@ -204,20 +204,26 @@ export function verifyConfirmation(urlOrQuery, expected, businesses = BUSINESSES
 }
 
 // --- az adapter ---------------------------------------------------------------------------------------------------------
-export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () => Date.now(), timeoutMs = 15000, retries = 1, cacheMs = 5 * 60 * 1000, businesses = BUSINESSES, storage = null, persistMs = 10 * 60 * 1000 } = {}) {
+export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () => Date.now(), timeoutMs = 15000, retries = 1, cacheMs = 5 * 60 * 1000, businesses = BUSINESSES, storage = null, persistMs = 10 * 60 * 1000, parseRetries = 1, parseRetryMs = 700 } = {}) {
   const cache = new Map(); // kulcs -> { t, v }
   // A tartos (sessionStorage) gyorsitotar: a szolgaltatas-lista / hely ket oldalbetoltes kozott is megmarad (a foglalo masodik megnyitasa azonnali);
   // az ar / idotartam legfeljebb persistMs-ig regi (a C4-nel az ar ellenorzese ugyis a Salonic atiranyitasa alapjan tortenik).
   const readPersist = (key) => { if (!storage) return undefined; try { const j = JSON.parse(storage.getItem('mhSalonic:' + key)); if (j && now() - j.t < persistMs) return j.v; } catch (e) { /* hibas / hianyzo bejegyzes */ } return undefined; };
   const writePersist = (key, v) => { if (!storage) return; try { storage.setItem('mhSalonic:' + key, JSON.stringify({ t: now(), v })); } catch (e) { /* tele / tiltott tarolo */ } };
+  const inflight = new Map(); // kulcs -> futo lekeres: az egyideju azonos hivasok (warmUp + ensureServices) EGY lekerest osztanak (az ujraproba igy nem szorozza a duplazast); a vegen torlodik, hiba nem gyorsitotarazott
   const cached = async (key, fn, { persist = false } = {}) => {
     const c = cache.get(key);
     if (c && now() - c.t < cacheMs) return c.v;
     if (persist) { const p = readPersist(key); if (p !== undefined) { cache.set(key, { t: now(), v: p }); return p; } }
-    const v = await fn();
-    cache.set(key, { t: now(), v });
-    if (persist) writePersist(key, v);
-    return v;
+    if (inflight.has(key)) return inflight.get(key);
+    const futo = (async () => {
+      const v = await fn();
+      cache.set(key, { t: now(), v });
+      if (persist) writePersist(key, v);
+      return v;
+    })();
+    inflight.set(key, futo);
+    try { return await futo; } finally { inflight.delete(key); }
   };
   const cfgOf = (business) => {
     const c = businesses[business];
@@ -226,7 +232,8 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
   };
 
   // csak GET: idokorlat + egy ujraprobalas halozati/5xx hibara (a foglalas nem megy rajta, nincs mellekhatas)
-  async function getText(url) {
+  // getTextMeta: a szoveg mellett jelzi, ha a Salonic MAS UTVONALRA iranyitott at (pl. a selectSpecialization oldal a fooldalra: bizonyos kliensekre a Salonic igy valaszol) - csak a diagnosztikahoz
+  async function getTextMeta(url) {
     let last;
     for (let i = 0; i <= retries; i++) {
       const ab = new AbortController();
@@ -235,7 +242,9 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
         const r = await fetchImpl(url, { credentials: 'omit', signal: ab.signal });
         if (r.status >= 500 && i < retries) { last = new SalonicError('HTTP', 'HTTP ' + r.status, { url, status: r.status }); continue; }
         if (!r.ok) throw new SalonicError('HTTP', 'HTTP ' + r.status, { url, status: r.status });
-        return await r.text();
+        let redirected = false;
+        try { redirected = r.redirected === true && typeof r.url === 'string' && r.url !== '' && new URL(r.url).pathname.replace(/\/+$/, '') !== new URL(url).pathname.replace(/\/+$/, ''); } catch (e) { /* ismeretlen url: nem jelezzuk */ }
+        return { text: await r.text(), redirected };
       } catch (e) {
         if (e instanceof SalonicError && e.code === 'HTTP' && e.status < 500) throw e;
         last = e instanceof SalonicError ? e : new SalonicError(e && e.name === 'AbortError' ? 'TIMEOUT' : 'HTTP', 'Lekeres sikertelen: ' + (e && e.message), { url });
@@ -243,21 +252,34 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     }
     throw last;
   }
+  async function getText(url) { return (await getTextMeta(url)).text; }
 
   // A szolgaltatas-lista + az egyeni CSS jele: a kategoria-oldalak PARHUZAMOSAN toltodnek (a fodraszatnal 14 oldal), a sorrend a kategoriak sorrendje marad.
-  const servicesRaw = (business) => cached('services:' + business, async () => {
+  // Ures eredmenyre (UJ-51, Feri 2026-10-24) EGYSZER automatikusan ujraprobal (parseRetryMs mulva, az egesz lekeres elorol), es a hiba oka kulon kodot kap:
+  //   REDIRECT = a Salonic mas utvonalra iranyitott at es nincs szolgaltatas; PARSE = a kategoria-/munkatars-oldal 200, de nincs benne kategoria / szolgaltatas; EMPTY = van kategoria, de egyik oldalon sincs szolgaltatas.
+  const PARSE_KODOK = ['PARSE', 'REDIRECT', 'EMPTY'];
+  const szolgaltatasLista = async (business) => {
     const cfg = cfgOf(business);
     const found = [];
     let customCss = null;
-    const page = async (url) => { const t = await getText(url); customCss = customCss || parseCustomCss(t); return t; }; // az egyeni CSS jelet a mar letoltott oldalakbol olvassuk
+    let atiranyitva = false;
+    const page = async (url) => { const m = await getTextMeta(url); atiranyitva = atiranyitva || m.redirected; customCss = customCss || parseCustomCss(m.text); return m.text; }; // az egyeni CSS jelet a mar letoltott oldalakbol olvassuk
     const add = (list, spec) => { for (const s of list) if (!found.some((x) => x.serviceId === s.serviceId)) found.push({ ...s, specId: spec ? spec.specId : null, category: spec ? spec.name : null }); };
     if (cfg.employeeId) add(parseServices(await page(`${cfg.host}/employees/${cfg.employeeId}/?placeId=${cfg.placeId}`)), null);
     let specs = (cfg.specIds || []).map((id) => ({ specId: String(id), name: null }));
     if (!specs.length && !cfg.employeeId) specs = parseSpecs(await page(`${cfg.host}/selectSpecialization/?placeId=${cfg.placeId}`));
     const oldalak = await Promise.all(specs.map((spec) => page(`${cfg.host}/showServices/?placeId=${cfg.placeId}&specId=${spec.specId}`)));
     specs.forEach((spec, i) => add(parseServices(oldalak[i]), spec));
-    if (!found.length) throw new SalonicError('PARSE', `Nem talaltam szolgaltatast: ${business}`, { business });
+    if (!found.length) throw new SalonicError(atiranyitva ? 'REDIRECT' : specs.length ? 'EMPTY' : 'PARSE', `Nem talaltam szolgaltatast: ${business}`, { business });
     return { found, customCss };
+  };
+  const servicesRaw = (business) => cached('services:' + business, async () => {
+    for (let i = 0; ; i++) {
+      try { return await szolgaltatasLista(business); } catch (e) {
+        if (!(e instanceof SalonicError) || !PARSE_KODOK.includes(e.code) || i >= parseRetries) throw e;
+        if (parseRetryMs > 0) await new Promise((res) => setTimeout(res, parseRetryMs));
+      }
+    }
   }, { persist: true });
 
   async function getServices(business) { return (await servicesRaw(business)).found; }
