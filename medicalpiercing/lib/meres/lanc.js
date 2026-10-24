@@ -80,8 +80,8 @@ export const BOVITES = [
 const PLATFORM_ID_OSZLOPOK = ['meta_fbc', 'meta_fbp', 'tiktok_ttclid', 'tiktok_ttp'];
 /** Ennyi ido utan a meg nem igazolt sor 'nem_igazolt' lesz (a Salonic-level / Zapier kesese ennel joval rovidebb). */
 export const IGAZOLAS_HATARIDO = 48 * 3600;
-/** A kihagyas-naplo fuggvenyek (nemIgazoltNaplo, igazoltKihagyasNaplo) kerelmenkenti naplosor-korlatja: soronkent ~4 D1-lekerdezes; a ketto egyutt <= 40 lekerdezes (Cloudflare ingyenes csomag: 50 / hivas). */
-export const NAPLO_KORLAT = 4;
+/** A kihagyas-naplo fuggvenyek (nemIgazoltNaplo, igazoltKihagyasNaplo) kerelmenkenti naplosor-korlatja. Soronkent ~4 D1-lekerdezes + fuggvenyenkent 2 (mod, tabla); egy foglalas-kerelem alapterhe ~36 lekerdezes, a Cloudflare ingyenes csomag hivasonkenti korlatja 50 -> kerelmenkent EGY naplosor, es a ket fuggveny egymas UTAN, de csak az egyik naploz (lasd foglalasErkezes). */
+export const NAPLO_KORLAT = 1;
 const MEGORZES_NAP = 120; // a rekord ennyi nap utan torlodik; a kattintasazonosito 90 nap utan (a Google ennyit fogad)
 
 let semaKesz = false;
@@ -319,10 +319,10 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       await tiktokInditas(db, sor, env, host, { fetchImpl, most }, waitUntil);
     }
     // 2026-10-24 (GY/MP naplo): az igazolatlan Salonic-forrasu foglalasok TikTok-kihagyas naploja (csak naplo; a karbantartas ELOTT, mert az allitja `nem_igazolt`-ra)
-    const pn = nemIgazoltNaplo(db, env, host, { most, fetchImpl }); // soha nem dob; hatralek eseten kerelmenkent legfeljebb NAPLO_KORLAT sor (D1-lekerdezesszam), a foglalas valaszat nem kesleltetheti
+    // soha nem dob; hatralek eseten a ket kihagyas-naplo EGYMAS UTAN fut, es kerelmenkent osszesen legfeljebb NAPLO_KORLAT sor keletkezik (D1-lekerdezesszam: a foglalas-kerelem alapterhe ~36, a korlat hivasonkent 50);
+    // az igazolt-kihagyas csak a nem_igazolt naplo utan, ha az nem naplozott; csak naplo, nem kuld; a foglalas valaszat nem kesleltetheti
+    const pn = nemIgazoltNaplo(db, env, host, { most, fetchImpl }).then((r) => (r && r.naplozva ? r : igazoltKihagyasNaplo(db, env, host, { most, fetchImpl })));
     if (typeof waitUntil === 'function') waitUntil(pn); else await pn;
-    const pi = igazoltKihagyasNaplo(db, env, host, { most, fetchImpl }); // soha nem dob; csak a naplosor nelkuli, MOST IS kihagyando igazolt sorokra naploz, nem kuld
-    if (typeof waitUntil === 'function') waitUntil(pi); else await pi;
     // karbantartas: regi rekordok es a 90 napnal regebbi kattintasazonositok torlese
     const karb = db.batch([
       db.prepare('DELETE FROM mp_foglalas WHERE letrehozva < ?').bind(most - MEGORZES_NAP * 86400),
