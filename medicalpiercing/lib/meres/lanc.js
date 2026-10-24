@@ -294,7 +294,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       await tiktokInditas(db, sor, env, host, { fetchImpl, most }, waitUntil);
     }
     // 2026-10-24 (GY/MP naplo): az igazolatlan Salonic-forrasu foglalasok TikTok-kihagyas naploja (csak naplo; a karbantartas ELOTT, mert az allitja `nem_igazolt`-ra)
-    const pn = nemIgazoltNaplo(db, env, host, { most, fetchImpl }); // soha nem dob; hatralek eseten kerelmenkent legfeljebb 10 sor (D1-lekerdezesszam), a foglalas valaszat nem kesleltetheti
+    // CSAK ha ehhez a kerelemhez nem volt Salonic-level (`ig`): az igazolas-agnak mar ~12 lekerdezese van (a kerelem alapterhe ilyenkor ~46-48, a Cloudflare ingyenes csomag hivasonkenti korlatja 50)
+    const pn = ig ? Promise.resolve() : nemIgazoltNaplo(db, env, host, { most, fetchImpl }); // soha nem dob; hatralek eseten kerelmenkent legfeljebb NAPLO_KORLAT sor (D1-lekerdezesszam), a foglalas valaszat nem kesleltetheti
     if (typeof waitUntil === 'function') waitUntil(pn); else await pn;
     // karbantartas: regi rekordok es a 90 napnal regebbi kattintasazonositok torlese
     const karb = db.batch([

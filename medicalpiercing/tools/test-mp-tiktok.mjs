@@ -341,6 +341,31 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
     assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot]), [['k|regi|1', 'kihagyva:nem_igazolt']]);
   });
 
+  test('D1-lekerdezesszam, TELJES foglalas-kerelem (foglalasErkezes) hatralekkal: Salonic-level nelkul <= 44 (a naplo fut), Salonic-levellel <= 50 (a naplo NEM fut, az igazolas-ag alapterhe ~48); a Cloudflare ingyenes csomag hivasonkenti korlatja 50', async () => {
+    const meres = async (levellel) => {
+      _semaTorles(); const db0 = d1();
+      let n = 0;
+      const stmt = (sql, args = []) => ({ bind: (...a) => stmt(sql, a), run: () => { n += 1; return db0.prepare(sql).bind(...args).run(); }, first: () => { n += 1; return db0.prepare(sql).bind(...args).first(); }, all: () => { n += 1; return db0.prepare(sql).bind(...args).all(); } });
+      const db = { prepare: (sql) => stmt(sql), batch: (l) => { n += l.length; return db0.batch(l); } };
+      const env = { MP_MERES_DB: db, MP_IGAZOLAS_TITOK: 'ig-TITOK', MP_GADS_MOD: 'validate', TIKTOK_EVENTS_TOKEN: 'tok-TITOK' };
+      const h = [];
+      const uj = (cookie, start) => new Request(`https://${HOST}/api/mp-foglalas`, { method: 'POST', headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ ut: '/foglalas-ok-mi', p: { price: '24900', first_booking: 'true', placeId: '12169', employeeId: '555', startDate: String(start) }, kattintas: { ttclid: { ertek: TTCLID, ido: MOST - 1800 } } }) });
+      await foglalasErkezes({ request: uj(`mp_suti=v1-s1-m1-t${MOST}`, 1791900000), env }, { fetchImpl: f(h), most: MOST }); // sema + elso sor
+      for (let i = 0; i < 10; i++) await sorBeszur(db0, { kulcs: `k|nem${i}`, letrehozva: MOST - 4 * 86400 + i });                                  // nem_igazolt hatralek
+      const T = MOST + 86400 * 2;
+      if (levellel) await db0.prepare("INSERT INTO mp_salonic_igazolas (booking_id, employee_ids, start_unix, uj_paciens, erkezett, rogzitve) VALUES ('B1','555',1791990000,0,?,?)").bind(T - 100, T - 100).run();
+      n = 0;
+      const r = await foglalasErkezes({ request: uj(`mp_suti=v1-s1-m1-t${T}`, 1791990000), env }, { fetchImpl: f(h), most: T });
+      assert.equal(r.status, 200); assert.equal((await r.json()).uj, true, 'uj foglalas (nem duplikalt): a teljes lanc fut');
+      assert.equal(h.filter((u) => u.includes('tiktok')).length, 0, 'TikTok-hivas nincs (a naplo nem kuld)');
+      return n;
+    };
+    const nelkul = await meres(false), levellel = await meres(true);
+    assert.ok(nelkul <= 44, `Salonic-level nelkul: ${nelkul} D1-lekerdezes`);
+    assert.ok(levellel <= 50, `Salonic-levellel: ${levellel} D1-lekerdezes`);
+  });
+
   test('nem_igazolt naplo: ki mod -> semmi; fulpiercing = divat_fulpiercing ok; kesobbi igazolas a kihagyva-sort felulirja (a kuldes folyamata valtozatlan)', async () => {
     const dbKi = await alap('ki'); await sorBeszur(dbKi, {});
     assert.deepEqual(await nemIgazoltNaplo(dbKi, {}, HOST, { most: MOST }), { naplozva: 0 });
