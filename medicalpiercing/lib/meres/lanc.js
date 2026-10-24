@@ -140,10 +140,12 @@ export async function nemIgazoltNaplo(db, env, host, { most, fetchImpl } = {}) {
  */
 export async function igazoltKihagyasNaplo(db, env, host, { most, fetchImpl } = {}) {
   try {
-    if (hatalyosMod(await tiktokMod(db), env, host) === 'ki') return { naplozva: 0 };
-    await db.prepare(TIKTOK_SEMA).run();
+    // elobb a (olcso) jeloltlekerdezes: ures hatralekkel csak 1 D1-lekerdezes a foglalas keresenek hot path-jan (a tabla hianya = nincs mit naplozni, a catch elnyeli)
     const sorok = (await db.prepare(`SELECT * FROM mp_foglalas f WHERE f.kornyezet = 'eles' AND f.igazolas = 'igazolt' AND f.letrehozva >= ?1
       AND NOT EXISTS (SELECT 1 FROM mp_tiktok_feltoltes t WHERE t.kulcs = f.kulcs) ORDER BY f.letrehozva LIMIT 50`).bind(most - 14 * 86400).all()).results || [];
+    if (!sorok.length) return { naplozva: 0 };
+    if (hatalyosMod(await tiktokMod(db), env, host) === 'ki') return { naplozva: 0 };
+    await db.prepare(TIKTOK_SEMA).run();
     let n = 0;
     for (const sor of sorok) {
       if (n >= 10) break; // kerelmenkent legfeljebb 10 naplosor (D1-lekerdezesszam)

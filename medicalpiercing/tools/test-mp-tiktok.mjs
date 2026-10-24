@@ -358,6 +358,17 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM mp_foglalas').first()).n, 6); // mp_foglalas erintetlen
   });
 
+  test('igazolt kihagyas naplo: ELES modban (token + eles host) SOHA nincs kuldes: a kuldheto (ttclid-es) sor kimarad, fetch 0, csak kihagyva-sor keletkezik', async () => {
+    const { igazoltKihagyasNaplo } = await import('../lib/meres/lanc.js');
+    const db = await alap('eles'); const h = [];
+    const alapIg = { forras: 'motor', igazolas: 'igazolt', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400, tiktok_ttclid: 'TTCLID_MINTA_ERTEK_1234567890' };
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|kuldheto|1' });                  // jogosult: eles modban kuldene -> ITT kimarad
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|ful|2', tipus: 'ful' });          // kihagyando
+    assert.deepEqual(await igazoltKihagyasNaplo(db, { TIKTOK_EVENTS_TOKEN: 't' }, HOST, { most: MOST, fetchImpl: f(h) }), { naplozva: 1 });
+    assert.equal(h.length, 0, 'eles modban sincs halozati hivas');
+    assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot, x.mod]), [['k|ful|2', 'kihagyva:divat_fulpiercing', 'eles']]);
+  });
+
   test('igazolt kihagyas naplo: ki mod -> semmi; kerelmenkent legfeljebb 10 naplosor; a kuldheto sorok nem szoritjak ki a naplozandokat', async () => {
     const { igazoltKihagyasNaplo } = await import('../lib/meres/lanc.js');
     const dbKi = await alap('ki'); await sorBeszur(dbKi, { forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST - 86400 });
