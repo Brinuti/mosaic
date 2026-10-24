@@ -8,3 +8,6 @@
 
 ## Rollback
 A merge-commit revertje; vagy `GY_GADS_KIIGAZITAS = "ki"` (alapérték, ez van); a `gy_kiigazitas` tábla benne maradhat; az MP-naplósorok ártalmatlanok (120 nap).
+
+## Kiegeszites (2026-10-24 ~16:00 Bp): D1-lekerdezes-keret a `nemIgazoltNaplo`-ban
+A #483 teljes foglalas-kerelem tesztje (szamlalo-burkolat a D1-en) kimutatta: egy uj foglalas kerelmenek alapterhe ~36 D1-lekerdezes, a Cloudflare ingyenes csomag hivasonkenti korlatja 50. A `nemIgazoltNaplo` (#477) eredeti `LIMIT 10` + elore vett mod/tabla ellenorzessel hatralekkal 37 + 4n lekerdezes (n = hatralek, jelenleg ~3 -> ~49: a hataron). Ezert az osszevont agban: `NAPLO_KORLAT = 1` (kerelmenkent egy naplosor), a jeloltlekerdezes a mod-ellenorzes ele kerult (ures hatralekkal 1 lekerdezes). A kuldes, a naplo tartalma, a `ki` mod es az idempotencia valtozatlan; a hatralek kerelmenkent 1 sorral fogy. MP `lanc.js`: `b4d12b4046` -> `6b66422eee` (dokumentalt). A #483 a tovabbi (igazolt) naplo-fuggvenyt adja ugyanezzel a korlattal.

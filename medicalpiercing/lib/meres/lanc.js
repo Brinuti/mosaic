@@ -80,6 +80,8 @@ export const BOVITES = [
 const PLATFORM_ID_OSZLOPOK = ['meta_fbc', 'meta_fbp', 'tiktok_ttclid', 'tiktok_ttp'];
 /** Ennyi ido utan a meg nem igazolt sor 'nem_igazolt' lesz (a Salonic-level / Zapier kesese ennel joval rovidebb). */
 export const IGAZOLAS_HATARIDO = 48 * 3600;
+/** A kihagyas-naplo fuggvenyek (nemIgazoltNaplo, igazoltKihagyasNaplo) kerelmenkenti naplosor-korlatja. Soronkent ~4 D1-lekerdezes + fuggvenyenkent 2 (mod, tabla); egy foglalas-kerelem alapterhe ~36 lekerdezes, a Cloudflare ingyenes csomag hivasonkenti korlatja 50 -> kerelmenkent EGY naplosor, es a ket fuggveny egymas UTAN, de csak az egyik naploz (lasd foglalasErkezes). */
+export const NAPLO_KORLAT = 1;
 const MEGORZES_NAP = 120; // a rekord ennyi nap utan torlodik; a kattintasazonosito 90 nap utan (a Google ennyit fogad)
 
 let semaKesz = false;
@@ -118,11 +120,13 @@ function tiktokInditas(db, sor, env, host, opts, waitUntil) {
  */
 export async function nemIgazoltNaplo(db, env, host, { most, fetchImpl } = {}) {
   try {
-    if (hatalyosMod(await tiktokMod(db), env, host) === 'ki') return { naplozva: 0 };
-    await db.prepare(TIKTOK_SEMA).run();
+    // elobb a (olcso) jeloltlekerdezes: ures hatralekkel 1 D1-lekerdezes (a tabla hianya = nincs mit naplozni, a catch elnyeli; a tabla az elso TikTok-lepessel jon letre)
     const sorok = (await db.prepare(`SELECT * FROM mp_foglalas f WHERE f.kornyezet = 'eles' AND f.forras = 'salonic' AND f.letrehozva >= ?1
       AND ((f.igazolas IS NULL AND f.letrehozva < ?2) OR f.igazolas = 'nem_igazolt')
-      AND NOT EXISTS (SELECT 1 FROM mp_tiktok_feltoltes t WHERE t.kulcs = f.kulcs) ORDER BY f.letrehozva LIMIT 10`).bind(most - 14 * 86400, most - IGAZOLAS_HATARIDO).all()).results || [];
+      AND NOT EXISTS (SELECT 1 FROM mp_tiktok_feltoltes t WHERE t.kulcs = f.kulcs) ORDER BY f.letrehozva LIMIT ${NAPLO_KORLAT}`).bind(most - 14 * 86400, most - IGAZOLAS_HATARIDO).all()).results || [];
+    if (!sorok.length) return { naplozva: 0 };
+    if (hatalyosMod(await tiktokMod(db), env, host) === 'ki') return { naplozva: 0 };
+    await db.prepare(TIKTOK_SEMA).run();
     let n = 0;
     for (const sor of sorok) {
       const r = await tiktokLepes(db, { ...sor, igazolas: 'nem_igazolt' }, env, host, { fetchImpl, most });
