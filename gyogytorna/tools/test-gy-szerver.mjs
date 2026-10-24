@@ -1780,3 +1780,28 @@ test('GY-27 megorzes es torles: a gy_kiigazitas 90 nap utan torlodik; a visszavo
   const fajl = await (await import('node:fs/promises')).readFile(new URL('../functions/api/gy-gads-kiigazitas.js', import.meta.url), 'utf8');
   assert.match(fajl, /burok\('gy-gads-kiigazitas', gadsKiigazitasVegpont\)/);
 });
+
+test('GY-27 review-javitasok: `ki` modban az admin ?gfeltoltes=1 valasza nem kap `kiigazitas` mezot (bajtra a regi), `dry` modban kap; sorszintu vegleges hiba riasztast ad (kod nelkul)', async () => {
+  const { env, E, uuidok, t0 } = await kiigKornyezet(2);
+  const admin = (e) => adminVegpont({ request: kerelem('/api/gy-admin?gfeltoltes=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env: e, deps: deps() }).then((r) => r.json());
+  const ki = await admin({ ...E });
+  assert.equal('kiigazitas' in ki, false);
+  const dry = await admin({ ...E, GY_GADS_KIIGAZITAS: 'dry' });
+  assert.ok(dry.kiigazitas && dry.kiigazitas.fut.mod === 'dry');
+  // vegleges sorszintu hiba (INVALID_CONVERSION_ACTION_TYPE) + nincs_konverzio -> riasztas darabszammal
+  for (const u of uuidok) await lemond(env, u, t0 + ORA);
+  const kapu = t0 + GKIIG.varakozas + 10;
+  kiigKer.env = { ...E, GY_GADS_KIIGAZITAS: 'eles' }; kiigKer.most = kapu;
+  const g = await (await kiigKer('GET', null)).json();
+  const hiba = (index, kod) => ({ errorCode: { conversionAdjustmentUploadError: kod }, location: { fieldPathElements: [{ fieldName: 'conversionAdjustments', index }] } });
+  const p = await (await kiigKer('POST', { zar: g.zar, http: 200, valasz: { results: [{}, {}], partialFailureError: { details: [{ errors: [hiba(0, 'INVALID_CONVERSION_ACTION_TYPE'), hiba(1, 'INVALID_CONVERSION_ACTION_TYPE')] }] } } })).json();
+  assert.equal(p.hiba, 2);
+  const r = (await env.GY_DB.prepare("SELECT tipus, adat FROM gy_riasztas WHERE tipus = 'gkiigazitas_vegleges_hiba'").all()).results;
+  assert.deepEqual(r.map((x) => x.adat), ['db=2']);
+  assert.deepEqual((await kiigSorok(env)).map((x) => [x.allapot, x.hiba, x.kovetkezo_proba]), [['hiba', 'vegleges', null], ['hiba', 'vegleges', null]]);
+  // kihagyva_hibas: nem 64 hex order_id nem kuldheto
+  const { env: env2, E: E2, uuidok: u2, t0: tt } = await kiigKornyezet(1);
+  await env2.GY_DB.prepare("UPDATE gy_feltoltes SET order_id = 'rossz'").run(); await lemond(env2, u2[0], tt + ORA);
+  assert.deepEqual(await gkiigazitasFut({ db: env2.GY_DB, env: { ...E2, GY_GADS_KIIGAZITAS: 'eles' }, most: tt + GKIIG.varakozas }), { mod: 'eles', uj: 1 });
+  assert.deepEqual((await kiigSorok(env2)).map((x) => [x.allapot, x.hiba]), [['kihagyva_hibas', 'order_id']]);
+});

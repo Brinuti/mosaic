@@ -251,6 +251,8 @@ export async function kiigazitasFazis({ db, env, most, be }) {
     await frissitMent(db, sorok.filter((s) => !kesz.has(s.id)).map((s) => ({ id: s.id, allapot: s.ujraprobalas ? 'hiba' : 'varakozik', hiba: null, ujraprobalas: s.ujraprobalas || 0, kovetkezo_proba: s.ujraprobalas ? most : null })), zar);
     await riaszt(db, 'gkiigazitas_keres_hiba', { adat: `${e.keresHiba.http}:${e.keresHiba.kod}`, most });
   }
+  const vegleges = e.frissites.filter((f) => f.allapot === 'nincs_konverzio' || (f.allapot === 'hiba' && !f.kovetkezo_proba)).length;
+  if (vegleges) await riaszt(db, 'gkiigazitas_vegleges_hiba', { adat: `db=${vegleges}`, most }); // sorszintu VEGLEGES kimenet (nincs_konverzio / vegleges hiba / ujraproba kimerult): darabszam, kod nelkul
   await db.prepare('UPDATE gy_meta SET ertek = ?2 WHERE kulcs = ?1').bind(markerKulcs(zar), JSON.stringify({ ...m, fazis: 'kesz' })).run();
   return { status: 200, body: { ok: true, elkuldve: e.frissites.filter((f) => f.allapot === 'elkuldve').length, hiba: e.frissites.filter((f) => f.allapot === 'hiba').length, nincs_konverzio: e.frissites.filter((f) => f.allapot === 'nincs_konverzio').length, jobId, ...(e.keresHiba ? { keres_hiba: e.keresHiba } : {}) } };
 }

@@ -226,8 +226,9 @@ export async function erintesek(db, latogato, tol) {
 }
 /** Visszavont hirdetesi hozzajarulas: a foglalasokon tarolt nyers click-ID-k is torlodnek (latogato-hash eleje alapjan). */
 export async function kattintasTorol(db, hashok) {
-  for (const h of hashok) await db.prepare('DELETE FROM gy_kiigazitas WHERE uuid IN (SELECT uuid FROM gy_foglalas WHERE lpc_latogato = ?)').bind(h.slice(0, 16)).run(); // GY-27: a kiigazitasi naplo sorai is (a feltoltesi naplo elott: ahhoz kell a foglalas)
   for (const h of hashok) await db.prepare('DELETE FROM gy_feltoltes WHERE uuid IN (SELECT uuid FROM gy_foglalas WHERE lpc_latogato = ?)').bind(h.slice(0, 16)).run(); // GY-25: a feltoltesi naplo sorai is
+  // GY-27: a kiigazitasi naplo sorai is; KULON try-ban, hogy egy hibaja a meglevo adatvedelmi torleseket (alabb) ne akassza meg; a lpc_latogato nullazasa ELOTT kell futnia
+  for (const h of hashok) { try { await db.prepare('DELETE FROM gy_kiigazitas WHERE uuid IN (SELECT uuid FROM gy_foglalas WHERE lpc_latogato = ?)').bind(h.slice(0, 16)).run(); } catch (e) { /* a tabla hianya / atmeneti hiba nem allithatja meg a torlest */ } }
   for (const h of hashok) await db.prepare('UPDATE gy_foglalas SET gads_katt_ertek = NULL, gads_katt_tipus = NULL, gads_munkamenet = NULL, lpc_katt_ertek = NULL, lpc_katt_tipus = NULL, lpc_latogato = NULL WHERE lpc_latogato = ?').bind(h.slice(0, 16)).run();
 }
 export const erintesTorol = (db, latogato) => db.prepare('DELETE FROM gy_erintes WHERE latogato = ?').bind(latogato).run();

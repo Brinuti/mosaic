@@ -495,9 +495,9 @@ export async function adminVegpont({ request, env, deps = {} }) {
       try { kuldes = await gfeltoltesKuld({ db, env, most, kuldo: deps.kuldo || googleAdsKuldo(env, deps.fetch || globalThis.fetch) }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes_kuldes'); kuldes = { hiba: 'futasi_hiba' }; }
       if (kuldes && kuldes.keresHiba) await riaszt(db, 'gfeltoltes_keres_hiba', { adat: `${kuldes.keresHiba.http}:${kuldes.keresHiba.kod}`, most }); // hozzaferesi / konfiguracios hiba: a sorok varnak, a riasztas jelzi
     }
-    let kiigazitas = null; // GY-27: kiigazitasi (RETRACTION) jeloltek felvetele + allapot-szamlalok (mod `ki`: nincs felvetel, csak a szamlalok)
-    try { kiigazitas = { fut: await gkiigazitasFut({ db, env, most }), ...(await gkiigazitasRiport(db)) }; } catch (e) { await lpcHiba(db, most, 'gkiigazitas'); kiigazitas = { mod: gkiigazitasMod(env), hiba: 'futasi_hiba' }; }
-    return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, kuldes, kiigazitas, ...(await gfeltoltesRiport(db, { budapestIdo, most })) });
+    let kiigazitas; // GY-27: kiigazitasi (RETRACTION) jeloltek felvetele + allapot-szamlalok; mod `ki`: a valasz BAJTRA a regi (nincs mezo, nincs extra lekerdezes)
+    if (gkiigazitasMod(env) !== 'ki') { try { kiigazitas = { fut: await gkiigazitasFut({ db, env, most }), ...(await gkiigazitasRiport(db)) }; } catch (e) { await lpcHiba(db, most, 'gkiigazitas'); kiigazitas = { mod: gkiigazitasMod(env), hiba: 'futasi_hiba' }; } }
+    return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, kuldes, ...(kiigazitas ? { kiigazitas } : {}), ...(await gfeltoltesRiport(db, { budapestIdo, most })) });
   }
   if (u.searchParams.get('visszahivasok')) {
     const r = (await db.prepare('SELECT id, letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
