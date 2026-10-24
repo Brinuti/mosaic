@@ -309,7 +309,7 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
 
 // ---- 2026-10-24: igazolatlan Salonic-forrasu foglalas -> kihagyva:nem_igazolt naplosor (csak naplo, kuldes nem valtozik) ----
 {
-  const { nemIgazoltNaplo } = await import('../lib/meres/lanc.js');
+  const { nemIgazoltNaplo, NAPLO_KORLAT } = await import('../lib/meres/lanc.js');
   const sorBeszur = async (db, o) => {
     const x = { kulcs: KULCS, salonic_id: null, forras: 'salonic', kornyezet: 'eles', letrehozva: MOST - 3 * 86400, igazolas: null, hozzajarulas_dontott: 1, hozzajarulas_hirdetes: 1, hozzajarulas_analitika: 1, tipus: 'migren', ...o };
     const oszl = Object.keys(x);
@@ -369,16 +369,34 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
     assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot, x.mod]), [['k|ful|2', 'kihagyva:divat_fulpiercing', 'eles']]);
   });
 
-  test('igazolt kihagyas naplo: ki mod -> semmi; kerelmenkent legfeljebb 10 naplosor; a kuldheto sorok nem szoritjak ki a naplozandokat', async () => {
+  test('D1-lekerdezesszam (Cloudflare ingyenes csomag: 50 / hivas): a hatralekos kerelem LEGROSSZABB esete a ket kihagyas-naplo fuggvennyel egyutt <= 40 lekerdezes; ures hatralekkal <= 2', async () => {
+    const { igazoltKihagyasNaplo } = await import('../lib/meres/lanc.js');
+    const szamol = (db) => { let n = 0; const stmt = (sql, args = []) => ({ bind: (...a) => stmt(sql, a), run: () => { n += 1; return db.prepare(sql).bind(...args).run(); }, first: () => { n += 1; return db.prepare(sql).bind(...args).first(); }, all: () => { n += 1; return db.prepare(sql).bind(...args).all(); } }); return { prepare: (sql) => stmt(sql), batch: (l) => { n += l.length; return db.batch(l); }, get n() { return n; } }; };
+    const alapDb = await alap();
+    for (let i = 0; i < 12; i++) await sorBeszur(alapDb, { kulcs: `k|n${i}`, letrehozva: MOST - 3 * 86400 + i }); // 12 nem_igazolt Salonic-sor
+    for (let i = 0; i < 12; i++) await sorBeszur(alapDb, { kulcs: `k|f${i}`, forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400 + i }); // 12 ful
+    for (const env of [{}, { TIKTOK_EVENTS_TOKEN: 't' }]) { // naplo es eles mod
+      const c = szamol(alapDb);
+      await nemIgazoltNaplo(c, env, HOST, { most: MOST + 100 });
+      await igazoltKihagyasNaplo(c, env, HOST, { most: MOST + 100 });
+      assert.ok(c.n <= 40, `legrosszabb eset: ${c.n} lekerdezes`);
+    }
+    const ures = szamol(await alap());
+    await nemIgazoltNaplo(ures, {}, HOST, { most: MOST }); await igazoltKihagyasNaplo(ures, {}, HOST, { most: MOST });
+    assert.ok(ures.n <= 2, `ures hatralek: ${ures.n} lekerdezes`); // 1 jelolt-SELECT fuggvenyenkent
+  });
+
+  test('igazolt kihagyas naplo: ki mod -> semmi; kerelmenkent legfeljebb NAPLO_KORLAT naplosor; a kuldheto sorok nem szoritjak ki a naplozandokat', async () => {
     const { igazoltKihagyasNaplo } = await import('../lib/meres/lanc.js');
     const dbKi = await alap('ki'); await sorBeszur(dbKi, { forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST - 86400 });
     assert.deepEqual(await igazoltKihagyasNaplo(dbKi, {}, HOST, { most: MOST }), { naplozva: 0 });
     const db = await alap();
     for (let i = 0; i < 12; i++) await sorBeszur(db, { kulcs: `k|k${i}`, forras: 'motor', igazolas: 'igazolt', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400 + i }); // 12 kuldheto
     for (let i = 0; i < 12; i++) await sorBeszur(db, { kulcs: `k|f${i}`, forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400 + 100 + i }); // 12 ful
-    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST }), { naplozva: 10 }); // a 12 kuldheto sor kimarad, a naplozandokat a LIMIT 50 olvasat eleri; kerelmenkent 10
-    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST + 1 }), { naplozva: 2 });
-    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST + 2 }), { naplozva: 0 });
+    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST }), { naplozva: NAPLO_KORLAT }); // a 12 kuldheto sor kimarad, a naplozandokat a LIMIT 50 olvasat eleri; kerelmenkent NAPLO_KORLAT
+    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST + 1 }), { naplozva: NAPLO_KORLAT });
+    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST + 2 }), { naplozva: NAPLO_KORLAT });
+    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST + 3 }), { naplozva: 0 });
   });
 
   test('nem_igazolt naplo: ki mod -> semmi; fulpiercing = divat_fulpiercing ok; kesobbi igazolas a kihagyva-sort felulirja (a kuldes folyamata valtozatlan)', async () => {
@@ -416,12 +434,14 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
     assert.deepEqual(await nemIgazoltNaplo(rossz, {}, HOST, { most: MOST }), { naplozva: 0 });
   });
 
-  test('nem_igazolt naplo: hatralek eseten kerelmenkent legfeljebb 10 sor, a tobbi a kovetkezo kerelemben; igazolt/elkuldve sort nem ir felul', async () => {
+  test('nem_igazolt naplo: hatralek eseten kerelmenkent legfeljebb NAPLO_KORLAT sor, a tobbi a kovetkezo kerelemben; igazolt/elkuldve sort nem ir felul', async () => {
     const db = await alap();
     for (let i = 0; i < 15; i += 1) await sorBeszur(db, { kulcs: `k|hatralek|${i}`, letrehozva: MOST - 3 * 86400 + i });
-    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST }), { naplozva: 10 });
-    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 1 }), { naplozva: 5 });
-    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 2 }), { naplozva: 0 });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST }), { naplozva: NAPLO_KORLAT });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 1 }), { naplozva: NAPLO_KORLAT });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 2 }), { naplozva: NAPLO_KORLAT });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 3 }), { naplozva: 15 - 3 * NAPLO_KORLAT });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 4 }), { naplozva: 0 });
     // mar elkuldott / naplozott sort a nem_igazolt nem ir felul
     const db2 = await alap(); await sorBeszur(db2, {});
     await db2.prepare("INSERT INTO mp_tiktok_feltoltes (kulcs, mod, allapot, payload_maszkolt, ido) VALUES (?, 'naplo', 'elkuldve', NULL, ?)").bind(KULCS, MOST).run();
