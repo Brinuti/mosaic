@@ -263,6 +263,7 @@ test('hibaReszlet: zart listak, hianyzo / ismeretlen / hibas ertek biztonsagosan
   assert.equal(hibaReszlet('salonic_api', 'C1'), 'salonic_api.C1.OTHER.0', 'kod nelkul a salonic_api OTHER (a NONE csak a client_error-e)');
   assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'NONE', status: 503 }), 'salonic_api.C1.OTHER.0'); assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'TIMEOUT' }), 'salonic_api.C1.OTHER.0');
   assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'PARSE', status: 503 }), 'salonic_api.C1.PARSE.0', 'HTTP-statusz csak HTTP / API_STATUS mellett');
+  assert.equal(hibaReszlet('salonic_api', 'OX1', { code: 'REDIRECT', status: 302 }), 'salonic_api.OX1.REDIRECT.0'); assert.equal(hibaReszlet('salonic_api', 'OX1', { code: 'EMPTY' }), 'salonic_api.OX1.EMPTY.0'); // UJ-51: a PARSE okanak szetvalasztasa
   assert.equal(hibaReszlet('timeout', 'C1', { code: 'HTTP', status: 500 }), 'timeout.C1.TIMEOUT.0'); assert.equal(hibaReszlet('client_error', 'C1', { code: 'HTTP', status: 500 }), 'client_error.C1.NONE.0');
   for (const nincs of ['no_slots', 'validation', 'slot_lost', 'hold_expired', 'verify_failed', 'unknown_redirect', 'callback_failed', 'kamu', undefined]) assert.equal(hibaReszlet(nincs, 'C1', { code: 'HTTP', status: 500 }), null, String(nincs));
   assert.equal(hibaReszlet('salonic_api', 'c1', { code: 'HTTP', status: 500 }), 'salonic_api.ismeretlen.HTTP.500', 'kisbetus nezet-kod nem fogadhato');
@@ -329,14 +330,14 @@ test('POST + GET: a hiba-reszlet D1-be kerul (atomikus novekedes), a kimenetben 
 // --- hiba-reszlet: a fuggetlen review (PASS with notes) utani szigoritasok -------------------------------------------------------------------------------------------
 test('hiba-reszlet szigoritasok: kanonikus HTTP (0 vagy 100-599), zart nezet-kod, hibatipus-hibakod parok, HTTP-statusz csak HTTP / API_STATUS mellett', () => {
   const ok = (tipus) => ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus })).ok;
-  for (const jo of ['salonic_api.C1.HTTP.503', 'salonic_api.A3_SENT.HTTP.0', 'salonic_api.HS1.API_STATUS.200', 'salonic_api.C1.PARSE.0', 'salonic_api.PMU.SERVICE_NOT_FOUND.0', 'salonic_api.LA2B.OTHER.0',
+  for (const jo of ['salonic_api.C1.HTTP.503', 'salonic_api.A3_SENT.HTTP.0', 'salonic_api.HS1.API_STATUS.200', 'salonic_api.C1.PARSE.0', 'salonic_api.OX1.REDIRECT.0', 'salonic_api.OX1.EMPTY.0', 'salonic_api.PMU.SERVICE_NOT_FOUND.0', 'salonic_api.LA2B.OTHER.0',
     'salonic_api.ismeretlen.HTTP.404', 'timeout.C1.TIMEOUT.0', 'client_error.A3.NONE.0']) assert.equal(ok(jo), true, jo);
   for (const rossz of [
     'salonic_api.C1.HTTP.000', 'salonic_api.C1.HTTP.00', 'salonic_api.C1.HTTP.050', 'salonic_api.C1.HTTP.099', 'salonic_api.C1.HTTP.600', // nem kanonikus / tartomanyon kivuli http
     'salonic_api.KovacsAnna12.HTTP.503', 'salonic_api.c1.HTTP.503', 'salonic_api.1C.HTTP.503', 'salonic_api._C.HTTP.503', 'salonic_api.Ismeretlen.HTTP.503', 'salonic_api.IsmeretlenX.HTTP.503', // nem a foglalo nezet-kodjanak alakja
     'client_error.C1.HTTP.503', 'timeout.C1.HTTP.503', 'salonic_api.C1.NONE.503', 'salonic_api.C1.NONE.0', 'salonic_api.C1.TIMEOUT.0', 'timeout.C1.NONE.0', 'client_error.C1.TIMEOUT.0', // lehetetlen parok
     'no_slots.C1.PARSE.404', 'no_slots.C1.NONE.0', 'validation.C1.NONE.0', 'slot_lost.C1.NONE.0', // mas hibatipus nem hordoz reszletet
-    'salonic_api.C1.PARSE.503', 'salonic_api.C1.SERVICE_NOT_FOUND.404', 'salonic_api.C1.OTHER.500', // HTTP-statusz csak HTTP / API_STATUS kod mellett
+    'salonic_api.C1.PARSE.503', 'salonic_api.OX1.REDIRECT.302', 'salonic_api.OX1.EMPTY.200', 'timeout.C1.REDIRECT.0', 'client_error.C1.EMPTY.0', 'no_slots.C1.REDIRECT.0', 'salonic_api.C1.SERVICE_NOT_FOUND.404', 'salonic_api.C1.OTHER.500', // HTTP-statusz csak HTTP / API_STATUS kod mellett
   ]) assert.equal(ok(rossz), false, rossz);
 });
 
