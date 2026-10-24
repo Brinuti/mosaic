@@ -169,9 +169,18 @@ test('belsoCel: fomenu FOGLALAS = altalanos; a gombok az oldal uzletagara; onhiv
   const c = (href, fajl, szoveg) => belsoCel(href, fajl, szoveg)?.cel ?? null;
   const k = (href, fajl, szoveg) => belsoCel(href, fajl, szoveg)?.kapcsolo ?? null;
   // fomenu (asztali "FOGLALAS", mobil "Foglalas"): barhol, minden oldalon
-  for (const fajl of ['headspa-budapest', 'oxigenterapia-budapest', 'lezeres-szortelenites-budapest', 'noi-fodraszat-budapest', 'blog', 'idpontfoglalas']) {
+  // HeadSpa / besorolatlan oldalon az altalanos kezdoallapot; az uzletag-specifikus oldalon a fejlec-link hordozza az oldal uzletagat (UJ-54)
+  for (const fajl of ['headspa-budapest', 'home', 'ajandekkartya', 'blog', 'idpontfoglalas']) {
     assert.equal(c('/idpontfoglalas', fajl, 'FOGLALÁS'), '/foglalo-motor', fajl);
     assert.equal(k('/idpontfoglalas', fajl, 'Foglalás'), 'fejlec', fajl);
+  }
+  const FEJ = { 'oxigenterapia-budapest': 'oxygen', 'oxigenterapia-ferfiaknak-regi': 'oxygen', 'lezeres-szortelenites-budapest': 'laser', 'lezeres-ajandekkartya': 'laser', 'szortelenites-zsofi-rovid': 'laser', 'vegleges-szortelenites-ferfiaknak': 'laser',
+    'noi-fodraszat-budapest': 'hair', 'noi-fodrasz-budapest-balayage-hajfestes': 'hair', 'balayage-haj-festes-budapest': 'hair', 'noi-hajfestes-budapest': 'hair', 'sminktetovalas-budapest-rovid': 'pmu' };
+  for (const [fajl, b] of Object.entries(FEJ)) {
+    for (const felirat of ['FOGLALÁS', 'Foglalás']) {
+      assert.equal(c('/idpontfoglalas', fajl, felirat), `/foglalo-motor?business=${b}`, fajl);
+      assert.equal(k('/idpontfoglalas', fajl, felirat), 'fejlec', fajl); // ugyanaz a kapcsolo: a FOGLALO_ATKOTES=fejlec kapcsolja
+    }
   }
   // HeadSpa-gombok
   assert.equal(c('/idpontfoglalas', 'headspa-budapest', 'IDŐPONTFOGLALÁS'), '/foglalo-motor?business=headspa');
