@@ -290,6 +290,87 @@ test('adapter: 5xx-re egyszer ujraprobal, 404-re nem, halozati hibara hibat dob'
   assert.equal(f3.calls.length, 2);
 });
 
+// --- UJ-51 (Feri 2026-10-24): ures szolgaltatas-lista -> egyszeri automatikus ujraprobalas + a PARSE oka (REDIRECT / EMPTY / PARSE) --------------------------------------------------------
+// Az "atiranyito" valasz: a Salonic selectSpecialization oldala bizonyos kliensekre 302-vel a fooldalra visz (a fooldalon nincs specId link); a fetch kovetne: redirected = true, url = fooldal
+function redirFetch(routes) {
+  const calls = [];
+  const f = async (url, opts = {}) => {
+    calls.push(String(url));
+    for (const [re, fn] of routes) {
+      if (re.test(String(url))) {
+        const r = fn(calls.filter((c) => re.test(c)).length);
+        return { ok: true, status: 200, redirected: !!r.redirected, url: r.redirected ? new URL(String(url)).origin + '/' : String(url), text: async () => r.body };
+      }
+    }
+    return { ok: false, status: 404, redirected: false, url: String(url), text: async () => 'nincs' };
+  };
+  f.calls = calls;
+  return f;
+}
+const FOOLDAL = '<html><body><a href="/">Foldal</a></body></html>';
+const kisArak = { parseRetryMs: 0 };
+
+test('UJ-51: ures selectSpecialization (nincs kategoria-link) egyszer automatikusan ujraprobal, a masodik jo valasz elfogadott', async () => {
+  const f = redirFetch([[/selectSpecialization/, (n) => ({ body: n === 1 ? FOOLDAL : fx('headspa-selectSpecialization.html') })], [/showServices/, () => ({ body: fx('hair-showServices.html') })]]);
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => 0, ...kisArak });
+  assert.equal((await a.getServices('headspa')).length, 3);
+  assert.equal(f.calls.filter((c) => /selectSpecialization/.test(c)).length, 2, 'pontosan egy ujraprobalas');
+  await a.getServices('headspa'); assert.equal(f.calls.filter((c) => /selectSpecialization/.test(c)).length, 2, 'a sikeres eredmeny gyorsitotarba kerul, nincs ujabb lekeres');
+});
+
+test('UJ-51: tartosan ures lista = PARSE (200, nincs kategoria); atiranyitott oldal = REDIRECT; van kategoria, de nincs szolgaltatas = EMPTY; mind pontosan 2 kiserlet utan', async () => {
+  const fp = redirFetch([[/selectSpecialization/, () => ({ body: FOOLDAL })]]);
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: fp, now: () => 0, ...kisArak }).getServices('headspa'), (e) => e.code === 'PARSE');
+  assert.equal(fp.calls.length, 2);
+  const fr = redirFetch([[/selectSpecialization/, () => ({ body: FOOLDAL, redirected: true })]]);
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: fr, now: () => 0, ...kisArak }).getServices('oxygen'), (e) => e.code === 'REDIRECT' && e instanceof SalonicError);
+  assert.equal(fr.calls.length, 2);
+  const fe = redirFetch([[/selectSpecialization/, () => ({ body: fx('headspa-selectSpecialization.html') })], [/showServices/, () => ({ body: '<html></html>' })]]);
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: fe, now: () => 0, ...kisArak }).getServices('headspa'), (e) => e.code === 'EMPTY');
+  assert.equal(fe.calls.filter((c) => /selectSpecialization/.test(c)).length, 2);
+});
+
+test('UJ-51: az elso kiserlet atiranyitasa utan a masodik jo valasz elfogadott; parseRetries=0 = nincs ujraproba; HTTP 404 nem ujraprobalt; a "nem atiranyitott, azonos utvonal" nem REDIRECT', async () => {
+  const f = redirFetch([[/selectSpecialization/, (n) => (n === 1 ? { body: FOOLDAL, redirected: true } : { body: fx('headspa-selectSpecialization.html') })], [/showServices/, () => ({ body: fx('hair-showServices.html') })]]);
+  assert.equal((await createSalonicAdapter({ fetchImpl: f, now: () => 0, ...kisArak }).getServices('headspa')).length, 3);
+  const f0 = redirFetch([[/selectSpecialization/, () => ({ body: FOOLDAL })]]);
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: f0, now: () => 0, parseRetries: 0 }).getServices('headspa'), (e) => e.code === 'PARSE');
+  assert.equal(f0.calls.length, 1);
+  const f4 = fakeFetch([]); // minden 404
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: f4, now: () => 0, ...kisArak }).getServices('headspa'), (e) => e.code === 'HTTP' && e.status === 404);
+  assert.equal(f4.calls.length, 1, '404-re nincs ujraproba');
+  // azonos utvonalra "atiranyitott" (pl. http->https, kis-nagybetu nelkuli vegzodes): nem REDIRECT
+  const fs2 = async (url) => ({ ok: true, status: 200, redirected: true, url: String(url).replace('?', '/?'), text: async () => FOOLDAL });
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: fs2, now: () => 0, ...kisArak }).getServices('headspa'), (e) => e.code === 'PARSE');
+});
+
+test('UJ-51: ures lista a PMU-nal (munkatarsoldal) is egyszer ujraprobal, PARSE; a tobb uzletag (laser: specIds) EMPTY', async () => {
+  let n = 0;
+  const f = fakeFetch([[/employees/, () => (++n === 1 ? ok('<html></html>') : ok(fx('pmu-employees.html')))]]);
+  assert.equal((await createSalonicAdapter({ fetchImpl: f, now: () => 0, ...kisArak }).getServices('pmu')).length, 4);
+  assert.equal(f.calls.length, 2);
+  const fl = fakeFetch([[/showServices/, ok('<html></html>')]]);
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: fl, now: () => 0, ...kisArak }).getServices('laser'), (e) => e.code === 'EMPTY');
+});
+
+test('UJ-51 (review O1/T2): egyideju azonos getServices hivasok EGY lekerest osztanak; hibas eredmeny nem kerul sem a memoria-, sem a tartos gyorsitotarba, a kesobbi sikeres igen; 5xx nem kap PARSE-ujraprobat', async () => {
+  const tar = new Map(); const storage = { getItem: (k) => (tar.has(k) ? tar.get(k) : null), setItem: (k, v) => tar.set(k, v) };
+  let jo = false;
+  const f = redirFetch([[/selectSpecialization/, () => ({ body: jo ? fx('headspa-selectSpecialization.html') : FOOLDAL })], [/showServices/, () => ({ body: fx('hair-showServices.html') })]]);
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => 0, storage, ...kisArak });
+  const res = await Promise.allSettled([a.getServices('headspa'), a.getServices('headspa'), a.getPresentation('headspa')]);
+  assert.ok(res.every((r) => r.status === 'rejected' && r.reason.code === 'PARSE'), 'mind a harom hivas ugyanazt a hibat kapja');
+  assert.equal(f.calls.length, 2, 'egyetlen kozos lekeres, benne pontosan 1 ujraproba (2 kiserlet)');
+  assert.equal(tar.size, 0, 'hibas eredmeny nincs a tartos gyorsitotarban');
+  jo = true;
+  assert.equal((await a.getServices('headspa')).length, 3);
+  assert.ok(tar.size >= 1, 'a sikeres eredmeny a tartos gyorsitotarba kerul');
+  const hivas = f.calls.length; await a.getServices('headspa'); assert.equal(f.calls.length, hivas, 'gyorsitotarbol, lekeres nelkul');
+  let n = 0; const f5 = fakeFetch([[/selectSpecialization/, () => { n += 1; return { status: 503, body: '' }; }]]);
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: f5, now: () => 0, ...kisArak }).getServices('headspa'), (e) => e.code === 'HTTP' && e.status === 503);
+  assert.equal(n, 2, '5xx: a meglevo HTTP-ujraproba (retries=1), PARSE-ujraproba nincs');
+});
+
 // --- elo, csak olvaso (LIVE=1) -----------------------------------------------------------------------------------------------
 test('ELO smoke: mind az 5 uzletag szolgaltatasai es szabad idopontjai olvashatok (csak GET)', { skip: process.env.LIVE !== '1' }, async () => {
   const calls = [];

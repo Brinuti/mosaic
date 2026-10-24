@@ -27,7 +27,7 @@ export const ESEMENYEK = Object.freeze({
 export const UZLETAGAK = Object.freeze(['headspa', 'hair', 'oxygen', 'laser', 'pmu', 'gift']);
 export const HIBA_TIPUSOK = Object.freeze(['salonic_api', 'no_slots', 'timeout', 'validation', 'slot_lost', 'hold_expired', 'verify_failed', 'unknown_redirect', 'callback_failed', 'client_error']);
 // Hiba-reszlet (DECISION #188, 2026-10-15): CSAK a belso szamlalonak (nem a GA4-nek): <hibatipus>.<nezet-kod>.<hibakod>.<http> darabszam, URL / uzenet / azonosito nelkul.
-export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
+export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'REDIRECT', 'EMPTY', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
 export const RESZLET_LEPES = 'error_reszlet';
 export const VEGPONT = '/api/foglalo-szamlalo';
 // A regi tracking.js ezt a ket nevet a dataLayer-be nem irja (a lepes-meres adja, a spec szerinti parameterekkel)
