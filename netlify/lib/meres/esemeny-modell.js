@@ -12,6 +12,13 @@ export const SOURCE_ID_MINTA = /^(mb_[a-z0-9]{12,40}|pi_[A-Za-z0-9]{8,80}|ATU-[A
 // Salonic-direct safety net (DECISION #127 (b)): a SZERVER kepezi a Salonic-UUID-bol (HMAC), a bongeszo ilyet NEM irhat (az erkezesMent tovabbra is a SOURCE_ID_MINTA-t hasznalja).
 export const SD_ID_MINTA = /^sd_[0-9a-f]{24}$/;
 
+/**
+ * UJ-62 (#167 6387024988): a HeadSpa ajandekkartya-vasarlas SZABVANYOS Meta Purchase esemenye (event_id = st-<PaymentIntent>, utalasnal st-<ATU-...>), a bongeszos Purchase-szal (GTM tag 213 mintaja) kozos azonositoval.
+ * META_PURCHASE_MOD = ki (alap) | arnyek. 'arnyek': a Purchase CSAK a Meta ARNYEK datasetbe megy (teszt-kodos, platformok.js vedelmei), masik platformra soha. Minden mas ertek (az 'eles' is) = ki:
+ * az eles pixelre kuldes KULON, Feri kulon mondatahoz kotott valtoztatas (nincs eles token / eles cel ebben a kodban).
+ */
+export const metaPurchaseMod = (env) => (String((env || {}).META_PURCHASE_MOD || '').trim().toLowerCase() === 'arnyek' ? 'arnyek' : 'ki');
+
 const KONZULTACIO = /konzult|hajkamer/i; // ugyanaz a szabaly, mint a foglalo-motorban (business-config.js CONSULT)
 
 /**
@@ -55,7 +62,7 @@ export function foglalasJelleg({ szolgaltatasNev = '', ujVendeg = null, kategori
  * Forras-entitas: { tipus: 'foglalas' | 'ajandekkartya', uzletag, source_entity_id, jelleg?, kupon?, ertek, penznem }.
  * -> az elkuldendo esemenyek: [{ nev, tipus: 'alap' | 'ernyo', esemeny_id, ertek, penznem }]
  */
-export function esemenyek(fk, tabla = KONZULTACIO_ERTEK) {
+export function esemenyek(fk, tabla = KONZULTACIO_ERTEK, opciok = {}) {
   if (!fk || !UZLETAGAK.includes(fk.uzletag)) return [];
   if (!SOURCE_ID_MINTA.test(String(fk.source_entity_id || '')) && !SD_ID_MINTA.test(String(fk.source_entity_id || ''))) return [];
   // DECISION #194 (Feri, 2026-10-17): a KUPONOS (ajandekkartyas) FOGLALAS NEM KONVERZIO, semmilyen csatornan: sem alapesemeny (FoglalasElso / Konzultacio / Visszajaro), sem ernyo (Schedule ...), sem Google-feltoltes.
@@ -78,9 +85,12 @@ export function esemenyek(fk, tabla = KONZULTACIO_ERTEK) {
   const nyitott = konz && !(Number.isFinite(Number(konzErtek)) && konzErtek !== null);
   const ertek = konz ? (nyitott ? null : Math.round(Number(konzErtek))) : salonicAr;
   const ertekForras = konz ? 'konzultacio_tabla' : 'tenyleges_ar';
-  return lista.map((e) => ({ ...e, esemeny_id: esemenyId(e.nev, fk.source_entity_id), ertek, penznem, salonic_ar: salonicAr, ertek_forras: ertekForras, nyitott, ...(nyitott ? { nyitott_ok: `a konzultacio erteke nincs rogzitve (${fk.uzletag}): nem kuldjuk sem 0-val, sem a Salonic araval` } : {}) }));
+  const ki = lista.map((e) => ({ ...e, esemeny_id: esemenyId(e.nev, fk.source_entity_id), ertek, penznem, salonic_ar: salonicAr, ertek_forras: ertekForras, nyitott, ...(nyitott ? { nyitott_ok: `a konzultacio erteke nincs rogzitve (${fk.uzletag}): nem kuldjuk sem 0-val, sem a Salonic araval` } : {}) }));
+  // UJ-62: HeadSpa ajandekkartya-vasarlas -> szabvanyos Meta Purchase (csak ha az opciok kerik: META_PURCHASE_MOD=arnyek); csak a Meta platformra, sajat (st-) azonositoval
+  if (opciok.metaPurchase && fk.tipus === 'ajandekkartya' && fk.uzletag === 'headspa') ki.push({ nev: 'Purchase', tipus: 'purchase', esemeny_id: `st-${fk.source_entity_id}`, ertek: salonicAr, penznem, salonic_ar: salonicAr, ertek_forras: 'tenyleges_ar', nyitott: false, csak_platform: Object.freeze(['meta']) });
+  return ki;
 }
 export const esemenyId = (nev, sourceId) => `${nev}:${sourceId}`;
 
 /** A meglevo Meta egyedi esemenynevek (HeadSpa_FoglalasElso, Fodrasz_Konzultacio ...) az alapesemenyhez; az ernyo neve valtozatlan. */
-export const metaNev = (e, uzletag) => (e.tipus === 'ernyo' ? e.nev : `${UZLETAG_NEV[uzletag]}_${e.nev}`);
+export const metaNev = (e, uzletag) => (e.tipus === 'ernyo' || e.tipus === 'purchase' ? e.nev : `${UZLETAG_NEV[uzletag]}_${e.nev}`); // az ernyo es a szabvanyos Purchase neve valtozatlan (nincs uzletag-elotag)
