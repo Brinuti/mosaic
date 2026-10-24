@@ -375,4 +375,21 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
     const rossz = { prepare: () => { throw new Error('db hiba'); } };
     assert.deepEqual(await nemIgazoltNaplo(rossz, {}, HOST, { most: MOST }), { naplozva: 0 });
   });
+
+  test('nem_igazolt naplo: hatralek eseten kerelmenkent legfeljebb 10 sor, a tobbi a kovetkezo kerelemben; igazolt/elkuldve sort nem ir felul', async () => {
+    const db = await alap();
+    for (let i = 0; i < 15; i += 1) await sorBeszur(db, { kulcs: `k|hatralek|${i}`, letrehozva: MOST - 3 * 86400 + i });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST }), { naplozva: 10 });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 1 }), { naplozva: 5 });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 2 }), { naplozva: 0 });
+    // mar elkuldott / naplozott sort a nem_igazolt nem ir felul
+    const db2 = await alap(); await sorBeszur(db2, {});
+    await db2.prepare("INSERT INTO mp_tiktok_feltoltes (kulcs, mod, allapot, payload_maszkolt, ido) VALUES (?, 'naplo', 'elkuldve', NULL, ?)").bind(KULCS, MOST).run();
+    assert.deepEqual(await nemIgazoltNaplo(db2, {}, HOST, { most: MOST + 5 }), { naplozva: 0 });
+    assert.deepEqual((await naploSorok(db2)).map((x) => x.allapot), ['elkuldve']);
+    // eles mod + token + eles host: 0 fetch, a sor kihagyva
+    const dbE = await alap('eles'); await sorBeszur(dbE, {}); const h = [];
+    await nemIgazoltNaplo(dbE, { TIKTOK_EVENTS_TOKEN: 'tok' }, HOST, { most: MOST, fetchImpl: f(h) });
+    assert.equal(h.length, 0); assert.deepEqual((await naploSorok(dbE)).map((x) => [x.allapot, x.mod]), [['kihagyva:nem_igazolt', 'eles']]);
+  });
 }

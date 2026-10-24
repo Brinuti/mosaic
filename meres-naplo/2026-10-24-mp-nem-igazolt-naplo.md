@@ -13,10 +13,13 @@
 - Riport (`riport.js`): csak `naplozva` sorokat számol → nem változik.
 
 ## Tesztek
-`node --test tools/test-mp-tiktok.mjs`: 20/20 (új: 4); a többi MP-teszt (feltoltes 23, forras-v2 22, forras 9, ful-kizaras 3, igazolas 7, kiigazitas 7, lemondas 6, meres 10, meta-arnyek 9, tipus-stat 6) zöld. Fedés: 48 óra után naplóz, idempotens, fetch 0; régi `nem_igazolt` visszamenőleg; nem jelölt: 48 óránál frissebb, motoros, igazolt, előnézet, 14 napnál régebbi; `ki` mód; fül típus; későbbi igazolás felülírja; teljes `foglalasErkezes` út (karbantartás nem_igazolt-ra állít, TikTok-hívás nincs); eltört DB-nél nem dob.
+`node --test tools/test-mp-tiktok.mjs`: 21/21 (új: 5); a többi MP-teszt (feltoltes 23, forras-v2 22, forras 9, ful-kizaras 3, igazolas 7, kiigazitas 7, lemondas 6, meres 10, meta-arnyek 9, tipus-stat 6) zöld. Fedés: 48 óra után naplóz, idempotens, fetch 0; régi `nem_igazolt` visszamenőleg; nem jelölt: 48 óránál frissebb, motoros, igazolt, előnézet, 14 napnál régebbi; `ki` mód; fül típus; későbbi igazolás felülírja; teljes `foglalasErkezes` út (karbantartás nem_igazolt-ra állít, TikTok-hívás nincs); eltört DB-nél nem dob.
+
+## Független review (e5d4de9) és javítás
+Ítélet: PASS, nincs blokkoló. Javítva: a hátralék ne terhelje a foglalási kérést: `LIMIT 200` → `LIMIT 10` (a hátralék pár kérés alatt kiürül), a hívás `waitUntil` mögé kerül (ahogy a karbantartó batch). A jelölt-lekérdezés a `NULL`+48 óra ÉS a `nem_igazolt` állapotot is felveszi, ezért a párhuzamos karbantartással nincs verseny. Új teszt: hátralék 15 sor → 10 + 5; elkuldve sort nem ír felül; `eles` mód + token: 0 fetch. A rollback szakasz 120 napos megőrzése javítva.
 
 ## Védett elemek blob-hash-e
-Változatlan: `lib/meres/tiktok.js` `5fc76b1a5c`, `meta.js` `447fa9e81c`, `kiigazitas.js` `f79dbd1167`, `google-ads.js` `27bc0e28aa`, `igazolas.js` `e370d3ff36`. Módosult (dokumentált): `lib/meres/lanc.js` `4d8a657f00` → `98d1a08874`, `tools/test-mp-tiktok.mjs`, `docs/MERES_TIKTOK.md`.
+Változatlan: `lib/meres/tiktok.js` `5fc76b1a5c`, `meta.js` `447fa9e81c`, `kiigazitas.js` `f79dbd1167`, `google-ads.js` `27bc0e28aa`, `igazolas.js` `e370d3ff36`. Módosult (dokumentált): `lib/meres/lanc.js` `4d8a657f00` → `b4d12b4046`, `tools/test-mp-tiktok.mjs`, `docs/MERES_TIKTOK.md`.
 
 ## Rollback
-A PR revertje (a naplósorok ártalmatlanok, 90 nap után törlődnek; `DELETE FROM mp_tiktok_feltoltes WHERE allapot = 'kihagyva:nem_igazolt'` opcionális). Nincs konfigurációs váltó; a `tiktok_mod = 'ki'` kikapcsolja.
+A PR revertje (a naplósorok ártalmatlanok, 120 nap (`MEGORZES_NAP`) után törlődnek; `DELETE FROM mp_tiktok_feltoltes WHERE allapot = 'kihagyva:nem_igazolt'` opcionális). Nincs konfigurációs váltó; a `tiktok_mod = 'ki'` kikapcsolja.

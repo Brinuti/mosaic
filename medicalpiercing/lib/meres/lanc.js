@@ -122,7 +122,7 @@ export async function nemIgazoltNaplo(db, env, host, { most, fetchImpl } = {}) {
     await db.prepare(TIKTOK_SEMA).run();
     const sorok = (await db.prepare(`SELECT * FROM mp_foglalas f WHERE f.kornyezet = 'eles' AND f.forras = 'salonic' AND f.letrehozva >= ?1
       AND ((f.igazolas IS NULL AND f.letrehozva < ?2) OR f.igazolas = 'nem_igazolt')
-      AND NOT EXISTS (SELECT 1 FROM mp_tiktok_feltoltes t WHERE t.kulcs = f.kulcs) ORDER BY f.letrehozva LIMIT 200`).bind(most - 14 * 86400, most - IGAZOLAS_HATARIDO).all()).results || [];
+      AND NOT EXISTS (SELECT 1 FROM mp_tiktok_feltoltes t WHERE t.kulcs = f.kulcs) ORDER BY f.letrehozva LIMIT 10`).bind(most - 14 * 86400, most - IGAZOLAS_HATARIDO).all()).results || [];
     let n = 0;
     for (const sor of sorok) {
       const r = await tiktokLepes(db, { ...sor, igazolas: 'nem_igazolt' }, env, host, { fetchImpl, most });
@@ -290,7 +290,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       await tiktokInditas(db, sor, env, host, { fetchImpl, most }, waitUntil);
     }
     // 2026-10-24 (GY/MP naplo): az igazolatlan Salonic-forrasu foglalasok TikTok-kihagyas naploja (csak naplo; a karbantartas ELOTT, mert az allitja `nem_igazolt`-ra)
-    await nemIgazoltNaplo(db, env, host, { most, fetchImpl });
+    const pn = nemIgazoltNaplo(db, env, host, { most, fetchImpl }); // soha nem dob; hatralek eseten kerelmenkent legfeljebb 10 sor (D1-lekerdezesszam), a foglalas valaszat nem kesleltetheti
+    if (typeof waitUntil === 'function') waitUntil(pn); else await pn;
     // karbantartas: regi rekordok es a 90 napnal regebbi kattintasazonositok torlese
     const karb = db.batch([
       db.prepare('DELETE FROM mp_foglalas WHERE letrehozva < ?').bind(most - MEGORZES_NAP * 86400),
