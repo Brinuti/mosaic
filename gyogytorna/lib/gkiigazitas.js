@@ -5,14 +5,15 @@
 // Kuldott mezok: conversionAction (a rogzitett 7858300772), adjustmentType = RETRACTION, orderId (a feltoltes order_id-ja, 64 hex), adjustmentDateTime. NINCS click-ID, nev, e-mail,
 // telefon, ertek, consent, user_identifiers. Egy foglalasra (uuid, RETRACTION, mod) legfeljebb egy naplosor (UNIQUE) -> idempotens.
 // Idozites: a naplozott feltoltes utan legalabb 48 ora (GKIIG.varakozas), legfeljebb 50 nap (a Google 54 napig fogad kiigazitast); CONVERSION_NOT_FOUND / TOO_RECENT_CONVERSION a feltoltes
-// naplozasa utan 72 oraig atmeneti (ujraproba), utana `nincs_konverzio` (vegleges). Az ELES feltoltes (gy_feltoltes.mod = 'eles', allapot = 'elfogadva') az egyetlen jelolt-forras.
+// felvetele utan 72 oraig, de legfeljebb a feltoltes naplozasa utan 120 oraig atmeneti (ujraproba), utana `nincs_konverzio` (vegleges). Az ELES feltoltes (gy_feltoltes.mod = 'eles', allapot = 'elfogadva') az egyetlen jelolt-forras.
 import { GFELT, valaszNormalizal } from './gfeltoltes.js';
 import { riaszt } from './db.js';
 
 export const GKIIG = Object.freeze({
   tipus: 'RETRACTION',
   varakozas: 48 * 3600, // mp: a feltoltes naplozasa (gy_feltoltes.letrehozva) utan legalabb ennyi ido (a Google: a kiigazitas a konverzio feltoltese utan legkorabban ~24 oraval)
-  vegleges: 72 * 3600, // mp: a feltoltes naplozasa utan ennyi ideig a CONVERSION_NOT_FOUND / TOO_RECENT_CONVERSION atmeneti
+  vegleges: 72 * 3600, // mp: a kiigazitasi sor felvetele (gy_kiigazitas.letrehozva) utan ennyi ideig a CONVERSION_NOT_FOUND / TOO_RECENT_CONVERSION atmeneti (DECISION #227) ...
+  felsoKorlat: 120 * 3600, // mp: ... de legfeljebb a feltoltes naplozasa (gy_feltoltes.letrehozva) utani ennyi ideig (DECISION #227); utana a NOT_FOUND vegleges `nincs_konverzio`
   maxKor: 50 * 86400, // mp: ennel regebbi feltoltesre nem kuldunk (a Google 54 napig fogad)
   adag: 10,
   lezaras: 900, // mp: a `kuldes_alatt` allapot ennyi ido utan elavult (megszakadt futas)
@@ -63,7 +64,7 @@ export async function gkiigazitasFut({ db, env, most }) {
   const mod = gkiigazitasMod(env);
   if (mod === 'ki') return { mod, uj: 0 };
   const sorok = (await db.prepare(
-    `SELECT g.uuid, g.order_id FROM gy_feltoltes g JOIN gy_foglalas f ON f.uuid = g.uuid
+    `SELECT g.uuid, g.order_id, g.ujraprobalas FROM gy_feltoltes g JOIN gy_foglalas f ON f.uuid = g.uuid
      WHERE g.mod = 'eles' AND g.allapot = 'elfogadva' AND g.order_id IS NOT NULL AND f.teszt = 0 AND f.allapot = 'lemondott' AND f.frissitve > g.letrehozva
        AND g.letrehozva <= ?1 AND g.letrehozva >= ?2
        AND NOT EXISTS (SELECT 1 FROM gy_kiigazitas k WHERE k.uuid = g.uuid AND k.tipus = 'RETRACTION' AND k.mod = ?3)
@@ -71,17 +72,18 @@ export async function gkiigazitasFut({ db, env, most }) {
   ).bind(most - GKIIG.varakozas, most - GKIIG.maxKor, mod, GKIIG.felvetelAdag).all()).results || [];
   let uj = 0;
   for (const s of sorok) {
-    const hiba = /^[0-9a-f]{64}$/.test(String(s.order_id)) ? null : 'order_id';
+    // a feltoltes ujraprobalassal lett elfogadva -> a Google-ben a konverzio kesobb jelenhet meg: a RETRACTION csendben `nincs_konverzio` lehet (DECISION #227: dry-ben szamoljuk)
+    const hiba = /^[0-9a-f]{64}$/.test(String(s.order_id)) ? (s.ujraprobalas > 0 ? 'kockazat_ujraproba' : null) : 'order_id';
     const res = await db.prepare(
       `INSERT OR IGNORE INTO gy_kiigazitas (uuid, tipus, mod, letrehozva, allapot, order_id, hiba) VALUES (?1, 'RETRACTION', ?2, ?3, ?4, ?5, ?6)`,
-    ).bind(s.uuid, mod, most, hiba ? 'kihagyva_hibas' : mod === 'eles' ? 'varakozik' : 'dry', hiba ? null : s.order_id, hiba).run();
+    ).bind(s.uuid, mod, most, hiba === 'order_id' ? 'kihagyva_hibas' : mod === 'eles' ? 'varakozik' : 'dry', hiba === 'order_id' ? null : s.order_id, hiba).run();
     if (res && res.meta && res.meta.changes) uj += 1;
   }
   return { mod, uj };
 }
 
 // --- Zapier-vegpont (eles mod): GET = kivalasztas + kerestorzs, POST = valasz ertekelese -----------------------------------------------------------------------------
-const SOR_OSZLOP = `k.id, k.uuid, k.order_id, k.ujraprobalas, g.letrehozva AS feltoltes_ido, f.allapot AS foglalas_allapot, f.teszt AS teszt FROM gy_kiigazitas k JOIN gy_feltoltes g ON g.uuid = k.uuid AND g.mod = 'eles' JOIN gy_foglalas f ON f.uuid = k.uuid`;
+const SOR_OSZLOP = `k.id, k.uuid, k.order_id, k.ujraprobalas, g.letrehozva AS feltoltes_ido, k.letrehozva AS kiig_ido, f.allapot AS foglalas_allapot, f.teszt AS teszt FROM gy_kiigazitas k JOIN gy_feltoltes g ON g.uuid = k.uuid AND g.mod = 'eles' JOIN gy_foglalas f ON f.uuid = k.uuid`;
 
 /** A kuldheto sorok (eles mod): `varakozik`, esedekes ujraproba, vagy elavult `kuldes_alatt`. */
 export async function kuldhetoSorok(db, { most, limit = GKIIG.adag }) {
@@ -163,19 +165,21 @@ const joKod = (v) => (typeof v === 'string' && KOD_MINTA.test(v) ? v : null);
 const elsoKod = (ec) => { if (!ec || typeof ec !== 'object') return null; return joKod(Object.values(ec)[0]); };
 
 /** Mi legyen egy kiserlet utan? @returns {{allapot:'elkuldve'|'nincs_konverzio'|'hiba', kovetkezo:number|null, ok:string}} */
-export function ujraprobaDontes({ http = null, kod = null, proba = 0, most, feltoltesIdo }) {
+export function ujraprobaDontes({ http = null, kod = null, proba = 0, most, feltoltesIdo, kiigIdo = null }) {
   if (kod && MAR_MEGVAN.has(kod)) return { allapot: 'elkuldve', kovetkezo: null, ok: 'mar_visszavonva' };
   const atmeneti = (kod && ATMENETI.has(kod)) || http === 429 || (http !== null && http >= 500) || (http === null && !kod);
   if (!atmeneti) return { allapot: 'hiba', kovetkezo: null, ok: 'vegleges' };
   if (kod === 'CONVERSION_NOT_FOUND' || kod === 'TOO_RECENT_CONVERSION') {
-    if (most - feltoltesIdo > GKIIG.vegleges) return { allapot: 'nincs_konverzio', kovetkezo: null, ok: 'nincs_konverzio_72h' };
+    // DECISION #227: 72 ora a kiigazitasi sor felvetelétol (ennek hianyaban a feltoltestol), felso korlat: a feltoltestol 120 ora
+    const hatar = Math.min((Number.isInteger(kiigIdo) ? kiigIdo : feltoltesIdo) + GKIIG.vegleges, feltoltesIdo + GKIIG.felsoKorlat);
+    if (most > hatar) return { allapot: 'nincs_konverzio', kovetkezo: null, ok: 'nincs_konverzio_ablak' };
   }
   if (proba >= GKIIG.ujraproba.max) return { allapot: 'hiba', kovetkezo: null, ok: 'ujraproba_kimerult' };
   return { allapot: 'hiba', kovetkezo: most + GKIIG.ujraproba.varakozas[proba], ok: 'ujraproba' };
 }
 
 function hibaFrissites(s, { http, kod, most, requestId }) {
-  const d = ujraprobaDontes({ http, kod, proba: s.ujraprobalas || 0, most, feltoltesIdo: s.feltoltes_ido });
+  const d = ujraprobaDontes({ http, kod, proba: s.ujraprobalas || 0, most, feltoltesIdo: s.feltoltes_ido, kiigIdo: s.kiig_ido });
   const vegleges = d.allapot !== 'hiba' || !d.kovetkezo;
   return { id: s.id, allapot: d.allapot, hiba: d.ok, google_hibakod: kod || (http ? `HTTP_${http}` : null), ujraprobalas: (s.ujraprobalas || 0) + (d.kovetkezo ? 1 : 0), utolso_hiba_ido: vegleges && d.allapot === 'elkuldve' ? null : most, kovetkezo_proba: d.kovetkezo, request_id: requestId };
 }
@@ -260,5 +264,6 @@ export async function kiigazitasFazis({ db, env, most, be }) {
 /** Riport (admin): allapot-szamlalok modonkent, azonosito nelkul. */
 export async function gkiigazitasRiport(db) {
   const sorok = (await db.prepare('SELECT mod, allapot, COUNT(*) AS db FROM gy_kiigazitas GROUP BY mod, allapot ORDER BY mod, allapot').all()).results || [];
-  return { sorok };
+  const kockazat = await db.prepare("SELECT COUNT(*) AS db FROM gy_kiigazitas WHERE hiba = 'kockazat_ujraproba'").first(); // DECISION #227: a feltoltes ujraprobalassal lett elfogadva (csendes nincs_konverzio kockazata)
+  return { sorok, kockazat_ujraproba: kockazat ? kockazat.db : 0 };
 }

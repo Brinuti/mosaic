@@ -1643,6 +1643,11 @@ test('GY-27 kiigazitas: kapcsolo alapertelmezese `ki`; a payload CSAK 4 mezo (ni
   assert.equal(kiigUjraproba({ kod: 'TOO_RECENT_CONVERSION', proba: 2, most, feltoltesIdo: f0 }).kovetkezo, most + 21600);
   assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 73 * ORA }).allapot, 'nincs_konverzio');
   assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 72 * ORA }).allapot, 'hiba'); // pontosan 72 ora: meg atmeneti
+  // DECISION #227: ha van kiigazitasi sor ideje, az ablak onnan 72 ora, de a feltoltestol legfeljebb 120 ora
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 100 * ORA, kiigIdo: most - 10 * ORA }).allapot, 'hiba'); // min(most+62h, most+20h): atmeneti
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 120 * ORA, kiigIdo: most - 72 * ORA }).allapot, 'hiba'); // pontosan a hataron: meg atmeneti
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 121 * ORA, kiigIdo: most - 10 * ORA }).allapot, 'nincs_konverzio'); // a 120 oras felso korlat
+  assert.equal(kiigUjraproba({ kod: 'CONVERSION_NOT_FOUND', most, feltoltesIdo: most - 100 * ORA, kiigIdo: most - 73 * ORA }).allapot, 'nincs_konverzio'); // a sor felvetelétol 72 ora lejart
   assert.equal(kiigUjraproba({ kod: 'INVALID_CONVERSION_ACTION_TYPE', most, feltoltesIdo: f0 }).ok, 'vegleges');
   assert.equal(kiigUjraproba({ http: 503, most, feltoltesIdo: f0 }).ok, 'ujraproba'); assert.equal(kiigUjraproba({ http: null, most, feltoltesIdo: f0 }).ok, 'ujraproba');
   assert.equal(kiigUjraproba({ kod: 'INTERNAL_ERROR', proba: GKIIG.ujraproba.max, most, feltoltesIdo: f0 }).ok, 'ujraproba_kimerult');
@@ -1725,7 +1730,7 @@ test('GY-27 Zapier-vegpont: kulcs nelkul 401; `ki` / `dry` modban nincs:true es 
   assert.equal((await kiigKer('POST', { zar: gj.zar, http: 200, valasz })).status, 409); // ujrajatszas
   // a hiba sor az ujraproba idejeig nem megy ki; a 72 oras hataron tul NOT_FOUND = nincs_konverzio (vegleges)
   kiigKer.most = kapu + 60; assert.deepEqual(await (await kiigKer('GET', null)).json(), { ok: true, mod: 'eles', nincs: true });
-  kiigKer.most = t0 + 73 * ORA;
+  kiigKer.most = t0 + 121 * ORA; // DECISION #227: a NOT_FOUND a feltoltestol szamitott 120 oraig atmeneti (a kiigazitasi sor felvetelétol 72 ora, de legfeljebb a feltoltestol 120 ora)
   const g2 = await (await kiigKer('GET', null)).json();
   assert.equal(g2.keres.conversionAdjustments.length, 1);
   const p2 = await (await kiigKer('POST', { zar: g2.zar, http: 200, valasz: { results: [{}], partialFailureError: { details: [{ errors: [hiba(0, 'CONVERSION_NOT_FOUND')] }] } } })).json();
@@ -1763,6 +1768,20 @@ test('GY-27 Zapier-vegpont: kuldes elotti ujraellenorzes (ujra aktiv / teszt), h
   assert.equal((await kiigKer('POST', { zar: 'x', http: 200, valasz: {} })).status, 400);
   assert.equal((await kiigKer('POST', { zar: g2.zar, http: 99, valasz: {} })).status, 400);
   assert.equal((await kiigKer('POST', { zar: g2.zar, http: 200, valasz: 'nem json' })).status, 400);
+});
+
+test('GY-27 (DECISION #227): a feltoltes ujraprobalassal lett elfogadva -> a kiigazitasi sor `kockazat_ujraproba` jelolest kap (dry-ben szamolt, a csendes nincs_konverzio kockazata); a riport szamolja', async () => {
+  const { env, E, uuidok, t0 } = await kiigKornyezet(2);
+  await env.GY_DB.prepare('UPDATE gy_feltoltes SET ujraprobalas = 2 WHERE uuid = ?1').bind(uuidok[0]).run();
+  for (const u of uuidok) await lemond(env, u, t0 + ORA);
+  const kapu = t0 + GKIIG.varakozas;
+  assert.deepEqual(await gkiigazitasFut({ db: env.GY_DB, env: { ...E, GY_GADS_KIIGAZITAS: 'dry' }, most: kapu }), { mod: 'dry', uj: 2 });
+  const s = await env.GY_DB.prepare('SELECT uuid, allapot, hiba FROM gy_kiigazitas ORDER BY id').all();
+  assert.deepEqual(s.results.map((x) => [x.uuid, x.allapot, x.hiba]), [[uuidok[0], 'dry', 'kockazat_ujraproba'], [uuidok[1], 'dry', null]]);
+  assert.deepEqual((await gkiigazitasRiport(env.GY_DB)).kockazat_ujraproba, 1);
+  // eles modban a sor kuldheto marad (a jelzes nem akadaly), a sikeres kuldes torli a hiba mezot
+  await gkiigazitasFut({ db: env.GY_DB, env: { ...E, GY_GADS_KIIGAZITAS: 'eles' }, most: kapu });
+  assert.deepEqual((await env.GY_DB.prepare("SELECT allapot, hiba FROM gy_kiigazitas WHERE mod = 'eles' AND uuid = ?1").bind(uuidok[0]).first()), { allapot: 'varakozik', hiba: 'kockazat_ujraproba' });
 });
 
 test('GY-27 megorzes es torles: a gy_kiigazitas 90 nap utan torlodik; a visszavont hozzajarulas a kiigazitasi sort is torli; az endpoint-fajl a burokot hasznalja', async () => {
