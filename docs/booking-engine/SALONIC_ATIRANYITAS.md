@@ -5,7 +5,7 @@ az kerüljön a főoldalra (`https://www.mosaicheadspa.hu/`) – ugyanúgy, ahog
 `a76-salonic-atiranyitas.html`). Ennek az értelme: a Salonicon közvetlenül végigvitt foglalás a Salonic saját köszönőoldalán ér véget, a mi köszönőoldalunk és a mérésünk nélkül; a főoldalról indított
 foglalás a saját motoron megy, ott a mérés (booking_id, párosítás, platform-események) működik.
 
-**Állapot: a repo-oldal kész (kód, GTM-címke szövege, teszt, leírás). A GTM-címke közzététele hátravan: amíg nincs közzétéve, a szkript sehol nem fut, semmi nem változik a Salonicon.**
+**Állapot: ÉLŐ (2026-10-24).** A repo-oldal (kód, GTM-címke szövege, teszt, leírás) kész; a GTM-címke (`tag_id` 237, `GTM-PST2HB22`) közzé van téve (Feri; a nyilvános `gtm.js`-ben 19:29 UTC-kor még nem volt, 19:40 UTC-kor már ott van). Ellenőrizve a valódi Salonic-oldalakon és a közzétett GTM-mel (lásd „Valódi ellenőrzés”).
 
 ## Hogyan működik
 
@@ -34,18 +34,24 @@ A fájl semmit nem küld ki (nincs fetch / XHR / beacon / dataLayer / localStora
 `node --test tools/test-salonic-atiranyitas.mjs` (36/36, helyben, Salonic-kapcsolat és külső hálózat nélkül: a Salonic-oldalakat és a főoldalt a böngésző helyben szolgálja ki, a GTM-címke kódja minden Salonic-dokumentumban lefut):
 a szabálytábla (a user linkje is), mind az 5 fiók, a paraméterek megmaradása, a Vissza gomb, keret, a saját oldalról jövő vendég, hurok-védelem, kikapcsolt állapot, más Salonic-fiók.
 
-## Élesítés (külső fiók: GTM – a mérési oldal / Feri végzi; Feri 2026-10-24-i kérése az engedély)
+## Élesítés (külső fiók: GTM – Feri végezte, 2026-10-24; Feri kérése az engedély)
 
-1. **GTM** (account `6261444190`, konténer `202031443` = `GTM-PST2HB22`): új munkaterület, benne
-   - **címke**: „Salonic foglalóoldalak – átirányítás a főoldalra”, típus Egyéni HTML, tartalom: a [gtm-salonic-atiranyitas.html](gtm-salonic-atiranyitas.html) `<script>` blokkja (a megjegyzés nélkül is jó);
-   - **trigger**: Inicializálás – minden oldal (vagy Oldalmegtekintés), feltétel: **Page Hostname végződik** `.salonic.hu` (a konténer a `www.mosaicheadspa.hu`-n is fut: ott a címke nem futhat);
-   - tűzés: egyszer oldalanként; hozzájárulás: nincs további követelmény (funkcionális, nem mérés – mint a kupon-kitöltő címkénél).
-   Előbb a GTM „Latest” (még nem közzétett) környezetével kipróbálható a valódi Salonic-oldalon (mint a `kupon-salonic-proba.mjs`), utána közzététel. Verziójegyzet: „Salonic átirányítás”.
-2. Közzététel után: a `https://mosaicheadspa.salonic.hu/selectSpecialization/?placeId=10427` linket teljes ablakban megnyitva a főoldalra kell érkezni (`?mh_honnan=salonic`); a motor keretében a foglalás változatlanul megy
-   (próba: egy `/foglalo-motor` foglalás az adatlapig, valódi foglalás nélkül). Mind a 4 fiókban érdemes egyet megnyitni (`mosaic-hair`, `mosaic-oxigen`, `mosaic-elysion`).
-3. 24–72 óra: a Salonicon közvetlenül végigvitt foglalások aránya csökken, az átirányított érkezések a GA4-ben az `mh_honnan=salonic` jelölővel (page_location) láthatók; a QA-5 egyeztetőben a „Salonic → új mérés” párosítatlan foglalások száma nem nőhet.
+1. **GTM** (account `6261444190`, konténer `202031443` = `GTM-PST2HB22`): új Egyéni HTML címke „Salonic foglalóoldalak – átirányítás a főoldalra” ([gtm-salonic-atiranyitas.html](gtm-salonic-atiranyitas.html) `<script>` blokkja),
+   trigger Inicializálás – minden oldal, feltétel Page Hostname végződik `.salonic.hu`; közzétéve. (A konténer a `www.mosaicheadspa.hu`-n is fut: ott a címke nem tölt be semmit, a kód a hostname-et is ellenőrzi.)
+2. Ellenőrzés a valódi oldalakon: lásd lent.
+3. Hátravan (24–72 óra): a Salonicon közvetlenül végigvitt foglalások aránya csökken; az átirányított érkezések a GA4-ben az `mh_honnan=salonic` jelölővel (page_location) láthatók; a QA-5 egyeztetőben a „Salonic → új mérés” párosítatlan foglalások száma nem nőhet.
 
 **Visszaállítás** (azonnali): a GTM-címke szüneteltetése / törlése a konténerben (a kód ekkor meg sem töltődik), vagy a repóban a `salonic/atiranyitas.js`-ben `BE = 0` és merge (a fájl `no-cache`, a deploy után azonnal hat).
+
+## Valódi ellenőrzés (2026-10-24, a közzétett GTM-mel, a valódi Salonic-oldalakon; a mérőkérések eldobva, a főoldal kérése helyi stubbal, valódi foglalás nélkül)
+
+| Eset | Eredmény |
+|---|---|
+| `mosaicheadspa.salonic.hu/selectSpecialization/?placeId=10427` (Feri linkje), teljes ablak | → `https://www.mosaicheadspa.hu/?mh_honnan=salonic` |
+| `…/showServices/?placeId=10427&specId=39592&fbclid=…&utm_source=…&utm_campaign=…` | → főoldal, az `fbclid` és az `utm_*` megmaradt + `mh_honnan=salonic` |
+| `mosaic-hair`, `mosaic-oxigen`, `mosaic-elysion` `/selectSpecialization/?placeId=…` | → `https://www.mosaicheadspa.hu/?mh_honnan=salonic` |
+| `/guestData/…` teljes ablakban | **marad** (a fájl betölt, de nem irányít át) |
+| a valódi Salonic-oldal a saját foglalónk iframe-jében | **marad**, a fájl a keretben le sem töltődik |
 
 ## Nyitott pont: `mosaic-pmu` fiók
 
