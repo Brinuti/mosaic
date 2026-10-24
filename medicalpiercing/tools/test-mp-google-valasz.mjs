@@ -80,8 +80,13 @@ test('megorzes: a 120 napnal regebbi visszajelzes torlodik; a riport csak az ele
   // riport: hiba-allapotu es idoablakon kivuli feltoltes nem szamit
   w.db._s.prepare('INSERT INTO mp_feltoltes (kulcs, akcio_id, mod, kuldo, allapot, http_status, ido) VALUES (?,?,?,?,?,?,?)').run('hiba|1|2', AKCIO, 'eles', 'zapier', 'hiba', 500, MOST - 60);
   w.db._s.prepare('INSERT INTO mp_feltoltes (kulcs, akcio_id, mod, kuldo, allapot, http_status, ido) VALUES (?,?,?,?,?,?,?)').run('regi|3|4', AKCIO, 'eles', 'zapier', 'elkuldve', 200, MOST - 30 * 86400);
+  // ezekhez is van visszajelzes-kod: a hibakodok kozott sem szerepelhetnek (hiba-allapotu feltoltes; idoablakon kivuli feltoltes, de FRISS visszajelzes-sorral)
+  const vsor = w.db._s.prepare('INSERT INTO mp_google_valasz (kulcs, akcio_id, kod, ido) VALUES (?,?,?,?)');
+  vsor.run('hiba|1|2', AKCIO, 'HIBA_ALLAPOT_KOD', MOST - 30); vsor.run('regi|3|4', AKCIO, 'ABLAKON_KIVUL_KOD', MOST - 30);
+  await googleValaszRogzit(w.db, { order_id: KULCS2, conversion_action_id: AKCIO, kod: 'EXPIRED_EVENT' }, MOST);
   const r = await googleValaszRiport(w.db, 7, MOST);
   assert.equal(r.osszes.elkuldve, 3, 'a hiba-allapotu es a 30 napos sor nincs benne');
+  assert.deepEqual(r.hibakodok, [{ kod: 'EXPIRED_EVENT', db: 1 }], 'a hibakodok is csak az eles, elkuldott, idoablakon beluli feltoltesekre');
 });
 test('rogzites: hibas bemenet / ismeretlen sor / proba-sor / nem MP akcio', async () => {
   const w = await vilag();
