@@ -8,3 +8,7 @@
 
 ## Rollback
 A merge-commit revertje; vagy `GY_GADS_KIIGAZITAS = "ki"` (alapérték, ez van); a `gy_kiigazitas` tábla benne maradhat; az MP-naplósorok ártalmatlanok (120 nap).
+
+## Kiegeszites (2026-10-24 ~16:00 Bp): D1-lekerdezes-keret a `nemIgazoltNaplo`-ban
+A #483 teljes foglalas-kerelem tesztje (szamlalo-burkolat a D1-en) kimutatta: egy uj foglalas kerelmenek alapterhe ~36 D1-lekerdezes, a Cloudflare ingyenes csomag hivasonkenti korlatja 50. A `nemIgazoltNaplo` (#477) eredeti `LIMIT 10` + elore vett mod/tabla ellenorzessel hatralekkal 37 + 4n lekerdezes (n = hatralek, jelenleg ~3 -> ~49: a hataron). Ezert az osszevont agban: `NAPLO_KORLAT = 1` (kerelmenkent egy naplosor), a jeloltlekerdezes a mod-ellenorzes ele kerult (ures hatralekkal 1 lekerdezes). A kuldes, a naplo tartalma, a `ki` mod es az idempotencia valtozatlan; a hatralek kerelmenkent 1 sorral fogy. MP `lanc.js`: `b4d12b4046` -> `91520c54fd` (dokumentalt). A #483 a tovabbi (igazolt) naplo-fuggvenyt adja ugyanezzel a korlattal.
+**Masodik kor (a #483 independent review megallapitasa):** a Salonic-level MAR megerkezett agban (`ig`, `igazolasKeresSorhoz`) a kerelem alapterhe ~46 D1-lekerdezes (a naplo-fuggvenyek NELKUL), tehat a naplo ott 50 fole vitte volna. Ezert a `nemIgazoltNaplo` hivasa CSAK `!ig` eseten fut. Teljes foglalas-kerelem teszt (szamlalo-burkolat a D1-en, `foglalasErkezes`, 10 sornyi nem_igazolt hatralekkal): Salonic-level nelkul **41**, Salonic-levellel **46** lekerdezes (korlat: 50); `lanc.js` hash az uj commit utan: lasd fent.

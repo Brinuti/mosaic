@@ -319,9 +319,10 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       await tiktokInditas(db, sor, env, host, { fetchImpl, most }, waitUntil);
     }
     // 2026-10-24 (GY/MP naplo): az igazolatlan Salonic-forrasu foglalasok TikTok-kihagyas naploja (csak naplo; a karbantartas ELOTT, mert az allitja `nem_igazolt`-ra)
-    // soha nem dob; hatralek eseten a ket kihagyas-naplo EGYMAS UTAN fut, es kerelmenkent osszesen legfeljebb NAPLO_KORLAT sor keletkezik (D1-lekerdezesszam: a foglalas-kerelem alapterhe ~36, a korlat hivasonkent 50);
-    // az igazolt-kihagyas csak a nem_igazolt naplo utan, ha az nem naplozott; csak naplo, nem kuld; a foglalas valaszat nem kesleltetheti
-    const pn = nemIgazoltNaplo(db, env, host, { most, fetchImpl }).then((r) => (r && r.naplozva ? r : igazoltKihagyasNaplo(db, env, host, { most, fetchImpl })));
+    // CSAK ha ehhez a kerelemhez nem volt Salonic-level (`ig`): az igazolas-agnak mar ~12 lekerdezese van (a kerelem alapterhe ilyenkor ~46, a Cloudflare ingyenes csomag hivasonkenti korlatja 50).
+    // Soha nem dob; a ket kihagyas-naplo EGYMAS UTAN fut, es kerelmenkent osszesen legfeljebb NAPLO_KORLAT sor keletkezik (az igazolt-kihagyas csak a nem_igazolt naplo utan, ha az nem naplozott);
+    // csak naplo, nem kuld; a foglalas valaszat nem kesleltetheti
+    const pn = ig ? Promise.resolve() : nemIgazoltNaplo(db, env, host, { most, fetchImpl }).then((r) => (r && r.naplozva ? r : igazoltKihagyasNaplo(db, env, host, { most, fetchImpl })));
     if (typeof waitUntil === 'function') waitUntil(pn); else await pn;
     // karbantartas: regi rekordok es a 90 napnal regebbi kattintasazonositok torlese
     const karb = db.batch([
