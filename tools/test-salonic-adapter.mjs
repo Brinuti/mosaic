@@ -353,6 +353,24 @@ test('UJ-51: ures lista a PMU-nal (munkatarsoldal) is egyszer ujraprobal, PARSE;
   await assert.rejects(() => createSalonicAdapter({ fetchImpl: fl, now: () => 0, ...kisArak }).getServices('laser'), (e) => e.code === 'EMPTY');
 });
 
+test('UJ-51 (review O1/T2): egyideju azonos getServices hivasok EGY lekerest osztanak; hibas eredmeny nem kerul sem a memoria-, sem a tartos gyorsitotarba, a kesobbi sikeres igen; 5xx nem kap PARSE-ujraprobat', async () => {
+  const tar = new Map(); const storage = { getItem: (k) => (tar.has(k) ? tar.get(k) : null), setItem: (k, v) => tar.set(k, v) };
+  let jo = false;
+  const f = redirFetch([[/selectSpecialization/, () => ({ body: jo ? fx('headspa-selectSpecialization.html') : FOOLDAL })], [/showServices/, () => ({ body: fx('hair-showServices.html') })]]);
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => 0, storage, ...kisArak });
+  const res = await Promise.allSettled([a.getServices('headspa'), a.getServices('headspa'), a.getPresentation('headspa')]);
+  assert.ok(res.every((r) => r.status === 'rejected' && r.reason.code === 'PARSE'), 'mind a harom hivas ugyanazt a hibat kapja');
+  assert.equal(f.calls.length, 2, 'egyetlen kozos lekeres, benne pontosan 1 ujraproba (2 kiserlet)');
+  assert.equal(tar.size, 0, 'hibas eredmeny nincs a tartos gyorsitotarban');
+  jo = true;
+  assert.equal((await a.getServices('headspa')).length, 3);
+  assert.ok(tar.size >= 1, 'a sikeres eredmeny a tartos gyorsitotarba kerul');
+  const hivas = f.calls.length; await a.getServices('headspa'); assert.equal(f.calls.length, hivas, 'gyorsitotarbol, lekeres nelkul');
+  let n = 0; const f5 = fakeFetch([[/selectSpecialization/, () => { n += 1; return { status: 503, body: '' }; }]]);
+  await assert.rejects(() => createSalonicAdapter({ fetchImpl: f5, now: () => 0, ...kisArak }).getServices('headspa'), (e) => e.code === 'HTTP' && e.status === 503);
+  assert.equal(n, 2, '5xx: a meglevo HTTP-ujraproba (retries=1), PARSE-ujraproba nincs');
+});
+
 // --- elo, csak olvaso (LIVE=1) -----------------------------------------------------------------------------------------------
 test('ELO smoke: mind az 5 uzletag szolgaltatasai es szabad idopontjai olvashatok (csak GET)', { skip: process.env.LIVE !== '1' }, async () => {
   const calls = [];

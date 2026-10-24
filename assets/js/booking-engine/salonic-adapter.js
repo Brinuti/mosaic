@@ -210,14 +210,20 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
   // az ar / idotartam legfeljebb persistMs-ig regi (a C4-nel az ar ellenorzese ugyis a Salonic atiranyitasa alapjan tortenik).
   const readPersist = (key) => { if (!storage) return undefined; try { const j = JSON.parse(storage.getItem('mhSalonic:' + key)); if (j && now() - j.t < persistMs) return j.v; } catch (e) { /* hibas / hianyzo bejegyzes */ } return undefined; };
   const writePersist = (key, v) => { if (!storage) return; try { storage.setItem('mhSalonic:' + key, JSON.stringify({ t: now(), v })); } catch (e) { /* tele / tiltott tarolo */ } };
+  const inflight = new Map(); // kulcs -> futo lekeres: az egyideju azonos hivasok (warmUp + ensureServices) EGY lekerest osztanak (az ujraproba igy nem szorozza a duplazast); a vegen torlodik, hiba nem gyorsitotarazott
   const cached = async (key, fn, { persist = false } = {}) => {
     const c = cache.get(key);
     if (c && now() - c.t < cacheMs) return c.v;
     if (persist) { const p = readPersist(key); if (p !== undefined) { cache.set(key, { t: now(), v: p }); return p; } }
-    const v = await fn();
-    cache.set(key, { t: now(), v });
-    if (persist) writePersist(key, v);
-    return v;
+    if (inflight.has(key)) return inflight.get(key);
+    const futo = (async () => {
+      const v = await fn();
+      cache.set(key, { t: now(), v });
+      if (persist) writePersist(key, v);
+      return v;
+    })();
+    inflight.set(key, futo);
+    try { return await futo; } finally { inflight.delete(key); }
   };
   const cfgOf = (business) => {
     const c = businesses[business];
