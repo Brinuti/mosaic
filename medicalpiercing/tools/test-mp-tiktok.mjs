@@ -306,3 +306,116 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
   assert.deepEqual(await tiktokLepes(db, alapSor({ kornyezet: 'elonezet' }), {}, HOST, { most: MOST }), { kihagyva: 'nem_eles' });
   assert.equal((await naploSorok(db).catch(() => [])).length, 0);
 });
+
+// ---- 2026-10-24: igazolatlan Salonic-forrasu foglalas -> kihagyva:nem_igazolt naplosor (csak naplo, kuldes nem valtozik) ----
+{
+  const { nemIgazoltNaplo, NAPLO_KORLAT } = await import('../lib/meres/lanc.js');
+  const sorBeszur = async (db, o) => {
+    const x = { kulcs: KULCS, salonic_id: null, forras: 'salonic', kornyezet: 'eles', letrehozva: MOST - 3 * 86400, igazolas: null, hozzajarulas_dontott: 1, hozzajarulas_hirdetes: 1, hozzajarulas_analitika: 1, tipus: 'migren', ...o };
+    const oszl = Object.keys(x);
+    await db.prepare(`INSERT INTO mp_foglalas (${oszl.join(',')}) VALUES (${oszl.map(() => '?').join(',')})`).bind(...oszl.map((k) => x[k])).run();
+  };
+  const alap = async (mod) => { _semaTorles(); const db = await ujDb(mod); const { semaBiztos } = await import('../lib/meres/lanc.js'); await semaBiztos(db); return db; };
+  const f = (h) => async (url) => { h.push(String(url)); return new Response('{}', { status: 200 }); };
+
+  test('nem_igazolt naplo: 48 ora utan igazolatlan Salonic-forrasu sor -> kihagyva:nem_igazolt (payload nelkul), fetch nincs, idempotens', async () => {
+    const db = await alap(); const h = [];
+    await sorBeszur(db, {});
+    assert.deepEqual(await nemIgazoltNaplo(db, { TIKTOK_EVENTS_TOKEN: 't' }, HOST, { most: MOST, fetchImpl: f(h) }), { naplozva: 1 });
+    assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot, x.payload_maszkolt, x.mod]), [[KULCS, 'kihagyva:nem_igazolt', null, 'naplo']]);
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 60, fetchImpl: f(h) }), { naplozva: 0 }); // idempotens
+    assert.equal((await naploSorok(db)).length, 1); assert.equal(h.length, 0, 'halozati hivas nincs');
+    // a sor igazolasa NEM valtozik (a karbantartas dolga), a mp_foglalas erintetlen
+    assert.equal((await db.prepare('SELECT igazolas FROM mp_foglalas').first()).igazolas, null);
+  });
+
+  test('nem_igazolt naplo: mar nem_igazolt sor visszamenoleg is (14 nap), 48 oranal frissebb / motoros / igazolt / elonezet / 14 napnal regebbi sor nem', async () => {
+    const db = await alap();
+    await sorBeszur(db, { kulcs: 'k|regi|1', igazolas: 'nem_igazolt', letrehozva: MOST - 10 * 86400 });
+    await sorBeszur(db, { kulcs: 'k|friss|2', letrehozva: MOST - 3600 });                       // meg a 48 oras ablakban
+    await sorBeszur(db, { kulcs: 'k|motor|3', forras: 'motor', salonic_id: 'b1', igazolas: 'nem_igazolt' }); // nem Salonic-forrasu
+    await sorBeszur(db, { kulcs: 'k|igazolt|4', igazolas: 'igazolt' });
+    await sorBeszur(db, { kulcs: 'k|elonezet|5', kornyezet: 'elonezet', igazolas: 'nem_igazolt' });
+    await sorBeszur(db, { kulcs: 'k|nagyonregi|6', igazolas: 'nem_igazolt', letrehozva: MOST - 20 * 86400 });
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST }), { naplozva: 1 });
+    assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot]), [['k|regi|1', 'kihagyva:nem_igazolt']]);
+  });
+
+  test('D1-lekerdezesszam, TELJES foglalas-kerelem (foglalasErkezes) hatralekkal: Salonic-level nelkul <= 44 (a naplo fut), Salonic-levellel <= 50 (a naplo NEM fut, az igazolas-ag alapterhe ~48); a Cloudflare ingyenes csomag hivasonkenti korlatja 50', async () => {
+    const meres = async (levellel) => {
+      _semaTorles(); const db0 = d1();
+      let n = 0;
+      const stmt = (sql, args = []) => ({ bind: (...a) => stmt(sql, a), run: () => { n += 1; return db0.prepare(sql).bind(...args).run(); }, first: () => { n += 1; return db0.prepare(sql).bind(...args).first(); }, all: () => { n += 1; return db0.prepare(sql).bind(...args).all(); } });
+      const db = { prepare: (sql) => stmt(sql), batch: (l) => { n += l.length; return db0.batch(l); } };
+      const env = { MP_MERES_DB: db, MP_IGAZOLAS_TITOK: 'ig-TITOK', MP_GADS_MOD: 'validate', TIKTOK_EVENTS_TOKEN: 'tok-TITOK' };
+      const h = [];
+      const uj = (cookie, start) => new Request(`https://${HOST}/api/mp-foglalas`, { method: 'POST', headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ ut: '/foglalas-ok-mi', p: { price: '24900', first_booking: 'true', placeId: '12169', employeeId: '555', startDate: String(start) }, kattintas: { ttclid: { ertek: TTCLID, ido: MOST - 1800 } } }) });
+      await foglalasErkezes({ request: uj(`mp_suti=v1-s1-m1-t${MOST}`, 1791900000), env }, { fetchImpl: f(h), most: MOST }); // sema + elso sor
+      for (let i = 0; i < 10; i++) await sorBeszur(db0, { kulcs: `k|nem${i}`, letrehozva: MOST - 4 * 86400 + i });                                  // nem_igazolt hatralek
+      const T = MOST + 86400 * 2;
+      if (levellel) await db0.prepare("INSERT INTO mp_salonic_igazolas (booking_id, employee_ids, start_unix, uj_paciens, erkezett, rogzitve) VALUES ('B1','555',1791990000,0,?,?)").bind(T - 100, T - 100).run();
+      n = 0;
+      const r = await foglalasErkezes({ request: uj(`mp_suti=v1-s1-m1-t${T}`, 1791990000), env }, { fetchImpl: f(h), most: T });
+      assert.equal(r.status, 200); assert.equal((await r.json()).uj, true, 'uj foglalas (nem duplikalt): a teljes lanc fut');
+      assert.equal(h.filter((u) => u.includes('tiktok')).length, 0, 'TikTok-hivas nincs (a naplo nem kuld)');
+      return n;
+    };
+    const nelkul = await meres(false), levellel = await meres(true);
+    assert.ok(nelkul <= 44, `Salonic-level nelkul: ${nelkul} D1-lekerdezes`);
+    assert.ok(levellel <= 50, `Salonic-levellel: ${levellel} D1-lekerdezes`);
+  });
+
+  test('nem_igazolt naplo: ki mod -> semmi; fulpiercing = divat_fulpiercing ok; kesobbi igazolas a kihagyva-sort felulirja (a kuldes folyamata valtozatlan)', async () => {
+    const dbKi = await alap('ki'); await sorBeszur(dbKi, {});
+    assert.deepEqual(await nemIgazoltNaplo(dbKi, {}, HOST, { most: MOST }), { naplozva: 0 });
+    assert.equal((await dbKi.prepare('SELECT COUNT(*) AS n FROM mp_tiktok_feltoltes').first()).n, 0);
+    const db = await alap(); await sorBeszur(db, { tipus: 'ful' });
+    await nemIgazoltNaplo(db, {}, HOST, { most: MOST });
+    assert.deepEqual((await naploSorok(db)).map((x) => x.allapot), ['kihagyva:divat_fulpiercing']);
+    // kesobb igazolt + jogosult sor: a tiktokLepes a kihagyva-sort naplozva-ra irja (meglevo viselkedes)
+    const db2 = await alap(); await sorBeszur(db2, {}); await nemIgazoltNaplo(db2, {}, HOST, { most: MOST });
+    assert.deepEqual((await naploSorok(db2)).map((x) => x.allapot), ['kihagyva:nem_igazolt']);
+    const r = await tiktokLepes(db2, alapSor({ kulcs: KULCS }), {}, HOST, { most: MOST + 120 });
+    assert.equal(r.allapot, 'naplozva'); assert.deepEqual((await naploSorok(db2)).map((x) => x.allapot), ['naplozva']);
+  });
+
+  test('nem_igazolt naplo: foglalasErkezes vegig - az igazolatlan Salonic-forrasu sor a KOVETKEZO foglalas karbantartasakor naplozodik, a valasz es a Google-folyamat valtozatlan; hiba nem allitja meg', async () => {
+    _semaTorles(); const db = d1();
+    const env = { MP_MERES_DB: db, MP_IGAZOLAS_TITOK: 'ig-TITOK', MP_GADS_MOD: 'validate' };
+    const h = []; const fe = f(h);
+    // 1. foglalas (booking_id nelkul = salonic-forras), 3 nappal kesobb a 2. foglalas karbantartasa
+    const nelkul = () => new Request(`https://${HOST}/api/mp-foglalas`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: `mp_suti=v1-s1-m1-t${MOST}` },
+      body: JSON.stringify({ ut: '/foglalas-ok-mi', p: { price: '24900', first_booking: 'true', placeId: '12169', employeeId: '555', startDate: '1791900000' }, kattintas: { ttclid: { ertek: TTCLID, ido: MOST - 1800 } } }) });
+    const a = await (await foglalasErkezes({ request: nelkul(), env }, { fetchImpl: fe, most: MOST })).json();
+    assert.equal(a.uj, true); assert.equal((await naploSorok(db)).length, 0);
+    await db.prepare("UPDATE mp_foglalas SET forras = 'salonic', salonic_id = NULL").run();
+    const mp = await foglalasErkezes({ request: foglalKeres(`mp_suti=v1-s1-m1-t${MOST + 3 * 86400}`), env }, { fetchImpl: fe, most: MOST + 3 * 86400 });
+    assert.equal(mp.status, 200);
+    const n = await naploSorok(db);
+    assert.ok(n.some((x) => x.allapot === 'kihagyva:nem_igazolt' && x.payload_maszkolt === null), 'az 1. foglalas naplozva');
+    assert.equal(h.filter((u) => u.includes('tiktok')).length, 0, 'TikTok-hivas nincs');
+    assert.equal((await db.prepare("SELECT igazolas FROM mp_foglalas ORDER BY letrehozva LIMIT 1").first()).igazolas, 'nem_igazolt', 'a karbantartas valtozatlanul nem_igazolt-ra allitja');
+    // eltort naplo: a fuggveny nem dob
+    const rossz = { prepare: () => { throw new Error('db hiba'); } };
+    assert.deepEqual(await nemIgazoltNaplo(rossz, {}, HOST, { most: MOST }), { naplozva: 0 });
+  });
+
+  test('nem_igazolt naplo: hatralek eseten kerelmenkent legfeljebb NAPLO_KORLAT sor, a tobbi a kovetkezo kerelemben; igazolt/elkuldve sort nem ir felul', async () => {
+    const db = await alap();
+    for (let i = 0; i < 15; i += 1) await sorBeszur(db, { kulcs: `k|hatralek|${i}`, letrehozva: MOST - 3 * 86400 + i });
+    let osszes = 0;
+    for (let k = 0; k < 40; k += 1) { const r = await nemIgazoltNaplo(db, {}, HOST, { most: MOST + k }); assert.ok(r.naplozva <= NAPLO_KORLAT, 'kerelmenkent legfeljebb NAPLO_KORLAT'); osszes += r.naplozva; if (!r.naplozva) break; }
+    assert.equal(osszes, 15, 'a hatralek kerelmenkent fogy, vegul mind naplozva');
+    assert.deepEqual(await nemIgazoltNaplo(db, {}, HOST, { most: MOST + 100 }), { naplozva: 0 });
+    // mar elkuldott / naplozott sort a nem_igazolt nem ir felul
+    const db2 = await alap(); await sorBeszur(db2, {});
+    await db2.prepare("INSERT INTO mp_tiktok_feltoltes (kulcs, mod, allapot, payload_maszkolt, ido) VALUES (?, 'naplo', 'elkuldve', NULL, ?)").bind(KULCS, MOST).run();
+    assert.deepEqual(await nemIgazoltNaplo(db2, {}, HOST, { most: MOST + 5 }), { naplozva: 0 });
+    assert.deepEqual((await naploSorok(db2)).map((x) => x.allapot), ['elkuldve']);
+    // eles mod + token + eles host: 0 fetch, a sor kihagyva
+    const dbE = await alap('eles'); await sorBeszur(dbE, {}); const h = [];
+    await nemIgazoltNaplo(dbE, { TIKTOK_EVENTS_TOKEN: 'tok' }, HOST, { most: MOST, fetchImpl: f(h) });
+    assert.equal(h.length, 0); assert.deepEqual((await naploSorok(dbE)).map((x) => [x.allapot, x.mod]), [['kihagyva:nem_igazolt', 'eles']]);
+  });
+}
