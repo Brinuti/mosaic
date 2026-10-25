@@ -1,6 +1,7 @@
 // A lezeres landing ajandekkartya-linkjei (statikus, build / bongeszo nelkul):
 //   node --test tools/lezer-teszt/ajandek-link.test.mjs
-// A landing hero-jaban egy "Ajandekkartya" gomb (az "Ingyenes konzultacio" elott, az pedig csak szoveges link), a garancia utan egy kulon szekcio visz a /lezeres-ajandekkartya oldalra (kozvetlen oldal-link, nem hash).
+// A landing hero-jaban egy "Ajandekkartya" gomb (az "Ingyenes konzultacio" elott, az pedig csak szoveges link) visz a /lezeres-ajandekkartya oldalra (kozvetlen oldal-link, nem hash).
+// A kulon ajandekkartya-szekcio (garancia utan, Zsofi elott) 2026-10-25-en kikerult az oldalrol (a tulajdonos kerese: senki nem vesz ajandekkartyat); a szekcio stilusa a stiluslapban marad (a ferfi oldal hasznalja).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -32,22 +33,19 @@ test('a hero gombsorban a sorrend: idopontok gomb, Ajandekkartya gomb, utana az 
   assert.match(css, /\.cta-sor \.cta-link \{ text-align: center; \}/, 'mobilon a szoveges link kozepre kerul');
 });
 
-test('az ajandekkartya-szekcio a garancia utan, Zsofi elott all, a CTA ugyanoda visz; a kep letezik', () => {
+test('az ajandekkartya-szekcio es a "Mar tudod" blokk nincs az oldalon (2026-10-25); a garancia utan kozvetlenul Zsofi jon', () => {
+  assert.ok(!h.includes('<section class="ajk"'), 'az ajandekkartya-szekcio kikerult');
+  assert.ok(!h.includes('id="ajk-cim"') && !h.includes('Személyre szabott ajándékkártya!'), 'nincs maradek');
+  assert.ok(!h.includes('<section class="tudod"') && !h.includes('Már tudod, mit szeretnél?'), 'a "Mar tudod" blokk kikerult');
   const elonyok = h.indexOf('<section class="elonyok"');
-  const ajk = h.indexOf('<section class="ajk" id="ajandek"');
+  const vege = h.indexOf('</section>', elonyok) + '</section>'.length;
   const zsofi = h.indexOf('<section class="zsofi"');
-  assert.ok(elonyok > 0 && ajk > elonyok && zsofi > ajk, 'a szekcio sorrendje: garancia -> ajandekkartya -> Zsofi');
-  const szekcio = h.slice(ajk, h.indexOf('</section>', ajk));
-  assert.match(szekcio, /<h2 id="ajk-cim">Személyre szabott ajándékkártya!<\/h2>/);
-  assert.match(szekcio, new RegExp(`<a class="gomb gomb-arany gomb-nagy" href="${CEL}">`));
-  assert.equal((szekcio.match(/href="#/g) || []).length, 0, 'nincs hash-link (a GTM History Change ne induljon)');
-  const kep = /src="(\/assets\/img\/[^"]+)"/.exec(szekcio)[1];
-  assert.ok(fs.existsSync(path.join(GYOKER, kep)), kep);
+  assert.ok(elonyok > 0 && zsofi > vege, 'Zsofi a garancia utan van');
+  assert.equal((h.slice(vege, zsofi).match(/<section\b/g) || []).length, 0, 'a garancia es Zsofi kozott nincs szekcio');
 });
 
-test('a cel-oldal letezik, noindex; a szekcio stilusa a stiluslapban van, mobilra is', () => {
+test('a cel-oldal (/lezeres-ajandekkartya) letezik, noindex; a hero gomb oda mutat', () => {
   const cel = fs.readFileSync(path.join(GYOKER, 'foglalas', 'lezeres-ajandekkartya.html'), 'utf8');
   assert.match(cel, /<meta name="robots" content="noindex, follow">/);
-  for (const sel of ['.ajk {', '.ajk-racs {', '.ajk-lista {']) assert.ok(css.includes(sel), sel);
-  assert.match(css, /@media \(max-width: 700px\) \{ \.ajk \{/);
+  assert.ok(h.includes(`href="${CEL}"`), 'a hero gomb megvan');
 });
