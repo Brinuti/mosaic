@@ -25,7 +25,7 @@ test('a hero gombsorban a sorrend: idopontok gomb, Ajandekkartya gomb, utana az 
   const sor = h.slice(h.indexOf('<div class="cta-sor">'), h.indexOf('</div>', h.indexOf('<div class="cta-sor">')));
   const linkek = [...sor.matchAll(/<a\b[^>]*>[^<]*(?:<span[^>]*>[^<]*<\/span>)?[^<]*<\/a>/g)].map((m) => m[0]);
   assert.equal(linkek.length, 3, 'harom elem a hero gombsorban');
-  assert.match(linkek[0], /class="gomb gomb-arany gomb-nagy" href="#foglalas"/);
+  assert.match(linkek[0], /class="gomb gomb-arany gomb-nagy" href="\/foglalo-motor\?business=laser&amp;intent=first"/, 'az idopont-gomb a foglalo-reteget nyitja (nem gorget a #foglalas-hoz)');
   assert.match(linkek[1], new RegExp('class="gomb gomb-korvonal" href="' + CEL + '"'));
   assert.match(linkek[2], /^<a class="cta-link" href="https:\/\/mosaic-elysion\.salonic\.hu\/selectDate\/\?employeeId=32417&amp;placeId=14586&amp;serviceId=476477" target="_blank" rel="noopener">Ingyenes konzultáció <span class="nyil">/);
   assert.doesNotMatch(linkek[2], /class="[^"]*\bgomb\b/);

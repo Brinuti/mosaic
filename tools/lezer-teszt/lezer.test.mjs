@@ -227,8 +227,10 @@ describe('kalkulator: a legdragabb teruletet teljes aron, a tobbit 50%-on', () =
     await uresit(p);
     await kapcsol(p, 'honalj');
     assert.equal(await p.getAttribute('#szamolo-tartalom a[data-terulet]', 'data-terulet'), 'honalj');
+    assert.equal(await p.getAttribute('#szamolo-tartalom a[data-terulet]', 'href'), '/foglalo-motor?business=laser&service=476488', 'egy teruletnel annak a szolgaltatasnak a foglalo-retege');
     await kapcsol(p, 'intim');
     assert.equal(await p.getAttribute('#szamolo-tartalom a[data-terulet]', 'data-terulet'), 'egyedi');
+    assert.equal(await p.getAttribute('#szamolo-tartalom a[data-terulet]', 'href'), '/foglalo-motor?business=laser&service=476478', 'tobb teruletnel az egyedi csomag foglalo-retege');
     await ctx.close();
   });
 
@@ -406,13 +408,23 @@ describe('osszekottetesek', () => {
     }
   });
 
-  test('a data-terulet gombok (kartyak, kalkulator) a valasztot az adott teruletre allitjak es oda gorgetnek', async () => {
+  test('a teruletkartyak (Mennyibe kerul?) az adott szolgaltatas foglalo-retegeit nyitjak meg: nincs legordules, nincs oldalvaltas, nincs uj lap', async () => {
     const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
+    const ujLapok = [];
+    ctx.on('page', (x) => ujLapok.push(x.url()));
+    assert.deepEqual(await p.$$eval('.gyors-kartya', (l) => l.map((a) => [a.dataset.terulet, a.getAttribute('href')])), [
+      ['honalj', '/foglalo-motor?business=laser&service=476488'], ['intim', '/foglalo-motor?business=laser&service=476493'],
+      ['basic', '/foglalo-motor?business=laser&service=476479'], ['lab', '/foglalo-motor?business=laser&service=476496']]);
+    await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
+    const kezdet = await p.evaluate(() => location.pathname + location.search);
+    await p.locator('.gyors-kartya[data-terulet="lab"]').scrollIntoViewIfNeeded();
+    const y0 = await p.evaluate(() => Math.round(scrollY));
     await p.click('.gyors-kartya[data-terulet="lab"]');
-    await p.waitForFunction(() => document.getElementById('terulet-select').value === 'lab');
-    await p.waitForFunction(() => /service=476496/.test(document.querySelector('#idok a.ido')?.getAttribute('href') || ''));
-    // sima gorgetes: megvarjuk, mig a foglalo a kepernyo tetejere er
-    await p.waitForFunction(() => { const t = document.getElementById('foglalo').getBoundingClientRect().top; return t < 200 && t > -100; }, null, { timeout: 8000 });
+    await p.waitForSelector('#mosaic-booking-layer', { state: 'attached', timeout: 10000 });
+    await p.waitForTimeout(800);
+    assert.ok(Math.abs((await p.evaluate(() => Math.round(scrollY))) - y0) < 30, 'az oldal nem gorgetett le az idopont-valasztohoz');
+    assert.equal(await p.evaluate(() => location.pathname + location.search), kezdet, 'az oldal nem navigalt el');
+    assert.equal(ujLapok.length, 0, 'nem nyilt uj lap');
     await ctx.close();
   });
 
@@ -650,7 +662,7 @@ describe('mobil sticky CTA (mint az oxigen oldalon)', () => {
     const m = await p.$eval('#sticky-cta', (e) => { const r = e.getBoundingClientRect(); return { alja: Math.round(r.bottom), ablak: innerHeight, pozicio: getComputedStyle(e).position, ujra: [...e.querySelectorAll('a')].map((a) => a.getAttribute('href')) }; });
     assert.equal(m.pozicio, 'fixed');
     assert.equal(m.alja, m.ablak, 'az ablak aljan ul');
-    assert.equal(m.ujra[0], '#foglalas');
+    assert.equal(m.ujra[0], '/foglalo-motor?business=laser&intent=first', 'a sticky gomb a foglalo-reteget nyitja');
     assert.match(m.ujra[1], /serviceId=476477|business=laser/);
     assert.equal(await p.evaluate(() => document.body.classList.contains('sticky-be')), true);
     await gorget(p, '#foglalas');
@@ -662,13 +674,16 @@ describe('mobil sticky CTA (mint az oxigen oldalon)', () => {
     await ctx.close();
   });
 
-  test('a gomb a foglalora gorget', async () => {
+  test('a gomb a foglalo-reteget nyitja meg (nem gorget a foglalo szekciohoz)', async () => {
     const { p, ctx } = await nyit({ mobil: true, api: () => idok(...SLOTOK) });
-    // az elso latogatasnal a suti-sav fedi az also savot (mint az oxigen oldalon): elfogadas utan kattinthato
-    await p.getByRole('button', { name: 'Elfogadom' }).click();
+    // az elso latogatasnal a suti-sav fedi az also savot (mint az oxigen oldalon): ha van, elfogadas utan kattinthato
+    await p.getByRole('button', { name: 'Elfogadom' }).click({ timeout: 4000 }).catch(() => {});
     await gorget(p, '.zsofi');
+    const y0 = await p.evaluate(() => Math.round(scrollY));
     await p.click('#sticky-cta a.gomb');
-    await p.waitForFunction(() => { const t = document.getElementById('foglalas').getBoundingClientRect().top; return t < 200 && t > -400; }, null, { timeout: 8000 });
+    await p.waitForSelector('#mosaic-booking-layer', { state: 'attached', timeout: 10000 });
+    await p.waitForTimeout(800);
+    assert.ok(Math.abs((await p.evaluate(() => Math.round(scrollY))) - y0) < 30, 'nem gorgetett le a foglalo szekciohoz');
     await ctx.close();
   });
 
