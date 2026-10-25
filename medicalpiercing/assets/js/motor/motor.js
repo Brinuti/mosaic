@@ -50,7 +50,8 @@ const sb = (x) => x._b || (x._b = bp(x.start_unix));
 const napCim = (nap) => { const [e, h, d] = nap.split('-').map(Number); const w = new Date(Date.UTC(e, h - 1, d)).getUTCDay(); return `${HONAP[h - 1]} ${d}., ${NAP_NEV[w]}`; };
 // Nevtelen lepes-statisztika (Feri 2026-10-19: hol esik ki a latogato): napi darabszam esemeny + lepes + eszkoz szerint, D1 (mp_motor_stat).
 // Suti, azonosito, IP, URL, szemelyes adat NINCS. A meres soha nem allithatja meg a foglalast.
-const motorStat = (e, l) => { try { const t = JSON.stringify({ e, l: l || '', m: matchMedia('(max-width: 700px)').matches ? 1 : 0 });
+// h: a valasztott helyszin Salonic-azonositoja (2026-10-25, Feri: helyszinenkenti tovabblepesi arany) – nem szemelyes adat; x: 1 = csak a helyszines tablaba (helyszincsere utan)
+const motorStat = (e, l, h, x) => { try { const o = { e, l: l || '', m: matchMedia('(max-width: 700px)').matches ? 1 : 0 }; if (Number.isInteger(h) && h > 0) o.h = h; if (x) o.x = 1; const t = JSON.stringify(o);
   if (!(navigator.sendBeacon && navigator.sendBeacon('/api/mp-motor-stat', new Blob([t], { type: 'text/plain' })))) fetch('/api/mp-motor-stat', { method: 'POST', body: t, keepalive: true }).catch(() => {}); } catch (x) { /* */ } };
 const gtagEsemeny = (nev, param) => { try { if (typeof window.gtag === 'function') window.gtag('event', nev, { send_to: 'G-SJT2RN62H8', ...param }); } catch (e) { /* a meres nem allithatja meg a foglalast */ } };
 
@@ -549,6 +550,7 @@ export function nyit(ctx) {
   if (all.csomag && all.lepes === 'tipus') { all.tipus = 'uj'; all.lepes = 'hely'; }
   let lezart = false;
   const latott = new Set(); // a lepes-statisztika: lepesenkent egyszer nyitasonkent
+  const latottHely = new Set(); // lepes:helyszin (a helyszines statisztikahoz)
 
   const tartalek = () => {
     // a Salonic eredeti foglaloja, ugyanazzal a cimmel, amire a vendeg kattintott
@@ -556,7 +558,7 @@ export function nyit(ctx) {
   };
   const hiba = (ok, e) => {
     gtagEsemeny('motor_hiba', { hiba_tipus: ok });
-    motorStat('hiba', ok);
+    motorStat('hiba', ok, all.placeId);
     try { console.warn('[mp-motor]', ok, e && (e.code || e.message)); } catch (x) { /* */ }
     tartalom.innerHTML = tartalek();
   };
@@ -950,7 +952,7 @@ export function nyit(ctx) {
     const napok = new Map();
     for (const x of sajat) { const b = sb(x); if (!napok.has(b.nap)) napok.set(b.nap, []); napok.get(b.nap).push(x); }
     if (!sajat.length) {
-      motorStat('nincs_idopont', 'ido');
+      motorStat('nincs_idopont', 'ido', all.placeId);
       tartalom.innerHTML = osszegzes() + `<p class="uzenet">A következő ${NAPOK} napban ezen a helyszínen erre a piercingre nincs szabad időpont.${munkatarsak.length > 1 && all.staffId ? '' : ''}</p><p><button class="gomb masodlagos" data-lepes="szolg">Másik piercing</button> <button class="gomb masodlagos" data-lepes="hely">Másik helyszín</button></p>`;
       return;
     }
@@ -1018,7 +1020,8 @@ export function nyit(ctx) {
 
   async function rajzol() {
     if (all.lepes === 'hely' && all.placeId) all.lepes = 'szolg';
-    if (!latott.has(all.lepes)) { latott.add(all.lepes); motorStat('lepes', all.lepes); gtagEsemeny('motor_lepes', { lepes: all.lepes }); }
+    if (!latott.has(all.lepes)) { latott.add(all.lepes); latottHely.add(all.lepes + ':' + all.placeId); motorStat('lepes', all.lepes, all.placeId); gtagEsemeny('motor_lepes', { lepes: all.lepes }); }
+    else if (all.placeId && !latottHely.has(all.lepes + ':' + all.placeId)) { latottHely.add(all.lepes + ':' + all.placeId); motorStat('lepes', all.lepes, all.placeId, true); } // helyszincsere: az uj helyszinen is szamit (csak a helyszines tabla)
     lepesjelzo();
     tartalom.scrollTop = 0;
     if (all.lepes === 'tipus') return tipusLepes();
@@ -1112,7 +1115,7 @@ export function nyit(ctx) {
   window.addEventListener('message', uzenet);
 
   function bezar() {
-    if (!lezart) motorStat('bezar', all.lepes);
+    if (!lezart) motorStat('bezar', all.lepes, all.placeId);
     lezart = true;
     window.removeEventListener('message', uzenet);
     document.removeEventListener('keydown', billentyu);
