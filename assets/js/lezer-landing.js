@@ -124,7 +124,7 @@
       elem('div', { class: 'sz-elso', html: `<span>Az első kezelés 20% kedvezménnyel</span><b>${ft(e.elso)}</b>` }),
       elem('div', { class: 'sz-program', html: `<div class="sz-sor"><span>8 alkalmas program: csak 6 alkalmat fizetsz</span><b>${ft(e.program)}</b></div><small>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).</small>` }),
       elem('div', { class: 'sz-cta' },
-        elem('a', { class: 'gomb gomb-arany gomb-szeles', href: '#foglalas', 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
+        elem('a', { class: 'gomb gomb-arany gomb-szeles', href: `/foglalo-motor?business=laser&service=${(SZOLGALTATAS[egy ? e.tetelek[0].kulcs : EGYEDI.kulcs] || EGYEDI).elso}`, 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
         // telefonon rovidebb valtozat, hogy elferjen egy sorban
         elem('p', { class: 'sz-lab', html: '<span class="hosszu">Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.</span><span class="rovid">Az ár fix, 8 alkalomból csak 6-ot fizetsz, 2 ajándék.</span>' }))].filter(Boolean));
   }
@@ -285,16 +285,9 @@
   $('terulet-select').addEventListener('change', (e) => { if (e.target.value) beallit('kezeles', e.target.value); });
   for (const r of document.querySelectorAll('input[name="mod"]')) r.addEventListener('change', () => beallit(r.value));
 
-  // a tobbi szekcio gombjai: a valasztot az adott teruletre allitjuk, es oda gorgetunk
+  // a tobbi szekcio gombjai: a foglalo-reteg nyilik meg (assets/js/booking-launcher.js fogja el a /foglalo-motor linkeket), NEM gorget le az idopont-valasztohoz
+  // (a tulajdonos kerese, 2026-10-25); a data-terulet attributum csak azonosito (melyik teruletrol van szo)
   document.addEventListener('click', (e) => {
-    const g = e.target.closest('a[data-terulet]');
-    if (g) {
-      if (!SZOLGALTATAS[g.dataset.terulet]) return;
-      e.preventDefault();
-      beallit('kezeles', g.dataset.terulet);
-      $('foglalo').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-      return;
-    }
     const q = e.target.closest('a[data-gyik]');
     if (q) {
       const d = $('gyik-' + q.dataset.gyik);

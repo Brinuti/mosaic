@@ -102,6 +102,44 @@ export function belepes({ search = '', referrer = '', path = '/', sajatHostok } 
   return o;
 }
 
+/**
+ * Diagnosztika a "UTM igen, click-ID nem" esetekhez (2026-10-21, Feri/Meresi Claude): CSAK csaladszintu, nem szemelyes adat - bongeszo-csalad, OS-csalad, eszkoztipus; a User-Agent
+ * maga SOHA nem kerul tarolasra. Nincs IP, nincs ujjlenyomat, nincs teljes URL.
+ */
+export function uaElemzes(ua) {
+  const u = String(ua || '').slice(0, 400);
+  const ios = /iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && /Mobile\//.test(u));
+  const android = /Android/.test(u);
+  const os = ios ? 'ios' : android ? 'android' : /Windows/.test(u) ? 'windows' : /Mac OS X|Macintosh/.test(u) ? 'macos' : /Linux|X11|CrOS/.test(u) ? 'linux' : 'egyeb';
+  const bongeszo = /bot|crawl|spider|Lighthouse|Google-InspectionTool|AdsBot|Mediapartners/i.test(u) ? 'bot'
+    : /FBAN|FBAV|FB_IAB|FBIOS/.test(u) ? 'facebook_app' : /Instagram/.test(u) ? 'instagram_app'
+      : /EdgA|EdgiOS|Edg\//.test(u) ? 'edge' : /OPR\/|Opera|OPT\//.test(u) ? 'opera' : /SamsungBrowser/.test(u) ? 'samsung'
+        : /Firefox|FxiOS/.test(u) ? 'firefox' : /CriOS|Chrome\//.test(u) ? 'chrome' : /Safari\//.test(u) ? 'safari' : u ? 'egyeb' : 'nincs_ua';
+  const eszkoz = /iPad|Tablet/.test(u) || (android && !/Mobile/.test(u)) ? 'tablet' : /Mobi|iPhone|iPod|Android/.test(u) ? 'mobil' : 'asztali';
+  return { bongeszo, os, eszkoz };
+}
+
+/**
+ * A belepes diagnosztikai rekordja: { bongeszo, os, eszkoz, ref_kat, ref_host, oldal, gad_jel, ismetelt, privat_gyanu }. `ismetelt` = volt mar (nem lejart) munkamenet-rekordja a latogatonak.
+ * `gad_jel` = a Google automatikus cimkezes MASIK parametere (gad_source / gad_campaignid) megvan, de a click-ID nincs: a kattintas Google-os volt, az azonosito lemaradt.
+ * `privat_gyanu` = iOS Safari + fizetett jel click-ID nelkul: az iOS "Link Tracking Protection" / privat bongeszes tipikus mintaja (SZERVEROLDALROL ez csak GYANU, nem bizonyitek).
+ */
+export function diagnosztika({ ua = '', b, ismetelt = false } = {}) {
+  const x = uaElemzes(ua);
+  const pn = (b && b.param_nevek) || [];
+  const gadJel = pn.includes('gad_source') || pn.includes('gad_campaignid');
+  const vanKatt = !!(b && GOOGLE_KATT.includes(b.kattintas_param));
+  return {
+    ...x,
+    ref_kat: (b && b.ref_kat) || 'nincs',
+    ref_host: b && b.ref_kat && b.ref_kat !== 'sajat' && b.ref_kat !== 'nincs' ? b.ref_domain : null,
+    oldal: (b && b.landing) || '/',
+    gad_jel: gadJel && !vanKatt,
+    ismetelt: !!ismetelt,
+    privat_gyanu: x.os === 'ios' && x.bongeszo === 'safari' && fizetett(b) && !vanKatt,
+  };
+}
+
 /** Fizetett-e a belepes: Google kattintas-azonosito VAGY fizetett utm_medium. (A nem Google kattintas-azonosito is "fizetett jel", de nem Google.) */
 export function fizetett(b) {
   return !!b && (GOOGLE_KATT.includes(b.kattintas_param) || MAS_KATT.includes(b.kattintas_param) || FIZETETT_MEDIUM.includes(kis(b.utm_medium)));

@@ -6,6 +6,7 @@
 //   Google Ads: csak a 7825199989-7825200916 "ARNYEK - ..." masodlagos UPLOAD_CLICKS akciok (Zapier-webhookon at); GA4: csak teszt-property (az elo G-H4206SQ0Q7 tiltott).
 import { metaNev } from './esemeny-modell.js';
 import { googleKattintas, metaFbc } from './erkezes.js';
+import { bongeszoMetaKulcs } from './meta-bongeszo-kulcs.js';
 
 export const ARNYEK = Object.freeze({
   meta: Object.freeze({ datasetId: '28616665324611098', nev: 'MOSAIC ARNYEK meres-teszt', apiVerzio: 'v23.0' }), // a Graph API verzio felulirhato: META_API_VERSION (a v21.0 2026 oktoberben lejar)
@@ -88,8 +89,10 @@ export function metaKerelem(e, ctx, env = {}) {
     fbc: metaFbc(ctx.erk, ctx.fk.ido * 1000),
   });
   const nev = metaNev(e, ctx.fk.uzletag);
+  // DECISION-keres (#167 6315883179, UJ-2): a motoros (mb_) alapesemeny event_id-ja a bongeszos tag 213 kulcsa (ARNYEK; hianyzo resz = marad az esemeny_id). sd_ / ajandekkartya / ernyo valtozatlan.
+  const bongeszoKulcs = e.tipus === 'alap' && /^mb_/.test(String(ctx.fk.source_entity_id || '')) ? bongeszoMetaKulcs(ctx.bongeszo) : null;
   const adatEpit = (ud) => tisztit({
-    event_name: nev, event_time: ctx.fk.ido, event_id: e.esemeny_id, action_source: sd ? 'other' : 'website', event_source_url: sd ? null : ctx.oldal,
+    event_name: nev, event_time: ctx.fk.ido, event_id: bongeszoKulcs || e.esemeny_id, action_source: sd ? 'other' : 'website', event_source_url: sd ? null : ctx.oldal,
     user_data: ud,
     // e.ertek_nelkul (D5, DECISION #131): ismeretlen tenyleges ar -> az esemeny ERTEK NELKUL megy (value / currency / salonic_ar kimarad), lista- / activePrice SOHA nem tenyleges arkent
     custom_data: tisztit({ value: e.ertek_nelkul ? null : egesz(e.ertek), currency: e.ertek_nelkul ? null : 'HUF', order_id: ctx.fk.source_entity_id, content_name: platformKod(e, ctx), content_category: ctx.fk.uzletag, esemeny_tipus: e.tipus, ertek_forras: e.ertek_forras, salonic_ar: e.ertek_nelkul ? null : e.salonic_ar, utm_source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, utm_campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign,
