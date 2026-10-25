@@ -12,6 +12,7 @@ import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
 import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures, esemenyIras, esemenyUres } from './tilt.mjs';
+import { ervenyesit } from '../../netlify/lib/foglalo-szamlalo.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const GA4 = arg('ga4', '0') === '1';
@@ -96,6 +97,17 @@ const cim = async (p, ido = 20000) => { const c = reteg(p).locator('.be-title').
 const dl = (p) => p.evaluate(() => (window.dataLayer || []).filter((e) => e && typeof e.event === 'string' && /^booking_/.test(e.event)).map((e) => ({ ...e })));
 const szamlaloLepesek = (naplo) => naplo.szamlalo.map((s) => { try { return JSON.parse(s.test); } catch (e) { return { hibas: s.test }; } });
 const nevek = (lista) => lista.map((e) => e.event);
+// DECISION #205 (csak-meres): a belso szamlalo uj lepesei (lepes_bontas, lepes_ido, kimenet_ido, c1_*, a2_elofordulas, recovered, success_unverified, verify_check) kulon beaconok; a REGI ellenorzesek a
+// #205 elotti lepesekre szurt nezetet vizsgaljak (a vart ertekek valtozatlanok), az ujakat a sajat ellenorzeseik fedik. A GA4 (dataLayer) ellenorzesei nem szurtek: a GA4 az ujakbol semmit nem kap.
+const REGI_LEPESEK = new Set(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'submit', 'success', 'close', 'error', 'error_reszlet']);
+const regiSz = (sz) => sz.filter((s) => REGI_LEPESEK.has(s.lepes));
+const ujSz = (sz) => sz.filter((s) => !REGI_LEPESEK.has(s.lepes));
+const tip = (sz, l) => ujSz(sz).filter((s) => s.lepes === l).map((s) => s.tipus);
+const VODOR = ['lt5s', 'lt30s', 'lt60s', 'lt120s', 'lt300s', 'ge300s'];
+const ESZKOZ = MOBIL ? 'mobil' : 'asztali';
+const ZART205 = /^(lepes_bontas:(open|business|service|slots_loaded|slot|form_start|submit|success|success_unverified)\.(google|meta|tiktok|egyeb)\.(mobil|asztali|tablet)|lepes_ido:(business|service|slots_loaded|slot|form_start|submit|success|success_unverified)\.(lt5s|lt30s|lt60s|lt120s|lt300s|ge300s)|kimenet_ido:(success|success_unverified|verify_failed|slot_lost|hold_expired|c4_close)\.(lt5s|lt30s|lt60s|lt120s|lt300s|ge300s)|c1_szabad:(0|1-3|4-10|11-30|31\+)|c1_elso_nap:(ma|1-2|3-7|8-14|15\+|nincs)|a2_elofordulas:(slot_lost|hold_expired)\.(1|2|3|4|ge5)|recovered:(slot_lost|hold_expired)\.(success|success_unverified)|verify_check:(params|place|service|slot|staff|price|no_expectation)|price_irany:(lt|gt|eq|unknown)|success_unverified:)$/;
+// minden uj beacon zart alaku ES a szerver elfogadja (ervenyesit); az uj lepesek tipusa nem tartalmaz mast, mint a zart listak
+const ujZart = (sz) => ujSz(sz).every((s) => ZART205.test(s.lepes + ':' + (s.tipus ?? '')) && ervenyesit(JSON.stringify(s)).ok);
 // A foglalo lepesei utan (a nyitas elotti allapothoz kepest) erkezett kimeno meresi kerelmek: nem lehet koztuk konverzio / marketing-esemeny. Megengedett: a GA4 booking_* esemenyei (a GTM-trigger publikalasa utan,
 // csak hozzajarulassal) es a lap sajat, idozitett jelzesei (TikTok monitor, GA4 user_engagement / scroll, page_view): ezek nem a foglalotol jonnek.
 const LAP_JELZES = /^(|visit|page_view|user_engagement|scroll|session_start|first_visit|PageView|ViewContent|pixel|monitor|enrich_ipv6|gtm\.[a-z]+)$/i;
@@ -105,9 +117,9 @@ const uj = (lista) => lista.filter((e) => UJ.has(e.event));
 async function zar(p) { await reteg(p).locator('#be-close').click(); await p.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {}); await p.waitForTimeout(400); }
 
 // a Salonic atiranyitasanak szimulacioja (mint a reteg-proba): sikeres foglalas a motor vart valasztasaval
-async function atiranyit(p) {
+async function atiranyit(p, { arFelul = null } = {}) { // arFelul: hibas ar (az ellenorzes bukasanak szimulalasa: a foglalas letrejon, de a motor nem tudja igazolni)
   const keret = await reteg(p).locator('iframe.be-iframe').getAttribute('src');
-  const ar = (((await reteg(p).locator('.be-mini').textContent().catch(() => '')) || '').match(/(\d[\d\s\u00a0]*)\s*Ft/) || [])[1];
+  const ar = arFelul || (((await reteg(p).locator('.be-mini').textContent().catch(() => '')) || '').match(/(\d[\d\s\u00a0]*)\s*Ft/) || [])[1];
   const href = BAZIS + '/success-foglalas?first_booking=false&price=' + (ar ? ar.replace(/\D/g, '') : '1') + '&employee=Teszt+Szakember&location=Budapest&service=Proba&g=g:2461999&bookingUrl=' + encodeURIComponent(keret);
   await p.evaluate((h) => window.mhKeretbenOldal(h), href);
 }
@@ -131,8 +143,15 @@ async function atiranyit(p) {
   ok('1. teljes ut: booking_slots_loaded.load_ms szam (>= 0)', typeof e[3].load_ms === 'number' && e[3].load_ms >= 0 && e[3].load_ms < 60000, 'load_ms=' + e[3].load_ms);
   ok('1. teljes ut: booking_close.step = C6 (a sikerkepernyon zartak be)', e[8].step === 'C6', 'step=' + e[8].step);
   ok('1. teljes ut: nincs booking_error', !e.some((x) => x.event === 'booking_error'));
-  ok('1. teljes ut: a nevtelen szamlalo ugyanezt a 9 lepest kapta, egyszer-egyszer', JSON.stringify(sz.map((s) => s.lepes)) === JSON.stringify(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'submit', 'success', 'close']), sz.map((s) => s.lepes).join(' > '));
-  ok('1. teljes ut: a szamlalo bezaras-lepese C6, a betoltesi ido szam, minden uzletag headspa', sz.at(-1).tipus === 'C6' && typeof sz[3].load_ms === 'number' && sz.every((s) => s.uzletag === 'headspa'), JSON.stringify(sz.at(-1)));
+  ok('1. teljes ut: a nevtelen szamlalo ugyanezt a 9 lepest kapta, egyszer-egyszer (a #205 elotti lepesekre szurve)', JSON.stringify(regiSz(sz).map((s) => s.lepes)) === JSON.stringify(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'submit', 'success', 'close']), regiSz(sz).map((s) => s.lepes).join(' > '));
+  ok('1. teljes ut: a szamlalo bezaras-lepese C6, a betoltesi ido szam, minden uzletag headspa', regiSz(sz).at(-1).tipus === 'C6' && typeof regiSz(sz)[3].load_ms === 'number' && sz.every((s) => s.uzletag === 'headspa'), JSON.stringify(regiSz(sz).at(-1)));
+  // DECISION #205: az uj belso lepesek a valodi bongeszoben (csak a belso szamlalo; a GA4 / dataLayer ugyanaz, mint fent)
+  ok('1. teljes ut (#205): lepes_bontas a 8 tolcser-lepesre, forras = egyeb (nincs azonosito / referrer az oldal-betolteskor), eszkoz = ' + ESZKOZ, JSON.stringify(tip(sz, 'lepes_bontas')) === JSON.stringify(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'submit', 'success'].map((l) => `${l}.egyeb.${ESZKOZ}`)), JSON.stringify(tip(sz, 'lepes_bontas')));
+  ok('1. teljes ut (#205): lepes_ido a megnyitastol a 7 lepesre (open kivetelevel), zart vodorben, nem csokkeno sorrendben', tip(sz, 'lepes_ido').map((t) => t.split('.')[0]).join(',') === 'business,service,slots_loaded,slot,form_start,submit,success' && tip(sz, 'lepes_ido').every((t) => VODOR.includes(t.split('.')[1])) && tip(sz, 'lepes_ido').map((t) => VODOR.indexOf(t.split('.')[1])).every((x, i, a) => !i || x >= a[i - 1]), JSON.stringify(tip(sz, 'lepes_ido')));
+  ok('1. teljes ut (#205): C1: a 3 mockolt szabad idopont -> c1_szabad = 1-3, a legkorabbi szabad nap ma / 1-2', JSON.stringify(tip(sz, 'c1_szabad')) === '["1-3"]' && ['ma', '1-2'].includes(tip(sz, 'c1_elso_nap')[0]) && tip(sz, 'c1_elso_nap').length === 1, JSON.stringify([tip(sz, 'c1_szabad'), tip(sz, 'c1_elso_nap')]));
+  ok('1. teljes ut (#205): pontosan egy kimenet_ido (success.<vodor>), nincs recovered / a2 / success_unverified / verify_check / price_irany', tip(sz, 'kimenet_ido').length === 1 && /^success\.(lt5s|lt30s|lt60s)$/.test(tip(sz, 'kimenet_ido')[0]) && ['recovered', 'a2_elofordulas', 'success_unverified', 'verify_check', 'price_irany'].every((l) => tip(sz, l).length === 0), JSON.stringify(ujSz(sz).filter((s) => ['kimenet_ido', 'recovered', 'a2_elofordulas', 'success_unverified', 'verify_check', 'price_irany'].includes(s.lepes))));
+  ok('1. teljes ut (#205): minden uj beacon zart alaku, a szerver (ervenyesit) elfogadja, a torzs csak lepes / uzletag / tipus', ujSz(sz).length > 10 && ujZart(sz) && ujSz(sz).every((s) => Object.keys(s).every((k) => ['lepes', 'uzletag', 'tipus'].includes(k))), ujSz(sz).length + ' uj beacon');
+  ok('1. teljes ut (#205): az uj lepesek NEM kerultek a dataLayer-be (GA4: valtozatlanul a 9 booking_* esemeny)', !/lepes_bontas|lepes_ido|kimenet_ido|c1_|recovered|a2_|verify_check|success_unverified/.test(JSON.stringify(e)), '');
   ok('1. teljes ut: a szamlalo-kereseket text/plain POST-kent kuldte (suti / fejlec nelkul), a torzs csak a zart mezoket tartalmazza', u.naplo.szamlalo.every((s) => s.metodus === 'POST' && /^text\/plain/.test(s.hdr)) && sz.every((s) => Object.keys(s).every((k) => ['lepes', 'uzletag', 'tipus', 'load_ms'].includes(k))), '');
   const mind = JSON.stringify([e, sz]);
   ok('1. teljes ut: nincs szemelyes adat (nev, e-mail, telefon, foglalas-azonosito, URL-lekerdezes) sem a dataLayer-ben, sem a szamlalo kereseiben', !/@|Teszt|\+36|g:2461999|atadas|bookingUrl|first_booking/.test(mind), '');
@@ -186,7 +205,8 @@ async function atiranyit(p) {
   const e = uj(await dl(u.page)); const sz = szamlaloLepesek(u.naplo);
   ok('3. hozzajarulas nelkul: a dataLayer-ben EGYETLEN uj lepes-esemeny sincs', e.length === 0, nevek(e).join(','));
   ok('3. hozzajarulas nelkul: a nevtelen szamlalo megkapja: open, business, service, slots_loaded, slot, form_start, close(step=C4), egyszer-egyszer',
-    JSON.stringify(sz.map((s) => s.lepes)) === JSON.stringify(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'close']) && sz.at(-1).tipus === 'C4', sz.map((s) => s.lepes + (s.tipus ? ':' + s.tipus : '')).join(' > '));
+    JSON.stringify(regiSz(sz).map((s) => s.lepes)) === JSON.stringify(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'close']) && regiSz(sz).at(-1).tipus === 'C4', regiSz(sz).map((s) => s.lepes + (s.tipus ? ':' + s.tipus : '')).join(' > '));
+  ok('3. hozzajarulas nelkul (#205): a belso szamlalo az uj lepeseket is megkapja (bontas, ido, c1, c4_close kimenet), zart alakban', tip(sz, 'lepes_bontas').length === 6 && tip(sz, 'c1_szabad').length === 1 && /^c4_close\.(lt5s|lt30s|lt60s)$/.test(tip(sz, 'kimenet_ido')[0] || '') && ujZart(sz), JSON.stringify(ujSz(sz).map((s) => s.lepes + ':' + s.tipus)).slice(0, 600));
   ok('3. hozzajarulas nelkul: a lepesek nem inditottak semmilyen kimeno meresi kerest', lepesMeres(u.naplo).length === 0, JSON.stringify(lepesMeres(u.naplo)));
   await u.ctx.close();
 }
@@ -201,6 +221,7 @@ async function atiranyit(p) {
   const h = e.filter((x) => x.event === 'booking_error');
   ok('4. nincs szabad idopont: pontosan egy booking_error, error_type=no_slots, aztan booking_close (step=A1)', h.length === 1 && h[0].error_type === 'no_slots' && e.at(-1).event === 'booking_close' && e.at(-1).step === 'A1', nevek(e).join(' > ') + ' | ' + JSON.stringify(h[0]));
   ok('4. nincs szabad idopont: a szamlalo is egy error(no_slots)-t kap', sz.filter((s) => s.lepes === 'error').length === 1 && sz.find((s) => s.lepes === 'error').tipus === 'no_slots', JSON.stringify(sz.find((s) => s.lepes === 'error')));
+  ok('4. nincs szabad idopont (#205): C1 szabad idopont nelkul: c1_szabad = 0, c1_elso_nap = nincs (egyszer)', JSON.stringify(tip(sz, 'c1_szabad')) === '["0"]' && JSON.stringify(tip(sz, 'c1_elso_nap')) === '["nincs"]', JSON.stringify([tip(sz, 'c1_szabad'), tip(sz, 'c1_elso_nap')]));
   await u.ctx.close();
 }
 {
@@ -222,6 +243,57 @@ async function atiranyit(p) {
   await cim(u.page); await zar(u.page);
   ok('5. robot (webdriver): a nevtelen szamlaloba nem kerul semmi', u.naplo.szamlalo.length === 0, u.naplo.szamlalo.length + ' kuldes');
   ok('5. robot (webdriver): a dataLayer ettol fuggetlenul megkapja a lepeseket (hozzajarulassal)', uj(await dl(u.page)).length === 2);
+  await u.ctx.close();
+}
+
+// ---- 6. DECISION #205: elkelt idopont (A2) KETSZER, utana sikeres foglalas: a belso szamlalo minden A2-t szamol (sorszammal), a GA4 / a regi error egyszer-kapuja valtozatlan, recovered egyszer ----------------
+{
+  const u = await ujLap({ hozzajarul: true });
+  await u.page.evaluate(() => window.openBooking({ business: 'headspa', service: 'paros' }));
+  await reteg(u.page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+  await reteg(u.page).locator('.be-idogomb').first().click();
+  await reteg(u.page).locator('iframe.be-iframe').waitFor({ state: 'attached', timeout: 20000 });
+  for (let i = 0; i < 2; i++) {
+    await u.page.evaluate((h) => window.mhKeretbenOldal(h), BAZIS + '/'); // a Salonic a sajat fooldalara dobott: az idopont kozben elkelt (a motor A2 nezete)
+    await reteg(u.page).locator('.be-title', { hasText: 'közben elkelt' }).waitFor({ timeout: 20000 });
+    await reteg(u.page).locator('.be-time').first().waitFor({ timeout: 20000 });
+    await reteg(u.page).locator('.be-time').first().click(); // egy alternativa kivalasztasa -> uj adatlap (C4)
+    await reteg(u.page).locator('.be-title', { hasText: 'Add meg az adataidat' }).waitFor({ state: 'attached', timeout: 20000 });
+    await reteg(u.page).locator('iframe.be-iframe').waitFor({ state: 'attached', timeout: 20000 });
+  }
+  await atiranyit(u.page);
+  await reteg(u.page).locator('.be-kosz-kartya').waitFor({ timeout: 15000 }).catch(() => {});
+  await zar(u.page);
+  const e = uj(await dl(u.page)); const sz = szamlaloLepesek(u.naplo);
+  ok('6. A2 ketszer + siker (#205): a belso szamlalo MINDKET elkelt idopontot szamolja, sorszammal (slot_lost.1, slot_lost.2)', JSON.stringify(tip(sz, 'a2_elofordulas')) === '["slot_lost.1","slot_lost.2"]', JSON.stringify(tip(sz, 'a2_elofordulas')));
+  ok('6. A2 ketszer + siker: a GA4-ben es a regi belso error-lepesben a slot_lost EGYSZER van (az egyszer-kapu valtozatlan)', e.filter((x) => x.event === 'booking_error' && x.error_type === 'slot_lost').length === 1 && sz.filter((s) => s.lepes === 'error' && s.tipus === 'slot_lost').length === 1,
+    'GA4: ' + e.filter((x) => x.event === 'booking_error').length + ', belso error: ' + sz.filter((s) => s.lepes === 'error').length);
+  ok('6. A2 ketszer + siker (#205): kimenet_ido: ketszer slot_lost (az adatlaptol az elkelt-jelzesig), egyszer success; recovered = slot_lost.success (ulesenkent egyszer)',
+    JSON.stringify(tip(sz, 'kimenet_ido').map((t) => t.split('.')[0])) === '["slot_lost","slot_lost","success"]' && tip(sz, 'kimenet_ido').every((t) => VODOR.includes(t.split('.')[1])) && JSON.stringify(tip(sz, 'recovered')) === '["slot_lost.success"]', JSON.stringify(tip(sz, 'kimenet_ido')) + ' | ' + JSON.stringify(tip(sz, 'recovered')));
+  ok('6. A2 ketszer + siker: a foglalas (success) egyszer; nincs success_unverified / verify_check; minden uj beacon zart alaku es a szerver elfogadja', sz.filter((s) => s.lepes === 'success').length === 1 && tip(sz, 'success_unverified').length === 0 && tip(sz, 'verify_check').length === 0 && ujZart(sz), JSON.stringify(ujSz(sz).map((s) => s.lepes + ':' + s.tipus)).slice(0, 500));
+  ok('6. A2 ketszer + siker (#205): az A2 / recovered NEM kerul a dataLayer-be, a lepesek nem inditottak konverziot', !/a2_|recovered|kimenet_ido|lepes_bontas/.test(JSON.stringify(e)) && csakGa4Booking(lepesMeres(u.naplo)), '');
+  ok('6. A2 ketszer + siker: nincs JS-hiba', u.hibak.length === 0, u.hibak.join(' | '));
+  await u.ctx.close();
+}
+
+// ---- 7. DECISION #205: a Salonic atiranyit, de az ellenorzes NEM igazolja (hibas ar): a foglalas letrejon -> success_unverified + a bukott ellenorzes kodja; a verify_failed hiba marad -------------------------------
+{
+  const u = await ujLap({ hozzajarul: true });
+  await u.page.evaluate(() => window.openBooking({ business: 'headspa', service: 'paros' }));
+  await reteg(u.page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+  await reteg(u.page).locator('.be-idogomb').first().click();
+  await reteg(u.page).locator('iframe.be-iframe').waitFor({ state: 'attached', timeout: 20000 });
+  await atiranyit(u.page, { arFelul: '7' });
+  await reteg(u.page).locator('.be-title', { hasText: 'feldolgoztuk' }).waitFor({ timeout: 15000 }).catch(() => {});
+  await zar(u.page);
+  const e = uj(await dl(u.page)); const sz = szamlaloLepesek(u.naplo);
+  ok('7. nem igazolt siker (#205): a belso szamlalo egy success_unverified-et kap, success-t NEM; a foglalas = success + success_unverified = 1', sz.filter((s) => s.lepes === 'success_unverified').length === 1 && sz.filter((s) => s.lepes === 'success').length === 0, regiSz(sz).concat(ujSz(sz)).map((s) => s.lepes).join(' > '));
+  ok('7. nem igazolt siker (#205): verify_check = pontosan a bukott ellenorzes (price); kimenet_ido: success_unverified + verify_failed (ugyanabbol az adatlap-idopontbol)', JSON.stringify(tip(sz, 'verify_check')) === '["price"]' && JSON.stringify(tip(sz, 'kimenet_ido').map((t) => t.split('.')[0])) === '["success_unverified","verify_failed"]' && tip(sz, 'kimenet_ido')[0].split('.')[1] === tip(sz, 'kimenet_ido')[1].split('.')[1], JSON.stringify([tip(sz, 'verify_check'), tip(sz, 'kimenet_ido')]));
+  ok('7. nem igazolt siker (HS-2): price_irany = pontosan egy, a jelentett ar (7 Ft) a vart ar ALATT: lt; az osszeg nem kerul a beaconba', JSON.stringify(tip(sz, 'price_irany')) === '["lt"]' && !/price_irany[^}]*\d/.test(JSON.stringify(sz.filter((s) => s.lepes === 'price_irany'))), JSON.stringify(tip(sz, 'price_irany')));
+  ok('7. nem igazolt siker (#205): bontas / ido a success_unverified lepesre (forras egyeb, eszkoz ' + ESZKOZ + ')', tip(sz, 'lepes_bontas').includes('success_unverified.egyeb.' + ESZKOZ) && tip(sz, 'lepes_ido').some((t) => t.startsWith('success_unverified.')), JSON.stringify(tip(sz, 'lepes_bontas')));
+  ok('7. nem igazolt siker: a meglevo verify_failed hiba-szamlalas MARAD (egy error:verify_failed), a GA4 booking_error(verify_failed) valtozatlan, booking_success nincs', sz.filter((s) => s.lepes === 'error' && s.tipus === 'verify_failed').length === 1 && e.filter((x) => x.event === 'booking_error' && x.error_type === 'verify_failed').length === 1 && !nevek(e).includes('booking_success'), nevek(e).join(' > '));
+  ok('7. nem igazolt siker: nincs recovered (nem volt A2); minden uj beacon zart alaku, a szerver elfogadja; az uj lepesek nincsenek a dataLayer-ben', tip(sz, 'recovered').length === 0 && ujZart(sz) && !/success_unverified|verify_check|kimenet_ido/.test(JSON.stringify(e)), '');
+  ok('7. nem igazolt siker: nincs szemelyes adat (ar, foglalas-azonosito, nev) a belso beaconokban, nincs JS-hiba', !/Teszt|g:2461999|bookingUrl|first_booking|\b7\b/.test(JSON.stringify(sz)) && u.hibak.length === 0, u.hibak.join(' | '));
   await u.ctx.close();
 }
 

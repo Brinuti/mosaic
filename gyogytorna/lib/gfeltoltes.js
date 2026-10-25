@@ -2,7 +2,9 @@
 // dry: a payload elkeszul es naplozodik (gy_feltoltes, maszkolt click-ID-val), a Google-nek semmi nem megy ki. eles: a sorok `varakozik` allapotba kerulnek, es a kuldo (Worker
 // GOOGLE_ADS_* titkokkal, vagy a hid: tools/gfeltoltes-hid.mjs) adagonkent kuldi: ELOBB validateOnly=true, utana partialFailure=true. A feltoltes hibaja SOHA nem erintheti a foglalast.
 // Kuldott mezok (a leendo eles kuldesben is): click-ID, conversion_date_time (Europe/Budapest, offsettel), conversion_value, order_id, currency. NINCS nev / e-mail / telefon /
-// panasz / enhanced conversion; a consent mezo UNSPECIFIED (nem toltjuk ki; GRANTED-et soha) - Feri dontese 2026-10-20.
+// panasz / enhanced conversion; user_identifiers SOHA. Consent: DECISION #220 (Feri 2026-10-21, kozvetlenul a munkamenetben: "alapbol elfogadva, mindenhol kuldjuk, a kockazatot vallalom"; a #218 vegrehajtasa):
+// GY_GADS_CONSENT=granted eseten consent.adUserData / adPersonalization = GRANTED, kiveve a latogato kifejezett elutasitasat (gy_foglalas.hozzajarulas = 'nem': az elsobbseget el, nincs consent mezo).
+// Kapcsolo nelkul (alapbol) valtozatlan: nincs consent mezo. A kapcsolot CSAK az elo Zap (gy-google-ads-szerveres-feltoltes) vedohalojanak frissitese utan kapcsoljuk be (a Zap a nem engedett mezot elutasitja).
 // Kiegeszites (2026-10-21 11:40): gbraid / wbraid csak naplozva (kihagyva_braid), legkorabban 1 oraval a foglalas utan, ujraprobalas-szabaly, bovitett naplo, lefedettseg-riport.
 import { tranzakcioId, sha256Hex } from './titkos.js';
 import { riaszt } from './db.js';
@@ -36,11 +38,13 @@ export function clickIdHiba(tipus, ertek) {
   return null;
 }
 
+/** gbraid / wbraid feltoltes (UJ-GYT braid): GY_GADS_BRAID = be -> a csak gbraid / wbraid kattintasu foglalasok is mennek (egyszerre egy click-ID); alapbol (ki) valtozatlan: kihagyva_braid. */
+export const gbraidBe = (env) => String((env && env.GY_GADS_BRAID) || 'ki').toLowerCase() === 'be';
 export const gfeltoltesMod = (env) => { const m = String((env && env.GY_GADS_FELTOLTES) || 'dry').toLowerCase(); return ['ki', 'dry', 'eles'].includes(m) ? m : 'dry'; };
 export const maszk = (id) => { const s = String(id || ''); return s.length < 20 ? `*** (${s.length})` : `${s.slice(0, 4)}…${s.slice(-3)} (${s.length})`; };
 
-/** A feltoltendo payload (a Google Ads uploadClickConversions egy eleme). conversion_date_time: 'yyyy-mm-dd hh:mm:ss+02:00' (teli idoben +01:00). Consent: szandekosan nincs. */
-export function gfeltoltesPayload({ kattTipus, kattErtek, konverzioIdo, orderId }) {
+/** A feltoltendo payload (a Google Ads uploadClickConversions egy eleme). conversion_date_time: 'yyyy-mm-dd hh:mm:ss+02:00' (teli idoben +01:00). Consent: csak consent=true eseten (DECISION #220, GRANTED / GRANTED), alapbol nincs. */
+export function gfeltoltesPayload({ kattTipus, kattErtek, konverzioIdo, orderId, consent = false }) {
   const mezo = KATT_MEZO[kattTipus];
   if (!mezo || !kattErtek) return null;
   return {
@@ -50,6 +54,7 @@ export function gfeltoltesPayload({ kattTipus, kattErtek, konverzioIdo, orderId 
     conversionValue: GFELT.ertek,
     currencyCode: GFELT.penznem,
     orderId,
+    ...(consent ? { consent: { adUserData: 'GRANTED', adPersonalization: 'GRANTED' } } : {}),
   };
 }
 
@@ -81,6 +86,9 @@ export async function gfeltoltesFut({ db, env, most, budapestIdo }) {
   const mod = gfeltoltesMod(env);
   if (mod === 'ki') return { mod, uj: 0 };
   if (!env.GY_HMAC_KULCS) return { mod, uj: 0, hiba: 'nincs_titkos_kulcs' };
+  const braid = gbraidBe(env);
+  // a braid bekapcsolasakor a legutobbi (7 nap) kihagyva_braid sorok torlodnek, hogy az alabbi felvetel a teljes ellenorzesekkel (click-ID, idosorrend, consent) ujra letrehozza oket
+  if (braid && mod === 'eles') await db.prepare("DELETE FROM gy_feltoltes WHERE mod = 'eles' AND allapot = 'kihagyva_braid' AND letrehozva >= ?1").bind(most - 7 * 86400).run();
   // teszt foglalas (teszt=1) soha nem feltoltheto: a mar naplozott sorat is kizarjuk
   await db.prepare("UPDATE gy_feltoltes SET allapot = 'kihagyva_teszt', hiba = 'teszt_foglalas' WHERE allapot IN ('dry','varakozik','kihagyva_click_id') AND uuid IN (SELECT uuid FROM gy_foglalas WHERE teszt = 1)").run();
   const sorok = (await db.prepare(
@@ -92,17 +100,19 @@ export async function gfeltoltesFut({ db, env, most, budapestIdo }) {
   for (const r of sorok) {
     const orderId = await tranzakcioId(r.uuid, env.GY_HMAC_KULCS);
     const ido = budapestIdo(r.letrehozva);
-    const p = gfeltoltesPayload({ kattTipus: r.gads_katt_tipus, kattErtek: r.gads_katt_ertek, konverzioIdo: ido, orderId });
+    // DECISION #220: megadott (GRANTED), ha a kapcsolo be van es a latogato nem utasitotta el kifejezetten; elutasitott = nincs consent mezo; kapcsolo nelkul nem_ismert (valtozatlan)
+    const consent = String(env.GY_GADS_CONSENT || '') !== 'granted' ? 'nem_ismert' : r.hozzajarulas === 'nem' ? 'elutasitott' : 'megadott';
+    const p = gfeltoltesPayload({ kattTipus: r.gads_katt_tipus, kattErtek: r.gads_katt_ertek, konverzioIdo: ido, orderId, consent: consent === 'megadott' });
     const kattIdo = Number.isInteger(r.gads_katt_ido) ? r.gads_katt_ido : null;
     const hiba = !p ? 'hibas_click_id' : clickIdHiba(r.gads_katt_tipus, r.gads_katt_ertek);
     const allapot = hiba ? 'kihagyva_click_id'
-      : BRAID.includes(r.gads_katt_tipus) ? 'kihagyva_braid'
+      : !braid && BRAID.includes(r.gads_katt_tipus) ? 'kihagyva_braid'
         : kattIdo !== null && kattIdo > r.letrehozva ? 'kihagyva_ido_sorrend'
           : mod === 'eles' ? 'varakozik' : 'dry';
     const res = await db.prepare(
       `INSERT OR IGNORE INTO gy_feltoltes (uuid, mod, letrehozva, allapot, katt_tipus, katt_maszk, order_id, konverzio_ido, ertek, consent, hozzajarulas, payload_hash, hiba, katt_ido)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'nem_ismert', ?10, ?11, ?12, ?13)`,
-    ).bind(r.uuid, mod, most, allapot, r.gads_katt_tipus || null, maszk(r.gads_katt_ertek), orderId, ido, GFELT.ertek, r.hozzajarulas || null, p ? await sha256Hex(JSON.stringify(p)) : null, hiba, kattIdo).run();
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?14, ?10, ?11, ?12, ?13)`,
+    ).bind(r.uuid, mod, most, allapot, r.gads_katt_tipus || null, maszk(r.gads_katt_ertek), orderId, ido, GFELT.ertek, r.hozzajarulas || null, p ? await sha256Hex(JSON.stringify(p)) : null, hiba, kattIdo, consent).run();
     if (res && res.meta && res.meta.changes) uj += 1;
   }
   return { mod, uj };
@@ -115,7 +125,7 @@ export async function gfeltoltesFut({ db, env, most, budapestIdo }) {
 /** Kuldheto sorok (eles mod): `varakozik`, esedekes ujraproba (`hiba` + kovetkezo_proba <= most), vagy elavult `kuldes_alatt`. A nyers click-ID a foglalasrol jon (nem a naplobol). */
 export async function kuldhetoSorok(db, { most, limit = GFELT.adag }) {
   return (await db.prepare(
-    `SELECT g.id, g.uuid, g.katt_tipus, g.order_id, g.konverzio_ido, g.ujraprobalas, f.gads_katt_ertek AS katt_ertek, f.allapot AS foglalas_allapot, f.teszt AS teszt
+    `SELECT g.id, g.uuid, g.katt_tipus, g.order_id, g.konverzio_ido, g.ujraprobalas, g.consent, f.gads_katt_ertek AS katt_ertek, f.allapot AS foglalas_allapot, f.teszt AS teszt
      FROM gy_feltoltes g JOIN gy_foglalas f ON f.uuid = g.uuid
      WHERE g.mod = 'eles' AND (g.allapot = 'varakozik' OR (g.allapot = 'hiba' AND g.kovetkezo_proba IS NOT NULL AND g.kovetkezo_proba <= ?1)
        OR (g.allapot = 'kuldes_alatt' AND COALESCE(g.utolso_hiba_ido, 0) <= ?1 - ?3)) ORDER BY g.id LIMIT ?2`,
@@ -123,10 +133,10 @@ export async function kuldhetoSorok(db, { most, limit = GFELT.adag }) {
 }
 
 /** A kuldes elotti vegso ellenorzes egy soron: null = kuldheto, kulonben a kihagyas allapota + oka. */
-export function kuldesElotti(s) {
+export function kuldesElotti(s, braid = false) {
   if (s.teszt) return { allapot: 'kihagyva_teszt', hiba: 'teszt_foglalas' };
   if (!['aktiv', 'modositott'].includes(s.foglalas_allapot)) return { allapot: 'kihagyva_lemondva', hiba: 'foglalas_nem_aktiv' };
-  if (BRAID.includes(s.katt_tipus)) return { allapot: 'kihagyva_braid', hiba: null };
+  if (!braid && BRAID.includes(s.katt_tipus)) return { allapot: 'kihagyva_braid', hiba: null };
   const h = s.katt_ertek ? clickIdHiba(s.katt_tipus, s.katt_ertek) : 'click_id_torolve';
   return h ? { allapot: 'kihagyva_click_id', hiba: h } : null;
 }
@@ -134,7 +144,7 @@ export function kuldesElotti(s) {
 /** A feltoltendo kerelem a sorokbol (a click-ID itt kerul a payloadba; naplozni / kiirni tilos). */
 export function kuldesKerelem(sorok, { validateOnly }) {
   return {
-    conversions: sorok.map((s) => gfeltoltesPayload({ kattTipus: s.katt_tipus, kattErtek: s.katt_ertek, konverzioIdo: s.konverzio_ido, orderId: s.order_id })),
+    conversions: sorok.map((s) => gfeltoltesPayload({ kattTipus: s.katt_tipus, kattErtek: s.katt_ertek, konverzioIdo: s.konverzio_ido, orderId: s.order_id, consent: s.consent === 'megadott' })),
     partialFailure: true,
     validateOnly: !!validateOnly,
   };
@@ -258,7 +268,7 @@ export async function gfeltoltesKuld({ db, env, most, kuldo }) {
   const ment = (f) => frissitMent(db, f, most);
   const kuldendo = [];
   for (const s of lefoglalt) {
-    const k = kuldesElotti(s);
+    const k = kuldesElotti(s, gbraidBe(env));
     if (k) { await ment([{ id: s.id, allapot: k.allapot, hiba: k.hiba, ujraprobalas: s.ujraprobalas || 0 }]); ki.kihagyva += 1; } else kuldendo.push(s);
   }
   if (!kuldendo.length) return ki;
@@ -285,27 +295,32 @@ export async function gfeltoltesKuld({ db, env, most, kuldo }) {
 
 // --- ZAPIER-VEGPONT (GY-26): a Worker hozza a dontest, a Zapier a sajat Google Ads-kapcsolataval hiv ----------------------------------------------------------------------------
 // GET -> felvetel + lefoglalas + validateOnly kerestorzs; POST validalt -> ertekeles + eles kerestorzs; POST vegleges -> ertekeles + osszesites. Az allapotot a `zar` (lefoglalas ideje) kotti ossze.
-const ENGEDETT_CONV = new Set(['gclid', 'conversionAction', 'conversionDateTime', 'conversionValue', 'currencyCode', 'orderId']);
+const BRAID_MEZOK = ['gbraid', 'wbraid'];
+const ENGEDETT_CONV = new Set(['gclid', 'conversionAction', 'conversionDateTime', 'conversionValue', 'currencyCode', 'orderId', 'consent']);
 /**
- * Vedohalo a kimeno kerestorzsre: csak partialFailure=true, csak gclid, a rogzitett akcio, 19000 HUF, nincs consent / user_identifiers / egyeb mezo. @returns {null|string} a hiba oka
+ * Vedohalo a kimeno kerestorzsre: csak partialFailure=true, csak gclid, a rogzitett akcio, 19000 HUF, consent CSAK pontosan { adUserData: GRANTED, adPersonalization: GRANTED } (DECISION #220), nincs user_identifiers / egyeb mezo. @returns {null|string} a hiba oka
  */
-export function vedohalo(keres) {
+export function vedohalo(keres, { braid = false } = {}) {
   if (!keres || typeof keres !== 'object') return 'nincs_keres';
   if (Object.keys(keres).some((k) => !['conversions', 'partialFailure', 'validateOnly'].includes(k))) return 'ismeretlen_fomezo';
   if (keres.partialFailure !== true || typeof keres.validateOnly !== 'boolean') return 'partial_failure';
   if (!Array.isArray(keres.conversions) || !keres.conversions.length || keres.conversions.length > GFELT.adag) return 'adag';
   const akcio = `customers/${GFELT.ugyfel}/conversionActions/${GFELT.akcio}`;
   for (const c of keres.conversions) {
-    if (!c || Object.keys(c).some((k) => !ENGEDETT_CONV.has(k))) return 'ismeretlen_mezo';
+    if (!c || Object.keys(c).some((k) => !ENGEDETT_CONV.has(k) && !(braid && BRAID_MEZOK.includes(k)))) return 'ismeretlen_mezo';
     if (c.conversionAction !== akcio) return 'akcio';
-    if (typeof c.gclid !== 'string' || clickIdHiba('gclid', c.gclid)) return 'click_id';
+    if ('consent' in c && !(c.consent && typeof c.consent === 'object' && Object.keys(c.consent).sort().join() === 'adPersonalization,adUserData' && c.consent.adUserData === 'GRANTED' && c.consent.adPersonalization === 'GRANTED')) return 'consent';
+    if (braid) { // pontosan egy click-ID: gclid VAGY gbraid VAGY wbraid (a Google egyszerre egyet fogad)
+      const kat = ['gclid', ...BRAID_MEZOK].filter((k) => k in c);
+      if (kat.length !== 1 || typeof c[kat[0]] !== 'string' || clickIdHiba(kat[0], c[kat[0]])) return 'click_id';
+    } else if (typeof c.gclid !== 'string' || clickIdHiba('gclid', c.gclid)) return 'click_id';
     if (c.conversionValue !== GFELT.ertek || c.currencyCode !== GFELT.penznem) return 'ertek';
     if (!/^[0-9a-f]{64}$/.test(String(c.orderId || ''))) return 'order_id';
   }
   return null;
 }
 
-const SOR_OSZLOP = `g.id, g.uuid, g.katt_tipus, g.order_id, g.konverzio_ido, g.ujraprobalas, f.gads_katt_ertek AS katt_ertek, f.allapot AS foglalas_allapot, f.teszt AS teszt FROM gy_feltoltes g JOIN gy_foglalas f ON f.uuid = g.uuid`;
+const SOR_OSZLOP = `g.id, g.uuid, g.katt_tipus, g.order_id, g.konverzio_ido, g.ujraprobalas, g.consent, f.gads_katt_ertek AS katt_ertek, f.allapot AS foglalas_allapot, f.teszt AS teszt FROM gy_feltoltes g JOIN gy_foglalas f ON f.uuid = g.uuid`;
 /** Az adott futas (zar) altal lefoglalt, meg `kuldes_alatt` sorok, id szerint (a GET-ben kiadott sorrend). */
 export async function sorokZarral(db, zar) {
   return (await db.prepare(`SELECT ${SOR_OSZLOP} WHERE g.mod = 'eles' AND g.allapot = 'kuldes_alatt' AND g.utolso_hiba_ido = ?1 ORDER BY g.id`).bind(zar).all()).results || [];
@@ -347,12 +362,12 @@ export async function zapKivalaszt({ db, env, most, budapestIdo }) {
   const lefoglalt = jeloltek.length ? await lefoglal(db, jeloltek, most) : [];
   const kuldendo = []; let kihagyva = 0;
   for (const s of lefoglalt) {
-    const k = kuldesElotti(s);
+    const k = kuldesElotti(s, gbraidBe(env));
     if (k) { await frissitMent(db, [{ id: s.id, allapot: k.allapot, hiba: k.hiba, ujraprobalas: s.ujraprobalas || 0 }], most); kihagyva += 1; } else kuldendo.push(s);
   }
   if (!kuldendo.length) { await markerIr(db, most, { fazis: 'kesz', ido: most, idk: [], kihagyva }); return { status: 200, body: { ok: true, mod, nincs: true } }; }
   const keres = kuldesKerelem(kuldendo, { validateOnly: true });
-  const v = vedohalo(keres);
+  const v = vedohalo(keres, { braid: gbraidBe(env) });
   if (v) { await vedohaloHiba(db, kuldendo, v, most, most); await markerIr(db, most, { fazis: 'kesz', ido: most, idk: [], kihagyva }); return { status: 500, body: { ok: false, hiba: 'vedohalo', ok_kod: v } }; }
   const idk = kuldendo.map((s) => s.id);
   await markerIr(db, most, { fazis: 'lefoglalva', ido: most, idk, kihagyva });
@@ -419,13 +434,13 @@ export async function zapFazis({ db, env, most, be }) {
     // a tiszta sorok kuldes elotti vegso ellenorzese ujra (a GET ota lemondhattak / teszt-jelolest kaphattak)
     const tiszta = [];
     for (const i of e.tiszta) {
-      const k = kuldesElotti(sorok[i]);
+      const k = kuldesElotti(sorok[i], gbraidBe(env));
       if (k) await frissitMent(db, [{ id: sorok[i].id, allapot: k.allapot, hiba: k.hiba, ujraprobalas: sorok[i].ujraprobalas || 0 }], zar); else tiszta.push(i);
     }
     if (!tiszta.length) { await markerIr(db, zar, { ...m, fazis: 'kesz' }); return { status: 200, body: { ok: true, eles_keres: null, tiszta: [] } }; }
     const kuldendo = tiszta.map((i) => sorok[i]);
     const eles = kuldesKerelem(kuldendo, { validateOnly: false });
-    const v = vedohalo(eles);
+    const v = vedohalo(eles, { braid: gbraidBe(env) });
     if (v) { await vedohaloHiba(db, kuldendo, v, most, zar); await markerIr(db, zar, { ...m, fazis: 'kesz' }); return { status: 500, body: { ok: false, hiba: 'vedohalo', ok_kod: v } }; }
     await markerIr(db, zar, { ...m, fazis: 'validalt', tiszta_idk: kuldendo.map((s) => s.id) });
     return { status: 200, body: { ok: true, eles_keres: eles, tiszta } };

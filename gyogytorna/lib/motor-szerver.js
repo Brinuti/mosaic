@@ -12,6 +12,7 @@
 import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok, GOOGLE_KATT, lpcFizetett, lpcCimke, lpcHozzarendel, erintesAdatok, nemFizetettCimke, diagnosztika, LPC_VERZIO } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { gfeltoltesFut, gfeltoltesRiport, gfeltoltesMod, gfeltoltesKuld, googleAdsKuldo, zapKivalaszt, zapFazis } from './gfeltoltes.js';
+import { gkiigazitasFut, gkiigazitasMod, gkiigazitasRiport, kiigazitasKivalaszt, kiigazitasFazis } from './gkiigazitas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesDiag, erintesek, erintesTorol, kattintasTorol, lpcHiba, motorStatNo } from './db.js';
@@ -362,6 +363,26 @@ export async function gadsZapVegpont({ request, env, deps = {} }) {
   return valasz(r.status, r.body);
 }
 
+// --- /api/gy-gads-kiigazitas (GY-27): a Google Ads konverzio-kiigazitas (RETRACTION) Zapier-vegpontja ---------------------------------------------------------------------------
+// Ugyanaz a hitelesites, mint a feltoltesnel (x-gy-zap-kulcs). GET = kivalasztas + kerestorzs (uploadConversionAdjustments); POST {zar, http, valasz, request_id?} = a Google valaszanak ertekelese.
+// A GY_GADS_KIIGAZITAS alapertelmezese `ki`: a vegpont ilyenkor {nincs:true}-t ad, semmit nem foglal le es nem ir. A kerestorzs NEM tartalmaz click-ID-t (csak orderId + akcio + tipus + ido).
+export async function gadsKiigazitasVegpont({ request, env, deps = {} }) {
+  if (!['GET', 'POST'].includes(request.method)) return valasz(405, { ok: false });
+  if (!(await kulcsOk(request, env, 'x-gy-zap-kulcs', 'GY_ZAP_KULCS_HASH', { csakMasodik: true }))) return valasz(401, { ok: false });
+  const db = env.GY_DB;
+  if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
+  await sema(db);
+  const most = mostUnix(deps);
+  let r;
+  if (request.method === 'GET') r = await kiigazitasKivalaszt({ db, env, most, budapestIdo });
+  else {
+    const be = await jsonTest(request, 65536);
+    if (!be) return nincsKerelem('ervenytelen_torzs');
+    r = await kiigazitasFazis({ db, env, most, be });
+  }
+  return valasz(r.status, r.body);
+}
+
 // --- /api/gy-salonic-igazolas (Zapier: a Salonic ertesito e-mail alapjan) ---------------------------------------------------------------
 // A Zap CSAK minimalis egyeztetomezoket kuld: {esemeny:'igazolas'|'lemondas', salonic_id (UUID), start_unix, place_id}. Nev, e-mail, telefon, szolgaltatasnev NEM.
 // Hitelesites: x-gy-zap-kulcs fejlec (a kulcs SHA-256 hash-e: GY_ZAP_KULCS_HASH). A szerver a Salonic ELO bookingDetails oldalat is ellenorzi (a Zap allitasat
@@ -423,6 +444,7 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length};${tobbOkkod};${oldalDiag}`.slice(0, 190), most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
   try { await gfeltoltesFut({ db, env, most, budapestIdo }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); } // GY-25: dry-run napló: a legalabb 1 oraja igazolt, meg nem naplozott foglalasokat veszi fel (az uj foglalas maga 1 ora mulva); hiba SOHA nem erinti az igazolast
+  if (gkiigazitasMod(env) !== 'ki') { try { await gkiigazitasFut({ db, env, most }); } catch (e) { await lpcHiba(db, most, 'gkiigazitas'); } } // GY-27: kiigazitasi jeloltek naplozasa (mod `ki`: semmi nem tortenik); hiba SOHA nem erinti az igazolast
   return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
 }
 
@@ -473,7 +495,9 @@ export async function adminVegpont({ request, env, deps = {} }) {
       try { kuldes = await gfeltoltesKuld({ db, env, most, kuldo: deps.kuldo || googleAdsKuldo(env, deps.fetch || globalThis.fetch) }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes_kuldes'); kuldes = { hiba: 'futasi_hiba' }; }
       if (kuldes && kuldes.keresHiba) await riaszt(db, 'gfeltoltes_keres_hiba', { adat: `${kuldes.keresHiba.http}:${kuldes.keresHiba.kod}`, most }); // hozzaferesi / konfiguracios hiba: a sorok varnak, a riasztas jelzi
     }
-    return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, kuldes, ...(await gfeltoltesRiport(db, { budapestIdo, most })) });
+    let kiigazitas; // GY-27: kiigazitasi (RETRACTION) jeloltek felvetele + allapot-szamlalok; mod `ki`: a valasz BAJTRA a regi (nincs mezo, nincs extra lekerdezes)
+    if (gkiigazitasMod(env) !== 'ki') { try { kiigazitas = { fut: await gkiigazitasFut({ db, env, most }), ...(await gkiigazitasRiport(db)) }; } catch (e) { await lpcHiba(db, most, 'gkiigazitas'); kiigazitas = { mod: gkiigazitasMod(env), hiba: 'futasi_hiba' }; } }
+    return valasz(200, { ok: true, mod: gfeltoltesMod(env), fut, kuldes, ...(kiigazitas ? { kiigazitas } : {}), ...(await gfeltoltesRiport(db, { budapestIdo, most })) });
   }
   if (u.searchParams.get('visszahivasok')) {
     const r = (await db.prepare('SELECT id, letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
