@@ -161,7 +161,7 @@ test('oldalUzletag: a fajlnev alapjan', () => {
     'noi-fodraszat-budapest': 'fodraszat', 'balayage-haj-festes-budapest': 'fodraszat', '30szazalek': 'fodraszat', 'noi-hajfestes-budapest': 'fodraszat',
     'oxigenterapia-budapest': 'oxigen', 'oxigenterapia-ferfiaknak': 'oxigen',
     'lezeres-szortelenites-budapest': 'lezer', 'szortelenites-zsofi-rovid': 'lezer', 'szőrtelenítés-zsófi-3': 'lezer', 'vegleges-szortelenites-ferfiaknak': 'lezer',
-    'sminktetovalas-budapest': 'pmu', 'sminktetovalas-regi': 'pmu', 'blog': null, 'aszf': null };
+    'sminktetovalas-budapest': 'pmu', 'sminktetovalas-regi': 'pmu', 'pmu-foglalas': 'pmu', 'pmu-ok': 'pmu', 'pmu-vh': 'pmu', 'foglalo-pmu': 'pmu', 'blog': null, 'aszf': null };   // UJ-66: a pmu-* oldalak is PMU
   for (const [f, e] of Object.entries(v)) assert.equal(oldalUzletag(f), e, f);
 });
 
@@ -296,6 +296,7 @@ test('kliens-kod: nincs kozvetlen Salonic-link (href) a foglalo-gombok / hibauze
     /href:\s*S\.guestUrl,\s*target:\s*'_top'/, // engine.js: az urlap-keret tartaleka (a kivalasztott idopont adatlapja)
     /href:\s*adatlapUrl\(id, ts\)/, // lezer-landing.js: egy idopontra kattintva az adatlapra visz
     /rel="stylesheet" href="https:\/\/www\.mosaicheadspa\.hu\/salonic\//, // a salonic-adapter megjegyzese (nem link)
+    /\$\('fo-tartalek-link'\)\.href = salonicUrl\(kulcs\);/, // oxigen-uj.js: a tartalek (Salonic) mod szandekos linkje (a motor nem toltheto be); a Salonic-atiranyitas (#487) ezt a felso ablakban a fooldalra viheti - kulon figyelendo
   ];
   const fajlok = [];
   const jar = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) jar(p); else if (p.endsWith('.js')) fajlok.push(p); } };

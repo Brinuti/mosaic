@@ -118,7 +118,7 @@ const BELSO_FOGLALAS = /^(?:https?:\/\/(?:www\.)?mosaicheadspa\.hu)?(\/(?:idpont
 /** Az oldal uzletaga a fajlnev alapjan (a gombok celja ettol fugg); null = nem ismert (HeadSpa az alapertelmezes az /idpontfoglalas gombjainal). */
 export function oldalUzletag(fajlnev) {
   const n = String(fajlnev).replace(/\.html$/, '').replace(/^.*\//, '');
-  if (/^(sminktetovalas|szajtetovalas)/.test(n)) return 'pmu';
+  if (/^(sminktetovalas|szajtetovalas|pmu-|foglalo-pmu$)/.test(n)) return 'pmu'; // UJ-66: a pmu-* oldalak (pl. /pmu-foglalas) is PMU oldalak: lablec / Info-ablak gombja business=pmu
   if (/^(lezeres-|szortelenites-|szőrtelenítés|szor-konzi|vegleges-)/.test(n)) return 'lezer';
   if (/^oxigenterapia-/.test(n)) return 'oxigen';
   if (/^(noi-fodrasz|noi-hajfestes|balayage-|30szazalek|fodrasz-|fodraszat-)/.test(n)) return 'fodraszat';
