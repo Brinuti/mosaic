@@ -63,3 +63,12 @@ test('a "Neked is jo valasztas a lezeres szortelenites?" blokk (cim + harom kart
   assert.match(sz, /Szőrbenövés és begyulladt szőrtüszők/);
   assert.ok(h.includes('id="gyik-kinek-nem"'), 'a "Kinek nem javasolt a kezeles?" valasz tovabbra is a GYIK-ban van');
 });
+
+test('minden foglalas-gomb a foglalo-reteget nyitja (/foglalo-motor), egyik sem gorget a #foglalas szekciohoz (a tulajdonos kerese, 2026-10-25)', () => {
+  assert.equal((h.match(/href="#foglalas"/g) || []).length, 0, 'nincs #foglalas-ra mutato gomb / link');
+  const cta = [...h.matchAll(/<a [^>]*href="(\/foglalo-motor\?[^"]+)"[^>]*>([^<]*)/g)].map((m) => [m[1], m[2].trim()]);
+  const elsoIdopont = cta.filter(([u]) => u === '/foglalo-motor?business=laser&amp;intent=first').map(([, t]) => t);
+  assert.deepEqual(elsoIdopont, ['Szabad kezelési időpontok', 'Időpontot választok', 'Időpontot választok', 'Szabad kezelési időpontok', 'Szabad időpontok'], 'hero, Zsofi, orvosi, helyszin, mobil sticky sav');
+  assert.equal(cta.filter(([u]) => /service=\d+/.test(u)).length, 4, 'a negy teruletkartya');
+  assert.ok(!/<a [^>]*href="\/foglalo-motor[^"]*"[^>]*target=/.test(h), 'a foglalo-reteg linkjei nem nyitnak uj lapot (a launcher a retegben nyitja)');
+});
