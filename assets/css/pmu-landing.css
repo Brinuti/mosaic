@@ -278,7 +278,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .szakember-adatok li { display: flex; gap: 22px; align-items: flex-start; font-size: 14.5px; }
 .szakember-adatok li b { font-weight: 500; }
 .szakember-adatok li svg { flex: none; width: 30px; height: 30px; color: var(--arany); stroke-width: 1.3; }
-.szakember-kep { background: url(/assets/img/c2eb0f_567cfb0230ba49c089087cf55d6ead4e.jpg) 5% 14% / 200% auto no-repeat; min-height: 400px; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 62%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 62%, transparent 100%); }
+.szakember-kep { background: #000 url(/assets/img/pmu/melitta-wulop-2026.jpg) 50% 20% / 100% auto no-repeat; min-height: 400px; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 88%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 88%, transparent 100%); }
 .szakember-video { padding: 30px 0 26px; display: flex; align-items: center; justify-content: flex-start; margin-left: -70px; position: relative; z-index: 1; }
 .video-kartya { border: 0; padding: 0; background: var(--sotet); border-radius: 14px; overflow: hidden; cursor: pointer; text-align: left; color: #fff; box-shadow: 0 16px 34px rgba(15, 58, 60, .2); width: 260px; flex: none; }
 .video-kep { position: relative; display: block; aspect-ratio: 9 / 14; background: #333 url(/assets/img/pmu/melitta-munka.jpg) 50% 30% / cover; }
@@ -357,7 +357,7 @@ a.google-nagy { text-decoration: none; color: inherit; }
 
 /* --- foglalo --- */
 .foglalas { position: relative; padding: 26px 0 26px; background: linear-gradient(90deg, #f6f7f3 0%, #f2f3ee 60%, #e6e8e0 100%); border-top: 1px solid var(--vonal); overflow: hidden; }
-.fogl-hatter { position: absolute; right: 0; top: 0; bottom: 0; width: 26%; background: url(/assets/img/c2eb0f_567cfb0230ba49c089087cf55d6ead4e.jpg) 4% 14% / auto 128% no-repeat; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%); mask-image: linear-gradient(90deg, transparent 0, #000 30%); }
+.fogl-hatter { position: absolute; right: 0; top: 0; bottom: 0; width: 26%; background: url(/assets/img/pmu/melitta-wulop-2026.jpg) 78% 8% / auto 150% no-repeat; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%); mask-image: linear-gradient(90deg, transparent 0, #000 30%); }
 .foglalas .tartalom { width: min(1440px, calc(100% - 64px)); }
 .fogl-fej { display: grid; grid-template-columns: 1fr auto; gap: 30px; align-items: start; margin-bottom: 18px; max-width: 980px; }
 .fogl-fej .felcim { margin-bottom: 6px; }
@@ -421,6 +421,10 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .szakember-kep { min-height: 360px; }
   .eloleg { grid-template-columns: auto 1fr; }
   .eloleg .level { display: none; }
+}
+/* tablet (egymas ala rendezve): a szeles, alacsony dobozban a plakett felirata (1. hely) is latszodjon, ne csak az arc */
+@media (min-width: 701px) and (max-width: 1100px) {
+  .szakember-kep { min-height: 600px; background-position: 50% 30%; }
 }
 @media (max-width: 700px) {
   .foglalo-keret { scroll-margin-top: 130px; }
@@ -558,8 +562,8 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 /* foglalo (asztal): Melitta kepe kozvetlenul a foglalo mellett, a feje nincs levagva, lagy atmenettel */
 @media (min-width: 1101px) {
   .fogl-hatter { left: calc(max(32px, (100% - 1240px) / 2) + 540px); right: auto; width: 560px;
-    background: url(/assets/img/pmu/melitta-dij.jpg) 50% 0 / 100% auto no-repeat;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.6) 14%, #000 26%, #000 82%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.6) 14%, #000 26%, #000 82%, transparent 100%); }
+    background: url(/assets/img/pmu/melitta-wulop-2026.jpg) 100% 8% / 165% auto no-repeat;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, transparent 8%, rgba(0,0,0,.6) 22%, #000 34%, #000 82%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, transparent 8%, rgba(0,0,0,.6) 22%, #000 34%, #000 82%, transparent 100%); }
   .fogl-hatter::after { background: linear-gradient(180deg, rgba(16,34,31,0) 70%, #12261f 100%); }
   .fogl-racs { grid-template-columns: minmax(0, 600px) 1fr; }
   .fogl-portre { padding: 0 0 18px 150px; }

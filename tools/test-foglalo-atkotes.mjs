@@ -161,7 +161,7 @@ test('oldalUzletag: a fajlnev alapjan', () => {
     'noi-fodraszat-budapest': 'fodraszat', 'balayage-haj-festes-budapest': 'fodraszat', '30szazalek': 'fodraszat', 'noi-hajfestes-budapest': 'fodraszat',
     'oxigenterapia-budapest': 'oxigen', 'oxigenterapia-ferfiaknak': 'oxigen',
     'lezeres-szortelenites-budapest': 'lezer', 'szortelenites-zsofi-rovid': 'lezer', 'szőrtelenítés-zsófi-3': 'lezer', 'vegleges-szortelenites-ferfiaknak': 'lezer',
-    'sminktetovalas-budapest': 'pmu', 'sminktetovalas-regi': 'pmu', 'blog': null, 'aszf': null };
+    'sminktetovalas-budapest': 'pmu', 'sminktetovalas-regi': 'pmu', 'pmu-foglalas': 'pmu', 'pmu-ok': 'pmu', 'pmu-vh': 'pmu', 'foglalo-pmu': 'pmu', 'blog': null, 'aszf': null };   // UJ-66: a pmu-* oldalak is PMU
   for (const [f, e] of Object.entries(v)) assert.equal(oldalUzletag(f), e, f);
 });
 
@@ -169,9 +169,18 @@ test('belsoCel: fomenu FOGLALAS = altalanos; a gombok az oldal uzletagara; onhiv
   const c = (href, fajl, szoveg) => belsoCel(href, fajl, szoveg)?.cel ?? null;
   const k = (href, fajl, szoveg) => belsoCel(href, fajl, szoveg)?.kapcsolo ?? null;
   // fomenu (asztali "FOGLALAS", mobil "Foglalas"): barhol, minden oldalon
-  for (const fajl of ['headspa-budapest', 'oxigenterapia-budapest', 'lezeres-szortelenites-budapest', 'noi-fodraszat-budapest', 'blog', 'idpontfoglalas']) {
+  // HeadSpa / besorolatlan oldalon az altalanos kezdoallapot; az uzletag-specifikus oldalon a fejlec-link hordozza az oldal uzletagat (UJ-54)
+  for (const fajl of ['headspa-budapest', 'home', 'ajandekkartya', 'blog', 'idpontfoglalas']) {
     assert.equal(c('/idpontfoglalas', fajl, 'FOGLALÁS'), '/foglalo-motor', fajl);
     assert.equal(k('/idpontfoglalas', fajl, 'Foglalás'), 'fejlec', fajl);
+  }
+  const FEJ = { 'oxigenterapia-budapest': 'oxygen', 'oxigenterapia-ferfiaknak-regi': 'oxygen', 'lezeres-szortelenites-budapest': 'laser', 'lezeres-ajandekkartya': 'laser', 'szortelenites-zsofi-rovid': 'laser', 'vegleges-szortelenites-ferfiaknak': 'laser',
+    'noi-fodraszat-budapest': 'hair', 'noi-fodrasz-budapest-balayage-hajfestes': 'hair', 'balayage-haj-festes-budapest': 'hair', 'noi-hajfestes-budapest': 'hair', 'sminktetovalas-budapest-rovid': 'pmu' };
+  for (const [fajl, b] of Object.entries(FEJ)) {
+    for (const felirat of ['FOGLALÁS', 'Foglalás']) {
+      assert.equal(c('/idpontfoglalas', fajl, felirat), `/foglalo-motor?business=${b}`, fajl);
+      assert.equal(k('/idpontfoglalas', fajl, felirat), 'fejlec', fajl); // ugyanaz a kapcsolo: a FOGLALO_ATKOTES=fejlec kapcsolja
+    }
   }
   // HeadSpa-gombok
   assert.equal(c('/idpontfoglalas', 'headspa-budapest', 'IDŐPONTFOGLALÁS'), '/foglalo-motor?business=headspa');
@@ -287,6 +296,7 @@ test('kliens-kod: nincs kozvetlen Salonic-link (href) a foglalo-gombok / hibauze
     /href:\s*S\.guestUrl,\s*target:\s*'_top'/, // engine.js: az urlap-keret tartaleka (a kivalasztott idopont adatlapja)
     /href:\s*adatlapUrl\(id, ts\)/, // lezer-landing.js: egy idopontra kattintva az adatlapra visz
     /rel="stylesheet" href="https:\/\/www\.mosaicheadspa\.hu\/salonic\//, // a salonic-adapter megjegyzese (nem link)
+    /\$\('fo-tartalek-link'\)\.href = salonicUrl\(kulcs\);/, // oxigen-uj.js: a tartalek (Salonic) mod szandekos linkje (a motor nem toltheto be); a Salonic-atiranyitas (#487) ezt a felso ablakban a fooldalra viheti - kulon figyelendo
   ];
   const fajlok = [];
   const jar = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) jar(p); else if (p.endsWith('.js')) fajlok.push(p); } };

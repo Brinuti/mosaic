@@ -1,0 +1,16 @@
+<!-- GTM "Egyeni HTML" cimke a Mosaic Salonic-fiokjaiban betoltott konteinerbe (GTM-PST2HB22; docs/booking-engine/SALONIC_ATIRANYITAS.md).
+     Cimke neve: "Salonic foglalooldalak - atiranyitas a fooldalra". Trigger: "Inicializalas - Minden oldal" (vagy Oldalmegtekintes),
+     feltetel: Page Hostname vege ".salonic.hu" (a konteiner a www.mosaicheadspa.hu-n is fut: ott a cimke NEM futhat; a kod hostname-et is ellenoriz).
+     Tag firing: Once per page. Consent: nincs tovabbi kovetelmeny (funkcionalis, nem meres; a kod nem kuld semmit, csak a cimet cserel).
+     A logika a www.mosaicheadspa.hu/salonic/atiranyitas.js-ben van (a repoban), a kapcsolo (BE) is: a GTM-et nem kell ujra kozzetenni.
+     Vesz-kikapcsolas: a cimke szuneteltetese a GTM-ben, vagy a repoban BE = 0 es merge. -->
+<script>
+(function () {
+  try { if (window.top !== window.self) return; } catch (e) { return; } // a sajat foglalonk keretjeben (iframe) soha
+  if (!/\.salonic\.hu$/i.test(location.hostname)) return;
+  var s = document.createElement('script');
+  s.src = 'https://www.mosaicheadspa.hu/salonic/atiranyitas.js';
+  s.async = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
+</script>

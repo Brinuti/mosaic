@@ -118,7 +118,7 @@ const BELSO_FOGLALAS = /^(?:https?:\/\/(?:www\.)?mosaicheadspa\.hu)?(\/(?:idpont
 /** Az oldal uzletaga a fajlnev alapjan (a gombok celja ettol fugg); null = nem ismert (HeadSpa az alapertelmezes az /idpontfoglalas gombjainal). */
 export function oldalUzletag(fajlnev) {
   const n = String(fajlnev).replace(/\.html$/, '').replace(/^.*\//, '');
-  if (/^(sminktetovalas|szajtetovalas)/.test(n)) return 'pmu';
+  if (/^(sminktetovalas|szajtetovalas|pmu-|foglalo-pmu$)/.test(n)) return 'pmu'; // UJ-66: a pmu-* oldalak (pl. /pmu-foglalas) is PMU oldalak: lablec / Info-ablak gombja business=pmu
   if (/^(lezeres-|szortelenites-|szőrtelenítés|szor-konzi|vegleges-)/.test(n)) return 'lezer';
   if (/^oxigenterapia-/.test(n)) return 'oxigen';
   if (/^(noi-fodrasz|noi-hajfestes|balayage-|30szazalek|fodrasz-|fodraszat-)/.test(n)) return 'fodraszat';
@@ -134,11 +134,13 @@ const kategoriaOldal = (fajlnev) => {
 const BETU = { '&aacute;': 'á', '&eacute;': 'é', '&iacute;': 'í', '&oacute;': 'ó', '&ouml;': 'ö', '&odblac;': 'ő', '&uacute;': 'ú', '&uuml;': 'ü', '&udblac;': 'ű', '&Aacute;': 'Á', '&Eacute;': 'É', '&Iacute;': 'Í', '&Oacute;': 'Ó', '&Ouml;': 'Ö', '&Odblac;': 'Ő', '&Uacute;': 'Ú', '&Uuml;': 'Ü', '&Udblac;': 'Ű', '&amp;': '&', '&gt;': '>', '&nbsp;': ' ' };
 const felirat = (belso, attrs) => (String(belso).replace(/<[^>]+>/g, '').replace(/&[a-zA-Z#0-9]+;/g, (e) => BETU[e] || e).replace(/\s+/g, ' ').trim()
   || (/aria-label="([^"]*)"/.exec(attrs) || [])[1] || '');
+// a fejlec-link uzletag-parametere az oldal uzletagabol; a HeadSpa (alap) es az ismeretlen oldalak az altalanos kezdoallapotot kapjak (/foglalo-motor, "Mit szeretnel foglalni?")
+const FEJLEC_UZLETAG = Object.freeze({ lezer: 'laser', fodraszat: 'hair', oxigen: 'oxygen', pmu: 'pmu' });
 const FEJLEC_FELIRAT = /^foglalás$/i; // a fomenu (asztali + mobil) gombja: a felirata pontosan "FOGLALÁS" / "Foglalás"
 
 /**
  * Egy belso foglalo-link celja: { kapcsolo, cel } vagy null (marad). Kontextus: az oldal fajlneve + a link felirata.
- *  - /idpontfoglalas "FOGLALÁS" (fomenu)            -> /foglalo-motor            (kapcsolo: fejlec)  altalanos kezdoallapot (Mit szeretnél foglalni?)
+ *  - /idpontfoglalas "FOGLALÁS" (fomenu)            -> /foglalo-motor            (kapcsolo: fejlec)  altalanos kezdoallapot (Mit szeretnél foglalni?); lezer / fodraszat / oxigen / pmu oldalon az oldal uzletagaval (?business=...)
  *  - /idpontfoglalas egyeb gomb                      -> az oldal uzletaga (alap: HeadSpa), "PÁROS ..." -> paros
  *  - /mosaic-hair-idopontfoglalas                    -> oxigen oldalon oxygen, egyebkent hair (konzultacio-felirat: service=konzult; balayage / hajfestes oldal: service_category)
  *  - /szortelenites-foglalas                         -> laser
@@ -152,7 +154,10 @@ export function belsoCel(href, fajlnev, szoveg, motor = MOTOR) {
   const sajat = '/' + String(fajlnev).replace(/\.html$/, '').replace(/^.*\//, '');
   const oldal = oldalUzletag(fajlnev);
   const sz = String(szoveg || '');
-  if (celOldal === '/idpontfoglalas' && FEJLEC_FELIRAT.test(sz)) return { kapcsolo: 'fejlec', cel: motor };
+  if (celOldal === '/idpontfoglalas' && FEJLEC_FELIRAT.test(sz)) {
+    const business = FEJLEC_UZLETAG[oldal]; // UJ-54: az uzletag-specifikus oldalon a fejlec-link hordozza az oldal uzletagat (uj lapon / JS nelkul is a helyes uzletag nyilik)
+    return { kapcsolo: 'fejlec', cel: business ? celUrl({ business }, motor) : motor };
+  }
   if (celOldal === sajat) return null; // onhivatkozas (fulek a foglalo-oldalon): nem a foglalo gombja
   if (celOldal === '/idpontfoglalas') {
     if (/páros/i.test(sz)) return { kapcsolo: 'headspa', cel: celUrl({ business: 'headspa', service: 'paros' }, motor) };
