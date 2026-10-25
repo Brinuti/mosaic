@@ -49,5 +49,17 @@ test('a "Mar tudod, mit szeretnel?" blokk es az ajandekkartya blokk nincs az old
   assert.ok(!h.includes('Már tudod, mit szeretnél?') && !h.includes('<section class="tudod"'), 'nincs "Mar tudod"');
   assert.ok(!h.includes('<section class="ajk"') && !h.includes('Személyre szabott ajándékkártya!'), 'nincs ajandekkartya-blokk');
   const sorrend = [...h.matchAll(/<section class="([a-z-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(sorrend.slice(0, 6), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi']);
+  assert.deepEqual(sorrend.slice(0, 7), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi']);
+});
+
+test('a "Neked is jo valasztas a lezeres szortelenites?" blokk (cim + harom kartya) nincs az oldalon; az orvosi ajanlas (szorbenoves-video) onallo szekcioban marad', () => {
+  assert.ok(!h.includes('Neked is jó választás') && !h.includes('id="alkalmas-cim"') && !h.includes('<section class="alkalmas"'), 'a blokk kikerult');
+  for (const maradek of ['alkalmas-kartya', 'Valószínűleg igen', 'Nézzük meg együtt', 'Inkább kérdezz rá előtte', 'data-gyik="kinek-nem"']) assert.ok(!h.includes(maradek), 'maradek: ' + maradek);
+  const a = h.indexOf('<section class="orvosi"');
+  assert.ok(a > h.indexOf('<section class="zsofi"') && a < h.indexOf('<section class="velemenyek"'), 'a Zsofi es a velemenyek kozott all');
+  const sz = h.slice(a, h.indexOf('</section>', a));
+  assert.match(sz, /aria-label="Orvosi ajánlás/);
+  assert.match(sz, /id="szorbenoves-video"/);
+  assert.match(sz, /Szőrbenövés és begyulladt szőrtüszők/);
+  assert.ok(h.includes('id="gyik-kinek-nem"'), 'a "Kinek nem javasolt a kezeles?" valasz tovabbra is a GYIK-ban van');
 });

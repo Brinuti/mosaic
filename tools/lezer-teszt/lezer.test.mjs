@@ -418,7 +418,7 @@ describe('osszekottetesek', () => {
 
   test('a "Tudj meg tobbet" / "Kinek nem javasolt" gombok kinyitjak a megfelelo GYIK-elemet', async () => {
     const { p, ctx } = await nyit();
-    for (const [gomb, id] of [['garancia', 'gyik-garancia'], ['fenntarto', 'gyik-fenntarto'], ['kinek-nem', 'gyik-kinek-nem']]) {
+    for (const [gomb, id] of [['garancia', 'gyik-garancia'], ['fenntarto', 'gyik-fenntarto']]) {
       await p.click(`a[data-gyik="${gomb}"]`);
       assert.equal(await p.evaluate((i) => document.getElementById(i).open, id), true, id);
     }
@@ -428,7 +428,7 @@ describe('osszekottetesek', () => {
   test('a konzultacios gombok a Salonic ingyenes konzultacio szolgaltatasara mutatnak (elonezeten a foglalo-retegre kotve)', async () => {
     const { p, ctx } = await nyit();
     const h = await p.$$eval('a[href*="serviceId=476477"], a[href*="service=konzult"]', (l) => l.map((a) => a.getAttribute('href')));
-    assert.ok(h.length >= 4, 'konzultacios gombok: ' + h.length);
+    assert.ok(h.length >= 3, 'konzultacios gombok: ' + h.length); // hero szoveges link, foglalo-szekcio gomb, mobil sticky sav (a "Mar tudod" es a "Neked is jo valasztas" kartya kikerult, 2026-10-25)
     for (const x of h) assert.match(x, /serviceId=476477|business=laser/);
     await ctx.close();
   });
@@ -859,15 +859,6 @@ describe('a hetedik kor visszajelzesei', () => {
     await ctx.close();
   });
 
-  test('"Valoszinuleg igen" kartya: az uj szoveg (borotva, begyulladt szortuszok)', async () => {
-    const { p, ctx } = await nyit();
-    const szoveg = await p.textContent('.alkalmas-kartya.igen p');
-    assert.match(szoveg, /^Ha egy életre elfelejtenéd a borotvát és a begyulladt szőrtüszőket, akkor igen\./);
-    assert.equal(szoveg.trim(), 'Ha egy életre elfelejtenéd a borotvát és a begyulladt szőrtüszőket, akkor igen.');
-    assert.ok(!/Pigmentáltabb/.test(szoveg), 'a pigmentaltabb szoros mondat kikerult');
-    await ctx.close();
-  });
-
   test('szorbenoves-video: poszter + kattintasra betolto video; a fajl elerheto', async () => {
     const { p, ctx } = await nyit();
     await p.locator('.szorbenoves').scrollIntoViewIfNeeded();
@@ -896,10 +887,10 @@ describe('a hetedik kor visszajelzesei', () => {
 });
 
 describe('a kilencedik kor: szekciosorrend, kalkulator-jelzesek, egységes gombok', () => {
-  test('szekciosorrend: mennyibe kerul -> eredmenyek -> 8 alkalom -> garancia -> Zsofi -> neked is jo -> velemenyek (a "Mar tudod" es az ajandekkartya blokk 2026-10-25 ota nincs)', async () => {
+  test('szekciosorrend: mennyibe kerul -> eredmenyek -> 8 alkalom -> garancia -> Zsofi -> orvosi ajanlas (szorbenoves-video) -> velemenyek (a "Mar tudod", az ajandekkartya es a "Neked is jo valasztas" blokk 2026-10-25 ota nincs)', async () => {
     const { p, ctx } = await nyit();
     const sor = await p.$$eval('main > section', (l) => l.map((s) => s.className.split(' ')[0]));
-    assert.deepEqual(sor.slice(0, 8), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'alkalmas', 'velemenyek']);
+    assert.deepEqual(sor.slice(0, 8), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi', 'velemenyek']);
     assert.deepEqual(sor.slice(-5), ['arlista', 'szamolo', 'gyik', 'foglalas', 'helyszin']);
     await ctx.close();
   });
