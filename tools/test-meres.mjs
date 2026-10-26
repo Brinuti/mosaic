@@ -760,18 +760,18 @@ test('X1: ket level ELTERO uj_vendeg jelzessel ugyanarra az elo foglalasra (uj -
   assert.deepEqual([r1.esemeny_kuldes.allapot, r1.esemeny_kuldes.jelleg, r1.esemeny_kuldes.jelleg_rogzites.forras, r1.esemeny_kuldes.jelleg_rogzites.eltero], ['kesz', 'konzultacio', 'elso_level', false]);
   const n = x.h.hivasok.length; assert.equal(n, 6);
   const r2 = await x1Post(x, { ...LEVEL(), uj_vendeg: false }); // a Zap kovetkezo levele: a Salonic-vendegrekord szerint nem uj
-  assert.deepEqual([r2.esemeny_kuldes.allapot, r2.esemeny_kuldes.jelleg, r2.esemeny_kuldes.uj_vendeg, r2.esemeny_kuldes.jelleg_rogzites.eltero, r2.esemeny_kuldes.jelleg_rogzites.kapott_jelleg], ['mar_kuldve', 'konzultacio', false, true, 'visszajaro']);
+  assert.deepEqual([r2.esemeny_kuldes.allapot, r2.esemeny_kuldes.jelleg, r2.esemeny_kuldes.uj_vendeg, r2.esemeny_kuldes.jelleg_rogzites.eltero, r2.esemeny_kuldes.jelleg_rogzites.kapott_jelleg], ['mar_kuldve', 'konzultacio', false, false, 'konzultacio']); // UJ-68: a fodrasz "konzultacio" nevu szolgaltatasa a Salonic "nem uj vendeg" jelzesevel is Konzultacio (az elteres-ag a jelleg-rogzites egysegtesztjeben: tools/test-jelleg-oldal.mjs)
   assert.equal(x.h.hivasok.length, n, 'a 2. level nem kuldott semmit');
   assert.deepEqual(await alapNevek(x), ['Konzultacio']); assert.equal((await naploLeker(x.e.KULCS_DB, BID)).kuldesek.length, 8, 'nincs Visszajaro sor sem');
 });
-test('X1: forditott sorrend (nem uj -> uj): a Visszajaro marad, a 2. level nem kuld FoglalasElso / Konzultacio alapesemenyt', async () => {
+test('X1: forditott sorrend (nem uj -> uj): UJ-68 ota a fodrasz konzultacio a "nem uj vendeg" jelzessel is Konzultacio; a 2. level nem kuld semmit', async () => {
   const x = await x1Elokeszit();
   const r1 = await x1Post(x, { ...LEVEL(), uj_vendeg: false });
-  assert.deepEqual([r1.esemeny_kuldes.allapot, r1.esemeny_kuldes.jelleg], ['kesz', 'visszajaro']);
-  const n = x.h.hivasok.length; assert.equal(n, 3, 'visszajaro: Meta + TikTok + GA4 (Google-akcio nincs), ernyo nincs');
+  assert.deepEqual([r1.esemeny_kuldes.allapot, r1.esemeny_kuldes.jelleg, r1.esemeny_kuldes.jelleg_rogzites.oldal_szabaly], ['kesz', 'konzultacio', 'konzultacio_nev']);
+  const n = x.h.hivasok.length; assert.equal(n, 6, 'konzultacio + ernyo: ugyanannyi hivas, mint az uj vendegnel');
   const r2 = await x1Post(x, LEVEL());
-  assert.deepEqual([r2.esemeny_kuldes.allapot, r2.esemeny_kuldes.jelleg, r2.esemeny_kuldes.jelleg_rogzites.eltero], ['mar_kuldve', 'visszajaro', true]);
-  assert.equal(x.h.hivasok.length, n); assert.deepEqual(await alapNevek(x), ['Visszajaro']);
+  assert.deepEqual([r2.esemeny_kuldes.allapot, r2.esemeny_kuldes.jelleg, r2.esemeny_kuldes.jelleg_rogzites.eltero], ['mar_kuldve', 'konzultacio', false]);
+  assert.equal(x.h.hivasok.length, n); assert.deepEqual(await alapNevek(x), ['Konzultacio']);
 });
 test('X1: ket EGYIDEJULEG erkezo, elteros jelzesu level kozul pontosan egy jellege nyer; egy alapesemeny-tipus, nincs dupla sor', async () => {
   const x = await x1Elokeszit();
@@ -798,7 +798,7 @@ test('X1: a kupon-jelzes is az elso levelnel rogzul (DECISION #194: a kuponos fo
   assert.deepEqual([r2.kupon, r2.jelleg_rogzites.eltero, r2.allapot, r2.kupon_nem_konverzio], [true, true, 'nincs_esemeny', true]); assert.equal(h.hivasok.length, 0, 'a 2. level sem kuldott semmit');
   const sorok = (await naploLeker(D, A)).kuldesek; assert.deepEqual(sorok, [], 'a kuponos foglalashoz nincs meres_kuldes-sor (sem alap, sem ernyo)');
   assert.deepEqual({ ...D.db.prepare('SELECT jelleg, kupon FROM meres_jelleg WHERE source_id = ?').get(A) }, { jelleg: 'konzultacio', kupon: 1 }, 'a kupon-jelzes a meres_jelleg-ben marad (a jelentesek ebbol latjak)');
-  const rb = await kuld(B, 'Fodrász konzultáció', false); assert.deepEqual([rb.jelleg, rb.jelleg_rogzites.forras], ['visszajaro', 'elso_level'], 'a B foglalast az A jellege nem erinti');
+  const rb = await kuld(B, 'Női hajvágás', false); assert.deepEqual([rb.jelleg, rb.jelleg_rogzites.forras], ['visszajaro', 'elso_level'], 'a B foglalast az A jellege nem erinti'); // UJ-68 ota nem konzultacio-nevu szolgaltatassal: a konzultacio-nev mindig Konzultacio
   assert.ok(h.hivasok.length > 0, 'a nem kuponos B foglalas tovabbra is kuld (Visszajaro)');
 });
 test('X1: MERES_ELOSZTO kikapcsolva - nincs rogzites (nem ir tablat), a valasz jelzi', async () => {
