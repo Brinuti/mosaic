@@ -15,7 +15,19 @@ await p.goto(`${CIM}/idopontfoglalas`, { waitUntil: 'load' }); await new Promise
 ok('1 nyit jelzes', jel.some((j) => j.e === 'nyit'), JSON.stringify(jel));
 ok('2 elso lepes jelzes', jel.some((j) => j.e === 'lepes' && j.l));
 ok('3 mobil jeloles', jel.every((j) => j.m === 1));
-ok('4 nincs szemelyes / URL adat', jel.every((j) => Object.keys(j).every((k) => ['e', 'l', 'm'].includes(k))));
+ok('4 nincs szemelyes / URL adat (csak esemeny, lepes, eszkoz, helyszin-azonosito)', jel.every((j) => Object.keys(j).every((k) => ['e', 'l', 'm', 'h', 'x'].includes(k))));
+// 2026-10-25: a helyszin valasztasa utan a lepes-jelzes viszi a helyszint (h), helyszincserekor az uj helyszinen is (x: 1)
+const sr = (fn, a) => p.evaluate(([fn, a]) => { const x = document.querySelector('[data-mp-motor]'); return x ? new Function('r', 'a', fn)(x.shadowRoot, a) : null; }, [fn, a]);
+const varj = async (f, a) => { for (let i = 0; i < 100; i++) { if (await sr(f, a)) return true; await new Promise((r) => setTimeout(r, 200)); } return false; };
+if (await varj('return !!r.querySelector("[data-tipus=uj]")')) await sr('r.querySelector("[data-tipus=uj]").click()');
+await varj('return !!r.querySelector(`[data-hely="${a}"]`)', 6029); await sr('r.querySelector(`[data-hely="${a}"]`).click()', 6029);
+await new Promise((r) => setTimeout(r, 1500));
+ok('4b a piercing-lepes jelzese viszi a helyszint (Budapest 6029)', jel.some((j) => j.e === 'lepes' && j.l === 'szolg' && j.h === 6029 && !j.x), JSON.stringify(jel.filter((j) => j.l === 'szolg')));
+await sr('const x = r.querySelector(`[data-lepes="hely"]`); if (x) x.click()');
+await varj('return !!r.querySelector(`[data-hely="${a}"]`)', 11424); await sr('r.querySelector(`[data-hely="${a}"]`).click()', 11424);
+await new Promise((r) => setTimeout(r, 1500));
+const szolg = jel.filter((j) => j.e === 'lepes' && j.l === 'szolg');
+ok('4c helyszincsere: Debrecen is szamit (x: 1, csak a helyszines tablaba), a regi tabla nem kapja ketszer', szolg.length === 2 && szolg[1].h === 11424 && szolg[1].x === 1, JSON.stringify(szolg));
 const n0 = jel.length;
 await p.evaluate(() => { const h = document.querySelector('[data-mp-motor]') || [...document.querySelectorAll('*')].find((e) => e.shadowRoot && e.shadowRoot.querySelector('[data-bezar]')); h && h.shadowRoot.querySelector('[data-bezar]').click(); });
 await new Promise((r) => setTimeout(r, 800));
