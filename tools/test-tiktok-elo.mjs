@@ -63,6 +63,7 @@ test('A) tiktokEloKerelem: az ELO pixelre, a megfelelo esemennyel, event_id-val;
   assert.deepEqual([k.nev, k.url, k.method, k.body.event_source, k.body.event_source_id], ['Schedule', 'https://business-api.tiktok.com/open_api/v1.3/event/track/', 'POST', 'web', ELO_PIXEL]);
   const d = k.body.data[0]; assert.deepEqual([d.event, d.event_id, d.event_time, d.page], ['Schedule', KULCS_ID, 1790000000, { url: HOST + '/success' }]);
   assert.deepEqual(Object.keys(d.user).sort(), ['email', 'external_id', 'ip', 'phone', 'ttclid', 'ttp', 'user_agent']);
+  assert.equal(tiktokEloKerelem({ esemeny_id: 'Schedule:x', event_id: KULCS_ID, uzletag: 'headspa', ido: 1790000000, hash: {}, erk: {}, oldal: HOST + '/success?price=15000&x=1#a' }).body.data[0].page.url, HOST + '/success', 'a page.url query / fragment nelkul megy (price= stb. nem)');
   assert.equal(d.properties, undefined, 'nincs ertek / szolgaltatasnev / ar');
   assert.equal(JSON.stringify(k.body).includes('@'), false);
   assert.equal(tiktokEloKerelem({ uzletag: 'xx' }).tiltva, 'ismeretlen uzletag');
@@ -95,11 +96,12 @@ test('B) TIKTOK_ELO_TESZT_KOD: a kerelem a Test Events fulre megy (test_event_co
   const d2 = d1(); const f2 = hamisFetch(); await beallit(d2); await tiktokEloKuld(d2, FK(), { env: ENV(), fetchImpl: f2, now: () => NOW });
   assert.equal('test_event_code' in f2.hivasok[0].body, false);
 });
-test('B) tiktokEloKuld: bongeszo nelkuli (sd) foglalas: az event_id az esemeny_id; nem uj vendeg / kupon / fixAllapot / explicit elutasitas: nincs kuldes', async () => {
+test('B) tiktokEloKuld: bongeszo nelkuli (sd) foglalas: KOZOS KULCS NELKUL nincs szerveres kuldes (a bongeszo mas event_id-vel szamolna duplan); nem uj vendeg / kupon / fixAllapot / explicit elutasitas: nincs kuldes', async () => {
   const d = d1(); const f = hamisFetch(); await meresSema(d);
   const sd = 'sd_' + 'a'.repeat(24);
   const r = await tiktokEloKuld(d, FK({ source_entity_id: sd }), { env: ENV(), fetchImpl: f, now: () => NOW });
-  assert.deepEqual([r.allapot, r.event_id_forras, f.hivasok[0].body.data[0].event_id], ['elkuldve', 'esemeny_id', 'Schedule:' + sd]);
+  assert.equal(r.allapot, 'kihagyva'); assert.match(r.indok, /kozos/); assert.equal(f.hivasok.length, 0, 'sd-agon nincs TikTok-esemeny');
+  assert.equal((await d.prepare('SELECT COUNT(*) AS n FROM meres_tiktok_elo').first()).n, 0, 'sor sem keletkezik');
   const n = f.hivasok.length;
   assert.equal((await tiktokEloKuld(d, FK({ jelleg: 'visszajaro', source_entity_id: ID('v') }), { env: ENV(), fetchImpl: f, now: () => NOW })).allapot, 'nincs_ernyo');
   assert.equal((await tiktokEloKuld(d, FK({ kupon: true, source_entity_id: ID('k') }), { env: ENV(), fetchImpl: f, now: () => NOW })).allapot, 'nincs_ernyo');
@@ -124,6 +126,13 @@ test('B) tiktokEloKuld: lemondott -> nincs kuldes; nem ellenorizheto -> halasztv
   const e = hamisFetch(); e.hiba = true; const d3 = d1(); await beallit(d3);
   const dob = async () => { throw new Error('halozati hiba'); };
   assert.equal((await tiktokEloKuld(d3, FK(), { env: ENV(), fetchImpl: dob, now: () => NOW, eloEllenorzes: async () => 'aktiv' })).allapot, 'hiba', 'a fetch kivetele sem dobodik tovabb');
+});
+test('B) tiktokEloKuld: HeadSpa ajandekkartya: nincs bongeszos peldany, ezert kozos kulcs nelkul is megy (esemeny_id), egyszer', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d);
+  const fk = FK({ tipus: 'ajandekkartya', source_entity_id: ID('g'), jelleg: undefined, vendeg: {} });
+  const r = await tiktokEloKuld(d, fk, { env: ENV(), fetchImpl: f, now: () => NOW });
+  assert.deepEqual([r.allapot, r.event_id_forras, f.hivasok.length], ['elkuldve', 'esemeny_id', 1]);
+  assert.equal((await tiktokEloKuld(d, fk, { env: ENV(), fetchImpl: f, now: () => NOW })).allapot, 'mar_kuldve'); assert.equal(f.hivasok.length, 1);
 });
 test('B) tiktokEloKuld: egy Salonic-foglalas (azonos uuid) a motoron es az sd-n at is csak egyszer megy ki', async () => {
   const d = d1(); const f = hamisFetch(); await beallit(d);
