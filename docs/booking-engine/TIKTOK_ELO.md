@@ -39,9 +39,10 @@ Salonic-levél ──► foglalasEsemenyKuldes / sd / ajandekEsemenyKuldes ─�
 ## Ismert korlátok / döntési pontok
 
 * A böngészős jelzés a köszönőoldal adataiból (`first_booking`, oldal, szolgáltatásnév) számolja a jogosultságot; a szerver később a Salonic-levélből pontosít. Ritka eltérésnél lehet böngésző-only példány (a riportban látszik).
-* HeadSpa ajándékkártya: az URL-szabály eddig azt is számolta; itt **csak szerverről** megy (a böngészős kártya-eseményt az `ajandek.js` külön küldi).
+* HeadSpa ajándékkártya: az URL-szabály eddig azt is számolta; itt **csak szerverről** megy (az `ajandek.js` nem hív `ttq`-t, nincs böngészős példány, ezért közös kulcs nélkül is mehet az `esemeny_id`-vel).
 * A Fodrász `Contact` és a PMU `Consult` esemény a mérési oldal javaslata (UJ-73); más standard esemény egysoros csere (`ELO_ESEMENY`).
-* Sd (Salonic-direct) foglalásnál nincs böngésző: az event_id az `esemeny_id`, a szerver egyedül küld.
+* Sd (Salonic-direct) átvételnél, és minden foglalásnál, ahol a szerver a böngészős kulcsot nem ismeri (nincs `meres_erkezes`): **nincs szerveres TikTok-küldés** (`kihagyva`: „nincs közös event_id”). A köszönőoldali böngésző ugyanis a közös kulccsal már elküldhette; egy másik `esemeny_id`-s szerveres példány a TikTokon duplán számolna (független review, 2026-10-27). Ugyanaz a minta, mint a Meta-ágon (#500). A `page.url` query/fragment nélkül megy (nincs `price=`).
+* ÁRNYÉK-lánc: a foglalás élő állapotának lekérése (`eloEllenorzes`) most memoizált: az elosztás és az élő TikTok ugyanazt az egy Salonic-lekérést használja (a lekérés száma nem nő, de ha az első lekérés hibázik, mindkettő ugyanazt az eredményt kapja).
 
 ## Tesztek
 

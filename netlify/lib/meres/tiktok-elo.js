@@ -33,7 +33,7 @@ export const bongeszoEloEventId = (b) => bongeszoMetaKulcs(b);
 const ernyoEsemeny = (fk, env) => esemenyek({ ...fk, ertek: Number.isFinite(Number(fk.ertek)) ? fk.ertek : 0 }, konzultacioTabla(env)).find((e) => e.tipus === 'ernyo') || null;
 
 /**
- * A koszonooldali erkezes (POST /api/meres-erkezes torzse) alapjan: kell-e a BONGESZOBOL ttq esemeny? -> { esemeny, event_id, pixel } | null. Csak foglalas (az ajandekkartya bongeszos TikTok-esemenyet az ajandek.js kuldi),
+ * A koszonooldali erkezes (POST /api/meres-erkezes torzse) alapjan: kell-e a BONGESZOBOL ttq esemeny? -> { esemeny, event_id, pixel } | null. Csak foglalas (az ajandekkartyanak nincs bongeszos TikTok-peldanya: csak szerverrol megy),
  * csak bekapcsolt uzletag, csak ha nincs explicit marketing-elutasitas, csak ha az ernyo-feltetel teljesul (a szerveres Salonic-jelzes kesobb pontosit: ket forras eltereseket a riport mutatja), es csak kepezheto kozos event_id-val.
  */
 export function eloBongeszoJelzes(env, be) {
@@ -56,7 +56,7 @@ export function tiktokEloKerelem(ctx) {
   const nev = ELO_ESEMENY[ctx.uzletag];
   if (!nev) return { tiltva: 'ismeretlen uzletag' };
   const user = tisztit({ email: ctx.hash && ctx.hash.em, phone: ctx.hash && ctx.hash.ph_e164, external_id: ctx.hash && ctx.hash.ext, ttclid: ctx.erk && ctx.erk.ttclid, ttp: ctx.erk && ctx.erk.ttp, ip: ctx.ip, user_agent: ctx.ua });
-  const adat = tisztit({ event: nev, event_time: ctx.ido, event_id: ctx.event_id, user, page: ctx.oldal ? { url: ctx.oldal } : null });
+  const adat = tisztit({ event: nev, event_time: ctx.ido, event_id: ctx.event_id, user, page: ctx.oldal ? { url: String(ctx.oldal).split(/[?#]/)[0] } : null });
   // teszt (TIKTOK_ELO_TESZT_KOD): a TikTok Test Events fulre kuld, az esemeny nem szamit bele a konverziokba - az atallas elotti igazolashoz (3 valos minta); kod nelkul eles
   return { nev, url: URL_ESEMENY, method: 'POST', body: { event_source: 'web', event_source_id: ELO_PIXEL, ...(ctx.teszt ? { test_event_code: String(ctx.teszt).slice(0, 40) } : {}), data: [adat] } };
 }
@@ -100,6 +100,8 @@ export async function tiktokEloKuld(db, fk, deps = {}) {
       if (elo !== 'aktiv') return { allapot: 'halasztva', indok: 'a foglalas elo allapota nem ellenorizheto', ujraprobal_mp: 180 };
     }
     const bongeszoId = erk ? bongeszoEloEventId(erk.bongeszo) : null;
+    // a foglalasnal a kosz.oldali bongeszo ugyanazt a Schedule-t kuldi a kozos kulccsal: ha a szerver a kulcsot nem ismeri (sd-atvetel / nincs erkezes), kulon esemeny_id-vel DUPLAN szamolna -> nincs szerveres kuldes (mint a Meta-agon)
+    if (!bongeszoId && fk.tipus === 'foglalas') return { allapot: 'kihagyva', indok: 'nincs kozos (bongeszos) event_id: a szerveres peldany duplan szamolna' };
     const eventId = bongeszoId || e.esemeny_id;
     const hash = await felhasznaloHash(env, fk.vendeg || {});
     const kerelem = tiktokEloKerelem({ esemeny_id: e.esemeny_id, event_id: eventId, uzletag: fk.uzletag, ido: fk.ido || (erk ? erk.ido : t), hash, erk: erk && erk.attr && erk.attr.tiktok ? { ttclid: erk.attr.tiktok.ttclid && erk.attr.tiktok.ttclid.ertek, ttp: erk.attr.ttp } : { ttp: erk && erk.attr ? erk.attr.ttp : null }, teszt: env.TIKTOK_ELO_TESZT_KOD || null, ip: erk ? erk.ip : null, ua: erk ? erk.ua : null, oldal: fk.oldal || (erk ? erk.oldal : null) });
