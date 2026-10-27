@@ -37,3 +37,6 @@ Csak HeadSpa **foglalás** (nem ajándékkártya), új vendégnél (az ÁRNYÉK-
 - A `wrangler.toml` `[env.preview.vars]` része: `ELO_CSAK_TESZT="1"`, `TIKTOK_ELO_BE="headspa"`, `META_ELO_BE="headspa,pmu"`. Az éles `[vars]`-ban egyik sincs.
 - **Védőháló:** `ELO_CSAK_TESZT=1` mellett a modul **teszt-kód nélkül nem küld** (`kihagyva`), így egy előnézet sosem küldhet az éles pixelre / datasetre. A Test Events kódok (`TIKTOK_ELO_TESZT_KOD`, `META_ELO_TESZT_KOD`) a mérési oldaltól jönnek (az ARNYEK `*_TESZT_KOD` értékei ide nem jók), és a token (`*_ELO_TOKEN`, Secret, Preview) is kell; addig az előnézet semmit nem csinál.
 - Az éles bekapcsolás (`*_ELO_BE` az éles `[vars]`-ban + token) külön lépés és külön Feri-mondat.
+
+## Test Events kódok datasetenként (2026-10-27)
+A Meta Test Events kódja **datasetenként különbözik**: `META_ELO_TESZT_KOD` = HeadSpa (`3473839859576758`), `META_ELO_TESZT_KOD_PMU` = PMU (`1019878750660854`). Az előnézeti védőháló (`ELO_CSAK_TESZT=1`) üzletáganként a saját kódját várja; a másik dataset kódja nem jó, hiányzó kódnál az adott üzletág nem küld. A kódok nem titkok (`[env.preview.vars]`); a tokenek (`META_ELO_TOKEN`, `TIKTOK_ELO_TOKEN`) Cloudflare Secretek (Production + Preview, 2026-10-27 19:12).

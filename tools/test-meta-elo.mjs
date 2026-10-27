@@ -113,6 +113,15 @@ test('B) elonezeti vedohalo: ELO_CSAK_TESZT=1 mellett teszt-kod nelkul NINCS kul
     assert.equal(r.allapot, 'kihagyva'); assert.match(r.indok, /META_ELO_TESZT_KOD/);
   }
   assert.equal(f.hivasok.length, 0);
-  const r2 = await metaEloKuld(d, PMU_FK(), { env: ENV({ META_ELO_BE: 'headspa,pmu', ELO_CSAK_TESZT: '1', META_ELO_TESZT_KOD: 'TEST777' }), fetchImpl: f, now: () => NOW });
-  assert.deepEqual([r2.allapot, r2.teszt, f.hivasok[0].body.test_event_code], ['elkuldve', true, 'TEST777']);
+  // datasetenkenti Test Events kod: a PMU a META_ELO_TESZT_KOD_PMU-t kapja, a HeadSpa a META_ELO_TESZT_KOD-ot; a masik dataset kodja nem jo
+  const K = { META_ELO_BE: 'headspa,pmu', ELO_CSAK_TESZT: '1' };
+  assert.match((await metaEloKuld(d, PMU_FK(), { env: ENV({ ...K, META_ELO_TESZT_KOD: 'TEST47348' }), fetchImpl: f, now: () => NOW })).indok, /META_ELO_TESZT_KOD_PMU/, 'a HeadSpa kod a PMU-ra nem jo');
+  assert.match((await metaEloKuld(d, FK(), { env: ENV({ ...K, META_ELO_TESZT_KOD_PMU: 'TEST43023' }), fetchImpl: f, now: () => NOW })).indok, /META_ELO_TESZT_KOD\)/, 'a PMU kod a HeadSpa-ra nem jo');
+  assert.equal(f.hivasok.length, 0);
+  const r2 = await metaEloKuld(d, PMU_FK(), { env: ENV({ ...K, META_ELO_TESZT_KOD: 'TEST47348', META_ELO_TESZT_KOD_PMU: 'TEST43023' }), fetchImpl: f, now: () => NOW });
+  assert.deepEqual([r2.allapot, r2.teszt, f.hivasok[0].body.test_event_code], ['elkuldve', true, 'TEST43023']);
+  assert.match(f.hivasok[0].u, /\/1019878750660854\/events/);
+  const dh = d1(); await beallit(dh); const fh = hamisFetch();
+  const r3 = await metaEloKuld(dh, FK(), { env: ENV({ ...K, META_ELO_TESZT_KOD: 'TEST47348', META_ELO_TESZT_KOD_PMU: 'TEST43023' }), fetchImpl: fh, now: () => NOW });
+  assert.deepEqual([r3.allapot, fh.hivasok[0].body.test_event_code], ['elkuldve', 'TEST47348']); assert.match(fh.hivasok[0].u, /\/3473839859576758\/events/);
 });

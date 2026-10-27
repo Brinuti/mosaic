@@ -20,6 +20,8 @@ export const ELO_META_UZLETAGOK = Object.freeze(Object.keys(ELO_DATASETEK));
 const MAX_PROBA = 3, ELAKADAS_MP = 120;
 const titokOk = (v) => typeof v === 'string' && v.length >= 16;
 export const metaEloUzletagok = (env) => (env && titokOk(env.META_ELO_TOKEN) ? String(env.META_ELO_BE || '').split(',').map((s) => s.trim()).filter((u) => ELO_META_UZLETAGOK.includes(u)) : []);
+/** A Test Events kod DATASETENKENT kulonbozik (Meta): HeadSpa = META_ELO_TESZT_KOD, PMU = META_ELO_TESZT_KOD_PMU. Hianyzo kod -> null (a vedohalo ELO_CSAK_TESZT=1 mellett ekkor nem kuldunk). */
+export const metaEloTesztKod = (env, uzletag) => (uzletag === 'pmu' ? env && env.META_ELO_TESZT_KOD_PMU : env && env.META_ELO_TESZT_KOD) || null;
 export const metaEloBe = (env, uzletag) => metaEloUzletagok(env).includes(uzletag);
 
 const tisztit = (o) => { const k = {}; for (const [a, b] of Object.entries(o)) if (b !== null && b !== undefined && b !== '' && !(Array.isArray(b) && !b.length)) k[a] = b; return k; };
@@ -55,7 +57,7 @@ export async function metaEloKuld(db, fk, deps = {}) {
     if (!fk || fk.tipus !== 'foglalas' || !metaEloBe(env, fk.uzletag)) return { allapot: 'ki' };
     if (fk.fixAllapot) return { allapot: 'kihagyva', indok: 'reschedule: nincs uj konverzio' };
     // elonezeti kornyezet vedohalo (ELO_CSAK_TESZT=1 a [env.preview.vars]-ban): teszt-kod nelkul NEM kuldunk (kulonben az elonezet az ELO datasetre kuldene)
-    if (String(env.ELO_CSAK_TESZT || '') === '1' && !env.META_ELO_TESZT_KOD) return { allapot: 'kihagyva', indok: 'elonezet: csak teszt-kodos kuldes (nincs META_ELO_TESZT_KOD)' };
+    if (String(env.ELO_CSAK_TESZT || '') === '1' && !metaEloTesztKod(env, fk.uzletag)) return { allapot: 'kihagyva', indok: `elonezet: csak teszt-kodos kuldes (nincs ${fk.uzletag === 'pmu' ? 'META_ELO_TESZT_KOD_PMU' : 'META_ELO_TESZT_KOD'})` };
     const e = esemenyek({ ...fk, ertek: Number.isFinite(Number(fk.ertek)) ? fk.ertek : 0 }, konzultacioTabla(env)).find((x) => x.tipus === 'ernyo');
     if (!e) return { allapot: 'nincs_ernyo' };
     await sema(db);
@@ -72,7 +74,7 @@ export async function metaEloKuld(db, fk, deps = {}) {
       if (elo !== 'aktiv') return { allapot: 'halasztva', indok: 'a foglalas elo allapota nem ellenorizheto', ujraprobal_mp: 180 };
     }
     const hash = await felhasznaloHash(env, fk.vendeg || {});
-    const kerelem = metaEloKerelem({ dataset: ELO_DATASETEK[fk.uzletag], event_id: eventId, ido: fk.ido || erk.ido || t, hash, erk: erk.attr || {}, ip: erk.ip, ua: erk.ua, oldal: fk.oldal || erk.oldal, teszt: env.META_ELO_TESZT_KOD || null, apiVerzio: env.META_API_VERSION });
+    const kerelem = metaEloKerelem({ dataset: ELO_DATASETEK[fk.uzletag], event_id: eventId, ido: fk.ido || erk.ido || t, hash, erk: erk.attr || {}, ip: erk.ip, ua: erk.ua, oldal: fk.oldal || erk.oldal, teszt: metaEloTesztKod(env, fk.uzletag), apiVerzio: env.META_API_VERSION });
     const uuid = fk.uuid ? String(fk.uuid).toLowerCase() : null;
     if (!meglevo) {
       const r = await db.prepare("INSERT INTO meres_meta_elo (esemeny_id, uzletag, source_id, event_id, allapot, probalkozas, salonic_uuid, letrehozva, frissitve) VALUES (?1, ?2, ?3, ?4, 'folyamatban', 1, ?5, ?6, ?6) ON CONFLICT DO NOTHING").bind(e.esemeny_id, fk.uzletag, fk.source_entity_id, eventId, uuid, t).run();
