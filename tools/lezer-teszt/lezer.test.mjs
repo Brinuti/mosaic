@@ -234,13 +234,42 @@ describe('kalkulator: a legdragabb teruletet teljes aron, a tobbit 50%-on', () =
     await ctx.close();
   });
 
-  test('ha mindent levesz: nincs eredmeny, az osszegsav rejtett; telefonon az osszegsav latszik a kijeloleseknel', async () => {
+  test('ha mindent levesz: nincs eredmeny, az osszegsav rejtett; telefonon lepesenkent (testtajanknent) megy, az osszegsav latszik a kijeloleseknel', async () => {
     const { p, ctx } = await nyit({ mobil: true });
     assert.equal(await p.locator('.sz-sav').isVisible(), true);
     assert.match(await p.textContent('.sz-sav'), /86\s*500/);
-    await uresit(p);
-    assert.match(await p.textContent('#szamolo-tartalom'), /Válassz legalább egy területet/);
+    // telefonon egyszerre csak az aktualis testtaj gombjai latszanak, az ar csak a vegen
+    assert.equal(await p.locator('.sz-csoport.aktiv').count(), 1);
+    assert.equal(await p.locator('.sz-csoport.aktiv .sz-chip').first().isVisible(), true);
+    assert.equal(await p.locator('.sz-csoport:not(.aktiv) .sz-chip').first().isHidden(), true, 'a tobbi lepes rejtett');
+    assert.equal(await p.locator('.szamolo-eredmeny').isHidden(), true, 'az ar a vegen jon');
+    assert.match(await p.textContent('.sz-lepes-jelzo'), /1\. lépés a 6-ból/);
+    for (let i = 0; i < 6; i++) { await p.click('.sz-tovabb'); await p.waitForTimeout(50); } // 6 testtaj utan az ar
+    assert.equal(await p.locator('.szamolo-eredmeny').isVisible(), true);
+    assert.equal(await p.locator('.szamolo-valaszto').isHidden(), true);
+    assert.equal(szamjegy(await p.textContent('.sz-ossz b')), 86500);
+    await p.click('.sz-vissza-gomb'); // vissza a teruletekhez: az utolso (6.) lepes
+    assert.equal(await p.locator('.szamolo-valaszto').isVisible(), true);
+    assert.match(await p.textContent('.sz-lepes-jelzo'), /6\. lépés a 6-ból/);
+    for (let i = 0; i < 5; i++) { await p.click('.sz-lepes-gombok .gomb-korvonal'); await p.waitForTimeout(50); } // vissza az 1. lepesre
+    assert.match(await p.textContent('.sz-lepes-jelzo'), /1\. lépés a 6-ból/);
+    // a lepesek kozott a kijeloles megmarad: levesszuk mindet (az adott testtaj lepeseben), majd az ar-lepesen nincs eredmeny
+    for (const k of ['honalj', 'intim', 'lab']) { // a testtajak sorrendjeben (kar es honalj, intim, lab), hogy csak elore kelljen lepni
+      while (!(await p.locator(`.sz-chip[data-kulcs="${k}"]`).isVisible())) await p.click('.sz-tovabb');
+      await p.click(`.sz-chip[data-kulcs="${k}"]`);
+    }
     assert.equal(await p.locator('.sz-sav').isHidden(), true);
+    while (await p.locator('.szamolo-eredmeny').isHidden()) await p.click('.sz-tovabb');
+    assert.match(await p.textContent('#szamolo-tartalom'), /Válassz legalább egy területet/);
+    await ctx.close();
+  });
+
+  test('asztalon nincs lepesenkenti vezerles: minden testtaj es az eredmeny egyszerre latszik', async () => {
+    const { p, ctx } = await nyit();
+    assert.equal(await p.locator('.sz-lepes-gombok').isHidden(), true);
+    assert.equal(await p.locator('.sz-lepes-jelzo').isHidden(), true);
+    assert.equal(await p.locator('.sz-csoport:not(.aktiv) .sz-chip').first().isVisible(), true);
+    assert.equal(await p.locator('.szamolo-eredmeny').isVisible(), true);
     await ctx.close();
   });
 });
