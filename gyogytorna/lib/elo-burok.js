@@ -5,7 +5,7 @@ import { budapestIdo } from './motor-szerver.js';
 export const eloUtan = (alap) => async (context) => {
   const valasz = await alap(context);
   try {
-    if (context.waitUntil && context.env && context.env.GY_DB && eloMod(context.env) !== 'ki') context.waitUntil(eloPotlas({ db: context.env.GY_DB, env: context.env, budapestIdo }));
+    if (context.waitUntil && context.env && context.env.GY_DB && eloMod(context.env) !== 'ki') context.waitUntil(eloPotlas({ db: context.env.GY_DB, env: context.env, budapestIdo, host: new URL(context.request.url).hostname }));
   } catch (e) { /* a potlas hibaja nem erintheti a valaszt */ }
   return valasz;
 };

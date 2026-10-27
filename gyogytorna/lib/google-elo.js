@@ -5,17 +5,21 @@
 // KULON MODUL, a vedett gfeltoltes.js / gkiigazitas.js valtozatlan (csak importaljuk a googleAdsKuldo-t, a GFELT-et, a click-ID ellenorzest); a meglevo ARNYEK-feltoltes (7858300772) erintetlen.
 // Adat: click-ID, konverzios ido (Europe/Budapest), ertek, order_id, penznem; NINCS nev / e-mail / telefon / panasz / egeszsegugyi adat / user_identifiers.
 // ALAPBOL KI: GY_GADS_ELO = ki (alap) | dry (csak naplo, halozati hivas nincs) | validate (validateOnly=true) | eles (valodi feltoltes: kulon DECISION / Feri mondata). GY_GADS_ELO_TOL = a bongeszos order_id-s cimke elesitesenek unix-ideje (nelkule nem fut).
-import { GFELT, googleAdsKuldo, clickIdHiba, maszk } from './gfeltoltes.js';
+import { GFELT, googleAdsKuldo, clickIdHiba, maszk, gbraidBe } from './gfeltoltes.js';
 import { tranzakcioId } from './titkos.js';
 
 export const ELO_AKCIO = '7362127659';
 export const ELO_KESLELTETES = 3600; // mp: legkorabban 1 oraval a foglalas utan (a cimke elobb rogzitse a sajat konverziojat; friss kattintasnal CLICK_NOT_FOUND)
 export const ELO_MAX_PROBA = 3;
+export const ELES_HOST = 'gyogytornaszom.hu'; // a validate / eles feltoltes CSAK az eles hoston fut (elonezet / mas host: probauzem = dry, halozati hivas nincs)
 const KATT_MEZO = Object.freeze({ gclid: 'gclid', gbraid: 'gbraid', wbraid: 'wbraid' });
 const MAR_BENT = new Set(['CLICK_CONVERSION_ALREADY_EXISTS', 'ORDER_ID_ALREADY_IN_USE', 'DUPLICATE_ORDER_ID']); // ugyanaz a konverzio mar bent van: sikernek vesszuk (nincs dupla)
 const MODOK = Object.freeze(['ki', 'dry', 'validate', 'eles']);
 
 export const eloMod = (env) => { const m = String((env && env.GY_GADS_ELO) || 'ki').trim().toLowerCase(); return MODOK.includes(m) ? m : 'ki'; };
+export const eloKuldesE = (env, host) => eloMod(env) !== 'dry' && eloMod(env) !== 'ki' && String(host || '').toLowerCase().replace(/^www\./, '') === ELES_HOST;
+/** Az ELO akcio (7362127659) ONE_PER_CLICK: a gbraid / wbraid kattintas ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID hibat adna (mint a 7858300772 a DECISION #242 elott). Ezert a braid CSAK akkor megy, ha a meglevo feltolto kapuja (GY_GADS_BRAID = be) ES az elo-kapu (GY_GADS_ELO_BRAID = be, a Google-oldali szamlalasi mod ellenorzese utan) is nyitva van. */
+export const eloBraidBe = (env) => gbraidBe(env) && String((env && env.GY_GADS_ELO_BRAID) || 'ki').toLowerCase() === 'be';
 export const eloTol = (env) => { const t = Number(env && env.GY_GADS_ELO_TOL); return Number.isFinite(t) && t > 1700000000 ? Math.floor(t) : null; };
 
 const SEMA = [
@@ -50,9 +54,9 @@ export function eloValasz(http, json, { validate }) {
  * letrehozva >= TOL es legalabb ELO_KESLELTETES-sel regebbi.
  * -> { allapot: 'ki' | 'nincs_tol' | 'nincs_titkos_kulcs' | 'nincs_kuldo' | 'kesz', feldolgozva, eredmenyek }
  */
-export async function eloPotlas({ db, env = {}, most = Math.floor(Date.now() / 1000), budapestIdo, kuldo, limit = 10 }) {
+export async function eloPotlas({ db, env = {}, most = Math.floor(Date.now() / 1000), budapestIdo, kuldo, limit = 10, host = '' }) {
   try {
-    const mod = eloMod(env);
+    const mod = eloMod(env) === 'ki' ? 'ki' : (eloMod(env) !== 'dry' && !eloKuldesE(env, host) ? 'dry' : eloMod(env)); // nem eles host: validate / eles helyett probauzem
     if (mod === 'ki') return { allapot: 'ki' };
     const tol = eloTol(env);
     if (!tol) return { allapot: 'nincs_tol', megjegyzes: 'GY_GADS_ELO_TOL nincs beallitva' };
@@ -64,14 +68,14 @@ export async function eloPotlas({ db, env = {}, most = Math.floor(Date.now() / 1
       `SELECT f.uuid, f.letrehozva, f.allapot, f.hozzajarulas, f.gads_katt_tipus, f.gads_katt_ertek, f.gads_katt_ido FROM gy_foglalas f
        WHERE f.tipus = 'allapotfelmeres' AND f.teszt = 0 AND f.igazolt = 1 AND f.allapot IN ('aktiv', 'modositott', 'lemondott') AND f.gads_katt_ertek IS NOT NULL AND COALESCE(f.hozzajarulas, '') <> 'nem'
          AND f.letrehozva >= ?1 AND f.letrehozva <= ?2
-         AND NOT EXISTS (SELECT 1 FROM gy_feltoltes_elo e WHERE e.uuid = f.uuid AND (e.allapot IN ('elkuldve', 'mar_bent') OR e.probalkozas >= ?3 OR (e.mod = ?4 AND e.allapot IN ('elfogadva', 'dry'))))
+         AND NOT EXISTS (SELECT 1 FROM gy_feltoltes_elo e WHERE e.uuid = f.uuid AND (e.allapot IN ('elkuldve', 'mar_bent') OR (e.probalkozas >= ?3 AND e.mod = ?4 AND e.allapot <> 'kihagyva_braid') OR (e.allapot = 'kihagyva_braid' AND ?6 = 0) OR (e.mod = ?4 AND e.allapot IN ('elfogadva', 'dry'))))
        ORDER BY f.letrehozva LIMIT ?5`,
-    ).bind(tol, most - ELO_KESLELTETES, ELO_MAX_PROBA, mod, limit).all()).results || [];
+    ).bind(tol, most - ELO_KESLELTETES, ELO_MAX_PROBA, mod, limit, eloBraidBe(env) ? 1 : 0).all()).results || [];
     const eredmenyek = {};
     const naploz = (uuid, v) => db.prepare(
       `INSERT INTO gy_feltoltes_elo (uuid, mod, allapot, katt_tipus, katt_maszk, order_id, konverzio_ido, foglalas_allapot, hiba, http, probalkozas, letrehozva, frissitve) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 1, ?11, ?11)
        ON CONFLICT (uuid) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, katt_tipus = excluded.katt_tipus, katt_maszk = excluded.katt_maszk, order_id = excluded.order_id, konverzio_ido = excluded.konverzio_ido,
-         foglalas_allapot = excluded.foglalas_allapot, hiba = excluded.hiba, http = excluded.http, probalkozas = gy_feltoltes_elo.probalkozas + 1, frissitve = excluded.frissitve`,
+         foglalas_allapot = excluded.foglalas_allapot, hiba = excluded.hiba, http = excluded.http, probalkozas = CASE WHEN gy_feltoltes_elo.mod = excluded.mod THEN gy_feltoltes_elo.probalkozas + 1 ELSE 1 END, frissitve = excluded.frissitve`,
     ).bind(uuid, mod, v.allapot, v.kattTipus, v.maszk, v.orderId, v.ido, v.foglalasAllapot, v.hiba ?? null, v.http ?? null, most).run();
     for (const r of sorok) {
       const orderId = await tranzakcioId(r.uuid, env.GY_HMAC_KULCS);
@@ -82,7 +86,8 @@ export async function eloPotlas({ db, env = {}, most = Math.floor(Date.now() / 1
       const consent = String(env.GY_GADS_CONSENT || '') === 'granted' && r.hozzajarulas !== 'nem';
       const p = eloKonverzio({ kattTipus: r.gads_katt_tipus, kattErtek: r.gads_katt_ertek, konverzioIdo: ido, orderId, consent });
       let v;
-      if (clickHiba || !p) v = { ...alap, allapot: 'kihagyva_click_id', hiba: clickHiba || 'hibas_kerelem' };
+      if ((r.gads_katt_tipus === 'gbraid' || r.gads_katt_tipus === 'wbraid') && !eloBraidBe(env)) v = { ...alap, allapot: 'kihagyva_braid', hiba: 'braid_kapu_zarva' };
+      else if (clickHiba || !p) v = { ...alap, allapot: 'kihagyva_click_id', hiba: clickHiba || 'hibas_kerelem' };
       else if (kattIdo !== null && kattIdo > r.letrehozva) v = { ...alap, allapot: 'kihagyva_ido_sorrend', hiba: 'kattintas_a_foglalas_utan' };
       else if (mod === 'dry') v = { ...alap, allapot: 'dry', hiba: null };
       else {

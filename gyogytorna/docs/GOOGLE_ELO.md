@@ -24,3 +24,10 @@ A motor a sikeres foglalás után a böngészőnek kiadja a HMAC-alapú tranzakc
 
 ## Tesztek
 `cd gyogytorna && node --test tools/test-gy-google-elo.mjs` (9).
+
+## Független review utáni kapuk (2026-10-27)
+
+- **Braid-kapu.** Az élő `7362127659` akció ONE_PER_CLICK: a gbraid / wbraid kattintás `ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID` hibát adna (mint a `7858300772` a DECISION #242 előtt). A braid ezért csak akkor megy, ha a meglévő feltöltő kapuja (`GY_GADS_BRAID = be`) **és** az élő-kapu (`GY_GADS_ELO_BRAID = be`, alapból `ki`: a Google-oldali számlálási mód ellenőrzése után) is nyitva van; különben `kihagyva_braid`, Google-hívás nélkül. A kapu nyitása után a korábbi `kihagyva_braid` sorokat a sweep újra felveszi.
+- **Próbálkozás-plafon módonként.** A 3 próbálkozás módonként számol (dry + validate után az első éles hiba nem végleges); módváltáskor a számláló 1-ről indul.
+- **Host-védelem.** `validate` / `eles` csak az éles hoston (`gyogytornaszom.hu`, `www.`-val is) fut; előnézet / ismeretlen host: próbaüzem (`dry`), Google-hívás nincs (az MP `elesKuldesE` mintájára).
+- Védett `gfeltoltes.js` (6f5deb2070) és `gkiigazitas.js` (016ad1c4cc) változatlan.
