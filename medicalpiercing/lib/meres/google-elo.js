@@ -55,7 +55,8 @@ export function valaszErtekel(status, szoveg, { validate }) {
  * A sweep: a jogosult, meg fel nem toltott sorok pótlása. Hivasi pont: a Pages Function (mp-foglalas.js / mp-salonic-igazolas.js) waitUntil-lel; a hiba elnyelt.
  * -> { allapot: 'ki' | 'nincs_tol' | 'nincs_szallito' | 'kesz', feldolgozva, eredmenyek: { allapot: db } }
  */
-export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Date.now() / 1000), fetchImpl = fetch, limit = 10 }) {
+// limit 3: a foglalasErkezes ~36 D1-hivasa mellett a Pages Function 50 subrequest / hivas kerete miatt (a waitUntil sweep csak par sort visz; a tobbit a kovetkezo hivas viszi)
+export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Date.now() / 1000), fetchImpl = fetch, limit = 3 }) {
   try {
     const mod = eloMod(env);
     if (mod === 'ki' || kikapcsolvaE(env)) return { allapot: 'ki' };
