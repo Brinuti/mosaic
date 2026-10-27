@@ -210,11 +210,13 @@ export function monthGrid(monthKeyStr, freeDays) {
   for (let n = 1; n <= dim; n++) { const key = `${monthKeyStr}-${String(n).padStart(2, '0')}`; cells.push({ n, key, free: freeDays.has(key) }); }
   return { title: fmt(first, { year: 'numeric', month: 'long' }), cells };
 }
-/** Egy nap idopontjai a PMU-foglalo szabalya szerint: az egesz es fel orakat mutatjuk, a negyedet csak ha mellette nincs ilyen. Egy idopont = egy bejegyzes. */
+/**
+ * Egy nap idopontjai: MINDEN kezdest mutatunk, amit a Salonic kinal (egy idopont = egy bejegyzes). Korabban a PMU-foglalo szabalya szerint a negyedoras kezdest
+ * (pl. 16:15) elrejtettuk, ha mellette egesz / fel ora volt (16:30); de a Salonic "Laza" optimalizalasa pont a foglalas utani kezdest (16:15) ajanlja, ami a
+ * naptar tomor feltoltesehez kell (2026-10-27, docs/booking-engine/SALONIC_SAVOK.md): amit a Salonic kinal, azt a vendeg is lassa.
+ */
 export function dayTimes(slots, key) {
-  const nap = uniqueTimes(slots).filter((s) => dayKey(s.start_unix) === key);
-  const set = new Set(nap.map((s) => s.start_unix));
-  return nap.filter((s) => s.start_unix % 1800 === 0 || (!set.has(s.start_unix - 900) && !set.has(s.start_unix + 900)));
+  return uniqueTimes(slots).filter((s) => dayKey(s.start_unix) === key);
 }
 
 // --- megjelenites ------------------------------------------------------------------------------------------------------------
