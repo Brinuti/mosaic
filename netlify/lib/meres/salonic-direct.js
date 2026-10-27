@@ -23,6 +23,9 @@ import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes
 
 export const SD_MIN_KOR_MP = 20 * 60;          // legalabb ennyi ido a letrehozo level erkezese utan (a motoros 4 proba ~14-15 perc alatt lezarul)
 export const SD_MAX_KOR_MP = 48 * 3600;        // ennel regebbi foglalasra nincs automatikus kuldes (naplo + riasztas)
+export const SD_UJRA_MP = 900;                 // FO-3: a 'varakozas' / halasztott allapotok ujraprobalasanak javasolt ideje (mp); a hivo (Zap) legfeljebb a 48 oras korig ismetel
+/** FO-3: az ujraprobalhato allapot valasz-mezoi: ujra_mp (mikor), ujra_ig_mp (meddig, a 48 oras korig), ok_kod. A kor mar 48 ora fole ert -> nincs ujra_mp (nincs mit ismetelni). */
+export const ujraMezok = (kor, mp, okKod) => (kor < SD_MAX_KOR_MP ? { ujra_mp: Math.max(60, Math.min(SD_UJRA_MP, Math.floor(mp))), ujra_ig_mp: SD_MAX_KOR_MP - kor, ok_kod: okKod } : { ok_kod: okKod });
 export const SD_ATVETEL_ELAKADAS_MP = 300;      // egy 'atveve' allapotu sor ennyi masodperc utan (Worker-halal) ujra atveheto
 const sec = (now) => Math.floor(now / 1000);
 const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -298,7 +301,9 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
     return { ...eredmeny, terv_esemenyek: lista.map((e) => ({ esemeny_id: e.esemeny_id, nev: e.nev, tipus: e.tipus, ertek: ar.minoseg === 'exact' || e.ertek_forras !== 'tenyleges_ar' ? e.ertek : null, nyitott: !!e.nyitott })), fix_allapot: fk.fixAllapot || null };
   }
   const r = await elosztas(db, fk, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, kuldo: fuggosegek.kuldo, eloEllenorzes: async () => (await foglalasAllapot({ host: mezok.host, uuid, fetchImpl: fuggosegek.fetchImpl })).allapot });
-  return { ...eredmeny, esemeny_kuldes: r };
+  // FO-3: a halasztott (elo allapot nem ellenorizheto) cella kesobb ujraprobalhato: a hivo ujra_mp-t kap (max. 48 oras korig)
+  const ujra = r && r.allapot === 'halasztva' && r.ujraprobal_mp ? ujraMezok(Math.floor(most / 1000) - t0, r.ujraprobal_mp, 'halasztva_elo_allapot') : {};
+  return { ...eredmeny, esemeny_kuldes: r, ...ujra };
 }
 
 /**
@@ -362,7 +367,7 @@ async function motorPotlas({ db, env, mezok, bejovo, bookingId, fuggosegek, esem
   try { return await esemenyKuldo({ db, env, mezok, bejovo, eredmeny: { allapot: 'parositott', booking_id: bookingId }, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now }); }
   catch (e) { return { allapot: 'hiba', miert: String((e && e.message) || e).slice(0, 200) }; }
 }
-const motorKimenet = (ek) => (ek ? { esemeny_kuldes: ek, ...(ek.allapot === 'halasztva' || ek.allapot === 'hiba' ? { riasztas: true } : {}) } : {});
+const motorKimenet = (ek, kor) => (ek ? { esemeny_kuldes: ek, ...(ek.allapot === 'halasztva' || ek.allapot === 'hiba' ? { riasztas: true } : {}), ...(ek.allapot === 'halasztva' && ek.ujraprobal_mp && Number.isFinite(kor) ? ujraMezok(kor, ek.ujraprobal_mp, 'halasztva_elo_allapot') : {}) } : {});
 
 /**
  * sd_atvetel / sd_feloldas. bejovo.szaraz === true: IRASMENTES terv (semmi nem valtozik a D1-ben, nem kuld, a motoros vegso probat sem futtatja).
@@ -475,7 +480,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   // --- a motor megelozte / nem dontheto el ---
   if (sor && sor.kuldve) { // a motor kuldott: a halasztott cellak potlasa (motoros identity) CSAK 48 oran belul; utana nincs utolagos kuldes (3. kodattekintes)
     const regi = kor > SD_MAX_KOR_MP;
-    return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0, ...(regi ? { miert: '48 oranal regebbi: a motoros foglalas halasztott cellaira nincs utolagos kuldes' } : {}), ...motorKimenet(szaraz || regi ? null : await motorPotlas({ db, env, mezok, bejovo, bookingId: sor.booking_id, fuggosegek, esemenyKuldo })) };
+    return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0, ...(regi ? { miert: '48 oranal regebbi: a motoros foglalas halasztott cellaira nincs utolagos kuldes' } : {}), ...motorKimenet(szaraz || regi ? null : await motorPotlas({ db, env, mezok, bejovo, bookingId: sor.booking_id, fuggosegek, esemenyKuldo }), kor) };
   }
   if (sor && sor.allapot === 'ellentmondas') return { ...alap, allapot: 'motor_ellentmondas', miert: 'a motoros parositas ellentmondast jelzett: ember dont', riasztas: true, kuldes: 0 };
   if (kor < SD_MIN_KOR_MP) return { ...alap, allapot: 'koran', miert: `a letrehozo levelnek legalabb ${SD_MIN_KOR_MP / 60} perces kell`, ujra_mp: SD_MIN_KOR_MP - kor, kuldes: 0 };
@@ -484,7 +489,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
     const atvett = await atvesz(db, uuid, sdId, 'lejart', t, 1);
     return { ...alap, allapot: 'lejart', miert: '48 oranal regebbi foglalas: nincs automatikus kuldes (naplo + riasztas)', riasztas: true, naplozva: atvett, kuldes: 0 };
   }
-  if (sor && sor.allapot === 'fuggoben' && sor.kovetkezo && t < sor.kovetkezo + 300) return { ...alap, allapot: 'varakozas', miert: 'a motoros parositas meg nincs lezarva (fuggoben)', kuldes: 0 };
+  if (sor && sor.allapot === 'fuggoben' && sor.kovetkezo && t < sor.kovetkezo + 300) return { ...alap, allapot: 'varakozas', miert: 'a motoros parositas meg nincs lezarva (fuggoben)', kuldes: 0, ...ujraMezok(kor, sor.kovetkezo + 300 - t, 'varakozas_fuggoben') };
 
   if (szaraz) { // IRASMENTES terv: a vegso probat nem futtatjuk (az irna), a tobbi lepest kiszamoljuk
     const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl, kuponos: kuponJelzes(mezok.szolgaltatas) });
@@ -501,11 +506,11 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
       if (esemenyKuldo && v.booking_id) { try { ek = await esemenyKuldo({ db, env, mezok, bejovo, eredmeny: v, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now }); } catch (e) { ek = { allapot: 'hiba', miert: String((e && e.message) || e).slice(0, 200) }; } }
       return { ...alap, allapot: 'motor_nyert', late_pairing: true, miert: 'a vegso parositas sikerult: a motoros identity kuldi az esemenyt', booking_id: v.booking_id, ...motorKimenet(ek) };
     }
-    if (v.allapot === 'parositott') return { ...alap, allapot: 'motor_kuldte', booking_id: v.booking_id, kuldes: 0, ...motorKimenet(await motorPotlas({ db, env, mezok, bejovo, bookingId: v.booking_id, fuggosegek, esemenyKuldo })) };
+    if (v.allapot === 'parositott') return { ...alap, allapot: 'motor_kuldte', booking_id: v.booking_id, kuldes: 0, ...motorKimenet(await motorPotlas({ db, env, mezok, bejovo, bookingId: v.booking_id, fuggosegek, esemenyKuldo }), kor) };
     if (v.allapot === 'ellentmondas') return { ...alap, allapot: 'motor_ellentmondas', miert: v.miert || 'ellentmondas', riasztas: true, kuldes: 0 };
     if (v.allapot === 'ervenytelen') return { ...alap, allapot: 'ervenytelen', miert: v.miert };
     // a motor TALALT jeloltet, de atmenetileg nem tudott dolgozni (a jelolt / a kulcs birtokosanak elo allapota nem ellenorizheto): a motoros identity nyer, NEM veszunk at (a parositatlan sor a lezaras utan sd_hianyzik riasztas, es ujra probalhato)
-    if ((v.allapot === 'fuggoben' || v.allapot === 'parositatlan') && v.nyom && ((v.nyom.talalatok || []).length || (v.nyom.valasztas || []).some((x) => x.allapot === 'varakozas'))) return { ...alap, allapot: 'varakozas', miert: 'a motoros parositas jeloltet talalt, de atmenetileg nem ellenorizheto: a motoros identity nyer, az atvetel kesobb ujraprobalhato', kuldes: 0 };
+    if ((v.allapot === 'fuggoben' || v.allapot === 'parositatlan') && v.nyom && ((v.nyom.talalatok || []).length || (v.nyom.valasztas || []).some((x) => x.allapot === 'varakozas'))) return { ...alap, allapot: 'varakozas', miert: 'a motoros parositas jeloltet talalt, de atmenetileg nem ellenorizheto: a motoros identity nyer, az atvetel kesobb ujraprobalhato', kuldes: 0, ...ujraMezok(kor, SD_UJRA_MP, 'varakozas_nem_ellenorizheto') };
   }
 
   // --- ATOMI ATVETEL ---
@@ -513,7 +518,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   if (!atvett) {
     sor = await olvas();
     if (sor && sor.sd_id === sdId) return { ...alap, allapot: sor.sd_allapot || 'atveve', idempotens: true, miert: 'egy masik hivas mar atvette', kuldes: 0 };
-    if (sor && sor.kuldve) return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0, ...motorKimenet(await motorPotlas({ db, env, mezok, bejovo, bookingId: sor.booking_id, fuggosegek, esemenyKuldo })) };
+    if (sor && sor.kuldve) return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0, ...motorKimenet(await motorPotlas({ db, env, mezok, bejovo, bookingId: sor.booking_id, fuggosegek, esemenyKuldo }), kor) };
     return { ...alap, allapot: 'nem_atveheto', miert: 'a sor allapota nem engedi az atvetelt: ' + (sor ? sor.allapot : '?'), kuldes: 0 };
   }
   try { await vendegIndexSor(db, env, { mezok, vendeg: bejovo.vendeg, nev: bejovo.nev, now: most, forras: 'sd_atvetel' }); } catch (e) { /* az index sosem akadalyozhatja a kuldest */ }
