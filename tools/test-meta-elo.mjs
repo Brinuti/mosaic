@@ -2,7 +2,7 @@
 //   node --test tools/test-meta-elo.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ELO_DATASET, ELO_META_ESEMENY, metaEloBe, metaEloKerelem, metaEloKuld, metaEloUzletagok } from '../netlify/lib/meres/meta-elo.js';
+import { ELO_DATASET, ELO_DATASETEK, ELO_META_ESEMENY, metaEloBe, metaEloKerelem, metaEloKuld, metaEloUzletagok } from '../netlify/lib/meres/meta-elo.js';
 import { erkezesMent, meresSema } from '../netlify/lib/meres/elosztas.js';
 import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { d1 } from './lib-sd-teszt.mjs';
@@ -22,7 +22,8 @@ const tablaVan = (d, t) => d.db.prepare('SELECT count(*) AS n FROM sqlite_master
 
 test('A) kapcsolo: alapbol KI; csak META_ELO_BE=headspa ES >= 16 karakteres META_ELO_TOKEN; mas uzletag nem kapcsolhato; az elo dataset a HeadSpa pixel; az esemeny Schedule', () => {
   assert.deepEqual(metaEloUzletagok({}), []); assert.deepEqual(metaEloUzletagok({ META_ELO_BE: 'headspa' }), []); assert.deepEqual(metaEloUzletagok({ META_ELO_BE: 'headspa', META_ELO_TOKEN: 'rovid' }), []);
-  assert.deepEqual(metaEloUzletagok(ENV({ META_ELO_BE: 'headspa, szor,pmu' })), ['headspa'], 'csak a HeadSpa (DECISION #240)');
+  assert.deepEqual(metaEloUzletagok(ENV({ META_ELO_BE: 'headspa, szor,pmu' })), ['headspa', 'pmu'], 'HeadSpa (DECISION #240) + PMU (DECISION #244); a szor nem kapcsolhato');
+  assert.deepEqual(metaEloUzletagok(ENV({ META_ELO_BE: 'pmu' })), ['pmu']); assert.equal(ELO_DATASETEK.pmu, '1019878750660854'); assert.equal(ELO_DATASETEK.headspa, ELO_DATASET); assert.ok(ELO_CELOK.meta.includes(ELO_DATASETEK.pmu));
   assert.equal(metaEloBe(ENV(), 'headspa'), true); assert.equal(metaEloBe(ENV(), 'szor'), false);
   assert.equal(ELO_DATASET, '3473839859576758'); assert.ok(ELO_CELOK.meta.includes(ELO_DATASET)); assert.equal(ELO_META_ESEMENY, 'Schedule');
 });
@@ -73,4 +74,34 @@ test('B) Meta-hiba -> hiba, ujraprobalas utan elkuldve; legfeljebb 3 probalkozas
   const d3 = d1(); await beallit(d3); assert.equal((await metaEloKuld(d3, FK(), dep(async () => { throw new Error('halozat'); }))).allapot, 'hiba');
   const d4 = d1(); await beallit(d4); await erkezesMent(d4, ERK({ source_id: ID('b') }), NOW); const uuid = '11111111-2222-3333-4444-555555555555'; const f4 = hamisFetch();
   await metaEloKuld(d4, FK({ uuid }), { env: ENV(), fetchImpl: f4, now: () => NOW }); await metaEloKuld(d4, FK({ uuid, source_entity_id: ID('b') }), { env: ENV(), fetchImpl: f4, now: () => NOW }); assert.equal(f4.hivasok.length, 1, 'egy Salonic-foglalas egy esemeny');
+});
+
+// DECISION #244 (UJ-79): Mosaic PMU - ugyanaz a Schedule a PMU SAJAT elo pixelere (1019878750660854), 1 hetig parhuzamosan az `pmu-ok` URL-szaballyal.
+const PMU_BU = 'https://pmu.salonic.hu/guestData/?placeId=3&serviceId=471034&startDate=1793458800';
+const PMU_KULCS = 'pmuok-555-471034-1793458800';
+const PMU_ERK = (o = {}) => ERK({ uzletag: 'pmu', szolgaltatas: 'PMU kezeles', bookingUrl: PMU_BU, oldal: HOST + '/pmu-ok', ...o });
+const PMU_FK = (o = {}) => FK({ uzletag: 'pmu', jelleg: 'elso', ...o });
+test('B) PMU: a META_ELO_BE=pmu mellett Schedule a PMU pixelre a bongeszos kulccsal; HeadSpa kapcsolo nelkul a HeadSpa nem megy; PMU kapcsolo nelkul a PMU nem megy', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d); await erkezesMent(d, PMU_ERK(), NOW);
+  assert.equal((await metaEloKuld(d, PMU_FK(), { env: ENV({ META_ELO_BE: 'headspa' }), fetchImpl: f, now: () => NOW })).allapot, 'ki', 'PMU kapcsolo nelkul nincs kuldes');
+  const r = await metaEloKuld(d, PMU_FK(), { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f, now: () => NOW, eloEllenorzes: async () => 'aktiv' });
+  assert.deepEqual([r.allapot, r.esemeny], ['elkuldve', 'Schedule']);
+  const h = f.hivasok[0]; assert.match(h.u, /\/1019878750660854\/events\?access_token=/); assert.equal(h.body.data[0].event_name, 'Schedule'); assert.equal(h.body.data[0].event_id, PMU_KULCS);
+  assert.equal(h.body.data[0].event_source_url, HOST + '/pmu-ok'); assert.equal(h.body.data[0].custom_data, undefined, 'nincs ertek / szolgaltatasnev'); assert.equal(JSON.stringify(h.body).includes('PMU kezeles'), false);
+  assert.deepEqual(d.db.prepare('SELECT uzletag, allapot, event_id FROM meres_meta_elo').all().map((x) => [x.uzletag, x.allapot, x.event_id]), [['pmu', 'elkuldve', PMU_KULCS]]);
+  assert.equal((await metaEloKuld(d, PMU_FK(), { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f, now: () => NOW })).allapot, 'mar_kuldve'); assert.equal(f.hivasok.length, 1, 'duplazas nincs');
+  const d2 = d1(); const f2 = hamisFetch(); await beallit(d2);
+  assert.equal((await metaEloKuld(d2, FK(), { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f2, now: () => NOW })).allapot, 'ki', 'a HeadSpa a pmu kapcsolotol nem indul'); assert.equal(f2.hivasok.length, 0);
+});
+test('B) PMU: kulcs nelkul (sd-atvetel / hianyzo g / serviceId / startDate), lead-esemeny (nem foglalas), kupon, reschedule: nincs kuldes', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d);
+  await erkezesMent(d, PMU_ERK({ source_id: ID('n'), g: '' }), NOW); await erkezesMent(d, PMU_ERK({ source_id: ID('m'), bookingUrl: 'https://pmu.salonic.hu/guestData/?placeId=3' }), NOW);
+  const dep = { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f, now: () => NOW };
+  assert.match((await metaEloKuld(d, PMU_FK({ source_entity_id: 'sd_' + 'b'.repeat(24) }), dep)).indok, /kozos/);
+  assert.match((await metaEloKuld(d, PMU_FK({ source_entity_id: ID('n') }), dep)).indok, /kozos/);
+  assert.match((await metaEloKuld(d, PMU_FK({ source_entity_id: ID('m') }), dep)).indok, /kozos/);
+  for (const tipus of ['pmu_foto_lead', 'pmu_visszahivas_lead', 'ajandekkartya']) assert.equal((await metaEloKuld(d, PMU_FK({ tipus, source_entity_id: ID('l') }), dep)).allapot, 'ki', tipus);
+  assert.equal((await metaEloKuld(d, PMU_FK({ kupon: true, source_entity_id: ID('k') }), dep)).allapot, 'nincs_ernyo');
+  assert.equal((await metaEloKuld(d, PMU_FK({ fixAllapot: { allapot: 'kihagyva' } }), dep)).allapot, 'kihagyva');
+  assert.equal(f.hivasok.length, 0);
 });
