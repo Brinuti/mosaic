@@ -68,7 +68,7 @@ export async function eloPotlas({ db, env = {}, most = Math.floor(Date.now() / 1
       `SELECT f.uuid, f.letrehozva, f.allapot, f.hozzajarulas, f.gads_katt_tipus, f.gads_katt_ertek, f.gads_katt_ido FROM gy_foglalas f
        WHERE f.tipus = 'allapotfelmeres' AND f.teszt = 0 AND f.igazolt = 1 AND f.allapot IN ('aktiv', 'modositott', 'lemondott') AND f.gads_katt_ertek IS NOT NULL AND COALESCE(f.hozzajarulas, '') <> 'nem'
          AND f.letrehozva >= ?1 AND f.letrehozva <= ?2
-         AND NOT EXISTS (SELECT 1 FROM gy_feltoltes_elo e WHERE e.uuid = f.uuid AND (e.allapot IN ('elkuldve', 'mar_bent') OR (e.probalkozas >= ?3 AND e.mod = ?4 AND e.allapot <> 'kihagyva_braid') OR (e.allapot = 'kihagyva_braid' AND ?6 = 0) OR (e.mod = ?4 AND e.allapot IN ('elfogadva', 'dry'))))
+         AND NOT EXISTS (SELECT 1 FROM gy_feltoltes_elo e WHERE e.uuid = f.uuid AND (e.allapot IN ('elkuldve', 'mar_bent') OR (e.probalkozas >= ?3 AND e.mod = ?4 AND e.allapot <> 'kihagyva_braid') OR (e.allapot = 'kihagyva_braid' AND ?6 = 0) OR e.allapot IN ('kihagyva_click_id', 'kihagyva_ido_sorrend') OR (e.mod = ?4 AND e.allapot IN ('elfogadva', 'dry'))))
        ORDER BY f.letrehozva LIMIT ?5`,
     ).bind(tol, most - ELO_KESLELTETES, ELO_MAX_PROBA, mod, limit, eloBraidBe(env) ? 1 : 0).all()).results || [];
     const eredmenyek = {};

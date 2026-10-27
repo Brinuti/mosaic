@@ -121,3 +121,9 @@ test('D) host-vedelem: validate / eles csak az eles hoston (gyogytornaszom.hu, w
   await eloPotlas({ host: 'www.gyogytornaszom.hu', db, env: ENV(), most: MOST, budapestIdo, kuldo: k }); assert.equal(k.h.length, 1);
   assert.equal(eloKuldesE(ENV(), 'gyogytornaszom.hu'), true); assert.equal(eloKuldesE(ENV({ GY_GADS_ELO: 'dry' }), 'gyogytornaszom.hu'), false);
 });
+
+test('D) a determinisztikusan kihagyott sorok (kihagyva_click_id / kihagyva_ido_sorrend) nem kerulnek ujra felvetelre (nincs felesleges D1-iras)', async () => {
+  const db = await ujDb([F(1, { gads_katt_ertek: 'rovid' }), F(2, { gads_katt_ido: MOST })]); const k = kuldoGyar();
+  for (let i = 0; i < 4; i++) await eloPotlas({ host: 'gyogytornaszom.hu', db, env: ENV(), most: MOST + i * 60, budapestIdo, kuldo: k, limit: 50 });
+  assert.deepEqual(naplo(db).map((x) => [x.allapot, x.probalkozas]), [['kihagyva_click_id', 1], ['kihagyva_ido_sorrend', 1]]); assert.equal(k.h.length, 0);
+});
