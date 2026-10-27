@@ -7,3 +7,5 @@ MÉRÉST ÉRINTŐ, alapból KI. Részletek: [docs/booking-engine/ERINTESNAPLO.md
 * Védett fájlok (platformok / elosztás / meta-bongeszo-kulcs / esemeny-modell / qa-nap / vegpontok, gyogytorna, medicalpiercing): érintetlenek.
 * Tesztek: test-erintesnaplo 26/26, test-lpt-forras 58/58.
 * Nincs vendégadat; nyers vid / kattintásazonosító a D1-ben nincs.
+
+* Mérési spec-ellenőrzés (#498, 6435430910) két kiegészítése: hirdetéscsoport-szint (`g`, riport `hirdetescsoport`) és a hirdetés forrása (`af`, `szint_bizonytalan`). Tesztek: test-erintesnaplo 27/27.

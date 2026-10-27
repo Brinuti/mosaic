@@ -32,7 +32,7 @@ Dedup: ugyanaz a kattintás 30 percen belül nem duplázódik; organikus legfelj
 
 ## Riport (`/api/mosaic-erintes-riport`)
 
-Kulcs csak a `x-egyeztetes-kulcs` fejlécben (a `?kulcs=` nem fogadható el), különben 404. Csak GET. Hónap = a konverzió ideje szerint, **Europe/Budapest**. Tartalom: konverziók száma, hirdetés- és kampányszintű kreditek (üzletág × konverzió-típus szerint: utolsó / első / segítő / lineáris), top 20 útvonal (az organikus érintés látszik, de kreditet nem kap), a napok eloszlása. A függő útvonalakat a hívás lezárja.
+Kulcs csak a `x-egyeztetes-kulcs` fejlécben (a `?kulcs=` nem fogadható el), különben 404. Csak GET. Hónap = a konverzió ideje szerint, **Europe/Budapest**. Tartalom: konverziók száma, hirdetés-, hirdetéscsoport- és kampányszintű kreditek (üzletág × konverzió-típus szerint: utolsó / első / segítő / lineáris), top 20 útvonal (az organikus érintés látszik, de kreditet nem kap), a napok eloszlása. A függő útvonalakat a hívás lezárja.
 
 ## Rollback
 
@@ -42,3 +42,7 @@ Kulcs csak a `x-egyeztetes-kulcs` fejlécben (a `?kulcs=` nem fogadható el), k�
 ## Tesztek
 
 `node --test tools/test-erintesnaplo.mjs` (26 teszt: tiszta függvények, végpont, útvonal-zárás, riport, kliens) és `tools/test-lpt-forras.mjs` (58).
+
+## Hirdetéscsoport-szint és a hirdetés forrása (mérési spec-ellenőrzés, #498)
+
+Az útvonal-JSON érintésenként `g = adgroupid || utm_term` (hirdetéscsoport) és `af` (a hirdetés forrása: `adid` | `utm_content`) mezőt is tartalmaz; a riport `hirdetescsoport` listája `platform|kampany|csoport` kulccsal ad kreditet. A 4 kis Google-kampány suffixében (`utm_content={adgroupid}`) az `utm_content` hirdetéscsoport-azonosító, nem hirdetés: ezért a Google `utm_content` forrású hirdetés-szintű sorok `szint_bizonytalan: true` jelzést kapnak, a szintet nem találgatjuk. A kis Google-kampányok listáját a mérés adja át (nem kell a kódba).

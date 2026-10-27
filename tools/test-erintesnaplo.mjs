@@ -122,6 +122,21 @@ test('A) riportEpit: hirdetes- es kampany-szint, uzletag x konverzio-tipus szeri
   assert.ok(E.riportEpit(sorok, { top: 1 }).utvonalak.length === 1);
 });
 
+test('A) hirdetescsoport-szint + hirdetes-forras jelzo: g = adgroupid || utm_term, af = adid | utm_content; a Google utm_content-os hirdetes-szint bizonytalannak jelolt', () => {
+  const er = (...a) => JSON.stringify(a.map(([t, p, c, g, ad, af]) => ({ t, p, c, ...(g ? { g } : {}), ...(ad ? { a: ad } : {}), ...(af ? { af } : {}) })));
+  const sorok = [
+    { uzletag: 'szor', konverzio_tipus: 'FoglalasElso', erintesek: er([1, 'google_nem_markas', 'K1', 'G1', 'G1', 'utm_content'], [2, 'meta', 'M', null, 'a1', 'adid']), napok_az_elso_ota: 1 },
+    { uzletag: 'szor', konverzio_tipus: 'FoglalasElso', erintesek: er([1, 'google_nem_markas', 'K1', 'G2', '777', 'adid']), napok_az_elso_ota: 0 },
+  ];
+  const r = E.riportEpit(sorok);
+  const cs = (k) => r.hirdetescsoport.find((x) => x.kulcs === k);
+  assert.deepEqual([cs('google_nem_markas|K1|G1').segitett, cs('meta|M|-').utolso, cs('google_nem_markas|K1|G2').utolso], [1, 1, 1], 'hirdetescsoport-szintu kreditek (a Meta csoport nelkul "-")');
+  const h = (k) => r.hirdetes.find((x) => x.kulcs === k);
+  assert.equal(h('meta|M|a1').szint_bizonytalan, undefined); assert.equal(h('google_nem_markas|K1|777').szint_bizonytalan, undefined, 'adid-bol jott: biztos');
+  assert.equal(h('google_nem_markas|K1|G1').szint_bizonytalan, true, 'Google utm_content: bizonytalan');
+  assert.equal(E.csoportKulcs({ p: 'meta', c: 'M' }), 'meta|M|-');
+});
+
 // ======================================================================== B) a vegpont
 test('B) kapcsolo KI (alap): a fizetett POST csak az mh_lpt-t irja (egy Set-Cookie), mh_vid nincs, tabla nincs; az organikus jelzes "vid: false"-t kap, suti nelkul', async () => {
   const { d, env } = ENV({ MERES_VID_BE: undefined });
@@ -253,6 +268,7 @@ test('C) utvonal-zaras: igazolt konverziohoz a vid elozo 30 napjanak erintesei i
   const u = mind(d, 'meres_utvonal'); assert.equal(u.length, 1); const x = u[0];
   assert.deepEqual([x.source_id, x.uzletag, x.konverzio_tipus, x.konverzio_ido, x.erintes_db, x.fizetett_db, x.elso_platform, x.utolso_platform, x.napok_az_elso_ota, x.het_napos], [ID('q'), 'pmu', 'Konzultacio', NOW, 4, 3, 'meta', 'tiktok', 12, 1]);
   assert.deepEqual(JSON.parse(x.erintesek).map((e) => e.p), ['meta', 'organikus_direkt', 'google_markas', 'tiktok']); assert.deepEqual(JSON.parse(x.erintesek).map((e) => e.kp || null), ['fbclid', null, 'gclid', 'ttclid']);
+  assert.deepEqual(JSON.parse(x.erintesek).map((e) => [e.g || null, e.af || null]), [[null, 'adid'], [null, null], ['222', 'adid'], [null, null]], 'g (adgroupid) es af (a hirdetes forrasa) az utvonalban');
   assert.equal(Object.keys(x).includes('vid_hash'), false, 'a meres_utvonal nem tartalmaz vid-et'); const sz = dump(d).slice(dump(d).indexOf(ID('q'))); assert.equal(JSON.stringify(mind(d, 'meres_utvonal')).includes(await E.vidHash(KULCS, vid)), false);
   assert.deepEqual(await E.utvonalLezar(d, { most: NOW }), { zarva: 0, hibak: [] }, 'idempotens');
   // vid-megfeleltetes nelkuli konverzio, athelyezes (nem uj konverzio), nem alap-sor: nincs utvonal

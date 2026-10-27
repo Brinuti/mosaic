@@ -153,11 +153,13 @@ export async function vidErkezesIr(db, { source_id, vid_hash, most }) {
 
 // ---------- az utvonal zarasa ----------
 const NEM_KONVERZIO_INDOK = "reschedule_confirmed%"; // az athelyezes nem uj konverzio (#417): a regi foglalas kulcsa mar megkapta az utvonalat
-/** Az erintes JSON-alakja az utvonalban (vid nelkul): t (ido), p (platform), c (kampany), a (hirdetes), kp (kattintasi tipus), u (uzletag-becsles), l (landing utvonal). */
+/** Az erintes JSON-alakja az utvonalban (vid nelkul): t (ido), p (platform), c (kampany), g (hirdetescsoport: adgroupid | utm_term), a (hirdetes: adid | utm_content), af (a hirdetes forrasa: 'adid' | 'utm_content';
+ *  a 4 kis Google-kampanynal az utm_content hirdetescsoport-azonosito, ezert a riport a Google 'utm_content' forrasu hirdetes-szintet bizonytalannak jelzi), kp (kattintasi tipus), u (uzletag-becsles), l (landing utvonal). */
 const utvonalErintes = (r) => {
   const o = { t: r.ido, p: r.platform };
   const c = r.utm_campaign || r.gad_campaignid; if (c) o.c = c;
-  const a = r.adid || r.utm_content; if (a) o.a = a;
+  const g = r.adgroupid || r.utm_term; if (g) o.g = g;
+  const a = r.adid || r.utm_content; if (a) { o.a = a; o.af = r.adid ? 'adid' : 'utm_content'; }
   if (r.kattintas_param) o.kp = r.kattintas_param;
   if (r.uzletag_becsles) o.u = r.uzletag_becsles;
   if (r.lap) o.l = r.lap;
@@ -180,7 +182,7 @@ export async function utvonalLezar(db, { most = Math.floor(Date.now() / 1000), l
     if (mar.has(f.source_id)) continue; mar.add(f.source_id); // egy source_id-hoz egy utvonal (tobb alap-nev eseten az elso)
     try {
       if (!KONV_TIPUSOK.includes(f.nev) || !UZLETAGOK.includes(f.uzletag)) continue;
-      const { results: er } = await db.prepare('SELECT ido, platform, fizetett, uzletag_becsles, utm_campaign, utm_content, gad_campaignid, adid, kattintas_param, lap FROM meres_erintes WHERE vid_hash = ?1 AND ido <= ?2 AND ido >= ?3 ORDER BY ido, id LIMIT ?4')
+      const { results: er } = await db.prepare('SELECT ido, platform, fizetett, uzletag_becsles, utm_campaign, utm_content, utm_term, gad_campaignid, adgroupid, adid, kattintas_param, lap FROM meres_erintes WHERE vid_hash = ?1 AND ido <= ?2 AND ido >= ?3 ORDER BY ido, id LIMIT ?4')
         .bind(f.vid_hash, f.t, f.t - UTVONAL_ABLAK_NAP * 86400, MAX_ERINTES_AZ_UTVONALBAN).all();
       const sorok = er || [];
       const fiz = sorok.filter((r) => Number(r.fizetett) === 1);
@@ -199,6 +201,9 @@ export async function utvonalLezar(db, { most = Math.floor(Date.now() / 1000), l
 /** A hirdetes-kulcs egy erintesbol: platform | kampany | hirdetes ("-" ha nincs). */
 export const hirdetesKulcs = (e) => `${e.p}|${e.c || '-'}|${e.a || '-'}`;
 export const kampanyKulcs = (e) => `${e.p}|${e.c || '-'}`;
+export const csoportKulcs = (e) => `${e.p}|${e.c || '-'}|${e.g || '-'}`;
+/** A hirdetes-szint bizonytalan, ha a "hirdetes" az utm_content-bol jott egy Google-erintesnel (a kis Google-kampanyok suffixe: utm_content={adgroupid}). */
+const bizonytalanHirdetes = (e) => !!e && typeof e.p === 'string' && e.p.startsWith('google') && e.af === 'utm_content';
 /**
  * Egy konverzio (utvonal-sor) kreditjei: utolso kattintas (az utvonal utolso FIZETETT erintese), elso erintes (az elso fizetett), segitett (minden mas fizetett erintes kulcsa, kulcsonkent legfeljebb 1,
  * az utolso kattintas kulcsa nem), linearis (1 konverzio egyenlo reszekre a fizetett erintesek kozott). Organikus / direkt sor kreditet NEM kap. fizetett erintes nelkul: nincs kredit.
@@ -216,18 +221,19 @@ const kerekit = (x) => Math.round(x * 1000) / 1000;
 const NAP_VEDEK = Object.freeze([['0', 0, 0], ['1', 1, 1], ['2-3', 2, 3], ['4-7', 4, 7], ['8-14', 8, 14], ['15-30', 15, 30]]);
 /**
  * A havi riport az utvonal-sorokbol. sorok: meres_utvonal sorok { uzletag, konverzio_tipus, konverzio_ido, erintesek (JSON szoveg), napok_az_elso_ota, ... }.
- * -> { konverziok, hirdetes: [{ uzletag, konverzio_tipus, kulcs: 'platform|kampany|hirdetes', utolso, segitett, elso, linearis }], kampany: [...], utvonalak: [{ utvonal, db }] (top 20, platform+kampany szint),
+ * -> { konverziok, hirdetes: [{ uzletag, konverzio_tipus, kulcs: 'platform|kampany|hirdetes', utolso, segitett, elso, linearis, szint_bizonytalan? }], hirdetescsoport: [... kulcs: 'platform|kampany|csoport'], kampany: [...], utvonalak: [{ utvonal, db }] (top 20, platform+kampany szint),
  *      napok: { '<uzletag>': { '0': db, '1': db, ... } } }
  */
 export function riportEpit(sorok, { top = 20 } = {}) {
-  const hird = new Map(), kamp = new Map(), utak = new Map(), napok = {};
+  const hird = new Map(), csop = new Map(), kamp = new Map(), utak = new Map(), napok = {}, bizonytalan = new Set();
   const noveles = (m, uz, tipus, kulcs, mezo, ertek) => { const kk = `${uz}|${tipus}|${kulcs}`; const o = m.get(kk) || { uzletag: uz, konverzio_tipus: tipus, kulcs, utolso: 0, segitett: 0, elso: 0, linearis: 0 }; o[mezo] += ertek; m.set(kk, o); };
   let n = 0;
   for (const s of sorok || []) {
     let er; try { er = JSON.parse(s.erintesek); } catch (e) { er = []; }
     if (!Array.isArray(er)) er = [];
     n++;
-    for (const [m, fv] of [[hird, hirdetesKulcs], [kamp, kampanyKulcs]]) {
+    for (const e of er) if (bizonytalanHirdetes(e)) bizonytalan.add(`${s.uzletag}|${s.konverzio_tipus}|${hirdetesKulcs(e)}`);
+    for (const [m, fv] of [[hird, hirdetesKulcs], [csop, csoportKulcs], [kamp, kampanyKulcs]]) {
       const k = kreditek(er, fv);
       if (k.utolso) noveles(m, s.uzletag, s.konverzio_tipus, k.utolso, 'utolso', 1);
       if (k.elso) noveles(m, s.uzletag, s.konverzio_tipus, k.elso, 'elso', 1);
@@ -239,8 +245,8 @@ export function riportEpit(sorok, { top = 20 } = {}) {
     const ut = (lanc.length ? lanc.join(' > ') : '(nincs erintes)') + ' > konverzio'; utak.set(ut, (utak.get(ut) || 0) + 1);
     if (s.napok_az_elso_ota != null) { const d = Number(s.napok_az_elso_ota); const v = NAP_VEDEK.find(([, a, b]) => d >= a && d <= b) || ['30+']; const o = napok[s.uzletag] || (napok[s.uzletag] = {}); o[v[0]] = (o[v[0]] || 0) + 1; }
   }
-  const lista = (m) => [...m.values()].map((o) => ({ ...o, linearis: kerekit(o.linearis) })).sort((a, b) => b.utolso + b.segitett - (a.utolso + a.segitett) || a.kulcs.localeCompare(b.kulcs));
-  return { konverziok: n, hirdetes: lista(hird), kampany: lista(kamp), utvonalak: [...utak].map(([utvonal, db]) => ({ utvonal, db })).sort((a, b) => b.db - a.db || a.utvonal.localeCompare(b.utvonal)).slice(0, top), napok };
+  const lista = (m, jelol = false) => [...m.values()].map((o) => ({ ...o, linearis: kerekit(o.linearis), ...(jelol && bizonytalan.has(`${o.uzletag}|${o.konverzio_tipus}|${o.kulcs}`) ? { szint_bizonytalan: true } : {}) })).sort((a, b) => b.utolso + b.segitett - (a.utolso + a.segitett) || a.kulcs.localeCompare(b.kulcs));
+  return { konverziok: n, hirdetes: lista(hird, true), hirdetescsoport: lista(csop), kampany: lista(kamp), utvonalak: [...utak].map(([utvonal, db]) => ({ utvonal, db })).sort((a, b) => b.db - a.db || a.utvonal.localeCompare(b.utvonal)).slice(0, top), napok };
 }
 
 // ---------- Europe/Budapest naptari honap ----------
