@@ -182,7 +182,7 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
   const most = mostUnix(deps);
   const uuid = String(be.uuid);
   const hj = hozzajarulas(request.headers.get('cookie'), { alap: savKi(env) });
-  const ad = szerverAdapter(env, deps.fetch || globalThis.fetch);
+  const ad = szerverAdapter(env, deps.fetch || globalThis.fetch, deps && deps.most ? deps.most : undefined);
 
   const e = atiranyitasElemzes(be.redirect_url);
   const kert = { placeId: egesz(be.place_id, 1, 999999), serviceId: String(be.service_id || '').replace(/[^\d]/g, ''), startUnix: egesz(be.start_unix, 1e9, 4e9) };

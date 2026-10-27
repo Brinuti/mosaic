@@ -11,8 +11,9 @@ import { createSalonicAdapter, FIOK, HOST, ANY_STAFF, HELYSZINEK } from '../publ
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const FEJLEC = { 'user-agent': 'Mozilla/5.0 (compatible; GyogytornaFoglalo/1.0; +https://www.gyogytornaszom.hu)', accept: 'text/html,application/json' };
 
-export function szerverAdapter(env = {}, fetchImpl = globalThis.fetch) {
-  return createSalonicAdapter({ fetchImpl, timeoutMs: 4000, retries: 1, cacheMs: 5 * 60 * 1000, headers: FEJLEC });
+/** now: a szerver injektalt ora (deps.most); eloben Date.now. Az adapter a multbeli idopontokat ezen az oran szuri, ezert a teszt fix idejevel is egyezik. */
+export function szerverAdapter(env = {}, fetchImpl = globalThis.fetch, now = undefined) {
+  return createSalonicAdapter({ fetchImpl, timeoutMs: 4000, retries: 1, cacheMs: 5 * 60 * 1000, headers: FEJLEC, ...(now ? { now } : {}) });
 }
 
 /** A szolgaltatas elo adatai a helyszinen: { serviceId, name, activePrice, durationMin, staffIds } vagy null (nem talalhato / Salonic nem valaszol). */
