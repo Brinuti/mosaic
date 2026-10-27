@@ -24,4 +24,11 @@ Csak HeadSpa **foglalás** (nem ajándékkártya), új vendégnél (az ÁRNYÉK-
 5. Rollback: a `META_ELO_BE` sor törlése + deploy.
 
 ## Tesztek
-`node --test tools/test-meta-elo.mjs` (6): kapcsoló / fail-closed, kérés-alak (nincs nyers adat), közös event_id, idempotencia, hibák, kizárások (más üzletág, ajándékkártya, sd, visszajáró, kupon, elutasítás).
+`node --test tools/test-meta-elo.mjs` (8): kapcsoló / fail-closed, kérés-alak (nincs nyers adat), közös event_id, idempotencia, hibák, kizárások (más üzletág, ajándékkártya, sd, visszajáró, kupon, elutasítás).
+
+## Mosaic PMU (DECISION #244, UJ-79, Feri 10-27 08:33 „Mehet, igen.” – B változat)
+- **Mit küld:** ugyanaz a `Schedule` (új eseménynév / custom conversion nincs) a **PMU saját pixelére**, `1019878750660854` (`ELO_CELOK.meta[3]`; ott fut a Meta-oldali `pmu-ok` URL-szabály is, „Manual Event Setup Tool”, 2026-07-25). Kapcsoló: `META_ELO_BE="pmu"` (vagy `"headspa,pmu"`), ugyanaz a `META_ELO_TOKEN`; alapból KI. Rollback: a kapcsoló törlése, az URL-szabály vissza.
+- **Közös event_id:** a böngészős Meta-kulcs (`meta-bongeszo-kulcs.js`, pl. `pmuok-<g>-<serviceId>-<startDate>`). Ha nem képezhető (sd-átvétel, ajándék, hiányzó g / serviceId / startDate), **nem küld**. Csak `tipus = foglalas` (a `/foglalo-pmu` lead-eseményei, `pmu_foto_lead`, `pmu_visszahivas_lead`, nem mennek Schedule-ként).
+- **Eseményfeltétel:** az ÁRNYÉK ernyőmodell (`esemenyek()`): PMU **első foglalás + konzultáció**; visszajáró és kuponos (DECISION #194) nem. *Nyitott pont a mérési oldalnak:* a kapu („szerveres Schedule ≥ Salonic valós online PMU-foglalás”) a visszajáró PMU-foglalásokat nem tartalmazza; ha azokat is számolni kell, az `ernyoJogosult` PMU-ágát kell bővíteni (külön kérés).
+- **Fontos a kapuhoz:** az URL-szabályos Schedule-nek **nincs** `eventID`-ja, ezért a szerveres példánnyal **nem deduplikálható**. Az 1 hetes párhuzamban a Meta `Schedule` darabszáma = URL-szabály (oldalmegnyitások) + szerveres példány; a kapu-összevetést a szerveres események darabszámával kell végezni (`meres_meta_elo`, `uzletag = 'pmu'`, `allapot = 'elkuldve'`), nem a Meta-összeggel.
+- **Átállás:** (1) `META_ELO_TOKEN` hozzáférése a PMU datasethez (rendszerfelhasználó-eszköz; *külső fiók, mérési oldal / Feri*); (2) előnézeten `META_ELO_TESZT_KOD` + `META_ELO_BE="pmu"` → Test Events, 3 valós minta; (3) élesítés: `META_ELO_BE` az éles `wrangler.toml`-ban; (4) 1 hét, utána a kapu-összevetés a mérési oldalon → URL-szabály ki.

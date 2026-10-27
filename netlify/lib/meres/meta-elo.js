@@ -1,6 +1,6 @@
 // DECISION #240 (Feri 10-27: „Igen, hogyha javítja a mérést, és nincs újratanulás, rákötjük, mehet.”): a HeadSpa Meta szerveres foglalási esemény az ÉLŐ pixelre (dataset 3473839859576758).
 //   UGYANAZ az eseménynév (Schedule) és ugyanaz a pixel, amire a futó csoportok optimalizálnak; KÖZÖS event_id a böngészős példánnyal (tag 213 kulcsa: a 10/10 egyezés igazolt) → a Meta egy eseménynek veszi, a csoportok célja nem változik.
-//   ÚJ eseménynév / új custom conversion TILOS (újratanulást okozna): ez a modul semmi mást nem küld, csak a HeadSpa `Schedule`-t. ALAPBÓL KI: META_ELO_BE=headspa ÉS a META_ELO_TOKEN titok (≥ 16 karakter) együtt kapcsolja be. Rollback = a kapcsoló.
+//   ÚJ eseménynév / új custom conversion TILOS (újratanulást okozna): ez a modul semmi mást nem küld, csak a `Schedule`-t (HeadSpa: DECISION #240; Mosaic PMU: DECISION #244, a saját PMU pixelre). ALAPBÓL KI: META_ELO_BE=headspa és / vagy pmu ÉS a META_ELO_TOKEN titok (≥ 16 karakter) együtt kapcsolja be. Rollback = a kapcsoló.
 // Nem az ÁRNYÉK-lánc: külön fájl, külön tábla (meres_meta_elo); a vedett platformok.js / elosztas.js / esemeny-modell.js / meta-bongeszo-kulcs.js valtozatlan (csak importaljuk). A qa-nap „nem ÁRNYÉK cél = 0” ellenőrzése érintetlen.
 // Csak HeadSpa FOGLALÁS új vendégnél (az ARNYEK-lánc ernyőeseményének feltétele: visszajáró és kupon soha; az ajándékkártya nem: annak nincs böngészős Schedule-párja). Páros event_id nélkül (a böngészős kulcs nem képezhető) NEM küldünk:
 // a böngészőben véletlen kulcs van, a szerver külön ID-val duplán számolna. Adat: hash-elt e-mail / telefon / név / external_id + fbc, fbp, IP, user agent (DECISION #202); explicit marketing-elutasításnál (adv === false) semmi; érték / szolgáltatásnév nem megy.
@@ -14,14 +14,16 @@ import { metaFbc } from './erkezes.js';
 
 export const ELO_DATASET = ELO_CELOK.meta[0]; // 3473839859576758 (HeadSpa pixel)
 export const ELO_META_ESEMENY = 'Schedule';
-export const ELO_META_UZLETAGOK = Object.freeze(['headspa']);
+// DECISION #244 (Feri 10-27 08:33, UJ-79): a Mosaic PMU is megkapja ugyanezt a szerveres Schedule-t a SAJAT elo pixelere (1019878750660854 = ELO_CELOK.meta[3]; ott van az `pmu-ok` URL-szabalyos Schedule is: Meta eseményszabály, "Manual Event Setup Tool", 2026-07-25). 1 hetig parhuzamosan az URL-szabaly mellett; kapu: szerveres Schedule >= Salonic valos online PMU-foglalas -> URL-szabaly KI (mereso oldal). Uj esemenynev / custom conversion nincs.
+export const ELO_DATASETEK = Object.freeze({ headspa: ELO_CELOK.meta[0], pmu: ELO_CELOK.meta[3] });
+export const ELO_META_UZLETAGOK = Object.freeze(Object.keys(ELO_DATASETEK));
 const MAX_PROBA = 3, ELAKADAS_MP = 120;
 const titokOk = (v) => typeof v === 'string' && v.length >= 16;
 export const metaEloUzletagok = (env) => (env && titokOk(env.META_ELO_TOKEN) ? String(env.META_ELO_BE || '').split(',').map((s) => s.trim()).filter((u) => ELO_META_UZLETAGOK.includes(u)) : []);
 export const metaEloBe = (env, uzletag) => metaEloUzletagok(env).includes(uzletag);
 
 const tisztit = (o) => { const k = {}; for (const [a, b] of Object.entries(o)) if (b !== null && b !== undefined && b !== '' && !(Array.isArray(b) && !b.length)) k[a] = b; return k; };
-/** A Conversions API kerelem (tiszta fuggveny). ctx: { event_id, ido, hash, erk (attr), ip, ua, oldal, teszt, apiVerzio } */
+/** A Conversions API kerelem (tiszta fuggveny). ctx: { event_id, ido, hash, erk (attr), ip, ua, oldal, teszt, apiVerzio, dataset (alap: HeadSpa) } */
 export function metaEloKerelem(ctx) {
   const ud = tisztit({
     em: ctx.hash && ctx.hash.em ? [ctx.hash.em] : null, ph: ctx.hash && ctx.hash.ph_meta ? [ctx.hash.ph_meta] : null, fn: ctx.hash && ctx.hash.fn ? [ctx.hash.fn] : null, ln: ctx.hash && ctx.hash.ln ? [ctx.hash.ln] : null,
@@ -29,7 +31,7 @@ export function metaEloKerelem(ctx) {
     client_ip_address: ctx.ip, client_user_agent: ctx.ua, fbc: ctx.erk ? metaFbc(ctx.erk, ctx.ido * 1000) : null, fbp: ctx.erk ? ctx.erk.fbp : null,
   });
   const adat = tisztit({ event_name: ELO_META_ESEMENY, event_time: ctx.ido, event_id: ctx.event_id, action_source: 'website', event_source_url: ctx.oldal, user_data: ud });
-  return { url: `https://graph.facebook.com/${ctx.apiVerzio || ARNYEK.meta.apiVerzio}/${ELO_DATASET}/events`, method: 'POST', body: { data: [adat], ...(ctx.teszt ? { test_event_code: String(ctx.teszt).slice(0, 40) } : {}), partner_agent: 'mosaic-elo-schedule' } };
+  return { url: `https://graph.facebook.com/${ctx.apiVerzio || ARNYEK.meta.apiVerzio}/${ctx.dataset || ELO_DATASET}/events`, method: 'POST', body: { data: [adat], ...(ctx.teszt ? { test_event_code: String(ctx.teszt).slice(0, 40) } : {}), partner_agent: 'mosaic-elo-schedule' } };
 }
 
 const SEMA = [
@@ -68,7 +70,7 @@ export async function metaEloKuld(db, fk, deps = {}) {
       if (elo !== 'aktiv') return { allapot: 'halasztva', indok: 'a foglalas elo allapota nem ellenorizheto', ujraprobal_mp: 180 };
     }
     const hash = await felhasznaloHash(env, fk.vendeg || {});
-    const kerelem = metaEloKerelem({ event_id: eventId, ido: fk.ido || erk.ido || t, hash, erk: erk.attr || {}, ip: erk.ip, ua: erk.ua, oldal: fk.oldal || erk.oldal, teszt: env.META_ELO_TESZT_KOD || null, apiVerzio: env.META_API_VERSION });
+    const kerelem = metaEloKerelem({ dataset: ELO_DATASETEK[fk.uzletag], event_id: eventId, ido: fk.ido || erk.ido || t, hash, erk: erk.attr || {}, ip: erk.ip, ua: erk.ua, oldal: fk.oldal || erk.oldal, teszt: env.META_ELO_TESZT_KOD || null, apiVerzio: env.META_API_VERSION });
     const uuid = fk.uuid ? String(fk.uuid).toLowerCase() : null;
     if (!meglevo) {
       const r = await db.prepare("INSERT INTO meres_meta_elo (esemeny_id, uzletag, source_id, event_id, allapot, probalkozas, salonic_uuid, letrehozva, frissitve) VALUES (?1, ?2, ?3, ?4, 'folyamatban', 1, ?5, ?6, ?6) ON CONFLICT DO NOTHING").bind(e.esemeny_id, fk.uzletag, fk.source_entity_id, eventId, uuid, t).run();
