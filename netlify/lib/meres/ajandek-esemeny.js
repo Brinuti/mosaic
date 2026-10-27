@@ -2,6 +2,7 @@
 // ugyanabbol a webhookbol hivja a netlify/lib/ajandek.js (egy masodik webhook / masodik fogyaszto nincs), ugyanazzal az azonositoval (a Stripe pi_); utalasos kartyanal a sajat
 // rendeles-azonosito (ATU-...), es a konverzio a TENYLEGES befizetesnel all elo (a szalon igazolja: kiallit), az igenyles kulon esemeny (bank_transfer_request, a regi ut).
 import { elosztas } from './elosztas.js';
+import { tiktokEloKuld } from './tiktok-elo.js';
 
 const atutalasos = (md) => Boolean(md) && md.fizetesi_mod === 'atutalas';
 const charge = (pi) => (pi && pi.latest_charge && typeof pi.latest_charge === 'object' ? pi.latest_charge : null);
@@ -35,6 +36,8 @@ export const ajandekEloAllapot = (pi, mod) => {
 export async function ajandekEsemenyKuldes({ db, env, pi, mod, piLeker, fetchImpl, now, kuldo }) {
   const f = ajandekForras(pi, mod);
   if (f.kihagyva) return { allapot: 'kihagyva', miert: f.kihagyva };
-  const r = await elosztas(db, f.fk, { env, fetchImpl, now, kuldo, eloEllenorzes: async () => ajandekEloAllapot(await piLeker(pi.id), mod) });
-  return { ...r, forras: f.fk.forras, ertek: f.fk.ertek };
+  let eloAllapot = null; const eloEllenorzes = () => (eloAllapot ||= piLeker(pi.id).then((x) => ajandekEloAllapot(x, mod)));
+  const r = await elosztas(db, f.fk, { env, fetchImpl, now, kuldo, eloEllenorzes });
+  const tiktokElo = await tiktokEloKuld(db, f.fk, { env, fetchImpl, now, eloEllenorzes }); // UJ-67: HeadSpa ajandekkartya = Schedule az elo pixelre (alapbol KI; a bongeszos TikTok-esemenyt az ajandek.js kuldi)
+  return { ...r, forras: f.fk.forras, ertek: f.fk.ertek, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}) };
 }
