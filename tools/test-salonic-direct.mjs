@@ -14,7 +14,7 @@ import { cellaOsztaly } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { irasKapcsolo } from '../netlify/lib/meres/iras-kapcsolo.js';
 import { kapcsoloBeallit } from '../netlify/lib/meres/elosztas.js';
 import { kezelAdmin } from '../netlify/lib/meres/vegpontok.js';
-import { CSERE_GYANU, csereGyanu, megjegyzesIdopontok, mutatEgyre, nevNorm, sdIdentitas, sdKapcsolo, szolgKanon, szolgIndexKulcs, szolgKulcsEgyezik, vendegHash, azonosVendeg, SD_MIN_KOR_MP } from '../netlify/lib/meres/salonic-direct.js';
+import { CSERE_GYANU, csereGyanu, megjegyzesIdopontok, mutatEgyre, nevNorm, sdIdentitas, sdKapcsolo, szolgKanon, szolgIndexKulcs, szolgKulcsEgyezik, vendegHash, azonosVendeg, SD_MIN_KOR_MP, SD_UJRA_MP, ujraMezok } from '../netlify/lib/meres/salonic-direct.js';
 import szolgAdat from '../netlify/lib/lifecycle/szolgaltatasok.js';
 import { FIXTURE, motorKepek } from './meres-proba/golden-motor.mjs';
 import { FIX_UUID, KULCS_SZOVEG, NEV, SD_ENV, T0, VENDEG, iso, level, lezar, ujUuid, vilag } from './lib-sd-teszt.mjs';
@@ -566,6 +566,7 @@ test('S0-28 korai (< 20 perc), lejart (> 48 ora), fuggoben (varakozas) es motor-
     v.D.db.prepare("UPDATE foglalas_egyeztetes SET kovetkezo = ?1").run(Math.floor(v.t() / 1000) + 600);
     const r = await v.sd(b);
     assert.equal(r.allapot, 'varakozas'); assert.equal(v.sql('SELECT sd_id FROM foglalas_egyeztetes')[0].sd_id, null);
+    assert.equal(r.ok_kod, 'varakozas_fuggoben'); assert.ok(r.ujra_mp >= 60 && r.ujra_mp <= SD_UJRA_MP, 'FO-3: ujra_mp a sorra varo idohoz igazodik, plafon 15 perc'); assert.ok(r.ujra_ig_mp > 0 && r.ujra_ig_mp <= 48 * 3600, 'FO-3: ujra_ig_mp a 48 oras korig');
   }
   { // motor-ellentmondas: ember dont
     const { v, u, b } = await jelolt({}, { uj_vendeg: true });
@@ -810,6 +811,7 @@ test('S0-38 a vegso parositas atmeneti hibaja (a motor TALALT jeloltet, de a kul
   const n = v.net.hivasok.length;
   const r = await v.sd(b);
   assert.deepEqual([r.allapot, r.kuldes], ['varakozas', 0]); assert.match(r.miert, /motoros identity nyer/);
+  assert.deepEqual([r.ok_kod, r.ujra_mp], ['varakozas_nem_ellenorizheto', SD_UJRA_MP], 'FO-3: a masik varakozas-ag is ujra_mp-t ad');
   assert.equal(v.sql('SELECT sd_id FROM foglalas_egyeztetes WHERE uuid = ?1', UJ)[0].sd_id, null, 'az sd nem vette at'); assert.equal(v.net.hivasok.length, n);
   assert.deepEqual((await riasztasok(v, UJ)).map((x) => x.tipus), ['sd_hianyzik'], 'a parositatlan sor lathato riasztas marad');
   v.net.allapot.set(FIX_UUID, 'torolve'); v.t.tick(700); // A lemondva: a kulcs felszabadul, B megkapja
@@ -830,6 +832,7 @@ test('S0-39 a motor mar kuldott, de egy cella halasztva maradt (elo allapot nem 
   v.net.allapot.set(FIX_UUID, 'hiba');
   const r1 = await v.sd(b);
   assert.deepEqual([r1.allapot, r1.riasztas, r1.esemeny_kuldes.allapot], ['motor_kuldte', true, 'halasztva']); assert.equal(v.net.hivasok.length, 0);
+  assert.deepEqual([r1.ok_kod, r1.ujra_mp], ['halasztva_elo_allapot', 180], 'FO-3: a halasztott cella ujra_mp-t kap (az elosztas ujraprobal_mp-je)'); assert.ok(r1.ujra_ig_mp > 0);
   v.net.allapot.delete(FIX_UUID);
   const r2 = await v.sd(b);
   assert.deepEqual([r2.allapot, r2.esemeny_kuldes.allapot], ['motor_kuldte', 'kesz']); assert.ok(v.net.hivasok.length >= 4);
@@ -1736,3 +1739,10 @@ test('S0-65 HeadSpa sd kuldes valodi kuponos PAROS-szoveggel: csak ARNYEK-cel (0
   }
 });
 
+
+test('FO-3 ujraMezok: 48 oras kor alatt ujra_mp (60..900 mp) + ujra_ig_mp + ok_kod; 48 ora felett csak ok_kod (nincs mit ismetelni)', () => {
+  assert.deepEqual(ujraMezok(1300, 400, 'x'), { ujra_mp: 400, ujra_ig_mp: 48 * 3600 - 1300, ok_kod: 'x' });
+  assert.equal(ujraMezok(1300, 5, 'x').ujra_mp, 60, 'also hatar');
+  assert.equal(ujraMezok(1300, 5000, 'x').ujra_mp, SD_UJRA_MP, 'plafon 15 perc');
+  assert.deepEqual(ujraMezok(48 * 3600 + 1, 400, 'x'), { ok_kod: 'x' });
+});
