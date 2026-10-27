@@ -47,6 +47,13 @@ export async function dokumentumokLeker({ api, kol, tolIso, hiv, limit = 100, ma
   return { docs, valtozat, hiba: 'maxLap', lap: maxLap };
 }
 
+/** A page_location query-jenek JELLEMZESE ERTEK NELKUL (A76-2): van-e `price`, ures-e, csak szamjegy-e, van-e first_booking=true. Mas paramerter erteke sehol nem kerul ki. */
+export function priceJellemzes(pageLocation) {
+  let q; try { q = new URL(String(pageLocation || '')).searchParams; } catch { return { price: 'nincs_url', ures: '-', csak_szamjegy: '-', first_booking: '-' }; }
+  const van = q.has('price'); const v = van ? q.get('price') : null;
+  return { price: van ? 'van' : 'nincs', ures: van ? (v.trim() === '' ? 'igen' : 'nem') : '-', csak_szamjegy: van ? (/^\d+$/.test(v) ? 'igen' : 'nem') : '-', first_booking: q.get('first_booking') === 'true' ? 'igen' : 'nem' };
+}
+
 export function osszegez(docs, { tolMs, mezo }) {
   const oraSzam = {}; const jelzo = {}; const nevek = new Set(); let idoNelkul = 0;
   for (const d of docs) {
@@ -85,10 +92,10 @@ export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, n
     const o = osszegez(k.docs, { tolMs, mezo });
     eredmeny[kol] = o;
     naplo(`${kol}: mezonevek (ertek nelkul): ${o.mezonevek.join(', ') || '-'}; created_at nelkuli: ${o.idoNelkul}`);
-    if (process.env.SOROK === '1' || sorok) for (const d of k.docs) { // sorszintu nezet: Budapest-ido, esemenynev, hozzajarulas-allapot, jelzo, az oldal CSAK utvonala (query / azonosito nelkul)
+    if (process.env.SOROK === '1' || process.env.SOROK === '2' || sorok) for (const d of k.docs) { // sorszintu nezet: Budapest-ido, esemenynev, hozzajarulas-allapot, jelzo, az oldal CSAK utvonala (query / azonosito nelkul)
       const ms = Date.parse(d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue; const dd = d.data || {};
       let ut = '-'; try { ut = new URL(String(dd.page_location || '')).pathname; } catch { /* nincs */ }
-      naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${String(dd.consent_state || '-').slice(0, 40)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}`);
+      naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${String(dd.consent_state || '-').slice(0, 40)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}${process.env.SOROK === '2' ? ' | ' + Object.entries(priceJellemzes(dd.page_location)).map(([k, x]) => k + '=' + x).join(' ') : ''}`);
     }
     for (const ora of Object.keys(o.oraSzam).sort()) naplo(`  ${ora}h (Budapest): ${o.oraSzam[ora]} sor; ${mezo}: 1=${o.jelzo[ora][1]} 0=${o.jelzo[ora][0]} nincs=${o.jelzo[ora].nincs}`);
   }
@@ -99,7 +106,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const r = await futtat({
     key: process.env.STAPE_KEY || '', base: process.env.STAPE_BASE || 'https://stape.a76.hu',
     kollekciok: (process.env.KOLLEKCIOK || 'a76_schedule_log,a76_foglalas_forras').split(',').map((s) => s.trim()).filter(Boolean),
-    napok: process.env.NAPOK || 7, tol: process.env.TOL || '', mezo: process.env.MEZO_JELZO || 'fbc_suti_van', sorok: process.env.SOROK === '1',
+    napok: process.env.NAPOK || 7, tol: process.env.TOL || '', mezo: process.env.MEZO_JELZO || 'fbc_suti_van', sorok: process.env.SOROK === '1' || process.env.SOROK === '2',
   });
   if (!r.ok) process.exit(1);
 }

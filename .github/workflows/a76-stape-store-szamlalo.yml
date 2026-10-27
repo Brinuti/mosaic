@@ -20,7 +20,7 @@ on:
         required: false
         default: ""
       sorok:
-        description: "1 = sorszintu nezet (ido, esemenynev, jelzo, oldal-utvonal; azonosito nincs)"
+        description: "1 = sorszintu nezet (ido, esemenynev, jelzo, oldal-utvonal; azonosito nincs); 2 = ugyanez + a page_location price/first_booking JELLEMZESE ertek nelkul (van/ures/csak szamjegy)"
         required: false
         default: "0"
       mezo:

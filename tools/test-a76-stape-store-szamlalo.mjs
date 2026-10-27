@@ -1,7 +1,7 @@
 // A76 Stape Store szamlalo (csak olvas): fake-fetch teszt – a „Filter documents” utvonal, lapozas, oranki darabszam, jelzo-eloszlas, a kulcs nem szivarog.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { dokumentumokLeker, futtat, osszegez } from './a76-stape-store-szamlalo.mjs';
+import { dokumentumokLeker, futtat, osszegez, priceJellemzes } from './a76-stape-store-szamlalo.mjs';
 
 const KEY = 'sk_teszt_titkos_kulcs_0123456789';
 const doc = (i, iso, fbc) => ({ key: 'k' + i, collection_name: 'a76_schedule_log', created_at: iso, updated_at: iso, data: { event_id: 'e' + i, client_id: 'c' + i, ...(fbc === undefined ? {} : { fbc_suti_van: fbc }) } });
@@ -50,4 +50,13 @@ test('a lapozo-mezo nevet kiprobalja (cursor -> next_cursor), ha az elso nem erv
   const f = szerver(LAPOK, { kurzorMezo: 'next_cursor' });
   const r = await dokumentumokLeker({ api: 'https://x/stape-api/k/v2/store', kol: 'a', tolIso: '2026-10-26T10:40:00.000Z', limit: 2, hiv: async (m, u, b) => { const x = await f(u, { method: m, body: JSON.stringify(b) }); return { status: x.status, json: JSON.parse(await x.text()) }; } });
   assert.equal(r.valtozat, 'next_cursor'); assert.equal(r.docs.length, 5);
+});
+
+test('priceJellemzes: csak jellemzes, ertek nincs (van / ures / csak szamjegy / first_booking); hibas URL-re nincs_url', () => {
+  assert.deepEqual(priceJellemzes('https://a76.hu/foglalas-ok/?price=19000&first_booking=true&x=SZEMELYES'), { price: 'van', ures: 'nem', csak_szamjegy: 'igen', first_booking: 'igen' });
+  assert.deepEqual(priceJellemzes('https://a76.hu/foglalas-ok/?price=19%20000%20Ft'), { price: 'van', ures: 'nem', csak_szamjegy: 'nem', first_booking: 'nem' });
+  assert.deepEqual(priceJellemzes('https://a76.hu/foglalas-ok/?price=&first_booking=true'), { price: 'van', ures: 'igen', csak_szamjegy: 'nem', first_booking: 'igen' });
+  assert.deepEqual(priceJellemzes('https://a76.hu/foglalas-moricz/'), { price: 'nincs', ures: '-', csak_szamjegy: '-', first_booking: 'nem' });
+  assert.equal(priceJellemzes('nem url').price, 'nincs_url');
+  assert.equal(JSON.stringify(priceJellemzes('https://a76.hu/?price=1234&email=a@b.hu')).includes('1234'), false, 'az ertek nem kerul ki');
 });
