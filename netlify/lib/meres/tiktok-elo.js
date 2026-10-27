@@ -84,6 +84,8 @@ export async function tiktokEloKuld(db, fk, deps = {}) {
     const env = deps.env || {};
     if (!tiktokEloBe(env, fk && fk.uzletag)) return { allapot: 'ki' };
     if (fk.fixAllapot) return { allapot: 'kihagyva', indok: 'reschedule: nincs uj konverzio' };
+    // elonezeti kornyezet vedohalo (ELO_CSAK_TESZT=1 a [env.preview.vars]-ban): teszt-kod nelkul NEM kuldunk (kulonben az elonezet az ELO pixelre kuldene)
+    if (String(env.ELO_CSAK_TESZT || '') === '1' && !env.TIKTOK_ELO_TESZT_KOD) return { allapot: 'kihagyva', indok: 'elonezet: csak teszt-kodos kuldes (nincs TIKTOK_ELO_TESZT_KOD)' };
     const e = ernyoEsemeny(fk, env);
     if (!e) return { allapot: 'nincs_ernyo' };
     await sema(db);

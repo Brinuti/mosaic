@@ -54,6 +54,8 @@ export async function metaEloKuld(db, fk, deps = {}) {
     const env = deps.env || {};
     if (!fk || fk.tipus !== 'foglalas' || !metaEloBe(env, fk.uzletag)) return { allapot: 'ki' };
     if (fk.fixAllapot) return { allapot: 'kihagyva', indok: 'reschedule: nincs uj konverzio' };
+    // elonezeti kornyezet vedohalo (ELO_CSAK_TESZT=1 a [env.preview.vars]-ban): teszt-kod nelkul NEM kuldunk (kulonben az elonezet az ELO datasetre kuldene)
+    if (String(env.ELO_CSAK_TESZT || '') === '1' && !env.META_ELO_TESZT_KOD) return { allapot: 'kihagyva', indok: 'elonezet: csak teszt-kodos kuldes (nincs META_ELO_TESZT_KOD)' };
     const e = esemenyek({ ...fk, ertek: Number.isFinite(Number(fk.ertek)) ? fk.ertek : 0 }, konzultacioTabla(env)).find((x) => x.tipus === 'ernyo');
     if (!e) return { allapot: 'nincs_ernyo' };
     await sema(db);

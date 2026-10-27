@@ -105,3 +105,14 @@ test('B) PMU: kulcs nelkul (sd-atvetel / hianyzo g / serviceId / startDate), lea
   assert.equal((await metaEloKuld(d, PMU_FK({ fixAllapot: { allapot: 'kihagyva' } }), dep)).allapot, 'kihagyva');
   assert.equal(f.hivasok.length, 0);
 });
+
+test('B) elonezeti vedohalo: ELO_CSAK_TESZT=1 mellett teszt-kod nelkul NINCS kuldes (HeadSpa es PMU sem); teszt-koddal megy', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d); await erkezesMent(d, ERK(), NOW); await erkezesMent(d, PMU_ERK(), NOW);
+  for (const fk of [FK(), PMU_FK()]) {
+    const r = await metaEloKuld(d, fk, { env: ENV({ META_ELO_BE: 'headspa,pmu', ELO_CSAK_TESZT: '1' }), fetchImpl: f, now: () => NOW });
+    assert.equal(r.allapot, 'kihagyva'); assert.match(r.indok, /META_ELO_TESZT_KOD/);
+  }
+  assert.equal(f.hivasok.length, 0);
+  const r2 = await metaEloKuld(d, PMU_FK(), { env: ENV({ META_ELO_BE: 'headspa,pmu', ELO_CSAK_TESZT: '1', META_ELO_TESZT_KOD: 'TEST777' }), fetchImpl: f, now: () => NOW });
+  assert.deepEqual([r2.allapot, r2.teszt, f.hivasok[0].body.test_event_code], ['elkuldve', true, 'TEST777']);
+});
