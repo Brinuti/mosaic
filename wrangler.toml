@@ -118,6 +118,9 @@ MERES_SALONIC_DIRECT = "1"
 # 7 NAPOS UTOLSO FIZETETT KATTINTAS (2026-10-19, lasd docs/booking-engine/FORRAS_LPT.md): a szerver irta HttpOnly mh_lpt suti (/api/mosaic-forras) + a koszonooldali forras-cimke (meres_forras, a KULCS_DB-ben). Alapbol BEKAPCSOLVA, a veszkapcsolok
 # (ide, a [vars]-ba kell oket irni, mert a felulet nem titkos valtozoit a wrangler.toml torli): MOSAIC_LPT_KI = "1" (a vegpont 503, a koszonooldali burok kimarad), MOSAIC_LPT_ATTR_POTLAS = "0" (a shadow-lanc attr-potlasa a sutibol kikapcsol),
 # MOSAIC_LPT_MEGORZES_NAP = "90" (a meres_forras megorzese napokban, alap 30).
+# KODOS ELO TIKTOK-ESEMENY (UJ-67/69/71/73; lasd docs/booking-engine/TIKTOK_ELO.md): ALAPBOL KI. Uzletagonkent: TIKTOK_ELO_BE = "headspa" (vesszovel: headspa,szor,oxigen,fodrasz,pmu) ES a TIKTOK_ELO_TOKEN titok (Secret, Production; az elo pixel Events API tokenje)
+# egyutt kapcsolja BE a szerveres kuldest es a bongeszos ttq esemenyt. Elotte igazolas: TIKTOK_ELO_TESZT_KOD (Test Events, nem szamit konverziokent). A TikTok Events Managerben az URL-szabalyt a mereso oldal ugyanabban a lepesben kapcsolja ki.
+# ROLLBACK: a sor torlese (vagy TIKTOK_ELO_BE ures) + deploy; az URL-szabaly visszakapcsolasa.
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei
