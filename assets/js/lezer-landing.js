@@ -80,10 +80,6 @@
   // a kalkulatorban nem szerepelnek a kesz csomagok (azok sajat, fix aru sorok), csak az egyes teruletek
   const SZAMOLO_CSOPORTOK = [...new Set(SOROK.filter((s) => !s.csomag).map((s) => s.csoport))];
   const valasztott = new Set(ALAP_VALASZTAS.filter((k) => AR[k]));
-  // telefonon a kalkulator lepesekben megy (egy testtaj / lepes, a vegen az ar): a DOM ugyanaz, mint asztalon, a CSS rejti a nem aktiv lepeseket
-  // (a .szamolo-racs[data-lepes] es a .sz-csoport.aktiv szabalyok); asztalon a lepes-vezerlok rejtettek, minden egyszerre latszik
-  const LEPES_N = SZAMOLO_CSOPORTOK.length;
-  let lepes = 0; // 0..LEPES_N-1: a testtajak, LEPES_N: az ar
   const CALC_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 7h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></svg>';
 
   const szuloje = (kulcs) => SOROK.find((s) => s.tartalmaz.includes(kulcs) && valasztott.has(s.kulcs));
@@ -95,14 +91,12 @@
     }
     szamoloRajzol();
   }
-  const VISSZA_GOMB = '<button type="button" class="sz-vissza-gomb" data-sz="terulet">\u2190 M\u00f3dos\u00edtom a ter\u00fcleteket</button>';
   function szamoloRajzol() {
     const hova = $('szamolo-valaszto');
     const e = szamol(valasztott);
     hova.replaceChildren(
       elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor` }),
-      elem('div', { class: 'sz-lepes-jelzo', 'aria-hidden': 'true', html: `<span>${lepes + 1}. lépés a ${LEPES_N}-ból</span><span class="pontok">${SZAMOLO_CSOPORTOK.map((_, i) => `<i class="${i === lepes ? 'aktiv' : i < lepes ? 'kesz' : ''}"></i>`).join('')}</span>` }),
-      ...SZAMOLO_CSOPORTOK.map((cs, i) => elem('div', { class: 'sz-csoport' + (i === lepes ? ' aktiv' : '') },
+      ...SZAMOLO_CSOPORTOK.map((cs) => elem('div', { class: 'sz-csoport' },
         elem('div', { class: 'sz-csoport-nev', html: `${SOROK.find((s) => s.csoport === cs).csoportIkon}<span>${cs}</span>` }),
         elem('div', { class: 'sz-chipek' }, ...SOROK.filter((s) => !s.csomag && s.csoport === cs).map((s) => {
           const szulo = szuloje(s.kulcs);
@@ -113,19 +107,14 @@
           });
         })))),
       // telefonon a gombok alatt van az eredmeny: egy ragados osszegsav mutatja az aktualis arat (tapra az eredmenyhez ugrik)
-      elem('a', { class: 'sz-sav', href: '#szamolo-eredmeny-cim', hidden: !e.tetelek.length, html: `<span>Alkalmanként <b>${ft(e.alkalom)}</b></span><span>Az ár →</span>`, 'data-sz': 'ar' }),
-      elem('div', { class: 'sz-lepes-gombok' },
-        lepes > 0 ? elem('button', { type: 'button', class: 'gomb gomb-korvonal', 'data-sz': 'vissza', szoveg: 'Vissza' }) : null,
-        elem('button', { type: 'button', class: 'gomb gomb-arany sz-tovabb', 'data-sz': 'elore', html: `${lepes === LEPES_N - 1 ? 'Mutasd az árat' : 'Tovább'} <span class="nyil">→</span>` })));
-    hova.closest('.szamolo-racs').dataset.lepes = lepes >= LEPES_N ? 'ar' : 'valaszto';
+      elem('a', { class: 'sz-sav', href: '#szamolo-eredmeny-cim', hidden: !e.tetelek.length, html: `<span>Alkalmanként <b>${ft(e.alkalom)}</b></span><span>Részletek ↓</span>` }));
     const tartalom = $('szamolo-tartalom');
     if (!e.tetelek.length) {
-      tartalom.innerHTML = VISSZA_GOMB + '<p class="szamolo-ures">Válassz legalább egy területet.<br><span class="halk">Például teljes láb + hónalj: 59&nbsp;000 + 9&nbsp;500 = 68&nbsp;500 Ft alkalmanként.</span></p>';
+      tartalom.innerHTML = '<p class="szamolo-ures">Válassz legalább egy területet.<br><span class="halk">Például teljes láb + hónalj: 59&nbsp;000 + 9&nbsp;500 = 68&nbsp;500 Ft alkalmanként.</span></p>';
       return;
     }
     const egy = e.tetelek.length === 1;
     tartalom.replaceChildren(...[
-      elem('button', { type: 'button', class: 'sz-vissza-gomb', 'data-sz': 'terulet', html: '← Módosítom a területeket' }),
       elem('ul', { class: 'sz-sorok' }, ...e.tetelek.map((t) => elem('li', { class: t.teljes ? 'teljes' : '' },
         elem('span', { html: `<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
@@ -145,18 +134,6 @@
     szamoloValaszt(b.dataset.kulcs);
     const uj = e.currentTarget.querySelector(`.sz-chip[data-kulcs="${b.dataset.kulcs}"]`);
     if (uj) uj.focus({ preventScroll: true }); // az ujrarajzolas ne dobja el a billentyuzet-fokuszt
-  });
-  // lepesvezerlok (csak telefonon latszanak): vissza / tovabb / az ar / vissza a teruletekhez
-  $('szamolo-valaszto').closest('.szamolo-racs').addEventListener('click', (e) => {
-    const g = e.target.closest('[data-sz]');
-    if (!g) return;
-    e.preventDefault();
-    const mit = g.dataset.sz;
-    lepes = mit === 'vissza' ? Math.max(0, lepes - 1) : mit === 'elore' ? Math.min(LEPES_N, lepes + 1) : mit === 'ar' ? LEPES_N : LEPES_N - 1;
-    szamoloRajzol();
-    const racs = document.querySelector('.szamolo-racs');
-    racs.querySelector(lepes >= LEPES_N ? '.sz-vissza-gomb' : '.sz-tovabb')?.focus({ preventScroll: true });
-    racs.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   });
   szamoloRajzol();
 
@@ -347,7 +324,7 @@
     const l = e.target.closest('[data-szamolo], [data-gorgetes]');
     if (!l) return;
     e.preventDefault();
-    // telefonon a kalkulator-kartyahoz gorgetunk (a lepesenkenti kalkulator igy egy kepernyon latszik), nem a szekcio tetejehez
+    // telefonon a kalkulator-kartyahoz gorgetunk (a kalkulator igy egy kepernyon latszik), nem a szekcio tetejehez
     const kartya = l.hasAttribute('data-szamolo') && matchMedia('(max-width: 700px)').matches && document.querySelector('.szamolo-racs');
     const c = kartya || $(l.hasAttribute('data-szamolo') ? 'szamolo' : l.getAttribute('data-gorgetes'));
     if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -417,7 +394,7 @@
       const tulVan = kepesSzekcio.getBoundingClientRect().bottom <= 0;   // az elso, 4 kepes szekcio mar elgorgetve
       const vegen = foglSzekcio.getBoundingClientRect().top < innerHeight; // a foglalo kepernyon van, vagy mar elhagytuk: ott maga a foglalo a cel
       const sz = document.querySelector('.szamolo-racs').getBoundingClientRect();
-      const kalkulatorban = sz.top < innerHeight && sz.bottom > 0; // a lepesenkenti kalkulator kartyajat ne takarja a sav (ott van sajat foglalas gomb)
+      const kalkulatorban = sz.top < innerHeight && sz.bottom > 0; // a kalkulator kartyajat ne takarja a sav (ott van sajat foglalas gomb)
       const lat = tulVan && !vegen && !kalkulatorban;
       sticky.classList.toggle('lathato', lat);
       sticky.setAttribute('aria-hidden', lat ? 'false' : 'true');
