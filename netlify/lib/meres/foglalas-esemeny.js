@@ -8,6 +8,7 @@ import { jellegSzabaly } from './jelleg-oldal.js';
 import { foglalasAllapot, emailElemzes } from '../foglalas-kulcs.js';
 import { vendegNev } from './vendeg-nev.js';
 import { tiktokEloKuld } from './tiktok-elo.js'; // UJ-67/69/71/73: kodos elo TikTok-esemeny (alapbol KI)
+import { metaEloKuld } from './meta-elo.js'; // DECISION #240: HeadSpa Meta Schedule az elo pixelre (alapbol KI)
 
 export async function foglalasEsemenyKuldes({ db, env, mezok, bejovo = {}, eredmeny, fetchImpl, now, kuldo }) {
   const uzletag = SALONIC_UZLETAG[mezok.host];
@@ -32,5 +33,6 @@ export async function foglalasEsemenyKuldes({ db, env, mezok, bejovo = {}, eredm
   let eloAllapot = null; const eloEllenorzes = () => (eloAllapot ||= foglalasAllapot({ host: mezok.host, uuid: mezok.uuid, fetchImpl }).then((x) => x.allapot)); // egy Salonic-lekeres az elosztasnak es az elo TikTok-kuldesnek
   const r = await elosztas(db, fk, { env, fetchImpl, now, kuldo, eloEllenorzes });
   const tiktokElo = await tiktokEloKuld(db, { ...fk, uuid: mezok.uuid }, { env, fetchImpl, now, eloEllenorzes });
-  return { ...r, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}), jelleg, kupon, uj_vendeg: ujVendeg, jelleg_rogzites: { forras: zar.forras, oldal_szabaly: kapott.szabaly, modell_jelleg: kapott0.jelleg, kapott_jelleg: kapott.jelleg, kapott_kupon: kapott.kupon, eltero: kapott.jelleg !== jelleg || kapott.kupon !== kupon }, salonic_ar: fk.ertek, ertek: (r.esemenyek && r.esemenyek[0] ? r.esemenyek[0].ertek : null), ar_forras: bejovo.ar != null ? 'bejovo' : html.ar != null ? 'level' : b.ar != null ? 'bongeszo' : 'nincs', uzletag };
+  const metaElo = await metaEloKuld(db, { ...fk, uuid: mezok.uuid }, { env, fetchImpl, now, eloEllenorzes });
+  return { ...r, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}), ...(metaElo.allapot !== 'ki' ? { meta_elo: metaElo } : {}), jelleg, kupon, uj_vendeg: ujVendeg, jelleg_rogzites: { forras: zar.forras, oldal_szabaly: kapott.szabaly, modell_jelleg: kapott0.jelleg, kapott_jelleg: kapott.jelleg, kapott_kupon: kapott.kupon, eltero: kapott.jelleg !== jelleg || kapott.kupon !== kupon }, salonic_ar: fk.ertek, ertek: (r.esemenyek && r.esemenyek[0] ? r.esemenyek[0].ertek : null), ar_forras: bejovo.ar != null ? 'bejovo' : html.ar != null ? 'level' : b.ar != null ? 'bongeszo' : 'nincs', uzletag };
 }
