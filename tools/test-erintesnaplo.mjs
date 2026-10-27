@@ -3,7 +3,7 @@
 //   B) a /api/mosaic-forras vegpont (kapcsolo, fail-closed, Set-Cookie, dedup, hozzajarulas-visszavonas, az mh_lpt valtozatlan)
 //   C) a koszonooldali jelzes -> meres_vid_erkezes; az utvonal-zaras (meres_kuldes "alap" sor) idempotens, vid nelkul
 //   D) a riport-vegpont (kulcsos, csak olvashato)
-//   E) a kliens (assets/js/attribucio.js): napi 1 organikus jelzes, kikapcsolt szerver -> 7 nap szunet
+//   E) a kliens (assets/js/attribucio.js): napi 1 organikus jelzes (sikeres valasz utan irva), kikapcsolt szerver -> 1 nap szunet
 //   node --test tools/test-erintesnaplo.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -221,6 +221,15 @@ test('B) D1 nelkul / D1-hibaval az mh_vid suti es az mh_lpt megmarad (a hiba nem
   assert.equal((await POST(env, 'x'.repeat(5000))).status, 413);
   assert.equal((await forrasFv({ request: keres('/api/mosaic-forras', { method: 'POST', body: { forras: FIZ() } }).clone(), env: { ...env, MOSAIC_LPT_KI: '1' } })).status, 503, 'a MOSAIC_LPT_KI vesz-kapcsolo az mh_vid-et is leallitja');
 });
+test('B) mh_vid csak kifejezett marketing-hozzajarulassal (adv: true): hozzajarulas-jelzes nelkul / adv hianyaban nincs mh_vid, nincs sor (az mh_lpt valtozatlan)', async () => {
+  const { d, env } = ENV();
+  for (const hozz of [undefined, {}, { ana: true }]) {
+    const r = await POST(env, { forras: FIZ(), ...(hozz ? { hozz } : {}) });
+    assert.equal(sutiSor(r, 'mh_vid'), undefined, JSON.stringify(hozz)); assert.ok(sutiSor(r, 'mh_lpt'), 'az mh_lpt a regi logika szerint megy');
+    const o = await POST(env, { forras: { v: 1, rk: 'search' }, organikus: true, ...(hozz ? { hozz } : {}) }); assert.equal(sutik(o).length, 0, 'organikus: nincs suti');
+  }
+  assert.equal(tablaVan(d, 'meres_erintes'), false);
+});
 test('B) irasi plafon: egy 10 perces ablakban legfeljebb IRAS_PLAFON.max uj sor (visszaeles-vedelem)', async () => {
   const { d } = ENV();
   await E.erintesSema(d);
@@ -274,6 +283,7 @@ test('C) utvonal-zaras: igazolt konverziohoz a vid elozo 30 napjanak erintesei i
   // vid-megfeleltetes nelkuli konverzio, athelyezes (nem uj konverzio), nem alap-sor: nincs utvonal
   await konverzio(d, ID('x'), {}); await erkezes(env, ERK({ source_id: ID('y') }), `mh_vid=${vid}`); await konverzio(d, ID('y'), { allapot: 'kihagyva', indok: 'reschedule_confirmed: nincs uj konverzio' });
   await erkezes(env, ERK({ source_id: ID('w') }), `mh_vid=${vid}`); // nincs meres_kuldes alap sor (pl. kuponos foglalas)
+  await erkezes(env, ERK({ source_id: ID('z') }), `mh_vid=${vid}`); await konverzio(d, ID('z'), { nev: 'UjEsemenyNev' }); // jovobeli, ismeretlen alap-nev: a SELECT kiszuri, nem szorit ki masokat
   assert.deepEqual(await E.utvonalLezar(d, { most: NOW }), { zarva: 0, hibak: [] }); assert.equal(mind(d, 'meres_utvonal').length, 1);
 });
 test('C) utvonal-zaras: erintes nelkuli vid is kap (0 erintessel) sort; ajandekkartya; tobb alap-nev egy kulcsnal egy utvonal; a zaras a koszonooldali jelzesbol is lefut', async () => {
@@ -311,8 +321,16 @@ test('D) /api/mosaic-erintes-riport: kulcs nelkul / rossz kulccsal / query-kulcc
   const szoveg = JSON.stringify(j); for (const t of [vid, await E.vidHash(KULCS, vid), FBCLID, KULCS]) assert.equal(szoveg.includes(t), false);
   assert.equal((await get('/api/mosaic-erintes-riport?honap=xx', { 'x-egyeztetes-kulcs': 'olvaso-kulcs' })).status, 400);
   assert.equal((await erintesRiport(new Request(HOST + '/api/mosaic-erintes-riport', { method: 'POST', headers: { 'x-egyeztetes-kulcs': 'olvaso-kulcs' } }), env)).status, 405);
-  assert.equal((await erintesRiport(new Request(HOST + '/api/mosaic-erintes-riport', { headers: { 'x-egyeztetes-kulcs': 'olvaso-kulcs' } }), { EGYEZTETES_KULCS_HASH: sha('olvaso-kulcs') })).status, 503);
-  const be = await riportFv({ request: new Request(HOST + '/api/mosaic-erintes-riport', { headers: { 'x-egyeztetes-kulcs': 'olvaso-kulcs' } }), env: { EGYEZTETES_KULCS_HASH: sha('olvaso-kulcs'), KULCS_DB: { prepare() { throw new Error('boom'); }, batch() { throw new Error('boom'); } } } });
+  assert.equal((await erintesRiport(new Request(HOST + '/api/mosaic-erintes-riport', { headers: { 'x-egyeztetes-kulcs': 'olvaso-kulcs' } }), { EGYEZTETES_KULCS_HASH: sha('olvaso-kulcs'), MERES_VID_BE: '1', MERES_VID_KULCS: KULCS })).status, 503, 'bekapcsolt allapotban D1-kotes nelkul 503');
+  // FAIL-CLOSED (a fuggetlen review javitasi pontja): kapcsolo / kulcs nelkul a riport (helyes kulccsal is) NEM hoz letre egyetlen tablat sem
+  for (const extra of [{ MERES_VID_BE: undefined }, { MERES_VID_KULCS: undefined }, { MERES_VID_KULCS: 'rovid' }, { MERES_VID_BE: '0' }]) {
+    const k = ENV({ EGYEZTETES_KULCS_HASH: sha('olvaso-kulcs'), ...extra });
+    const r = await erintesRiport(new Request(HOST + '/api/mosaic-erintes-riport?honap=2026-10', { headers: { 'x-egyeztetes-kulcs': 'olvaso-kulcs' } }), k.env, { most: NOW });
+    assert.deepEqual([r.status, await r.json()], [200, { ok: true, ki: true }], JSON.stringify(extra));
+    for (const t of ['meres_erintes', 'meres_vid_erkezes', 'meres_utvonal']) assert.equal(tablaVan(k.d, t), false, t + ' nem jon letre ' + JSON.stringify(extra));
+    assert.equal((await erintesRiport(new Request(HOST + '/api/mosaic-erintes-riport'), k.env, { most: NOW })).status, 404, 'kulcs nelkul tovabbra is 404');
+  }
+  const be = await riportFv({ request: new Request(HOST + '/api/mosaic-erintes-riport', { headers: { 'x-egyeztetes-kulcs': 'olvaso-kulcs' } }), env: { EGYEZTETES_KULCS_HASH: sha('olvaso-kulcs'), MERES_VID_BE: '1', MERES_VID_KULCS: KULCS, KULCS_DB: { prepare() { throw new Error('boom'); }, batch() { throw new Error('boom'); } } } });
   assert.deepEqual([be.status, await be.json()], [500, { ok: false, hiba: 'belso_hiba' }]);
 });
 
@@ -336,7 +354,9 @@ test('E) kliens: organikus / direkt visszateres napi 1 POST (organikus: true, la
   const k = kliens({ referrer: 'https://www.google.com/', pathname: '/blog/cikk' });
   const p = k.posztok(); assert.equal(p.length, 1); assert.equal(p[0].body.organikus, true); assert.equal(p[0].body.lap, '/blog/cikk'); assert.equal(p[0].body.forras.rk, 'search'); assert.equal(p[0].body.hozz.adv, true);
   assert.deepEqual(Object.keys(p[0].body.forras).sort(), ['rk', 't', 'v']); assert.equal(p[0].o.credentials, 'same-origin');
+  await mikrofeladat(); await mikrofeladat(); assert.equal(k.ls._m.get('mh_vid_nap') !== undefined, true, 'a napi jelzes a sikeres valasz utan irodik');
   const masodik = kliens({ referrer: '', ls: k.ls }); assert.equal(masodik.posztok().length, 0, 'ugyanazon a napon nem');
+  const hibas = kliens({ referrer: '', valasz: null }); await mikrofeladat(); await mikrofeladat(); assert.equal(hibas.ls._m.has('mh_vid_nap'), false, 'ertelmezheto valasz nelkul (halozati / szerverhiba) nem ir napi jelzest: masnap helyett a kovetkezo oldalon ujra probalja');
   const holnap = tarolo({ mh_vid_nap: '2020-1-1' }); assert.equal(kliens({ referrer: '', ls: holnap }).posztok().length, 1, 'masik napon ujra');
 });
 test('E) kliens: nincs POST, ha belso hivatkozo / ujratoltes / vissza gomb / nincs engedely / koszonooldal; a fizetett POST a landing utvonalat (lap) is viszi', async () => {
@@ -347,9 +367,9 @@ test('E) kliens: nincs POST, ha belso hivatkozo / ujratoltes / vissza gomb / nin
   const f = kliens({ search: `?gclid=${GCLID}&utm_source=google&utm_medium=cpc&utm_campaign=1`, referrer: 'https://www.google.com/', pathname: '/lezeres-szortelenites-budapest' });
   assert.equal(f.posztok().length, 1); assert.equal(f.posztok()[0].body.lap, '/lezeres-szortelenites-budapest'); assert.equal(f.posztok()[0].body.organikus, undefined); assert.equal(f.posztok()[0].body.forras.kv, GCLID, 'a nyers azonosito csak a fizetett POST-ban (mint eddig)');
 });
-test('E) kliens: ha a szerver "vid: false"-t jelez (kapcsolo / kulcs nincs), 7 napig nem probalkozik; lejaratkor ujra; tiltott localStorage: nincs kuldes (nincs napi korlat)', async () => {
+test('E) kliens: ha a szerver "vid: false"-t jelez (kapcsolo / kulcs nincs), 1 napig nem probalkozik; lejaratkor ujra; tiltott localStorage: nincs kuldes (nincs napi korlat)', async () => {
   const k = kliens({ referrer: '', valasz: { ok: true, suti: false, vid: false } }); await mikrofeladat(); await mikrofeladat();
-  const ki = Number(k.ls._m.get('mh_vid_ki')); assert.ok(ki > Math.floor(Date.now() / 1000) + 6 * NAP && ki <= Math.floor(Date.now() / 1000) + 7 * NAP + 5, 'kb. 7 nap');
+  const ki = Number(k.ls._m.get('mh_vid_ki')); assert.ok(ki > Math.floor(Date.now() / 1000) + NAP - 60 && ki <= Math.floor(Date.now() / 1000) + NAP + 5, 'kb. 1 nap');
   const holnap = tarolo({ mh_vid_ki: ki, mh_vid_nap: '2020-1-1' }); assert.equal(kliens({ referrer: '', ls: holnap }).posztok().length, 0, 'szunetel');
   const lejart = tarolo({ mh_vid_ki: 1700000000, mh_vid_nap: '2020-1-1' }); assert.equal(kliens({ referrer: '', ls: lejart }).posztok().length, 1, 'lejart szunet');
   const tiltott = { getItem() { throw new Error('tiltva'); }, setItem() { throw new Error('tiltva'); }, removeItem() {} }; assert.equal(kliens({ referrer: '', ls: tiltott }).posztok().filter((p) => p.body.organikus).length, 0);

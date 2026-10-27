@@ -301,6 +301,7 @@ export const lptKi = (env) => !!env && String(env.MOSAIC_LPT_KI) === '1';
  */
 async function vidKezel({ env, b, e, cookie, most }) {
   if (!vidMukodik(env) || !e) return null;
+  if (hozzajarulasTisztit(b && b.hozz).adv !== true) return null; // az mh_vid-hez kifejezett marketing-hozzajarulas kell (a nem megadott sem eleg)
   const kulcs = vidKulcs(env);
   const vid = vidOlvas(cookie) || vidUj();
   if (env.KULCS_DB) {
@@ -412,7 +413,7 @@ export async function erkezesForrassal(request, env, kezel, deps = {}) {
       try {
         const vid = vidOlvas(cookie);
         if (vid) await vidErkezesIr(env.KULCS_DB, { source_id: be.source_id, vid_hash: await vidHash(vidKulcs(env), vid), most });
-        await utvonalLezar(env.KULCS_DB, { most });
+        await utvonalLezar(env.KULCS_DB, { most, limit: 25 }); // a koszonooldali valasz elott fut: kis tetel; a maradekot a riport zarja
       } catch (err) { console.error('erintesnaplo: utvonal-hiba (a foglalas / a meres_erkezes mentese nem erintett)', String(err && err.message || err).slice(0, 200)); }
     }
     return new Response(JSON.stringify({ ...j, forras }), { status: valasz.status, headers: valasz.headers });

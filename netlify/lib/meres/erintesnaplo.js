@@ -175,6 +175,7 @@ export async function utvonalLezar(db, { most = Math.floor(Date.now() / 1000), l
   const { results } = await db.prepare(`SELECT v.source_id AS source_id, v.vid_hash AS vid_hash, k.uzletag AS uzletag, k.esemeny_nev AS nev, MIN(k.letrehozva) AS t
     FROM meres_vid_erkezes v JOIN meres_kuldes k ON k.source_id = v.source_id AND k.esemeny_tipus = 'alap'
     WHERE NOT EXISTS (SELECT 1 FROM meres_utvonal u WHERE u.source_id = v.source_id) AND NOT (k.allapot = 'kihagyva' AND k.indok LIKE '${NEM_KONVERZIO_INDOK}')
+      AND k.esemeny_nev IN (${KONV_TIPUSOK.map((x) => `'${x}'`).join(', ')}) AND k.uzletag IN (${UZLETAGOK.map((x) => `'${x}'`).join(', ')})
     GROUP BY v.source_id, v.vid_hash, k.uzletag, k.esemeny_nev ORDER BY t LIMIT ?1`).bind(limit).all();
   let zarva = 0; const hibak = [];
   const mar = new Set();

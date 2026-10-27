@@ -9,3 +9,4 @@ MÉRÉST ÉRINTŐ, alapból KI. Részletek: [docs/booking-engine/ERINTESNAPLO.md
 * Nincs vendégadat; nyers vid / kattintásazonosító a D1-ben nincs.
 
 * Mérési spec-ellenőrzés (#498, 6435430910) két kiegészítése: hirdetéscsoport-szint (`g`, riport `hirdetescsoport`) és a hirdetés forrása (`af`, `szint_bizonytalan`). Tesztek: test-erintesnaplo 27/27.
+* Független review (6434552703) javítása: a riport kapcsoló nélkül nem hoz létre táblát; + az (a)(b)(c) jegyzetek és az adv:true követelmény. Tesztek: test-erintesnaplo 28/28.

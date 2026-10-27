@@ -46,3 +46,10 @@ Kulcs csak a `x-egyeztetes-kulcs` fejlécben (a `?kulcs=` nem fogadható el), k�
 ## Hirdetéscsoport-szint és a hirdetés forrása (mérési spec-ellenőrzés, #498)
 
 Az útvonal-JSON érintésenként `g = adgroupid || utm_term` (hirdetéscsoport) és `af` (a hirdetés forrása: `adid` | `utm_content`) mezőt is tartalmaz; a riport `hirdetescsoport` listája `platform|kampany|csoport` kulccsal ad kreditet. A 4 kis Google-kampány suffixében (`utm_content={adgroupid}`) az `utm_content` hirdetéscsoport-azonosító, nem hirdetés: ezért a Google `utm_content` forrású hirdetés-szintű sorok `szint_bizonytalan: true` jelzést kapnak, a szintet nem találgatjuk. A kis Google-kampányok listáját a mérés adja át (nem kell a kódba).
+
+## Független review javítások (#498, 6434552703 / 6434550065)
+
+* **Fail-closed a riportban:** `MERES_VID_BE` / `MERES_VID_KULCS` nélkül a riport-végpont (helyes kulccsal is) `{ ok: true, ki: true }`-t ad, és a D1-hez sem nyúl – nem jön létre tábla (teszt: 4 kikapcsolt változat × 3 tábla).
+* `mh_vid` csak kifejezett `adv: true` hozzájárulással (hozzájárulás-jelzés nélkül nincs süti és sor).
+* Kliens: a napi jelzés (`mh_vid_nap`) csak értelmezhető szerver-válasz után íródik; a `vid:false` utáni szünet 7 nap helyett 1 nap.
+* `utvonalLezar`: a SELECT kiszűri a nem konverziós eseménynevű / ismeretlen üzletágú sorokat (nem szorítanak ki másokat); a köszönőoldali hívás 25-ös tételt zár, a többit a riport.

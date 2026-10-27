@@ -259,12 +259,11 @@
     try {
       if (Number(localStorage.getItem(F_VID_KI) || 0) > ma()) return; // a szerver kikapcsolt allapotot jelzett: nem probalkozunk
       if (localStorage.getItem(F_VID_NAP) === napKulcs()) return;
-      localStorage.setItem(F_VID_NAP, napKulcs());
     } catch (e) { return; }
     try {
       fetch('/api/mosaic-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify({ forras: tiszta(t), organikus: true, lap: location.pathname, hozz: hozzPost() }) })
         .then(function (r) { return r && r.ok ? r.json() : null; })
-        .then(function (j) { if (j && j.vid === false) { try { localStorage.setItem(F_VID_KI, String(ma() + 7 * 86400)); } catch (e2) { /* nem baj */ } } })
+        .then(function (j) { if (!j) return; try { localStorage.setItem(F_VID_NAP, napKulcs()); if (j.vid === false) localStorage.setItem(F_VID_KI, String(ma() + 86400)); } catch (e2) { /* nem baj */ } }) // a napi jelzes csak sikeres valasz utan; kikapcsolt szerver: 1 nap szunet
         .catch(function () { /* nem zavar */ });
     } catch (e3) { /* regi bongeszo */ }
   }
