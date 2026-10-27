@@ -17,6 +17,7 @@ import { SALONIC_UZLETAG, foglalasJelleg, esemenyek, konzultacioTabla, kuponJelz
 import { emailNormal, telefonSzamjegy } from './hash.js';
 import { elosztas, meresSema, kapcsolokOlvas } from './elosztas.js';
 import { jellegRogzit } from './jelleg-rogzites.js';
+import { jellegSzabaly } from './jelleg-oldal.js';
 import { vendegNev } from './vendeg-nev.js';
 import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes, evKovetkeztet, isoUnix, nevtablaBetolt, nevtablaMent, norm, sema as parositasSema } from '../foglalas-kulcs.js';
 
@@ -283,7 +284,8 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
   const v = (bejovo.vendeg && typeof bejovo.vendeg === 'object') ? bejovo.vendeg : {};
   const most = fuggosegek.now ? fuggosegek.now() : Date.now();
   const ujVendeg = typeof bejovo.uj_vendeg === 'boolean' ? bejovo.uj_vendeg : null;
-  const kapott = foglalasJelleg({ szolgaltatasNev: mezok.szolgaltatas || '', ujVendeg, kategoria: '' });
+  // UJ-68: a "konzultacio" nevu fodrasz / PMU szolgaltatas mindig Konzultacio (a koszonooldal az sd-nel nincs: oldal nelkul csak a nev-szabaly ervenyes)
+  const kapott = jellegSzabaly({ uzletag, oldal: '', szolgaltatasNev: mezok.szolgaltatas || '', kapott: foglalasJelleg({ szolgaltatasNev: mezok.szolgaltatas || '', ujVendeg, kategoria: '' }), env });
   const zar = szaraz ? { ...kapott, forras: 'szaraz' } : await jellegRogzit(db, sdId, kapott, most); // az elso kiertekeles jellege rogzul (mint a motornal, X1)
   const ar = await arFeloldas(db, { jelleg: zar.jelleg, mezok, bejovo, fuggosegek: szaraz ? null : fuggosegek }); // a SZARAZ terv irasmentes es halozatmentes: a nevtabla-frissites (hivas + nevtablaMent) csak az eles uton fut
   const fk = { tipus: 'foglalas', uzletag, source_entity_id: sdId, jelleg: zar.jelleg, kupon: zar.kupon, ertek: ar.ertek, ido: t0, szolgaltatas: mezok.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: null, nev: vendegNev(bejovo) }, oldal: null, uuid,
