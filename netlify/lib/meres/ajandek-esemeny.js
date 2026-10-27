@@ -38,6 +38,6 @@ export async function ajandekEsemenyKuldes({ db, env, pi, mod, piLeker, fetchImp
   if (f.kihagyva) return { allapot: 'kihagyva', miert: f.kihagyva };
   let eloAllapot = null; const eloEllenorzes = () => (eloAllapot ||= piLeker(pi.id).then((x) => ajandekEloAllapot(x, mod)));
   const r = await elosztas(db, f.fk, { env, fetchImpl, now, kuldo, eloEllenorzes });
-  const tiktokElo = await tiktokEloKuld(db, f.fk, { env, fetchImpl, now, eloEllenorzes }); // UJ-67: HeadSpa ajandekkartya = Schedule az elo pixelre (alapbol KI; a bongeszos TikTok-esemenyt az ajandek.js kuldi)
+  const tiktokElo = await tiktokEloKuld(db, f.fk, { env, fetchImpl, now, eloEllenorzes }); // UJ-67: HeadSpa ajandekkartya = Schedule az elo pixelre (alapbol KI; az ajandek.js nem hiv ttq-t: csak szerveres peldany van, ezert esemeny_id-vel is mehet)
   return { ...r, forras: f.fk.forras, ertek: f.fk.ertek, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}) };
 }

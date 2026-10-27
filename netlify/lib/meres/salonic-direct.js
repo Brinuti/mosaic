@@ -300,7 +300,7 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
   }
   let eloAllapot = null; const eloEllenorzes = () => (eloAllapot ||= foglalasAllapot({ host: mezok.host, uuid, fetchImpl: fuggosegek.fetchImpl }).then((x) => x.allapot));
   const r = await elosztas(db, fk, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, kuldo: fuggosegek.kuldo, eloEllenorzes });
-  const tiktokElo = await tiktokEloKuld(db, { ...fk, uuid }, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, eloEllenorzes }); // UJ-67/69/71/73: kodos elo TikTok-esemeny (alapbol KI; az sd-nel nincs bongeszo: a kozos event_id az esemeny_id)
+  const tiktokElo = await tiktokEloKuld(db, { ...fk, uuid }, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, eloEllenorzes }); // UJ-67/69/71/73: kodos elo TikTok-esemeny (alapbol KI; az sd-nel nincs kozos bongeszos kulcs: a TikTok-esemeny kimarad, hogy ne szamoljon duplan)
   return { ...eredmeny, esemeny_kuldes: r, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}) };
 }
 
