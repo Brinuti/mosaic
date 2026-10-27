@@ -25,8 +25,14 @@ A Salonic 2. alkalomtól szolgáltatása („Haj Oxigénterápia – 2. alkalomt
 ## 6. Lépések, felelős, rollback
 | # | lépés | ki | rollback |
 |---|---|---|---|
-| 1 | #508 független review + merge (kapcsoló KI) | review: mérési oldal; DECISION kell | revert |
+| 1 | **előfeltétel:** #508 (`c6955ebe`) független review + merge (kapcsoló KI); a terv B) lépései nélküle nem indíthatók | review: mérési oldal; DECISION kell | revert |
 | 2 | `META_PV_TOKEN` Secret (Production + Preview) | Feri | – |
-| 3 | böngészős `eventID` GTM-workspace-ben, publikálás nélkül | mérési oldal | workspace törlése |
+| 3 | böngészős `eventID` GTM-workspace-ben, publikálás nélkül — **külső fiók: Feri kifejezett kérése / DECISION kell** (a workspace létrehozása is) | mérési oldal | workspace törlése |
 | 4 | előnézeti Test Events, 3 minta (dedup, EMQ) | mérési oldal + fejlesztő | `META_PV_BE` törlése |
-| 5 | éles `META_PV_BE="oxigen"` + GTM publikálás | Feri „mehet" + DECISION | `META_PV_BE` törlése, GTM előző verzió |
+| 5 | éles `META_PV_BE="oxigen"` + GTM publikálás — **besorolás: külön Feri-mondat** (nem 4/a: a cél forrás-eseményét érinti, nem „csak több adat ugyanarra az egyéni konverzióra") | Feri „mehet" + DECISION | `META_PV_BE` törlése, GTM előző verzió |
+
+## 7. Döntési kritérium a B) dedup-hipotézishez (rögzítve a próba előtt)
+Előnézeti Test Events, **3 valós minta**, mindegyiken ugyanazon foglaláshoz kötött `eventID`-val: (a) a böngészős + szerveres PageView egy eseménnyé olvad-e, (b) az **oldal újratöltése** után a Meta nem számol-e új eseményt.
+- **3/3 dedup** (az újratöltés sem ad új eseményt): a B) lépés **igazolt**, mehet a 4–5. lépés (Feri külön mondatával).
+- **A pár dedupja megy, de az újratöltés-dedup nem (< 3/3):** a B) mint **újratöltés-szűrő elvetve**; csak az A) marad (EMQ-nyereség, pontosság-javulás nem ígérve).
+- **A pár dedupja sem megy (< 3/3):** az egész terv leáll, nincs élesítés; a #508 kapcsolója KI marad.
