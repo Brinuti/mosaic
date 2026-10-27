@@ -20,6 +20,7 @@ import { jellegRogzit } from './jelleg-rogzites.js';
 import { jellegSzabaly } from './jelleg-oldal.js';
 import { vendegNev } from './vendeg-nev.js';
 import { tiktokEloKuld } from './tiktok-elo.js';
+import { metaEloKuld } from './meta-elo.js';
 import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes, evKovetkeztet, isoUnix, nevtablaBetolt, nevtablaMent, norm, sema as parositasSema } from '../foglalas-kulcs.js';
 
 export const SD_MIN_KOR_MP = 20 * 60;          // legalabb ennyi ido a letrehozo level erkezese utan (a motoros 4 proba ~14-15 perc alatt lezarul)
@@ -301,7 +302,8 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
   let eloAllapot = null; const eloEllenorzes = () => (eloAllapot ||= foglalasAllapot({ host: mezok.host, uuid, fetchImpl: fuggosegek.fetchImpl }).then((x) => x.allapot));
   const r = await elosztas(db, fk, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, kuldo: fuggosegek.kuldo, eloEllenorzes });
   const tiktokElo = await tiktokEloKuld(db, { ...fk, uuid }, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, eloEllenorzes }); // UJ-67/69/71/73: kodos elo TikTok-esemeny (alapbol KI; az sd-nel nincs kozos bongeszos kulcs: a TikTok-esemeny kimarad, hogy ne szamoljon duplan)
-  return { ...eredmeny, esemeny_kuldes: r, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}) };
+  const metaElo = await metaEloKuld(db, { ...fk, uuid }, { env, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now, eloEllenorzes }); // DECISION #240 (sd: nincs bongeszo -> nincs kozos event_id -> nem kuld)
+  return { ...eredmeny, esemeny_kuldes: r, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}), ...(metaElo.allapot !== 'ki' ? { meta_elo: metaElo } : {}) };
 }
 
 /**
