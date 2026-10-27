@@ -9,6 +9,8 @@ compatibility_flags = ["nodejs_compat"]
 # Nem titkos beallitasok (mindket kornyezet). A titkos SMTP_PASS (Gmail-
 # alkalmazasjelszo) a Cloudflare feluleten, Secret tipussal kerul be.
 [vars]
+# UJ-63 (csere nelkuli potlas az elo "All - Idopontfoglalas" 7468541217 akcion; lasd ../docs/booking-engine/GOOGLE_CSERE_NELKUL_TERV.md): ALAPBOL KI. MP_GADS_ELO = "dry" (validateOnly) | "eles" (csak MP_GADS_MOD=eles + eles host + kulon DECISION / Feri mondata),
+# MP_GADS_ELO_TOL = a bongeszos orderId-s cimke elesitesenek unix-ideje. Rollback: a sorok torlese / MP_GADS_ELO="ki".
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "medicalpiercing.hu@gmail.com"
