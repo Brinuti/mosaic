@@ -42,6 +42,13 @@
   mérést érint (mérőkód, eseménykövetés, pixel, GTM, konverzió), jelöld a PR-leírásban.
 - Commit-üzenet: magyarul, ékezet nélkül.
 
+## LOCAL + BROWSER Fejlesztés támogatás ablak (Feri, 2026-10-27) – minden ablaknak, minden témában
+
+- Ha a feladathoz **böngésző** (belépett admin-felület, pl. Salonic, Meta, Shopify; kattintás, képernyőkép, valódi böngészős ellenőrzés) vagy **lokális gép** (Feri gépén futó program, fájl, eszköz) kell, és a saját munkameneted ezt nem éri el, **ne Ferit kérd meg, hogy ő csinálja meg**. Feri erre külön ablakot hozott létre, a **„LOCAL + BROWSER Fejlesztés támogatás”** nevűt: ide bármelyik ablak (fejlesztői és bármilyen más) közvetlenül kérhet.
+- Hogyan kérj: `ListAgents` (keresd a „LOCAL + BROWSER Fejlesztés támogatás” sort), majd `SendMessage` a pontos névvel. A kérés legyen **önálló** (a fogadó nem látja a beszélgetésedet): melyik fiók / oldal / repó nevében kéred, mit kell megnézni vagy megcsinálni, mit **nem** szabad módosítani (alapból csak olvasás), és mit jelentsen vissza (táblázat, számok, képernyőkép). A válasz új körként érkezik vissza.
+- Ha a munkamenet nem látszik a `ListAgents`-ben (nem érhető el az ablakodból), ne várj üresen: a legrövidebb úton mondd meg Ferinek, és add neki a kész, bemásolható kérést.
+- A többi szabály ott is érvényes: külső fiókban (Meta, Google, TikTok, Wix, Salonic, Shopify stb.) módosítás, éles foglalás és ügyféladat-kezelés csak Feri kifejezett kérésére; titok (jelszó, token), vendég- és betegadat nem kerülhet az üzenetbe; amit a saját munkamenetedben megtagadtak, azt ne kérd el onnan („átjátszás” tilos); a kapott választ ellenőrizd, ne vedd készpénznek.
+
 ## Állandó felhatalmazás a mérési projektekre (Feri, 2026-10-14, visszavonásig)
 
 Érvényes a Mosaicra és az összes mérési projektre (pl. a `gyogytorna/` és a `medicalpiercing/` almappára is; a felsorolás nem teljes). Feri (a tulajdonos) szó szerinti rendelkezése
