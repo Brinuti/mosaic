@@ -42,7 +42,27 @@ Betti 43 szolgáltatására a motor (fodrászválasztás: Betti) és a Salonic s
 - **Laza:** üres napon minden szabad időpontot; ha már van bent időpont vagy szünet, akkor mellé, valamint a nap elejéről és végéről.
 - **Szigorú:** ha már van bent időpont vagy szünet, csakis mellé.
 
-Megfigyelés (2026-10-27): a fiókban „Laza”-ról „Nincs optimalizálás”-ra állítás után a nyilvános kínálat a foglalásos napokon változatlan maradt (a foglalás utáni kezdések: 09:00, 16:15, 17:00, 17:15 megvoltak). Az ok nem tisztázott.
+Mérés (2026-10-27, a Salonic admin és a nyilvános foglaló egymás mellett, mindkét állapotban): a „Nincs optimalizálás” → „Laza” váltás **azonnal csökkenti a kínálatot a foglalásos napokon**, üres napon nincs különbség. Példák (Betti, nov. 9., amikor már van foglalás):
+
+| Szolgáltatás | Nincs optimalizálás | Laza |
+|---|---|---|
+| 395337 Teljes festés közepes (rács 210) | 09:00, 11:30, 16:15 | 09:00, 16:15 |
+| 395338 Teljes festés hosszú (félórás rács) | 09:00–12:30 félóránként, 16:15, 16:30, 17:00 | 09:00, 12:30, 16:15, 17:00 |
+| 231546 Teljes melír rövid (rács 120) | 09:00, 10:00, 12:00, 16:15 | 09:00, 16:15 |
+
+Vagyis a „Laza” a szabad sáv **elejére és végére** (a következő foglalás elé) igazítja a kínált kezdéseket; kevesebb választék, szorosabb pakolás. Az okt. 29. 12:00 a 395337-nél mindkét állapotban hiányzik: azt az időköz okozza.
+*(Az első, „nem változott” megállapításom téves volt: az „előtte” mérésem hibás gyűjtésből jött.)*
+
+## 4a. Foglaltság (Salonic „Munkaidő kimutatás: Vendégóra / Munkaóra”, 2026. aug. 31 – okt. 25, 8 hét; összesített, vendégadat nélkül)
+| | Lefoglalt / elérhető perc | Foglaltság |
+|---|---|---|
+| Betti | 13 825 / 24 135 | 57,3% |
+| Evelin | 6 990 / 13 215 | 52,9% |
+| Noel | 5 170 / 13 305 | 38,9% |
+Az elérhető perc a blokkokkal (szabi, szünet) csökkentett nettó munkaidő, a mostani beállításból számolva. Az elmúlt 8 hétben a 7 vizsgált szolgáltatásra összesen 17 foglalás volt a 225-ből.
+
+## 4b. Eredeti beállítások (visszaállításhoz; 2026-10-27 reggel, a mérés előtt)
+Optimalizálás: **Laza** (a mai teszt alatt átmenetileg „Nincs optimalizálás”, 22:16-kor visszaállítva Lazára); fiók szintű intervallum: 30 perc; szolgáltatás-intervallumok: 395337 = 210, 395330 = 150, 395338 = alapértelmezés, 470827 = 180, 231546 = 120, 231547 = 150, 231544 = 150 perc. Megjegyzés: az Optimalizálás legördülője a módosításkor magától ment; a szolgáltatás mentéséhez a fejlesztői ablak jóváhagyó felülete külön engedélyt kér.
 
 ## 4. Mérési módszer és buktatók
 Eszközök: `tools/salonic-egyezes/`. A Salonic oldalait a `?mh_nincs_atiranyitas=1` kerüli ki (különben a `salonic/atiranyitas.js` a főoldalra irányít). Buktatók, amelyek hamis eltérést adtak:
