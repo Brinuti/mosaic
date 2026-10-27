@@ -129,6 +129,22 @@
    * o: { source_id, uzletag, tipus: 'foglalas' | 'ajandekkartya', szolgaltatas, ar, first_booking, g, kategoria, munkatars, bookingUrl }. Szemelyes adat (nev, e-mail, telefon) NEM megy.
    * A hiba sosem akadalyozhatja a foglalast / vasarlast; az eredmeny a window.mhAttribucioEredmeny-ben latszik (ellenorzo proba).
    */
+  // UJ-67/69/71/73: a szerver CSAK bekapcsolt uzletagnal ad "tiktok_elo" jelzest az erkezes valaszaban (TIKTOK_ELO_BE + titok). A bongeszos TikTok-esemeny ugyanazzal az event_id-val megy, mint a szerveres Events API
+  // (a TikTok deduplikal); marketing-hozzajarulas nelkul nem; a pixel kesobbi betoltodeset (GTM) max. 10 mp-ig varjuk; egy event_id egyszer.
+  function tiktokEloKuld(t) {
+    try {
+      if (!t || !/^[A-Za-z]{3,30}$/.test(String(t.esemeny || '')) || !/^[A-Za-z0-9_-]{8,160}$/.test(String(t.event_id || '')) || !engedely()) return;
+      var probak = 0;
+      var probal = function () {
+        if (w.ttq && typeof w.ttq.track === 'function' && w.ttq._i) {
+          var jel = 'mhTtqElo:' + t.event_id;
+          try { if (sessionStorage.getItem(jel)) return; sessionStorage.setItem(jel, '1'); } catch (e) { /* privat mod: a pixel maga is deduplikal az event_id-val */ }
+          try { w.ttq.track(t.esemeny, {}, { event_id: t.event_id }); } catch (e2) { /* nem baj */ }
+        } else if (++probak < 40) setTimeout(probal, 250);
+      };
+      probal();
+    } catch (e3) { /* regi bongeszo */ }
+  }
   function kuld(o) {
     try {
       var jel = 'mhAttrKuldve:' + o.source_id;
@@ -146,6 +162,7 @@
           return r.json().catch(function () { return null; }).then(function (j) {
             w.mhAttribucioEredmeny = { source_id: o.source_id, allapot: 'valasz', status: r.status, valasz: j, kuldott: body };
             if (r.ok) { try { sessionStorage.setItem(jel, '1'); sessionStorage.removeItem(F_POTLAS); } catch (e) { /* nem baj */ } }
+            if (r.ok && j && j.tiktok_elo) tiktokEloKuld(j.tiktok_elo);
             return w.mhAttribucioEredmeny;
           });
         }).catch(function (e) { w.mhAttribucioEredmeny = { source_id: o.source_id, allapot: 'hiba', hiba: String(e && e.message || e).slice(0, 80) }; return w.mhAttribucioEredmeny; });

@@ -18,6 +18,7 @@ import { hozzajarulasTisztit } from './hozzajarulas.js';
 import { SOURCE_ID_MINTA, UZLETAGAK } from './esemeny-modell.js';
 import { oszlopokBiztosit } from './sema-seged.js';
 import { vidMukodik, vidKulcs, vidUj, vidOlvas, vidSuti, vidSutiVan, vidHash, klikkHash, erintesSor, erintesIr, vidErkezesIr, utvonalLezar } from './erintesnaplo.js'; // #495 (UJ-80): erintesnaplo, MERES_VID_BE=1 mellett
+import { eloBongeszoJelzes } from './tiktok-elo.js'; // UJ-67/69/71/73: a kodos elo TikTok-esemeny jelzese a kliensnek (csak bekapcsolt uzletagnal)
 
 export const CIMKEK = Object.freeze(['meta', 'tiktok', 'google_nem_markas', 'google_markas', 'organikus_direkt', 'ismeretlen']);
 export const KATT_PARAMOK = Object.freeze(['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid']);
@@ -399,10 +400,16 @@ export async function erkezesForrassal(request, env, kezel, deps = {}) {
   let valasz;
   try { valasz = await kezel(ujKeres || request, env, deps); }
   catch (e) { if (!ujKeres) throw e; valasz = await kezel(request, env, deps); szerverPotlas = []; } // a potlas hibaja nem torheti el a mentest
-  if (!be || valasz.status !== 200 || !env.KULCS_DB) return valasz;
+  // UJ-67/69/71/73: a bongeszos TikTok-esemeny jelzese (additiv "tiktok_elo" mezo a valaszban): alapbol nincs (TIKTOK_ELO_BE + TIKTOK_ELO_TOKEN nelkul null); a forras-mentes hibaja nem erinti
+  const tt = be ? eloBongeszoJelzes(env, be) : null;
+  const kiegesz = async (resp) => {
+    if (!tt || resp.status !== 200) return resp;
+    try { const jj = await resp.clone().json(); return jj && jj.ok === true ? new Response(JSON.stringify({ ...jj, tiktok_elo: tt }), { status: resp.status, headers: resp.headers }) : resp; } catch (err) { return resp; }
+  };
+  if (!be || valasz.status !== 200 || !env.KULCS_DB) return kiegesz(valasz);
   try {
     const j = await valasz.clone().json();
-    if (!j || j.ok !== true || !UZLETAGAK.includes(be.uzletag) || !SOURCE_ID_MINTA.test(String(be.source_id || ''))) return valasz;
+    if (!j || j.ok !== true || !UZLETAGAK.includes(be.uzletag) || !SOURCE_ID_MINTA.test(String(be.source_id || ''))) return kiegesz(valasz);
     await forrasSema(env.KULCS_DB);
     const markas = await markasListaOlvas(env.KULCS_DB);
     // klikk_potolt csak akkor, ha a potlas TENYLEG mentodott: ha az esemeny mar kiment (frissitve:false), a meres_erkezes sor (attr) nem frissult - sem a szerver, sem a kliens jelzese nem szamit
@@ -416,10 +423,10 @@ export async function erkezesForrassal(request, env, kezel, deps = {}) {
         await utvonalLezar(env.KULCS_DB, { most, limit: 25 }); // a koszonooldali valasz elott fut: kis tetel; a maradekot a riport zarja
       } catch (err) { console.error('erintesnaplo: utvonal-hiba (a foglalas / a meres_erkezes mentese nem erintett)', String(err && err.message || err).slice(0, 200)); }
     }
-    return new Response(JSON.stringify({ ...j, forras }), { status: valasz.status, headers: valasz.headers });
+    return new Response(JSON.stringify({ ...j, forras, ...(tt ? { tiktok_elo: tt } : {}) }), { status: valasz.status, headers: valasz.headers });
   } catch (e) {
     console.error('meres_forras: hiba (a foglalas / a meres_erkezes mentese nem erintett)', String(e && e.message || e).slice(0, 200));
-    return valasz;
+    return kiegesz(valasz);
   }
 }
 

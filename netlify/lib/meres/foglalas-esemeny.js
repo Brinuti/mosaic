@@ -7,6 +7,8 @@ import { jellegRogzit } from './jelleg-rogzites.js';
 import { jellegSzabaly } from './jelleg-oldal.js';
 import { foglalasAllapot, emailElemzes } from '../foglalas-kulcs.js';
 import { vendegNev } from './vendeg-nev.js';
+import { tiktokEloKuld } from './tiktok-elo.js'; // UJ-67/69/71/73: kodos elo TikTok-esemeny (alapbol KI)
+import { metaEloKuld } from './meta-elo.js'; // DECISION #240: HeadSpa Meta Schedule az elo pixelre (alapbol KI)
 
 export async function foglalasEsemenyKuldes({ db, env, mezok, bejovo = {}, eredmeny, fetchImpl, now, kuldo }) {
   const uzletag = SALONIC_UZLETAG[mezok.host];
@@ -28,6 +30,9 @@ export async function foglalasEsemenyKuldes({ db, env, mezok, bejovo = {}, eredm
   const ido = Math.floor((Number.isFinite(leveldatum) ? leveldatum : (now ? now() : Date.now())) / 1000);
   const v = (bejovo.vendeg && typeof bejovo.vendeg === 'object') ? bejovo.vendeg : {};
   const fk = { tipus: 'foglalas', uzletag, source_entity_id: sourceId, jelleg, kupon, ertek: ar ?? 0, ido, szolgaltatas: mezok.szolgaltatas || b.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: b.g || null, nev: vendegNev({ ...bejovo, vendeg: v }) }, oldal: b.oldal || null, uuid: mezok.uuid }; // nev (DECISION #202): a Zap `nev` mezoje, tartalekban a level szovegebol; csak hash-elesre (a nyers nev nem naplozodik)
-  const r = await elosztas(db, fk, { env, fetchImpl, now, kuldo, eloEllenorzes: async () => (await foglalasAllapot({ host: mezok.host, uuid: mezok.uuid, fetchImpl })).allapot });
-  return { ...r, jelleg, kupon, uj_vendeg: ujVendeg, jelleg_rogzites: { forras: zar.forras, oldal_szabaly: kapott.szabaly, modell_jelleg: kapott0.jelleg, kapott_jelleg: kapott.jelleg, kapott_kupon: kapott.kupon, eltero: kapott.jelleg !== jelleg || kapott.kupon !== kupon }, salonic_ar: fk.ertek, ertek: (r.esemenyek && r.esemenyek[0] ? r.esemenyek[0].ertek : null), ar_forras: bejovo.ar != null ? 'bejovo' : html.ar != null ? 'level' : b.ar != null ? 'bongeszo' : 'nincs', uzletag };
+  let eloAllapot = null; const eloEllenorzes = () => (eloAllapot ||= foglalasAllapot({ host: mezok.host, uuid: mezok.uuid, fetchImpl }).then((x) => x.allapot)); // egy Salonic-lekeres az elosztasnak es az elo TikTok-kuldesnek
+  const r = await elosztas(db, fk, { env, fetchImpl, now, kuldo, eloEllenorzes });
+  const tiktokElo = await tiktokEloKuld(db, { ...fk, uuid: mezok.uuid }, { env, fetchImpl, now, eloEllenorzes });
+  const metaElo = await metaEloKuld(db, { ...fk, uuid: mezok.uuid }, { env, fetchImpl, now, eloEllenorzes });
+  return { ...r, ...(tiktokElo.allapot !== 'ki' ? { tiktok_elo: tiktokElo } : {}), ...(metaElo.allapot !== 'ki' ? { meta_elo: metaElo } : {}), jelleg, kupon, uj_vendeg: ujVendeg, jelleg_rogzites: { forras: zar.forras, oldal_szabaly: kapott.szabaly, modell_jelleg: kapott0.jelleg, kapott_jelleg: kapott.jelleg, kapott_kupon: kapott.kupon, eltero: kapott.jelleg !== jelleg || kapott.kupon !== kupon }, salonic_ar: fk.ertek, ertek: (r.esemenyek && r.esemenyek[0] ? r.esemenyek[0].ertek : null), ar_forras: bejovo.ar != null ? 'bejovo' : html.ar != null ? 'level' : b.ar != null ? 'bongeszo' : 'nincs', uzletag };
 }
