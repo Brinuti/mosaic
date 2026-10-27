@@ -60,7 +60,7 @@ export function osszegez(docs, { tolMs, mezo }) {
   return { mezonevek: [...nevek].sort(), oraSzam, jelzo, idoNelkul };
 }
 
-export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, napok = 7, tol = '', mezo = 'fbc_suti_van', fetchImpl = fetch, naplo = (s) => console.log(s), most = Date.now() }) {
+export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, napok = 7, tol = '', mezo = 'fbc_suti_van', sorok = false, fetchImpl = fetch, naplo = (s) => console.log(s), most = Date.now() }) {
   if (!key) { naplo('HIBA: a STAPE_KEY (secret STAPE_A76_CONTAINER_KEY) nincs beallitva.'); return { ok: false }; }
   const rejt = (s) => String(s).split(key).join('***');
   const api = `${String(base).replace(/\/+$/, '')}/stape-api/${key}/v2/store`;
@@ -85,6 +85,11 @@ export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, n
     const o = osszegez(k.docs, { tolMs, mezo });
     eredmeny[kol] = o;
     naplo(`${kol}: mezonevek (ertek nelkul): ${o.mezonevek.join(', ') || '-'}; created_at nelkuli: ${o.idoNelkul}`);
+    if (process.env.SOROK === '1' || sorok) for (const d of k.docs) { // sorszintu nezet: Budapest-ido, esemenynev, hozzajarulas-allapot, jelzo, az oldal CSAK utvonala (query / azonosito nelkul)
+      const ms = Date.parse(d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue; const dd = d.data || {};
+      let ut = '-'; try { ut = new URL(String(dd.page_location || '')).pathname; } catch { /* nincs */ }
+      naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${String(dd.consent_state || '-').slice(0, 40)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}`);
+    }
     for (const ora of Object.keys(o.oraSzam).sort()) naplo(`  ${ora}h (Budapest): ${o.oraSzam[ora]} sor; ${mezo}: 1=${o.jelzo[ora][1]} 0=${o.jelzo[ora][0]} nincs=${o.jelzo[ora].nincs}`);
   }
   return { ok: true, eredmeny };
@@ -94,7 +99,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const r = await futtat({
     key: process.env.STAPE_KEY || '', base: process.env.STAPE_BASE || 'https://stape.a76.hu',
     kollekciok: (process.env.KOLLEKCIOK || 'a76_schedule_log,a76_foglalas_forras').split(',').map((s) => s.trim()).filter(Boolean),
-    napok: process.env.NAPOK || 7, tol: process.env.TOL || '', mezo: process.env.MEZO_JELZO || 'fbc_suti_van',
+    napok: process.env.NAPOK || 7, tol: process.env.TOL || '', mezo: process.env.MEZO_JELZO || 'fbc_suti_van', sorok: process.env.SOROK === '1',
   });
   if (!r.ok) process.exit(1);
 }

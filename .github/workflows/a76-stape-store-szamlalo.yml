@@ -19,6 +19,10 @@ on:
         description: "Ettol (ISO, UTC), pl. 2026-10-26T10:40:00Z; ha ures, a napok szamitanak"
         required: false
         default: ""
+      sorok:
+        description: "1 = sorszintu nezet (ido, esemenynev, jelzo, oldal-utvonal; azonosito nincs)"
+        required: false
+        default: "0"
       mezo:
         description: "0/1 jelzo mezo orankenti eloszlasa (alap: fbc_suti_van)"
         required: false
@@ -49,4 +53,5 @@ jobs:
           KOLLEKCIOK: ${{ github.event.inputs.kollekciok }}
           TOL: ${{ github.event.inputs.tol }}
           MEZO_JELZO: ${{ github.event.inputs.mezo }}
+          SOROK: ${{ github.event.inputs.sorok }}
         run: node tools/a76-stape-store-szamlalo.mjs
