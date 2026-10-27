@@ -234,12 +234,17 @@ export function forrasSor({ be, cookieFejlec = '', most, markasLista = null, sze
     gad_campaignid: e ? e.gc ?? null : null, adgroupid: e ? e.ag ?? null : null, adid: e ? e.ad ?? null : null,
     kattintas_param: e ? e.kp ?? null : null, kattintas_ido: e ? e.t ?? null : null, kattintas_kor_nap: sutis ? suti.kor_nap : null,
     kesei_fizetett: kesei ? 1 : 0, kesei_fizetett_platform: kesei ? kesei.platform ?? null : null, kesei_kor_nap: kesei ? kesei.kor_nap : null,
-    klikk_potolt: potolt.length ? potolt.join(',') : null, referrer_kat: e ? e.rk ?? null : null,
+    klikk_potolt: !adv ? null : potolt.length ? potolt.join(',') : KLIKK_POTOLT_NINCS, referrer_kat: e ? e.rk ?? null : null,
   };
   return { sor, valasz: valaszAlak(sor) };
 }
 /** A JSON-valasz additiv "forras" mezoje (szemelyes adat nelkul). */
-export const valaszAlak = (s) => ({ cimke: s.forras_cimke, bizonyitek_forras: s.bizonyitek_forras ?? null, klikk_potolt: s.klikk_potolt ?? null, kesei_fizetett: Number(s.kesei_fizetett) === 1 });
+// klikk_potolt allapotai (a mezo NULL-ja es a 0 kulon jelent, mereso oldal 10-27): NULL = a potlas nem ertekelheto (nincs hirdetesi hozzajarulas / regi sor); '0' = a potlas-logika LEFUTOTT, nem kellett potolni;
+// 'nem_mentve' = lefutott, de az esemeny mar kiment (a meres_erkezes nem frissult); egyebkent a potolt azonositok tipusai (pl. 'fbclid,gclid'). A kliensnek adott valaszban a '0' / 'nem_mentve' tovabbra is null (valtozatlan valaszalak).
+export const KLIKK_POTOLT_NINCS = '0';
+export const KLIKK_POTOLT_NEM_MENTVE = 'nem_mentve';
+const potoltValasz = (v) => (v === KLIKK_POTOLT_NINCS || v === KLIKK_POTOLT_NEM_MENTVE ? null : v ?? null);
+export const valaszAlak = (s) => ({ cimke: s.forras_cimke, bizonyitek_forras: s.bizonyitek_forras ?? null, klikk_potolt: potoltValasz(s.klikk_potolt), kesei_fizetett: Number(s.kesei_fizetett) === 1 });
 
 // ---------- D1 ----------
 const OSZLOPOK = ['source_id', 'uzletag', 'tipus', 'ido', 'forras_cimke', 'ismeretlen_ok', 'cimke_megjegyzes', 'bizonyitek_forras', 'platform', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
@@ -370,6 +375,7 @@ export async function erkezesForrassal(request, env, kezel, deps = {}) {
     // klikk_potolt csak akkor, ha a potlas TENYLEG mentodott: ha az esemeny mar kiment (frissitve:false), a meres_erkezes sor (attr) nem frissult - sem a szerver, sem a kliens jelzese nem szamit
     const mentve = j.frissitve !== false;
     const { sor } = forrasSor({ be: mentve ? be : { ...be, lpt_potlas: undefined }, cookieFejlec: cookie, most, markasLista: markas, szerverPotlas: mentve && ujKeres ? szerverPotlas : [] });
+    if (!mentve && sor.klikk_potolt === KLIKK_POTOLT_NINCS) sor.klikk_potolt = KLIKK_POTOLT_NEM_MENTVE;
     const forras = await forrasMent(env.KULCS_DB, sor, { env });
     return new Response(JSON.stringify({ ...j, forras }), { status: valasz.status, headers: valasz.headers });
   } catch (e) {
