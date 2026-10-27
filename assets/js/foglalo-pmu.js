@@ -157,6 +157,42 @@
     };
   })();
 
+  // --- PM-3 (meresi oldal jovahagyas, #167 6309629120, 2026-10-21): masodlagos lead-esemenyek a dataLayerbe (pmu_foto_lead, pmu_visszahivas_lead).
+  // CSAK dataLayer: magatol semmit nem kuld; a GTM / platform-lekepezes kulon DECISION (kulso fiok). Hozzajarulas ('ana') nelkul, probajeles bongeszoben es ismeretlen tipusnal nincs esemeny.
+  // A hivo a SIKERES bekuld() UTAN hivja, beadasonkent egyszer (uj event_id beadasonkent; azonos azonositoval masodszor nem pushol). A visszahivas elsodleges lead-hordozoja marad a /pmu-vh koszonooldal.
+  // Nincs nev / e-mail / telefon / foto / kezeles- vagy idopont-szoveg / URL: csak zart ertekek es veletlen azonosito.
+  // PM3-BEGIN
+  const pmuLead = (() => {
+    const NAPSZAK = { 'Délelőtt (9–12)': 'delelott', 'Kora délután (12–15)': 'kora_delutan', 'Délután (15–18)': 'delutan', 'Bármikor': 'barmikor' };
+    const volt = new Set();
+    const ujAzonosito = () => {
+      try { const b = new Uint8Array(8); crypto.getRandomValues(b); return 'pl_' + Array.from(b, (x) => x.toString(16).padStart(2, '0')).join(''); } catch (e) { return 'pl_' + Date.now().toString(36) + Math.floor(Math.random() * 1e9).toString(36); }
+    };
+    const fn = (tipus, o = {}) => {
+      try {
+        if (tipus !== 'foto' && tipus !== 'visszahivas') return;
+        let proba = false;
+        try { proba = localStorage.getItem('mhProba') === '1'; } catch (e) { /* tiltott tarolo: nem proba */ }
+        if (proba) return;
+        const s = window.mhSuti;
+        if (!(s && typeof s.engedely === 'function' && s.engedely('ana'))) return;
+        const id = typeof o.id === 'string' && /^pl_[a-z0-9]{8,24}$/.test(o.id) ? o.id : ujAzonosito();
+        if (volt.has(tipus + ':' + id)) return;
+        volt.add(tipus + ':' + id);
+        const adat = { event: tipus === 'foto' ? 'pmu_foto_lead' : 'pmu_visszahivas_lead', business: 'pmu', lead_type: tipus, source_page: '/foglalo-pmu', event_id: id };
+        if (tipus === 'foto') {
+          adat.ag = o.ag === 'D' ? 'D' : 'B';
+          adat.foto_db = Math.max(1, Math.min(5, Math.round(Number(o.fotoDb) || 1)));
+          adat.idopont_kert = o.idopontKert ? 1 : 0;
+        } else adat.mikor_napszak = Object.prototype.hasOwnProperty.call(NAPSZAK, o.napszak) ? NAPSZAK[o.napszak] : 'barmikor';
+        (window.dataLayer = window.dataLayer || []).push(adat);
+      } catch (e) { /* a meres hibaja nem akadalyozhatja a kuldest */ }
+    };
+    fn.ujAzonosito = ujAzonosito;
+    return fn;
+  })();
+  // PM3-END
+
   function leker(url, o = {}) {
     const ab = new AbortController();
     const ido = setTimeout(() => ab.abort(), 15000);
@@ -716,6 +752,7 @@
     if (!urlapEllenoriz('foto-adatok')) return;
     if (!$('foto-hozzajarul').checked) { hibaDoboz($('foto-kuld-hiba'), 'Kérlek, fogadd el az adatkezelést, hogy a fotóidat megnézhessem.'); return; }
     const k = allapot.kezeles;
+    const leadId = pmuLead.ujAzonosito();
     const adat = new FormData();
     adat.set('form-name', 'pmu-proba-foto');
     adat.set('ag', allapot.ag === 'D' ? 'D – nem biztos, volt-e PMU' : 'B – régi PMU van');
@@ -727,6 +764,7 @@
     adat.set('oldal', FORRAS_OLDAL);
     allapot.fotok.forEach((f, i) => adat.set('foto' + (i + 1), f.blob, 'foto' + (i + 1) + '.jpg'));
     if (!(await bekuld(adat, gomb, $('foto-kuld-hiba')))) return;
+    pmuLead('foto', { id: leadId, ag: allapot.ag, fotoDb: allapot.fotok.length, idopontKert: !!allapot.slot });
     $('foto-kesz-osszegzes').replaceChildren(allapot.slot && k
       ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor van-kezelo' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: k.cim + (k.valtozat ? ' – ' + k.valtozat : '') })), melittaOszlop('jelentkezik')))
@@ -758,11 +796,13 @@
     if (gomb.getAttribute('aria-disabled') === 'true') return;
     hibaDoboz($('c-kuld-hiba'), '');
     if (!urlapEllenoriz('c-adatok')) return;
+    const leadId = pmuLead.ujAzonosito();
     const adat = new URLSearchParams({
       'form-name': 'pmu-proba-visszahivas', nev: ertek('c-adatok', 'nev'), telefon: ertek('c-adatok', 'telefon'),
       mikor_nap: '', mikor_napszak: cMikor(), oldal: FORRAS_OLDAL,
     });
     if (!(await bekuld(adat, gomb, $('c-kuld-hiba')))) return;
+    pmuLead('visszahivas', { id: leadId, napszak: cMikor() });
     // a telefonos konzultacio ugyanaz a konverzio, mint a weboldal regi visszahivas-urlapja es a
     // Facebook-leadek: a /pmu-vh koszonooldalon lefut a megszokott meres, majd a klon.js visszahoz ide
     tarol(TAROLO_C, { cSav: cMikor() });
