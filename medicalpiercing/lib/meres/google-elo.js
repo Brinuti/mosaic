@@ -9,10 +9,12 @@ import { MP_GADS, googleIdo, kitakar, maszk, elesKuldesE, kikapcsolvaE } from '.
 
 export const ELO_AKCIO = '7468541217'; // MP "All - Idopontfoglalas" (elo, elsodleges)
 export const VARAKOZAS_MP = 1800;
+export const ABLAK_NAP_ALAP = 30; // a kattintas ennyi napnal regebbi foglalasnal a Google EXPIRED_EVENT hibat ad (MP ARNYEK Foglalas 7834926162: a 10-26-i 36 napos kattintas; 10-27-i 29 napos meg ment): ide nem kuldunk, kihagyva_ablakon_kivul. MP_GADS_ELO_ABLAK_NAP felulirja (max 90).
 const MAX_PROBA = 3;
 const MAR_BENT = new Set(['CLICK_CONVERSION_ALREADY_EXISTS', 'ORDER_ID_ALREADY_IN_USE', 'DUPLICATE_ORDER_ID']); // ugyanaz a konverzio mar bent van: sikernek vesszuk (nincs dupla)
 
 export const eloMod = (env = {}) => { const m = String(env.MP_GADS_ELO || '').trim().toLowerCase(); return m === 'dry' || m === 'eles' ? m : 'ki'; };
+export const eloAblakNap = (env = {}) => { const n = Number(env.MP_GADS_ELO_ABLAK_NAP); return Number.isFinite(n) && n >= 1 && n <= 90 ? Math.floor(n) : ABLAK_NAP_ALAP; };
 export const eloTol = (env = {}) => { const t = Number(env.MP_GADS_ELO_TOL); return Number.isFinite(t) && t > 1700000000 ? Math.floor(t) : null; };
 
 const SEMA = [
@@ -74,6 +76,12 @@ export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Dat
     for (const sor of sorok) {
       const f = { kulcs: sor.kulcs, letrehozva: sor.foglalas_ido || sor.letrehozva, ertek: sor.ertek, kattintas: { tipus: sor.kattintas_tipus, ertek: sor.kattintas_ertek } };
       const k = eloKonverzio(f); if (!k) continue;
+      const kattIdo = Number(sor.kattintas_ido);
+      if (Number.isFinite(kattIdo) && kattIdo > 0 && f.letrehozva - kattIdo > eloAblakNap(env) * 86400) { // a kattintas a Google konverzios ablakan kivul van: a feltoltes EXPIRED_EVENT lenne, nem probaljuk
+        await db.prepare(`INSERT INTO mp_feltoltes_elo (kulcs, mod, allapot, http_status, kod, kattintas_maszk, probalkozas, ido) VALUES (?1, ?2, 'kihagyva_ablakon_kivul', NULL, NULL, ?3, ?4, ?5)
+          ON CONFLICT (kulcs) DO UPDATE SET allapot = 'kihagyva_ablakon_kivul', ido = excluded.ido`).bind(sor.kulcs, eles ? 'eles' : 'dry', await maszk(sor.kattintas_ertek), MAX_PROBA, most).run();
+        eredmenyek.kihagyva_ablakon_kivul = (eredmenyek.kihagyva_ablakon_kivul || 0) + 1; continue;
+      }
       let allapot = 'hiba', http = null, kod = null;
       try {
         token = token || await accessToken(env, fetchImpl);

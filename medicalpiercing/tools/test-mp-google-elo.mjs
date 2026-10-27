@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { ELO_AKCIO, VARAKOZAS_MP, eloKonverzio, eloMod, eloPotlas, eloTol, valaszErtekel } from '../lib/meres/google-elo.js';
+import { ELO_AKCIO, VARAKOZAS_MP, ABLAK_NAP_ALAP, eloAblakNap, eloKonverzio, eloMod, eloPotlas, eloTol, valaszErtekel } from '../lib/meres/google-elo.js';
 import { semaBiztos, _semaTorles } from '../lib/meres/lanc.js';
 
 function d1() {
@@ -102,4 +102,14 @@ test('B) "mar bent van" a Google szerint = siker (nincs dupla); hiba: legfeljebb
   assert.equal(rossz.api().length, 3); assert.deepEqual([naplo(db2)[0].allapot, naplo(db2)[0].probalkozas, naplo(db2)[0].kod], ['hiba', 3, 'EXPIRED_EVENT']);
   const db3 = await ujDb(); const dob = async () => { throw new Error('halozat'); };
   assert.equal((await eloPotlas({ db: db3, env: API_ENV, host: HOST, most: MOST, fetchImpl: dob })).allapot, 'kesz'); assert.equal(naplo(db3)[0].allapot, 'hiba');
+});
+test('B) a kattintas konverzios ablakan kivuli (alap 30 nap) foglalas kihagyva_ablakon_kivul (nincs EXPIRED_EVENT-hivas); az ablak MP_GADS_ELO_ABLAK_NAP-pal allithato (1..90)', async () => {
+  assert.equal(ABLAK_NAP_ALAP, 30); assert.equal(eloAblakNap({}), 30); assert.equal(eloAblakNap({ MP_GADS_ELO_ABLAK_NAP: '90' }), 90); assert.equal(eloAblakNap({ MP_GADS_ELO_ABLAK_NAP: '91' }), 30); assert.equal(eloAblakNap({ MP_GADS_ELO_ABLAK_NAP: '0' }), 30);
+  const sorok = [SOR({ kulcs: '1|1|1791850001', kattintas_ido: MOST - 4000 - 29 * 86400 }), SOR({ kulcs: '1|1|1791850002', kattintas_ido: MOST - 4000 - 36 * 86400 }), SOR({ kulcs: '1|1|1791850003', kattintas_ido: null })];
+  const db = await ujDb(sorok); const f = hamisFetch();
+  const r = await eloPotlas({ db, env: API_ENV, host: HOST, most: MOST, fetchImpl: f });
+  assert.deepEqual(f.api().map((x) => x.body.conversions[0].orderId).sort(), ['1|1|1791850001', '1|1|1791850003'], 'a 29 napos es a kattintas-ido nelkuli megy, a 36 napos nem');
+  assert.deepEqual(r.eredmenyek, { elfogadva: 2, kihagyva_ablakon_kivul: 1 }); assert.equal(naplo(db).find((x) => x.kulcs === '1|1|1791850002').allapot, 'kihagyva_ablakon_kivul');
+  const f2 = hamisFetch(); await eloPotlas({ db, env: API_ENV, host: HOST, most: MOST + 60, fetchImpl: f2 }); assert.equal(f2.api().length, 0, 'a kihagyott nem ismetlodik');
+  const db2 = await ujDb(sorok); const f3 = hamisFetch(); await eloPotlas({ db: db2, env: { ...API_ENV, MP_GADS_ELO_ABLAK_NAP: '90' }, host: HOST, most: MOST, fetchImpl: f3 }); assert.equal(f3.api().length, 3, '90 napos ablakkal mind megy');
 });
