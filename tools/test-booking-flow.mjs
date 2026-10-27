@@ -577,11 +577,11 @@ test('havi naptar: honapok a mai honaptol a keresesi hatarig, a racs hetfovel ke
   assert.equal(monthGrid('2027-02', new Set()).title, '2027. február');
 });
 
-test('havi naptar: a nap idopontjai a PMU-foglalo szabalya szerint (egesz es fel orak; a negyed csak ha mellette nincs ilyen), egy idopont egy bejegyzes', () => {
+test('havi naptar: a nap MINDEN kinalt idopontja latszik (a negyedoras kezdes is, a foglalas utani szoros kezdes miatt), egy idopont egy bejegyzes', () => {
   const s = (unix, staff = '1') => ({ start_unix: unix, staff_id: staff, staff_label: 'x' });
   const nap = [s(T(5, 10)), s(T(5, 10, 15)), s(T(5, 10, 30)), s(T(5, 10, 45)), s(T(5, 11)), s(T(5, 12, 15)), s(T(5, 14), '2'), s(T(5, 14), '3'), s(T(6, 9))];
   const idok = dayTimes(nap, '2026-10-05').map((x) => timeLabel(x.start_unix));
-  assert.deepEqual(idok, ['10:00', '10:30', '11:00', '12:15', '14:00'], 'a 10:15 / 10:45 elmarad, a magaban allo 12:15 marad, a ketszer szabad 14:00 egyszer szerepel');
+  assert.deepEqual(idok, ['10:00', '10:15', '10:30', '10:45', '11:00', '12:15', '14:00'], 'a 10:15 / 10:45 is latszik (a Salonic kinalja), a ketszer szabad 14:00 egyszer szerepel');
   assert.deepEqual(dayTimes(nap, '2026-10-06').map((x) => timeLabel(x.start_unix)), ['09:00']);
   assert.deepEqual(dayTimes(nap, '2026-10-07'), []);
 });

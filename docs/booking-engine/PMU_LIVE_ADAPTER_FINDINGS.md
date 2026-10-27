@@ -22,7 +22,7 @@ Forrás: az éles oldal (https://www.mosaicheadspa.hu) és a repó `main` ága (
 - Kezelések: `GET https://mosaic-pmu.salonic.hu/employees/32428/?placeId=14585` (HTML-t parse-ol: `input[data-id][data-duration]`, `data-name`, `data-price`). A `/korrekci/i` nevű kezelést kiszűri.
 - Szabad időpontok: `GET https://api.salonic.hu/calendar/getAvailableTimes` paraméterek: `startDate` (most − 3 óra, unix mp), `offset=0`, `days=92`, `placeId=14585`, `serviceId`, `employeeId=-1`, `calendarId=76a8541e-bb52-22ab-f8c0-531b86f55abb`, `pref=''`, `apiVersion=1`, `language=hu`, `excludeNonAcceptingEmployees=0`. `credentials: omit`, 15 mp időkorlát, **nincs újrapróbálás**.
 - Válasz: `status: "success"`, `data.blocks[<nap>][<employeeId>] = { employeeName, slots: { k: { timestamp, formatted, formattedFull } } }`, plusz `data.placeName`, `placeAddress`, `placePhone`. A kód az összes `timestamp`-et összegyűjti, a 30 percen belüli kezdéseket eldobja.
-- Időzóna: a `timestamp` unix mp, a megjelenítés `Europe/Budapest`. A negyedórás slotokból csak az egész és fél órákat mutatja (a negyedet csak akkor, ha nincs mellette ilyen).
+- Időzóna: a `timestamp` unix mp, a megjelenítés `Europe/Budapest`. [2026-10-27 óta a Mosaic motor minden kínált kezdést mutat, lásd SALONIC_SAVOK.md] A negyedórás slotokból csak az egész és fél órákat mutatja (a negyedet csak akkor, ha nincs mellette ilyen).
 - Frissítés: slot-vesztéskor újratölti (`kezdesekBetolt(friss=true)`), egyébként kezelésenként gyorsítótáraz.
 - Munkatárs: mindig `employeeId=-1` (bárki); az egyetlen PMU-munkatárs a 32428 (Melitta).
 

@@ -32,7 +32,7 @@ A 43 Betti-szolgáltatásból 16 félórás rácsú, 21-nél a lépés a szolgá
 **Következmény (a foglalhatóságra, a töltöttségre):** a 3,5 órás lépésű, 2,5 órás szolgáltatás egy 11:30–20:00 szabad sávban csak 11:30-at és 15:00-t kínál; a 17:30-at nem, pedig az még belefér (17:30–20:00). A 2 órás lépésű melír 12:00-t kínál ott, ahol a festés nem. Így lett az okt. 29. 12:00 a melírnál foglalható, a közepes festésnél nem, holott Betti szabad.
 
 ## 2. A foglalómotor tükrözi a Salonicot
-Betti 43 szolgáltatására a motor (fodrászválasztás: Betti) és a Salonic saját foglalója (az „Összes időpont” nézet, vendégként) ugyanazt a kínálatot adja. A motor a `getAvailableTimes` „bárki” (`employeeId=-1`) válaszát kapja, és a szakemberre kliensoldalon szűr; ez egyezett a Salonic Betti-nézetével. Egyetlen szándékos eltérés: a motor `dayTimes()` szabálya a :15 / :45 kezdést elrejti, ha mellette van :00 / :30 (PMU-szabály, `flow.js`). Pl. nov. 24. 17:15 a Salonicban van, a motorban nem, mert 17:30 is van.
+Betti 43 szolgáltatására a motor (fodrászválasztás: Betti) és a Salonic saját foglalója (az „Összes időpont” nézet, vendégként) ugyanazt a kínálatot adja. A motor a `getAvailableTimes` „bárki” (`employeeId=-1`) válaszát kapja, és a szakemberre kliensoldalon szűr; ez egyezett a Salonic Betti-nézetével. Egyetlen eltérés volt: a motor `dayTimes()` szabálya a :15 / :45 kezdést elrejtette, ha mellette volt :00 / :30 (PMU-szabály, `flow.js`), pl. nov. 24. 17:15. **Ez a foglalás utáni szoros kezdést rejti el** (a „Laza” pont ezt ajánlja, pl. 16:15 a 16:30 mellett), ezért 2026-10-27-től a motor minden Salonic által kínált kezdést mutat (PR: `dayTimes` egyszerűsítése, előnézeten tesztelve; élesítés Feri „Mehet” szavára).
 - A **Fodrász konzultáció**nál a motor NEM kérdez fodrászt (egyenesen a naptárra visz, „bárki” módban): ott nincs szakember-szűrés.
 - A Salonic **adatlapja (`/guestData/`) bármilyen időponttal megnyílik** (még vasárnap hajnali 3:00-val is), és csak a végső „Foglalás” gombnál érvényesít. Kívülről nem derül ki, hogy egy időpont foglalható-e; ehhez próbafoglalás vagy a belső naptár kell.
 - A naptár-API nincs gyorsítótárazva (nincs `cache-control`, Cloudflare `DYNAMIC`).
@@ -72,6 +72,17 @@ Eszközök: `tools/salonic-egyezes/`. A Salonic oldalait a `?mh_nincs_atiranyita
 4. a hónapváltás után a szabad napok késve kapcsolódnak be: több körben kell olvasni;
 5. a konzultációnál a motor nem kérdez fodrászt (lásd fent).
 Mérésnél a hirdetési mérők tiltva (GTM, Meta, TikTok, Google); a motor a robotot (Playwright, `navigator.webdriver`) nem számolja a belső tölcsérbe, valódi Chrome-mal járt lépések viszont beszámolódnak.
+
+## 4c. Beállítás-változások naplója (Mosaic Hair, Salonic admin; a változtatás a LOCAL + BROWSER ablakban, Feri kérésére)
+| Idő (Europe/Budapest, 2026-10-27) | Mi | Régi → új |
+|---|---|---|
+| 22:16 | Optimalizálás | Nincs optimalizálás (Feri tesztje) → **Laza** (az eredeti) |
+| 22:27–22:30 | 395337 időköz (teszt) | 3,5 óra → alapértelmezés → **vissza 3,5 óra** |
+| 22:41 | 395337, 395330, 470827 időköz | 3,5 / 2,5 / 3 óra → **Rendszer alapértelmezés (30 perc)**, MARAD |
+| 22:42 | 231546, 231547 időköz | 2 / 2,5 óra → **Rendszer alapértelmezés (30 perc)**, MARAD |
+Mérés utána (Betti, nyilvános foglaló): okt. 29-én a 395337, 395330, 231546 kínál 12:00-t; dec. 1-jén félóránként 08:00-tól a szabad sáv végéig; nov. 9-én a foglalás előtti/utáni szoros kezdések (pl. 13:00, 16:15, 17:30). A 231544 (2,5 órás lépés) és a 21, a hosszával egyező lépésű szolgáltatás nem változott.
+Visszaállítás: a régi értékek a fenti táblázatban és a 4b. részben vannak.
+**Kiértékelés 2026-11-24 körül (4 hét):** a Salonic „Munkaidő kimutatás: Vendégóra / Munkaóra” jelentés (Betti / Evelin / Noel, heti bontás) a 4a. alapszámokhoz képest (Betti 57%, Evelin 53%, Noel 39%), plusz a motor tölcsére (időpont-megtekintés → adatlap → foglalás). Egyszerre csak ezt a változást mérjük; az Optimalizálás (Laza) marad.
 
 ## 5. Nyitott
 - Az összes többi fiók (A76, Gyógytornászom, Medical Piercing, a többi Mosaic-üzletág) rácsainak auditja: `tools/salonic-egyezes/audit.mjs`; az eredmény ide kerül.
