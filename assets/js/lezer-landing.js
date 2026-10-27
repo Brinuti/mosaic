@@ -416,7 +416,9 @@
       ido = 0;
       const tulVan = kepesSzekcio.getBoundingClientRect().bottom <= 0;   // az elso, 4 kepes szekcio mar elgorgetve
       const vegen = foglSzekcio.getBoundingClientRect().top < innerHeight; // a foglalo kepernyon van, vagy mar elhagytuk: ott maga a foglalo a cel
-      const lat = tulVan && !vegen;
+      const sz = document.querySelector('.szamolo-racs').getBoundingClientRect();
+      const kalkulatorban = sz.top < innerHeight && sz.bottom > 0; // a lepesenkenti kalkulator kartyajat ne takarja a sav (ott van sajat foglalas gomb)
+      const lat = tulVan && !vegen && !kalkulatorban;
       sticky.classList.toggle('lathato', lat);
       sticky.setAttribute('aria-hidden', lat ? 'false' : 'true');
       sticky.querySelectorAll('a').forEach((a) => (lat ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
