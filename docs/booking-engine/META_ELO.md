@@ -40,3 +40,13 @@ Csak HeadSpa **foglalás** (nem ajándékkártya), új vendégnél (az ÁRNYÉK-
 
 ## Test Events kódok datasetenként (2026-10-27)
 A Meta Test Events kódja **datasetenként különbözik**: `META_ELO_TESZT_KOD` = HeadSpa (`3473839859576758`), `META_ELO_TESZT_KOD_PMU` = PMU (`1019878750660854`). Az előnézeti védőháló (`ELO_CSAK_TESZT=1`) üzletáganként a saját kódját várja; a másik dataset kódja nem jó, hiányzó kódnál az adott üzletág nem küld. A kódok nem titkok (`[env.preview.vars]`); a tokenek (`META_ELO_TOKEN`, `TIKTOK_ELO_TOKEN`) Cloudflare Secretek (Production + Preview, 2026-10-27 19:12).
+
+## Előnézeti újrajátszó út (UJ-82, 01-MERES 10-27)
+
+A 3/3 előnézeti mintához valós tesztfoglalás helyett (az a foglalási folyamatot érintené): `POST /api/meres-elo-ujrajatszas` `{"uzletag":"headspa"|"pmu","db":1..3}`, fejlécben `x-egyeztetes-kulcs`.
+
+- **Mit csinál:** az éles foglalás-kulcs DB-ből (csak előnézeti, **csak olvasásra használt** `KULCS_DB_OLV` kötés; SELECT) a legutóbbi Salonic-igazolt (`forras='motor'` + `salonic_uuid`), közös (böngészős) event_id-s `Schedule` tételeket ugyanazon a szerveres kérés-építőn (`metaEloKerelem`) küldi **datasetenkénti Test Events kóddal**. Nincs írás, nincs claim (`meres_meta_elo` sem), a foglalási folyamat nem érintett.
+- **Mit ad vissza (tételenként):** `event_id` (a böngészővel közös kulcs), `dataset`, `ido` (`eredeti`; 7 napnál régebbi tételnél `most`, mert a Meta elutasítaná), `http_status`, `events_received`, `allapot`, hibánál `hiba_kod`. Nincs benne foglalás-azonosító, IP, user agent, név, e-mail, telefon, token.
+- **Korlát (őszintén):** hash-elt e-mail / telefon **nem megy** (a `foglalas_vendeg` csak HMAC-indexet tárol, a nyers adat nincs meg): ez az út az event_id / dataset / teszt-kód / fogadás igazolása, **az EMQ-t nem**. A régi foglalások böngészős párja a Test Events felületen nem látszik; a dedup-igazolás böngészős párja a mérési oldal élő próbája.
+- **Kapuk:** csak `ELO_CSAK_TESZT="1"` mellett (éles: 404), `META_ELO_BE` + `META_ELO_TOKEN` + a dataset saját Test Events kódja kell (hiányzó kód: nincs küldés); `?kulcs=` query nem fogadható el.
+- **Rollback:** a `wrangler.toml` `KULCS_DB_OLV` kötésének törlése (+ deploy) és/vagy a végpont-fájl törlése. Teszt: `node --test tools/test-elo-ujrajatszas.mjs` (8/8).
