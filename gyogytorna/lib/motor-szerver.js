@@ -14,7 +14,7 @@ import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { gfeltoltesFut, gfeltoltesRiport, gfeltoltesMod, gfeltoltesKuld, googleAdsKuldo, zapKivalaszt, zapFazis } from './gfeltoltes.js';
 import { gkiigazitasFut, gkiigazitasMod, gkiigazitasRiport, kiigazitasKivalaszt, kiigazitasFazis } from './gkiigazitas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
-import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
+import { igazolasJeloltek, foglalasSalonicIdAlapjan, budapestNap } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesDiag, erintesek, erintesTorol, kattintasTorol, lpcHiba, motorStatNo } from './db.js';
 import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot, UUID_RE } from './salonic-szerver.js';
 /** Unix -> Budapest helyi ido, Google Ads import formatum: "yyyy-mm-dd hh:mm:ss+hh:mm" (a nyari / teli ido szerinti eltolassal). */
@@ -407,7 +407,14 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   const elo = await eloAllapot(salonicId, { fetchFn: deps.fetch || globalThis.fetch });
 
   if (be.esemeny === 'lemondas') {
-    if (!tudott) { await riaszt(db, 'lemondas_ismeretlen', { most }); return valasz(404, { ok: false, hiba: 'ismeretlen_foglalas' }); }
+    if (!tudott) {
+      // UJ-75b: nem visszafejtheto, rovid kulcs a riasztasban (HMAC-elotag a Salonic-azonositobol + az idopont napja + helyszin), hogy megallapithato legyen: a motor elotti / Salonic-kozvetlen foglalas-e. Nev, e-mail, telefon, szolgaltatasnev nincs.
+      const kulcs = (await hmacHex(env.GY_HMAC_KULCS, `gy-lem|${salonicId}`)).slice(0, 8);
+      const nap = lemStart !== null ? budapestNap(lemStart) : '-';
+      await riaszt(db, 'lemondas_ismeretlen', { adat: `${kulcs}|${nap}|h${HELYSZINEK[lemHely] ? lemHely : '-'}`, most });
+      // 200 + ok:false (nem 404): a Zap ne probalkozzon haromszor es ne legyen `failed`; a Zap maga nem valtozik
+      return valasz(200, { ok: false, ok_kod: 'ismeretlen_foglalas', hiba: 'ismeretlen_foglalas' });
+    }
     if (elo.allapot !== 'torolve') return valasz(409, { ok: false, hiba: 'nincs_torolve' });
     if (tudott.allapot !== 'lemondott') await foglalasAllapot(db, tudott.uuid, 'lemondott', most);
     return valasz(200, { ok: true, allapot: 'lemondott', ismetles: tudott.allapot === 'lemondott' });

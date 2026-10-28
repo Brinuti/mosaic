@@ -425,7 +425,7 @@ test('igazolas: ismeretlen / nem egyezo / nem aktiv a Salonicban -> nincs igazol
   assert.equal((await env2.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_foglalas WHERE igazolt = 1').first()).n, 0);
 });
 
-test('lemondas: csak ha a Salonic elo oldala szerint torolve; ismetles rendben; ismeretlen foglalas -> 404', async () => {
+test('lemondas: csak ha a Salonic elo oldala szerint torolve; ismetles rendben; ismeretlen foglalas -> 200 ok:false (UJ-75b)', async () => {
   const env = await ujKornyezet();
   const d = await foglalasLetrehozva(env);
   const igaz = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
@@ -438,7 +438,16 @@ test('lemondas: csak ha a Salonic elo oldala szerint torolve; ismetles rendben; 
   assert.equal((await (await igazolasVegpont({ request: zapKerelem(lem), env, deps: torolve })).json()).allapot, 'lemondott');
   assert.equal((await env.GY_DB.prepare('SELECT allapot FROM gy_foglalas').first()).allapot, 'lemondott');
   assert.equal((await (await igazolasVegpont({ request: zapKerelem(lem), env, deps: torolve })).json()).ismetles, true);
-  assert.equal((await igazolasVegpont({ request: zapKerelem({ ...lem, salonic_id: '11111111-2222-3333-4444-555555555555' }), env, deps: torolve })).status, 404);
+  // UJ-75b: ismeretlen foglalas -> 200 + ok:false + ok_kod (a Zap nem probalkozik haromszor), a riasztas rovid, nem visszafejtheto kulcsot kap (nyers azonosito nincs)
+  const ISM = '11111111-2222-3333-4444-555555555555';
+  const r404 = await igazolasVegpont({ request: zapKerelem({ ...lem, salonic_id: ISM, start_unix: START, place_id: 8439 }), env, deps: torolve });
+  assert.equal(r404.status, 200); assert.deepEqual(await r404.json(), { ok: false, ok_kod: 'ismeretlen_foglalas', hiba: 'ismeretlen_foglalas' });
+  const ria = (await env.GY_DB.prepare("SELECT tipus, adat, uuid FROM gy_riasztas WHERE tipus = 'lemondas_ismeretlen'").all()).results;
+  assert.equal(ria.length, 1); assert.match(ria[0].adat, /^[0-9a-f]{8}\|\d{4}-\d\d-\d\d\|h8439$/); assert.equal(ria[0].uuid, null);
+  assert.equal(JSON.stringify(ria).includes(ISM), false, 'a nyers Salonic-azonosito nincs a riasztasban'); assert.equal(JSON.stringify(ria).includes('11111111'), false);
+  // start/hely nelkul is megy (kulcs + '-' jelek)
+  await igazolasVegpont({ request: zapKerelem({ ...lem, salonic_id: ISM }), env, deps: torolve });
+  assert.match((await env.GY_DB.prepare("SELECT adat FROM gy_riasztas WHERE tipus = 'lemondas_ismeretlen' ORDER BY id DESC").first()).adat, /^[0-9a-f]{8}\|-\|h-$/);
 });
 
 test('UTM-sablon (Feri 2026-10-13): kampany / hirdetescsoport / hirdetes azonosito a foglalasra kerul (csak szamok); ervenytelen ertek eldobva; riport-bontas', async () => {
