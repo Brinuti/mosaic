@@ -1899,3 +1899,42 @@ test('GY-27 review-javitasok: `ki` modban az admin ?gfeltoltes=1 valasza nem kap
   assert.deepEqual(await gkiigazitasFut({ db: env2.GY_DB, env: { ...E2, GY_GADS_KIIGAZITAS: 'eles' }, most: tt + GKIIG.varakozas }), { mod: 'eles', uj: 1 });
   assert.deepEqual((await kiigSorok(env2)).map((x) => [x.allapot, x.hiba]), [['kihagyva_hibas', 'order_id']]);
 });
+
+// --- Salonic "barmelyik szakember" (-1) lekeres hianyos: szakemberenkenti lekeres + egyesites (Nagy Kinga, 2026-10-28) -----------------------------------------------------
+test('adapter: a "barmelyik" (-1) lekeres hianyos valaszat a szakemberenkenti lekeres potolja (egesz napok / szakemberek nem veszhetnek el); hiba eseten a -1 is jon', async () => {
+  const ma = Math.floor(Date.now() / 1000);
+  const nap = (n, ora) => Math.floor((ma + n * 86400) / 86400) * 86400 + ora * 3600;
+  const ST = ['18783', '18784', '19428', '24615', '29414', '29423', '31525', '32167']; // az Oktogon "Szemelyes Gyogytorna" (24667) szakemberei (data-employees)
+  const szabad = {
+    '8439:24667:18783': [nap(3, 8), nap(3, 9), nap(10, 8)],
+    '8439:24667:18784': [nap(4, 14), nap(11, 14), nap(11, 15)],   // ez a szakember az -1 valaszbol hianyozna
+    '8439:24667:19428': [nap(5, 10)],
+    '8439:24667:24615': [nap(40, 9), nap(75, 9)],                 // tavoli napok (a 2. nagy darabban)
+  };
+  const kell = Object.values(szabad).flat().sort((a, b) => a - b);
+  // 1) a jelenlegi (-1) lekeres hianyos: a szakember 18784 teljesen kimarad
+  const naploA = [];
+  const hianyos = createSalonicAdapter({ fetchImpl: salonicHamis({ szabad, anyKihagy: ['18784'], naplo: naploA }), now: () => Date.now() });
+  const l = await hianyos.getAvailability(8439, '24667', { days: 100, firstDays: 7 });
+  assert.deepEqual(l.map((x) => x.start_unix).sort((a, b) => a - b), kell); // MINDEN idopont megvan
+  assert.equal(l.filter((x) => x.staff_id === '18784').length, 3);
+  // szakemberenkent keri (az API-hivasok nem -1-et hasznalnak a szakember-listas szolgaltatasnal)
+  const api = naploA.filter((u) => /api\.salonic\.hu/.test(u)).map((u) => new URL(u).searchParams.get('employeeId'));
+  assert.ok(api.length > 0 && api.every((e) => ST.includes(e)), JSON.stringify([...new Set(api)]));
+  assert.deepEqual([...new Set(api)].sort(), [...ST].sort()); // mind a 8 szakembert kulon kerdezi
+  // 2) egy szakember lekerese hibazik -> a -1 lekeres is lefut, a tobbiek adata megmarad (nem kevesebb, mint eddig)
+  const naploB = [];
+  const hibas = createSalonicAdapter({ fetchImpl: salonicHamis({ szabad, kulonHiba: ['19428'], naplo: naploB }), now: () => Date.now() });
+  const l2 = await hibas.getAvailability(8439, '24667', { days: 100, firstDays: 7 });
+  assert.deepEqual(l2.map((x) => x.start_unix).sort((a, b) => a - b), kell);
+  assert.ok(naploB.some((u) => /api\.salonic\.hu/.test(u) && new URL(u).searchParams.get('employeeId') === '-1'));
+  // 3) megadott szakember: csak az o lekerese (valtozatlan)
+  const naploC = [];
+  const egy = createSalonicAdapter({ fetchImpl: salonicHamis({ szabad, anyKihagy: ['18784'], naplo: naploC }), now: () => Date.now() });
+  const l3 = await egy.getAvailability(8439, '24667', { staffId: 18784, days: 100 });
+  assert.equal(l3.length, 3);
+  assert.ok(naploC.filter((u) => /api\.salonic\.hu/.test(u)).every((u) => new URL(u).searchParams.get('employeeId') === '18784'));
+  // 4) nincs szakember-lista (ismeretlen szolgaltatas-adat): marad a -1
+  const dupla = (await hianyos.getServices(8439)).find((x) => x.serviceId === '24667');
+  assert.deepEqual(dupla.staffIds, ST);
+});

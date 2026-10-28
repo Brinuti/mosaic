@@ -36,7 +36,9 @@ export function salonicHamis(opts = {}) {
       const kulcs = (s) => `${p.get('placeId')}:${p.get('serviceId')}:${s}`;
       const start = +p.get('startDate'), nap = +p.get('days');
       const blocks = {};
-      const dolgozok = p.get('employeeId') === '-1' ? Object.keys(szabad).filter((k) => k.startsWith(`${p.get('placeId')}:${p.get('serviceId')}:`)).map((k) => k.split(':')[2]) : [p.get('employeeId')];
+      // opts.anyKihagy: a "barmelyik szakember" (-1) lekeres hianyos valaszanak szimulacioja (a valodi Salonic a Nyugatinal csendben kihagy szakembereket / napokat); opts.kulonHiba: egy szakember lekerese hibazik
+      const dolgozok = p.get('employeeId') === '-1' ? Object.keys(szabad).filter((k) => k.startsWith(`${p.get('placeId')}:${p.get('serviceId')}:`)).map((k) => k.split(':')[2]).filter((d) => !(opts.anyKihagy || []).includes(d)) : [p.get('employeeId')];
+      if (p.get('employeeId') !== '-1' && (opts.kulonHiba || []).includes(p.get('employeeId'))) return ok('hiba', 'text/plain', 500);
       for (const d of dolgozok) {
         for (const t of szabad[kulcs(d)] || []) {
           if (t < start || t >= start + nap * 86400) continue;
