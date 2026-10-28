@@ -18,6 +18,7 @@ export const ELO_META_ESEMENY = 'Schedule';
 export const ELO_DATASETEK = Object.freeze({ headspa: ELO_CELOK.meta[0], pmu: ELO_CELOK.meta[3] });
 export const ELO_META_UZLETAGOK = Object.freeze(Object.keys(ELO_DATASETEK));
 const MAX_PROBA = 3, ELAKADAS_MP = 120;
+export const ELO_FETCH_TIMEOUT_MS = 4000; // DECISION #250 / 01-MERES 6462419230: a foglalasi valasz utjan van - a lassu platform nem tarthatja fel (megszakitas -> hiba, ujraprobalhato)
 const titokOk = (v) => typeof v === 'string' && v.length >= 16;
 export const metaEloUzletagok = (env) => (env && titokOk(env.META_ELO_TOKEN) ? String(env.META_ELO_BE || '').split(',').map((s) => s.trim()).filter((u) => ELO_META_UZLETAGOK.includes(u)) : []);
 /** A Test Events kod DATASETENKENT kulonbozik (Meta): HeadSpa = META_ELO_TESZT_KOD, PMU = META_ELO_TESZT_KOD_PMU. Hianyzo kod -> null (a vedohalo ELO_CSAK_TESZT=1 mellett ekkor nem kuldunk). */
@@ -47,7 +48,7 @@ async function sema(db) {
   await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS meres_meta_elo_uuid ON meres_meta_elo (salonic_uuid) WHERE salonic_uuid IS NOT NULL').run();
   kesz.add(db);
 }
-const ujraProbalhato = (s, t) => (s.allapot === 'hiba' && s.probalkozas < MAX_PROBA) || (s.allapot === 'folyamatban' && t - s.frissitve > ELAKADAS_MP) || s.allapot === 'halasztva';
+const ujraProbalhato = (s, t) => (s.allapot === 'hiba' && s.probalkozas < MAX_PROBA) || (s.allapot === 'folyamatban' && s.probalkozas < MAX_PROBA && t - s.frissitve > ELAKADAS_MP) || s.allapot === 'halasztva';
 const szuk = (x, n = 300) => String(x == null ? '' : x).replace(/[A-Za-z0-9+/_-]{40,}/g, '[x]').slice(0, n);
 
 /** Az elosztas() UTAN hivva (mint a tiktokEloKuld). fk: ugyanaz; deps: { env, fetchImpl, now, eloEllenorzes }. Hiba SOHA nem dobodik. */
@@ -63,7 +64,14 @@ export async function metaEloKuld(db, fk, deps = {}) {
     await sema(db);
     const now = deps.now ? deps.now() : Date.now(); const t = Math.floor(now / 1000);
     const meglevo = await db.prepare('SELECT esemeny_id, allapot, probalkozas, frissitve FROM meres_meta_elo WHERE esemeny_id = ?1').bind(e.esemeny_id).first();
-    if (meglevo && !ujraProbalhato(meglevo, t)) return { allapot: 'mar_kuldve', elozo: meglevo.allapot };
+    if (meglevo && !ujraProbalhato(meglevo, t)) {
+      // DECISION #250 (b): a MAX_PROBA-szor megkezdett, de be nem fejezett sor ELAKADAS_MP utan 'megszakadt'; (c) friss folyamatban sornal ujraprobal_mp a hivonak
+      if (meglevo.allapot === 'folyamatban' && meglevo.probalkozas >= MAX_PROBA && t - meglevo.frissitve > ELAKADAS_MP) {
+        await db.prepare("UPDATE meres_meta_elo SET allapot = 'megszakadt', indok = ?2, frissitve = ?3 WHERE esemeny_id = ?1 AND allapot = 'folyamatban' AND probalkozas >= ?4").bind(e.esemeny_id, `megszakadt: a kuldes ${MAX_PROBA} probalkozas utan sem fejezodott be`, t, MAX_PROBA).run();
+        return { allapot: 'megszakadt', elozo: 'folyamatban' };
+      }
+      return { allapot: 'mar_kuldve', elozo: meglevo.allapot, ...(meglevo.allapot === 'folyamatban' && t - meglevo.frissitve <= ELAKADAS_MP ? { ujraprobal_mp: ELAKADAS_MP - (t - meglevo.frissitve) + 5 } : {}) };
+    }
     const erk = await erkezesOlvas(db, fk.source_entity_id);
     const eventId = erk ? bongeszoMetaKulcs(erk.bongeszo) : null;
     if (!eventId) return { allapot: 'kihagyva', indok: 'nincs kozos (bongeszos) event_id: a szerveres peldany duplan szamolna' };
@@ -86,7 +94,7 @@ export async function metaEloKuld(db, fk, deps = {}) {
     let allapot = 'hiba', http = null, valasz = null;
     try {
       const f = deps.fetchImpl || fetch;
-      const r = await f(`${kerelem.url}?access_token=${encodeURIComponent(env.META_ELO_TOKEN)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(kerelem.body) });
+      const r = await f(`${kerelem.url}?access_token=${encodeURIComponent(env.META_ELO_TOKEN)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(kerelem.body), signal: AbortSignal.timeout(ELO_FETCH_TIMEOUT_MS) });
       http = r.status; let j = null; try { j = await r.json(); } catch (err) { j = null; }
       valasz = szuk(j ? JSON.stringify(j.error ? { error: { code: j.error.code, type: j.error.type } } : { events_received: j.events_received }) : '');
       allapot = r.status >= 200 && r.status < 300 && j && j.events_received >= 1 ? 'elkuldve' : 'hiba';

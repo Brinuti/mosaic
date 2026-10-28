@@ -18,6 +18,7 @@ export const ELO_PIXEL = ELO_CELOK.tiktok[0];
 export const ELO_ESEMENY = Object.freeze({ headspa: 'Schedule', szor: 'CompleteRegistration', oxigen: 'SubmitForm', fodrasz: 'Contact', pmu: 'Consult' });
 const URL_ESEMENY = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
 const MAX_PROBA = 3, ELAKADAS_MP = 120;
+export const ELO_FETCH_TIMEOUT_MS = 4000; // DECISION #250 / 01-MERES 6462419230: a foglalasi valasz utjan van - a lassu platform nem tarthatja fel (megszakitas -> hiba, ujraprobalhato)
 
 const titokOk = (v) => typeof v === 'string' && v.length >= 16;
 /** Az uzletagak, amelyekre a kodos elo kuldes BE van kapcsolva (TIKTOK_ELO_BE: vesszovel elvalasztott uzletag-lista). A token nelkuli kapcsolo nem kapcsol be semmit (fail-closed). */
@@ -72,7 +73,7 @@ async function sema(db) {
   await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS meres_tiktok_elo_uuid ON meres_tiktok_elo (salonic_uuid, tiktok_nev) WHERE salonic_uuid IS NOT NULL').run(); // egy Salonic-foglalas (motor + sd) = egy elo esemeny
   kesz.add(db);
 }
-const ujraProbalhato = (s, t) => (s.allapot === 'hiba' && s.probalkozas < MAX_PROBA) || (s.allapot === 'folyamatban' && t - s.frissitve > ELAKADAS_MP) || s.allapot === 'halasztva';
+const ujraProbalhato = (s, t) => (s.allapot === 'hiba' && s.probalkozas < MAX_PROBA) || (s.allapot === 'folyamatban' && s.probalkozas < MAX_PROBA && t - s.frissitve > ELAKADAS_MP) || s.allapot === 'halasztva';
 const szuk = (x, n = 300) => String(x == null ? '' : x).replace(/[A-Za-z0-9+/_-]{40,}/g, '[x]').slice(0, n);
 
 /**
@@ -91,7 +92,14 @@ export async function tiktokEloKuld(db, fk, deps = {}) {
     await sema(db);
     const now = deps.now ? deps.now() : Date.now(); const t = Math.floor(now / 1000);
     const meglevo = await db.prepare('SELECT esemeny_id, allapot, probalkozas, frissitve FROM meres_tiktok_elo WHERE esemeny_id = ?1').bind(e.esemeny_id).first();
-    if (meglevo && !ujraProbalhato(meglevo, t)) return { allapot: 'mar_kuldve', elozo: meglevo.allapot };
+    if (meglevo && !ujraProbalhato(meglevo, t)) {
+      // DECISION #250 (b): a MAX_PROBA-szor megkezdett, de be nem fejezett sor ELAKADAS_MP utan 'megszakadt'; (c) friss folyamatban sornal ujraprobal_mp a hivonak
+      if (meglevo.allapot === 'folyamatban' && meglevo.probalkozas >= MAX_PROBA && t - meglevo.frissitve > ELAKADAS_MP) {
+        await db.prepare("UPDATE meres_tiktok_elo SET allapot = 'megszakadt', indok = ?2, frissitve = ?3 WHERE esemeny_id = ?1 AND allapot = 'folyamatban' AND probalkozas >= ?4").bind(e.esemeny_id, `megszakadt: a kuldes ${MAX_PROBA} probalkozas utan sem fejezodott be`, t, MAX_PROBA).run();
+        return { allapot: 'megszakadt', elozo: 'folyamatban' };
+      }
+      return { allapot: 'mar_kuldve', elozo: meglevo.allapot, ...(meglevo.allapot === 'folyamatban' && t - meglevo.frissitve <= ELAKADAS_MP ? { ujraprobal_mp: ELAKADAS_MP - (t - meglevo.frissitve) + 5 } : {}) };
+    }
     const erk = await erkezesOlvas(db, fk.source_entity_id); // lehet null (sd: nincs bongeszo)
     const hozz = hozzajarulasTisztit(erk ? erk.hozz : null);
     if (hozz.adv === false) return { allapot: 'kihagyva', indok: 'explicit marketing-elutasitas' };
@@ -121,7 +129,7 @@ export async function tiktokEloKuld(db, fk, deps = {}) {
     let allapot = 'hiba', http = null, valasz = null;
     try {
       const f = deps.fetchImpl || fetch;
-      const r = await f(kerelem.url, { method: 'POST', headers: { 'content-type': 'application/json', 'access-token': env.TIKTOK_ELO_TOKEN }, body: JSON.stringify(kerelem.body) });
+      const r = await f(kerelem.url, { method: 'POST', headers: { 'content-type': 'application/json', 'access-token': env.TIKTOK_ELO_TOKEN }, body: JSON.stringify(kerelem.body), signal: AbortSignal.timeout(ELO_FETCH_TIMEOUT_MS) });
       http = r.status; let j = null; try { j = await r.json(); } catch (err) { j = null; }
       valasz = szuk(j ? JSON.stringify({ code: j.code, message: j.message }) : '');
       allapot = r.status >= 200 && r.status < 300 && j && j.code === 0 ? 'elkuldve' : 'hiba';
