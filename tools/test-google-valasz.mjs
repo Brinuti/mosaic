@@ -162,6 +162,11 @@ test('uzenet-maszkolas (01-MERES review 6463412395): telefonszam (+36 / 06 / szo
   await googleValaszRogzit(w.db, { id: s.id, kod: 'CONSENT_DENIED', uzenet: 'partial failure 3 of 12 rows; CONVERSION_ACTION_NOT_ELIGIBLE (code 42), requestId=abc123def' }, NOW + 1000);
   const v = w.sql('SELECT platform_valasz AS v FROM meres_kuldes WHERE id = ?1', s.id)[0].v;
   assert.match(v, /3 of 12 rows/); assert.match(v, /code 42/); assert.match(v, /requestId=abc123def/);
+  // 01-MERES delta-review 6464351642: a '/'-rel hatarolt Google-azonosito (erőforrás-útvonal) nem telefonszam, az akcio azonosítója megmarad
+  const s2 = await googleSor(w, 'mb_0muwq2ciorsos0tznsfz901', { ana: true, adv: true, fun: true });
+  await googleValaszRogzit(w.db, { id: s2.id, kod: 'CONVERSION_ACTION_NOT_ELIGIBLE', uzenet: 'customers/6088874770/conversionActions/7825199989 not eligible, tel 06 30 123 4567' }, NOW + 1000);
+  const v2 = w.sql('SELECT platform_valasz AS v FROM meres_kuldes WHERE id = ?1', s2.id)[0].v;
+  assert.match(v2, /customers\/6088874770\/conversionActions\/7825199989/); assert.match(v2, /\[tel\]/); assert.ok(!v2.includes('123 4567'));
 });
 test('kezelGoogleValasz: kulcs nelkul MINDIG 404 (D1 nelkul is), a 503 csak ervenyes kulccsal', async () => {
   assert.equal((await kezelGoogleValasz(new Request('https://x.test/a', { method: 'POST', body: '{}' }), { KULCS_DB: null, MERES_GOOGLE_VALASZ_KULCS_HASH: KULCS_HASH })).status, 404);
