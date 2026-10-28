@@ -312,15 +312,32 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
   }
   const mergeSlots = (ls) => { const seen = new Set(); return ls.flat().filter((s) => (seen.has(s.slot_id) ? false : seen.add(s.slot_id))).sort((a, b) => a.start_unix - b.start_unix || String(a.staff_id).localeCompare(String(b.staff_id))); };
 
+  // A Salonic "barmelyik szakember" (employeeId=-1) lekerese NEM megbizhato: a hosszu / sok szakemberes lekeresnel (Nyugati: 11 szakember) a valasz csendben HIANYOS (a szakemberek
+  // idopontjainak ~10-20 %-a, egesz napok is hianyoznak - a koltseg a Salonic oldalon van, a kerest ugyanaz, mas-mas eredmenyt ad). A szakemberenkenti lekeres teljes es stabil.
+  // Ezert "barmelyik" mod: a szolgaltatas szakemberenkent (staffIds) kerjuk le es egyesitjuk; ha egy szakember lekerese hibazik, a -1 lekeres is jon (felesleges, nem kevesebb).
+  const KULON_NAPOK = 50; // szakemberenkent egy darab nagyobb (a valasz kicsi): 100 nap = 7 + 2 x ~47
+  const KULON_MAX = 20;
+
   /** Szabad idopontok: from (unix mp, alap: most - 3 ora), days (alap 60); firstDays + onMore: az elso resz hamarabb jon. */
   async function getAvailability(placeId, serviceId, { staffId = ANY_STAFF, from, days = 60, minLeadMinutes = 0, firstDays = null, onMore = null, fresh = false } = {}) {
     helyszin(placeId);
     const service = await findService(placeId, serviceId);
     const base = from ?? Math.floor((Math.floor(now() / 1000) - 3 * 3600) / 300) * 300;
-    const split = (off, n) => { const k = Math.ceil(n / CHUNK_DAYS); const per = Math.ceil(n / k); return Array.from({ length: k }, (_, i) => [off + i * per, Math.min(per, n - i * per)]).filter(([, d]) => d > 0); };
+    const darabol = (off, n, max) => { const k = Math.ceil(n / max); const per = Math.ceil(n / k); return Array.from({ length: k }, (_, i) => [off + i * per, Math.min(per, n - i * per)]).filter(([, d]) => d > 0); };
+    const kulon = String(staffId) === String(ANY_STAFF) && service.staffIds && service.staffIds.length > 0 && service.staffIds.length <= KULON_MAX ? service.staffIds : null;
+    const max = kulon ? KULON_NAPOK : CHUNK_DAYS;
     const f = firstDays && firstDays < days ? firstDays : null;
-    const plan = f ? [[0, f], ...split(f, days - f)] : split(0, days);
-    const lists = plan.map(([off, n]) => chunk(placeId, service, staffId, base + off * 86400, n, fresh));
+    const plan = f ? [[0, f], ...darabol(f, days - f, max)] : darabol(0, days, max);
+    const lists = plan.map(([off, n]) => {
+      if (!kulon) return chunk(placeId, service, staffId, base + off * 86400, n, fresh);
+      let hibas = false;
+      const reszek = kulon.map((id) => chunk(placeId, service, id, base + off * 86400, n, fresh).catch(() => { hibas = true; return null; }));
+      return Promise.all(reszek).then(async (ls) => {
+        const jok = ls.filter(Boolean);
+        if (hibas || !jok.length) jok.push(await chunk(placeId, service, staffId, base + off * 86400, n, fresh)); // tartalek: a -1 lekeres (ha az is hibazik, a hiba felmegy)
+        return mergeSlots(jok);
+      });
+    });
     const minUnix = Math.floor(now() / 1000) + minLeadMinutes * 60;
     const keep = (l) => l.filter((x) => x.start_unix > minUnix);
     const full = Promise.all(lists).then(mergeSlots);
