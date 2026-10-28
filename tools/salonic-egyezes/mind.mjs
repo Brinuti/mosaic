@@ -13,7 +13,7 @@ async function munka() {
     const t0 = Date.now();
     try {
       const c1 = await ujKontextus(b), c2 = await ujKontextus(b);
-      const [sal, mot] = await Promise.all([salonicIdopontok(await c1.newPage(), s.id), motorIdopontok(await c2.newPage(), s.id)]);
+      const [sal, mot] = await Promise.all([salonicIdopontok(await c1.newPage(), s.id), motorIdopontok(await c2.newPage(), s.id, 'Betti')]);
       await c1.close(); await c2.close();
       const ma = Math.floor(Date.now() / 1000);
       const S = [...sal.idopontok].filter((u) => u > ma + 35 * 60).map((u) => nap(u) + ' ' + hhmm(u));
