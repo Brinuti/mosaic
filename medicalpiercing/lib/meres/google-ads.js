@@ -70,6 +70,7 @@ export function hozzajarulas(cookieFejlec) {
 
 const ID_MINTA = /^[A-Za-z0-9_-]{8,512}$/;
 const NAP90 = 90 * 86400;
+export const KATTINTAS_ABLAK_MP = 14 * 86400; // DECISION #245: az ARNYEK akciok click-through ablaka 14 nap; regebbi kattintasra a Google EXPIRED_EVENT-et adna
 
 /**
  * A legfrissebb ervenyes Google-kattintasazonosito: elobb a bongeszo altal (hozzajarulassal) tarolt ertek,
@@ -110,13 +111,15 @@ export function kitakar(szoveg, azonositok = []) {
 // ---------- keres-epites (tiszta, titok nelkul) ----------
 
 /**
- * f: { kulcs, letrehozva (unix), ertek|null, kattintas: {tipus, ertek} }
+ * f: { kulcs, letrehozva (unix), ertek|null, kattintas: {tipus, ertek}, kattintasIdo (unix)|null }
  * -> { akcioId, konverzio } | { tiltva } | { kihagyva }
  */
 export function konverzio(f, akcioId, { hozzajarulasHirdetes } = {}) {
   if (!ENGEDETT_AKCIOK.includes(String(akcioId))) return { tiltva: 'nem MP ARNYEK akcio: nem kuldheto' };
   if (!hozzajarulasHirdetes) return { kihagyva: 'nincs hirdetesi hozzajarulas' };
   if (!f.kattintas || !f.kattintas.ertek) return { kihagyva: 'nincs Google-kattintasazonosito' };
+  // DECISION #245: a konverzio ideje es a kattintas kozott > 14 nap -> EXPIRED_EVENT lenne; kihagyjuk (a 90 napos szuro a kattintas-valasztasnal marad). Ismeretlen kattintas-ido: nincs kapu (valtozatlan viselkedes).
+  if (Number.isFinite(f.kattintasIdo) && Number.isFinite(f.letrehozva) && f.letrehozva - f.kattintasIdo > KATTINTAS_ABLAK_MP) return { kihagyva: 'kattintas_14_napnal_regebbi' };
   const k = {
     conversionAction: `customers/${MP_GADS.customerId}/conversionActions/${akcioId}`,
     [f.kattintas.tipus]: f.kattintas.ertek,

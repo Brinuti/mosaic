@@ -355,7 +355,7 @@ export async function feltoltes(db, sor, env, host, { fetchImpl = fetch, most = 
   if (sor.tipus === 'ful') return [];
   const eles = sor.kornyezet === 'eles' && elesKuldesE(env, host);
   // konverzios ido: a foglalas ideje (Salonic-level), nem a koszonooldal (kesobbi) megnyitasa
-  const f = { kulcs: sor.kulcs, letrehozva: sor.foglalas_ido || sor.letrehozva, ertek: sor.ertek, kattintas: sor.kattintas_ertek ? { tipus: sor.kattintas_tipus, ertek: sor.kattintas_ertek } : null };
+  const f = { kulcs: sor.kulcs, letrehozva: sor.foglalas_ido || sor.letrehozva, ertek: sor.ertek, kattintas: sor.kattintas_ertek ? { tipus: sor.kattintas_tipus, ertek: sor.kattintas_ertek } : null, kattintasIdo: Number.isFinite(sor.kattintas_ido) ? sor.kattintas_ido : null };
   const km = await maszk(sor.kattintas_ertek);
   const kuldendo = [], naplo = [];
   // uj vendeg CSAK a Salonic "Uj paciens - Meg nem volt foglalasa" jelzesevel; minden mas ismeretlen -> csak "Foglalas"
