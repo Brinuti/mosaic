@@ -121,3 +121,17 @@ A mérés egyik napról a másikra ingadozik, és csak ezen a fiókon jelentkezi
 - Egyszerre futó kérések ritkíthatják a Salonic naptár-API válaszát (főleg a `gyogytornaszomhu` fiókon): a harmadik, egymás utáni mérés dönt.
 - Az A76 motor a nagy 3. naptár-darabot később tölti be, és nincs „további napok" jelzője: a mérőnek várnia kell (`EXTRA_WAIT_MS`).
 - A „nincs időpont" napokat a Salonic kiírja: a mérő ilyenkor nem próbálkozik újra.
+
+### 6.4 Adatszintű mérés (2026-10-28, délután): a Salonic „bárki” (`employeeId=-1`) lekérése időnként hiányos
+Módszer: az ÉLES motor-adapter listája (böngészőből, a motor lekérési tervével) vs. a Salonic szakemberenkénti (`employeeId=<szakember>`) naptár-adata, ami a Salonic saját foglalójának napi nézetével egyezik (Nagy Kinga: 166/166; Nóra, Dorina, Bianka: eltérés 0). Hiányzó = a motor nem kínál egy Salonic-időpontot. Eszközök: `tools/salonic-egyezes/adatszint-{gy,mp,mosaic,a76}.mjs`.
+
+**Ok (Gyógytornászom, Nyugati tér, Nagy Kinga hiányzó időpontjai):** a „bárki” lekérés a sok szakemberes fiókokon (Nyugati: 11 szakember) ugyanarra a kérésre időnként hiányos választ ad (egyszer 70 KB, máskor 43–52 KB; egész napok hiányoznak); a szakemberenkénti lekérés mindig teljes. A gyógytornás motor a „bárki” listából kliensoldalon szűrt szakemberre, ezért Nagy Kingától 166-ból 127–149 időpontot kínált. **Javítva (#524):** a „bárki” módot a szolgáltatás szakembereinek (`data-employees`) külön lekérésével és egyesítésével adja az adapter; hibás szakember-lekérésnél a `-1` is lefut. Utómérés (éles): minden gyógytornás szakember × szolgáltatás (66 kombináció, 21 041 időpont) 0 hiány; Nagy Kinga 166/166 háromszor egymás után.
+
+| Motor | Vizsgált kombináció | Időpont | Hiányzó a motorból | Megjegyzés |
+|---|---|---|---|---|
+| Gyógytornászom (a javítás után) | 66 szakember × szolgáltatás | 21 041 | 0 | #524 |
+| Medical Piercing | 352 hely × szolgáltatás × szakember (15 helyszín) | 317 750 | 0 | |
+| Mosaic (HeadSpa, Hair, Oxigén, Lézer, PMU – 5 fiók) | 210 üzletág × szolgáltatás × dolgozó | 104 390 / 104 720 (két mérés) | 0 / 0 | az adapter-réteg; a PMU saját oldalának :15/:45 ritkítása (6.1) külön ügy |
+| **A76 (Oktogon, Móricz)** | 132 szolgáltatás × mérés | 143 058 | **időnként hiányzik** (lásd lent) | saját WordPress-bővítmény (`a76-foglalomotor`), forrása nem ebben a repóban van |
+
+**A76:** az A76 motor „bárki” módban `employeeId=-1` lekéréseket küld (7 nap, majd 14 és 59 napos darab párhuzamosan), és a szakember-szűrés is használhatja a gyorsítótárazott `-1` darabokat. Az A76 saját lekérési mintájával 3 mérésben a szolgáltatás × mérés sorok ~8%-ában hiányos a „bárki” lista (a mérések különböző sorokat érintenek, tehát nem fix hiba, hanem a Salonic ingadozása): egy-egy szolgáltatásnál a különböző időpontok 2–13%-a (pl. Oktogon 4223 Hajvágás + szakálligazítás: 151 / 1166; Móricz 48782: 55 / 1373), a szakemberre szűrt listában ennél több. Összesítve: 502 hiányzó különböző időpont 143 058-ból (0,35%), 1909 hiányzó szakember-időpont. A hibát a másik ablak UI-szintű mérése nem látta (egyetlen sporadikus hiány az UI-n nem reprodukálódik). **Javítás (az A76-bővítmény forrásában, `getAvailability`):** „bárki” módban a szolgáltatás szakembereit (`service.staffIds`) külön kérni és egyesíteni (a Gyógytornászom #524 módosítása `public/assets/js/motor/salonic-adapter.js`, `getAvailability`); a szakember-szűrésnél ne a gyorsítótárazott `-1` darabokat, hanem a szakemberre szóló lekérést használni.
