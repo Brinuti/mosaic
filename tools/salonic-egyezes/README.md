@@ -26,3 +26,7 @@ Buktatók (új):
 - Egyszerre futó mérések ritkítják a Salonic naptár-API válaszát (főleg a gyogytornaszomhu fiókon): a harmadik, egymás utáni mérés dönt.
 - A motor a konzultációnál és a kuponos (ajándékkártyás) szolgáltatásoknál nem ugyanazt a folyamatot adja (nincs szakember-választó / előbb kuponkód kell): ezeket külön kell kezelni.
 - Egyetlen szakemberes szolgáltatásnál (pl. A76 Gyantázás) nincs „Bárki" gomb: a szakember kártyáját kell választani.
+
+## Adatszintű mérés (2026-10-28, délután)
+`adatszint-gy.mjs` (Gyógytornászom: minden szakember × szolgáltatás), `adatszint-mp.mjs` (Medical Piercing, 15 helyszín), `adatszint-mosaic.mjs` (Mosaic 5 fiók; alap: éles `mosaicheadspa.hu`), `adatszint-a76.mjs` (A76, a motor „bárki” lekérési mintájával, 3 mérés): az éles motor-adapter listáját a Salonic szakemberenkénti (teljes) naptár-adatával veti össze (hiányzó / többlet időpont). A böngészőben fut (Playwright), foglalást nem indít. A „bárki” (`employeeId=-1`) Salonic-lekérés a sok szakemberes fiókokon időnként hiányos: lásd `docs/booking-engine/SALONIC_SAVOK.md` 6.4.
+
