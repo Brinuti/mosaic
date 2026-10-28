@@ -148,7 +148,7 @@ test('DECISION #251 (a): a kivetel-kulcs es az igazolas-kiesesi ablak sora NEM R
   // 1) alapbol minden biztosan nem igazolt sor jelolt
   let r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk.sort(), [A, B, C].sort()); assert.equal(r.j.kizart, 0);
   // 2) kezi kivetel-kulcs
-  await k.db.prepare('INSERT INTO mp_beallitas VALUES (?, ?)').bind(KIVETEL_KULCS, ` ${A} , rossz-kulcs `).run();
+  await k.db.prepare('INSERT INTO mp_beallitas VALUES (?, ?)').bind(KIVETEL_KULCS, ` ${A} , `).run();
   r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk.sort(), [B, C].sort()); assert.equal(r.j.kizart, 1);
   // 3) igazolas-kiesesi ablak a letrehozas idejere (zart intervallum): B kiesik, C marad
   await k.db.prepare('INSERT INTO mp_beallitas VALUES (?, ?)').bind(KIESES_KULCS, JSON.stringify([[s + 900, s + 1000]])).run();
@@ -158,6 +158,15 @@ test('DECISION #251 (a): a kivetel-kulcs es az igazolas-kiesesi ablak sora NEM R
   r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, []); assert.equal(r.j.hibas_beallitas, true);
   await k.db.prepare('UPDATE mp_beallitas SET ertek = ? WHERE kulcs = ?').bind(JSON.stringify([[5, 1]]), KIESES_KULCS).run();
   r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, []); assert.equal(r.j.hibas_beallitas, true, 'from > to is hibas');
+  // 4/b) hibas ablakok: null / ures / 0 ido nem ervenyes (nem "0..0 ablak"), mind fail-closed
+  for (const rossz of [[[null, null]], [['', '']], [[0, 0]], [[1, null]], [[-5, 10]], 'nem tomb', [[1, 2, 3]]]) {
+    await k.db.prepare('UPDATE mp_beallitas SET ertek = ? WHERE kulcs = ?').bind(JSON.stringify(rossz), KIESES_KULCS).run();
+    r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, [], `fail-closed: ${JSON.stringify(rossz)}`); assert.equal(r.j.hibas_beallitas, true);
+  }
+  // 4/c) elgepelt kivetel-kulcs: nem dobjuk el csendben, fail-closed (a jo kulcs mellett is)
+  await k.db.prepare('DELETE FROM mp_beallitas WHERE kulcs = ?').bind(KIESES_KULCS).run();
+  await k.db.prepare('UPDATE mp_beallitas SET ertek = ? WHERE kulcs = ?').bind(`${A},6029|7|elgepelt`, KIVETEL_KULCS).run();
+  r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, []); assert.equal(r.j.hibas_beallitas, true); assert.equal(r.j.kizart, 0);
   // 5) a kivetelek eltavolitasa utan ujra jelolt (visszaallithato, nincs tartos allapot)
   await k.db.prepare('DELETE FROM mp_beallitas WHERE kulcs IN (?, ?)').bind(KIVETEL_KULCS, KIESES_KULCS).run();
   r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk.sort(), [A, B, C].sort());
@@ -177,4 +186,17 @@ test('DECISION #251 (b): riport igazolas_nelkul_regi - csak olvaso szamlalo (iga
   const r0 = await riport((await kornyezet()).db, MOST, 7);
   assert.deepEqual(r0.igazolas_nelkul_regi, { db: 0, max_ora: 0 });
   assert.ok(!r0.figyelmeztetesek.some((f) => f.kod === 'igazolas_nelkul_regi'));
+});
+
+test('DECISION #251 (a) negativ: a kizaras-beallitas OLVASASI HIBAJA fail-closed (0 jelolt, hibas_beallitas, kizart 0), a mod-olvasas viszont hibatuero marad', async () => {
+  const k = await kornyezet();
+  const s = MOST - 3 * 86400;
+  const A = `6029|7|${s + 86400}`;
+  await k.fogl(A, s); await k.ig('Z1', s + 400000, s + 4 * H, `6029|9|${s + 400000}`);
+  let r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, [A]);
+  // csak a kizaras-kulcsok olvasasa hibazik (az adatbazis tobbi resze mukodik)
+  const torott = { ...k.db, prepare: (sql) => { const st = k.db.prepare(sql); const bind = st.bind; return { ...st, bind: (...a) => { if (sql.includes('mp_beallitas') && [KIVETEL_KULCS, KIESES_KULCS].includes(a[0])) return { ...bind(...a), first: async () => { throw new Error('d1 hiba'); } }; return bind(...a); } }; } };
+  r = await futtat({ MP_MERES_DB: torott }, keres('GET'));
+  assert.deepEqual(r.j.orderIdk, []); assert.equal(r.j.hibas_beallitas, true); assert.equal(r.j.kizart, 0);
+  assert.equal(r.status, 200);
 });

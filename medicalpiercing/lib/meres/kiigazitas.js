@@ -63,17 +63,25 @@ const kulcsResz = (k) => { const [p, e, s] = String(k).split('|'); return { plac
 // Ket kezi, mp_beallitas-bol olvasott kivetel (alapbol ures = nincs kivetel, a viselkedes valtozatlan):
 //   kiigazitas_kivetel         = vesszovel elvalasztott foglalasi kulcsok (placeId|employeeId|startUnix)
 //   igazolas_kiesesi_ablakok   = JSON [[from_unix, to_unix], ...]: az igazolo csatorna bizonyitott kieseseinek ablakai; az ablakban (zart intervallum) LETREJOTT sor nem jelolt
-// Fail-closed: ha az ablak-lista megvan, de nem ertelmezheto, SEMMI nem jelolt (kevesebb visszavonas, nem tobb).
+// Fail-closed: ha a beallitas-olvasas hibazik, vagy barmelyik kivetel-kulcs / ablak nem ertelmezheto (elgepelt kulcs, null / ures / 0 ido, from > to), SEMMI nem jelolt (kevesebb visszavonas, nem tobb).
 export const KIVETEL_KULCS = 'kiigazitas_kivetel';
 export const KIESES_KULCS = 'igazolas_kiesesi_ablakok';
+// A beallitas-olvasas HIBAJA itt nem "nincs kizaras": { hiba: true } (fail-closed). A modOlvas / titok tovabbra is a hibatuero beallitas()-t hasznalja.
+const beallitasSzigoru = async (db, kulcs) => { try { const r = await db.prepare('SELECT ertek FROM mp_beallitas WHERE kulcs = ?').bind(kulcs).first(); return { ertek: r ? r.ertek : null, hiba: false }; } catch (e) { return { ertek: null, hiba: true }; } };
+const idoE = (x) => (typeof x === 'number' || (typeof x === 'string' && x.trim() !== '')) && Number.isFinite(Number(x)) && Number(x) > 0; // null / "" / 0 / negativ nem ervenyes unix-ido
 export async function kizarasok(db) {
-  const kivetel = new Set(String((await beallitas(db, KIVETEL_KULCS)) || '').split(',').map((x) => x.trim()).filter((x) => /^\d+\|\d+\|\d+$/.test(x)));
-  const nyers = await beallitas(db, KIESES_KULCS);
-  let ablakok = []; let hibas = false;
-  if (nyers != null && String(nyers).trim() !== '') {
+  const kv = await beallitasSzigoru(db, KIVETEL_KULCS);
+  const ab = await beallitasSzigoru(db, KIESES_KULCS);
+  let hibas = kv.hiba || ab.hiba;
+  const kivetel = new Set();
+  for (const x of String(kv.ertek || '').split(',').map((t) => t.trim()).filter((t) => t !== '')) {
+    if (/^\d+\|\d+\|\d+$/.test(x)) kivetel.add(x); else hibas = true; // elgepelt kivetel-kulcs: nem dobjuk el csendben (az a rossz iranyba hibazna)
+  }
+  let ablakok = [];
+  if (ab.ertek != null && String(ab.ertek).trim() !== '') {
     try {
-      const j = JSON.parse(String(nyers));
-      if (!Array.isArray(j) || j.some((a) => !Array.isArray(a) || a.length !== 2 || !Number.isFinite(Number(a[0])) || !Number.isFinite(Number(a[1])) || Number(a[0]) > Number(a[1]))) hibas = true;
+      const j = JSON.parse(String(ab.ertek));
+      if (!Array.isArray(j) || j.some((a) => !Array.isArray(a) || a.length !== 2 || !idoE(a[0]) || !idoE(a[1]) || Number(a[0]) > Number(a[1]))) hibas = true;
       else ablakok = j.map((a) => [Number(a[0]), Number(a[1])]);
     } catch (e) { hibas = true; }
   }
