@@ -85,5 +85,39 @@ Visszaállítás: a régi értékek a fenti táblázatban és a 4b. részben van
 **Kiértékelés 2026-11-24 körül (4 hét):** a Salonic „Munkaidő kimutatás: Vendégóra / Munkaóra” jelentés (Betti / Evelin / Noel, heti bontás) a 4a. alapszámokhoz képest (Betti 57%, Evelin 53%, Noel 39%), plusz a motor tölcsére (időpont-megtekintés → adatlap → foglalás). Egyszerre csak ezt a változást mérjük; az Optimalizálás (Laza) marad.
 
 ## 5. Nyitott
-- Az összes többi fiók (A76, Gyógytornászom, Medical Piercing, a többi Mosaic-üzletág) rácsainak auditja: `tools/salonic-egyezes/audit.mjs`; az eredmény ide kerül.
+- (Elvégezve, lásd 6.) Az összes többi fiók rácsainak auditja és a motorok egyezés-mérése.
 - Döntés Feritől: egységesítsük-e a rácsokat (pl. mindenhol „Rendszer alapértelmezés” = 30 perc, „Laza” optimalizálással). A Salonic-beállításokat csak Feri kérésére módosítjuk.
+
+## 6. Minden motor mérése a Salonic foglalójával (2026-10-28)
+Módszer: a Salonic nyilvános foglalója (vendégként, böngészőből) és a motor UGYANABBAN az időben, ugyanarra a szolgáltatásra; a közös időszak a két oldal legkorábbi „utolsó napja". Eltérésnek csak az számít, ami három mérésben is megvan (egyszerre, újra egyszerre, egymás után terhelésmentesen). Eszközök: `tools/salonic-egyezes/` (`uzletag.mjs`, `mp.mjs`, `gy-a76.mjs`, `pmu.mjs`). Foglalás nem indult, mérőkódok tiltva.
+
+| Motor | Mért | Egyezik | Megjegyzés |
+|---|---|---|---|
+| Mosaic Lézer | 47 szolgáltatás | 47 | |
+| Medical Piercing | 15 helyszín × 5 szolgáltatás (75) | 75 | mintavétel: a hosszúságonként első szolgáltatások |
+| A76 (Oktogon, Móricz) | 44 szolgáltatás–helyszín | 44 | az egyszakemberes (Gyantázás) szolgáltatásnál nincs „Bárki" gomb, a szakember kártyáját kell választani |
+| Mosaic Fodrászat | 44 szolgáltatás „bárki" + 14 szolgáltatás–dolgozó | 44 + 11 | Evelinnél 3 hosszú Balayage-nál a motor 1–2 időpontot többet kínál (okt. 30. 16:30; nov. 11. 14:00), a Salonic Evelin-nézetében ezek nincsenek (mindhárom mérésben); Betti 5/5, Noel 4/4 |
+| Mosaic HeadSpa | 4 normál szolgáltatás | 4 | a 4 kuponos (ajándékkártyás) előbb kuponkódot kér, azt nem hasonlítottuk |
+| Mosaic Oxigén | 3 szolgáltatás „bárki" + dolgozónként | 10 / 12 | az „Akciós hajkamerás vizsgálat"-nál a motor nem kínál dolgozó-választást (bárki), a Salonic igen |
+| Gyógytornászom | 18 szolgáltatás–helyszín | 16 | 2 eltérés a Nyugati téren (lásd 6.2) |
+| **Mosaic PMU** | 7 szolgáltatás | **0** | **a Salonic időpontjainak kb. 48%-a (minden :15 / :45 kezdés) nem látszik, lásd 6.1** |
+
+### 6.1 PMU: a negyedórás kezdések rejtve vannak
+A `assets/js/foglalo-pmu.js` 491–494. sora a negyedórás kezdést csak akkor mutatja, ha mellette nincs egész vagy fél óra (a motor a PMU-nál szándékosan ritkít). Mind a 7 szolgáltatásnál a Salonic-only időpontok 100%-a :15 / :45 kezdés (szolgáltatásonként 337–425 db a közös időszakban). Ez ugyanaz a ritkítás, amit a Mosaic motor `flow.js` `dayTimes()`-ából a #520 kivett; a PMU saját oldala külön fájl, ott nem változott. **Döntés Feritől kell** (a foglalási folyamatot érinti): ugyanazt akarjuk-e itt is, mint a többi motornál (minden Salonic-kínált kezdés látszik).
+
+### 6.2 Gyógytornászom: a Salonic naptár-API nagy ablakoknál hiányos listát adhat
+A `gyogytornaszomhu` fiókon (a Nyugati téren a legjobban) a Salonic naptár-API a motor lekérési mintájára (7 napos, majd 24 napos ablakok, párhuzamosan) időnként hiányos listát ad. A Salonic saját foglalója napi (1 napos) kéréseket küld, ott minden látszik. Mérés (90 nap, a napi lekérés az igazság):
+
+| Helyszín / szolgáltatás | Motor-terv párhuzamosan | Motor-terv egymás után | 7 nap egymás után | 7 nap párhuzamosan | 3 nap párhuzamosan |
+|---|---|---|---|---|---|
+| 2581 Nyugati / 24666 | 183 hiányzik / 1005 | 150 | 0 | 192 | 0 |
+| 418 / 24667 | 391 / 1457 | 0 | 0 | 0 | 82 |
+| 8439 / 24666 | 0 / 1032 | 0 | 2 | 2 | 0 |
+
+A mérés egyik napról a másikra ingadozik, és csak ezen a fiókon jelentkezik: az A76 (mindkét helyszín), a Medical Piercing (Budapest), a Mosaic Hair és a Lézer mind az öt lekérési mintával 0 hiányzó időpontot adott. A fiókon a legbiztonságosabb a lekérések egymás utáni (nem párhuzamos) küldése 7 napos ablakokban; ezt a motorba beépíteni külön fejlesztés és Feri döntése.
+
+### 6.3 Mérési tanulságok
+- A két oldalt AZONOS időben és azonos beállításnál kell gyűjteni; beállítás-váltás közben készült gyűjtések hamis eltérést adtak.
+- Egyszerre futó kérések ritkíthatják a Salonic naptár-API válaszát (főleg a `gyogytornaszomhu` fiókon): a harmadik, egymás utáni mérés dönt.
+- Az A76 motor a nagy 3. naptár-darabot később tölti be, és nincs „további napok" jelzője: a mérőnek várnia kell (`EXTRA_WAIT_MS`).
+- A „nincs időpont" napokat a Salonic kiírja: a mérő ilyenkor nem próbálkozik újra.
