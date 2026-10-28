@@ -79,3 +79,16 @@ test('B) fetch-timeout: a kuldes AbortSignal.timeout-ot kap (4 s); a megszakitot
   const sor = d.db.prepare('SELECT allapot, probalkozas FROM meres_meta_pv').get(); assert.deepEqual([sor.allapot, sor.probalkozas], ['hiba', 1]);
   assert.equal((await pvKuld(d, FK(), dep(hamisFetch()))).allapot, 'elkuldve', 'az ujraprobalas sikerul');
 });
+test('B) DECISION #250: a folyamatban sor ujraprobaja plafonos (3), utana megszakadt (nem kuld); friss folyamatban sornal ujraprobal_mp a hivonak', async () => {
+  const d = d1(); await beallit(d);
+  const dep = (ms, fi) => ({ env: ENV(), fetchImpl: fi, now: () => NOW + ms, eloEllenorzes: async () => 'aktiv' });
+  assert.equal((await pvKuld(d, FK(), dep(0, hamisFetch()))).allapot, 'elkuldve');
+  const allit = (probalkozas, ms) => d.db.prepare("UPDATE meres_meta_pv SET allapot = 'folyamatban', probalkozas = ?, frissitve = ?").run(probalkozas, Math.floor((NOW + ms) / 1000));
+  allit(1, 0);
+  const friss = await pvKuld(d, FK(), dep(30000, hamisFetch())); assert.equal(friss.allapot, 'mar_kuldve'); assert.ok(friss.ujraprobal_mp >= 90 && friss.ujraprobal_mp <= 100, `ujraprobal_mp = ${friss.ujraprobal_mp}`);
+  assert.equal((await pvKuld(d, FK(), dep(130000, hamisFetch()))).allapot, 'elkuldve', 'probalkozas 1 < 3: ujraprobalhato');
+  allit(3, 0); const f = hamisFetch();
+  const meg = await pvKuld(d, FK(), dep(130000, f)); assert.equal(meg.allapot, 'megszakadt'); assert.equal(f.hivasok.length, 0);
+  const sor = d.db.prepare('SELECT allapot, indok FROM meres_meta_pv').get(); assert.equal(sor.allapot, 'megszakadt'); assert.match(sor.indok, /^megszakadt: a kuldes 3 probalkozas/);
+  assert.equal((await pvKuld(d, FK(), dep(900000, f))).allapot, 'mar_kuldve'); assert.equal(f.hivasok.length, 0);
+});

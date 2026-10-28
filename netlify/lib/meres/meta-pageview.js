@@ -45,7 +45,7 @@ async function sema(db) {
   await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS meres_meta_pv_uuid ON meres_meta_pv (salonic_uuid) WHERE salonic_uuid IS NOT NULL').run();
   kesz.add(db);
 }
-const ujraProbalhato = (s, t) => (s.allapot === 'hiba' && s.probalkozas < MAX_PROBA) || (s.allapot === 'folyamatban' && t - s.frissitve > ELAKADAS_MP) || s.allapot === 'halasztva';
+const ujraProbalhato = (s, t) => (s.allapot === 'hiba' && s.probalkozas < MAX_PROBA) || (s.allapot === 'folyamatban' && s.probalkozas < MAX_PROBA && t - s.frissitve > ELAKADAS_MP) || s.allapot === 'halasztva';
 const szuk = (x, n = 300) => String(x == null ? '' : x).replace(/[A-Za-z0-9+/_-]{40,}/g, '[x]').slice(0, n);
 
 /** Az elosztas() UTAN hivva (mint a tiktokEloKuld). fk: ugyanaz; deps: { env, fetchImpl, now, eloEllenorzes }. Hiba SOHA nem dobodik. */
@@ -59,7 +59,14 @@ export async function pvKuld(db, fk, deps = {}) {
     await sema(db);
     const now = deps.now ? deps.now() : Date.now(); const t = Math.floor(now / 1000);
     const meglevo = await db.prepare('SELECT esemeny_id, allapot, probalkozas, frissitve FROM meres_meta_pv WHERE esemeny_id = ?1').bind(e.esemeny_id).first();
-    if (meglevo && !ujraProbalhato(meglevo, t)) return { allapot: 'mar_kuldve', elozo: meglevo.allapot };
+    if (meglevo && !ujraProbalhato(meglevo, t)) {
+      // DECISION #250 (b): a MAX_PROBA-szor megkezdett, de be nem fejezett sor ELAKADAS_MP utan 'megszakadt'; (c) friss folyamatban sornal ujraprobal_mp a hivonak
+      if (meglevo.allapot === 'folyamatban' && meglevo.probalkozas >= MAX_PROBA && t - meglevo.frissitve > ELAKADAS_MP) {
+        await db.prepare("UPDATE meres_meta_pv SET allapot = 'megszakadt', indok = ?2, frissitve = ?3 WHERE esemeny_id = ?1 AND allapot = 'folyamatban' AND probalkozas >= ?4").bind(e.esemeny_id, `megszakadt: a kuldes ${MAX_PROBA} probalkozas utan sem fejezodott be`, t, MAX_PROBA).run();
+        return { allapot: 'megszakadt', elozo: 'folyamatban' };
+      }
+      return { allapot: 'mar_kuldve', elozo: meglevo.allapot, ...(meglevo.allapot === 'folyamatban' && t - meglevo.frissitve <= ELAKADAS_MP ? { ujraprobal_mp: ELAKADAS_MP - (t - meglevo.frissitve) + 5 } : {}) };
+    }
     const erk = await erkezesOlvas(db, fk.source_entity_id);
     const eventId = erk ? bongeszoMetaKulcs(erk.bongeszo) : null;
     if (!eventId) return { allapot: 'kihagyva', indok: 'nincs kozos (bongeszos) event_id: a szerveres peldany duplan szamolna' };
