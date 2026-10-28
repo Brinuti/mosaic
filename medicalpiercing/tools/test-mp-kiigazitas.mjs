@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { _semaTorles, semaBiztos } from '../lib/meres/lanc.js';
-import { kiigazitasVegpont, CIMKE_TOL, keresTorzs, valaszFeldolgozas } from '../lib/meres/kiigazitas.js';
+import { kiigazitasVegpont, CIMKE_TOL, keresTorzs, valaszFeldolgozas, KIVETEL_KULCS, KIESES_KULCS } from '../lib/meres/kiigazitas.js';
 
 function d1() {
   const s = new DatabaseSync(':memory:');
@@ -137,4 +137,44 @@ test('riport: Ads napi betoltes + napi osszesites + figyelmeztetesek', async () 
   const kodok = r.j.figyelmeztetesek.map((f) => f.kod);
   assert.ok(kodok.includes('igazolt_cimke_nulla'));
   assert.ok(kodok.includes('parositatlan_salonic_level'));
+});
+
+test('DECISION #251 (a): a kivetel-kulcs es az igazolas-kiesesi ablak sora NEM RETRACT-jelolt (alapbol nincs kivetel: valtozatlan); hibas ablak-lista = semmi nem jelolt (fail-closed)', async () => {
+  const k = await kornyezet();
+  const s = MOST - 3 * 86400;
+  const A = `6029|7|${s + 86400}`, B = `6029|7|${s + 90000}`, C = `6029|8|${s + 92000}`;
+  await k.fogl(A, s); await k.fogl(B, s + 1000); await k.fogl(C, s + 5000);
+  await k.ig('Z1', s + 400000, s + 4 * H, `6029|9|${s + 400000}`); // az igazolo csatorna a foglalas utan mukodott (>= 1 ora)
+  // 1) alapbol minden biztosan nem igazolt sor jelolt
+  let r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk.sort(), [A, B, C].sort()); assert.equal(r.j.kizart, 0);
+  // 2) kezi kivetel-kulcs
+  await k.db.prepare('INSERT INTO mp_beallitas VALUES (?, ?)').bind(KIVETEL_KULCS, ` ${A} , rossz-kulcs `).run();
+  r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk.sort(), [B, C].sort()); assert.equal(r.j.kizart, 1);
+  // 3) igazolas-kiesesi ablak a letrehozas idejere (zart intervallum): B kiesik, C marad
+  await k.db.prepare('INSERT INTO mp_beallitas VALUES (?, ?)').bind(KIESES_KULCS, JSON.stringify([[s + 900, s + 1000]])).run();
+  r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, [C]); assert.equal(r.j.kizart, 2);
+  // 4) hibas ablak-lista: fail-closed (semmi nem jelolt), jelzessel
+  await k.db.prepare('UPDATE mp_beallitas SET ertek = ? WHERE kulcs = ?').bind('nem json', KIESES_KULCS).run();
+  r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, []); assert.equal(r.j.hibas_beallitas, true);
+  await k.db.prepare('UPDATE mp_beallitas SET ertek = ? WHERE kulcs = ?').bind(JSON.stringify([[5, 1]]), KIESES_KULCS).run();
+  r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk, []); assert.equal(r.j.hibas_beallitas, true, 'from > to is hibas');
+  // 5) a kivetelek eltavolitasa utan ujra jelolt (visszaallithato, nincs tartos allapot)
+  await k.db.prepare('DELETE FROM mp_beallitas WHERE kulcs IN (?, ?)').bind(KIVETEL_KULCS, KIESES_KULCS).run();
+  r = await futtat(k.env, keres('GET')); assert.deepEqual(r.j.orderIdk.sort(), [A, B, C].sort());
+});
+
+test('DECISION #251 (b): riport igazolas_nelkul_regi - csak olvaso szamlalo (igazolas IS NULL, van salonic_id, eles, > 6 ora), sargalampa; semmit nem ir', async () => {
+  const { riport } = await import('../lib/meres/riport.js');
+  const k = await kornyezet();
+  await k.fogl('regi-null', MOST - 7 * H); await k.fogl('friss-null', MOST - 5 * H); await k.fogl('regi-igazolt', MOST - 9 * H, 'igazolt');
+  await k.fogl('regi-salonic-nelkul', MOST - 8 * H); await k.fogl('regi-elonezet', MOST - 8 * H, null, 'elonezet'); await k.fogl('regi-null2', MOST - 12 * H);
+  for (const kl of ['regi-null', 'friss-null', 'regi-igazolt', 'regi-elonezet', 'regi-null2']) await k.db.prepare('UPDATE mp_foglalas SET salonic_id = ? WHERE kulcs = ?').bind(`s-${kl}`, kl).run();
+  const elotte = k.db._s.prepare('SELECT COUNT(*) AS n, SUM(letrehozva) AS s FROM mp_foglalas').get();
+  const r = await riport(k.db, MOST, 7);
+  assert.deepEqual(r.igazolas_nelkul_regi, { db: 2, max_ora: 12 });
+  assert.ok(r.figyelmeztetesek.some((f) => f.kod === 'igazolas_nelkul_regi'), 'sargalampa');
+  assert.deepEqual(k.db._s.prepare('SELECT COUNT(*) AS n, SUM(letrehozva) AS s FROM mp_foglalas').get(), elotte, 'nem ir');
+  const r0 = await riport((await kornyezet()).db, MOST, 7);
+  assert.deepEqual(r0.igazolas_nelkul_regi, { db: 0, max_ora: 0 });
+  assert.ok(!r0.figyelmeztetesek.some((f) => f.kod === 'igazolas_nelkul_regi'));
 });

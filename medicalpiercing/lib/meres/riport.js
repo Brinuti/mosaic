@@ -126,9 +126,15 @@ export async function riport(db, most, nap = 14) {
     if (x.ads_all > 0 && x.ads_igazolt === 0 && x.nap >= '2026-10-13') figy.push({ nap: x.nap, kod: 'igazolt_cimke_nulla', leiras: `All ${x.ads_all}, igazolt 0 (GTM-cimke?)` });
   }
   if (parositatlanRegi > 0) figy.push({ nap: ma, kod: 'parositatlan_salonic_level', leiras: `${parositatlanRegi} Salonic-levelhez 2 oran tul sincs koszonooldali foglalas (lefedettsegi res)` });
+  // DECISION #251 (b): csak olvaso szamlalo. Eles foglalas, amely 6 oran tul sem kapott Salonic-igazolast (igazolas IS NULL, van salonic_id):
+  // a Zapier / Salonic-level lanc kimaradasat jelzi a 48 oras hatarido (nem_igazolt) ELOTT. Nem jeloltje semmilyen visszavonasnak.
+  const ig6 = await db.prepare("SELECT letrehozva FROM mp_foglalas WHERE kornyezet = 'eles' AND igazolas IS NULL AND salonic_id IS NOT NULL AND letrehozva >= ?1 AND letrehozva <= ?2").bind(tol, most - 6 * 3600).all();
+  const igRegi = ig6.results || [];
+  const igazolasNelkulRegi = { db: igRegi.length, max_ora: igRegi.length ? Math.round((most - Math.min(...igRegi.map((r) => r.letrehozva))) / 360) / 10 : 0 };
+  if (igazolasNelkulRegi.db > 0) figy.push({ nap: ma, kod: 'igazolas_nelkul_regi', leiras: `${igazolasNelkulRegi.db} eles foglalas 6 oran tul sem kapott Salonic-igazolast (legrosszabb ${igazolasNelkulRegi.max_ora} ora; Zapier-futas hibas?)` });
   const regiNap = sorok.filter((s) => s.nap < ma).map((s) => s.ads_all).filter((v) => v != null);
   if (!(regiNap.length)) figy.push({ nap: ma, kod: 'nincs_ads_adat', leiras: 'nincs betoltott Google Ads napi adat (Zapier napi futas?)' });
-  return { ok: true, nap, sorok, kiigazitas: k.results || [], figyelmeztetesek: figy, google_markas_lista: markas ? markas.length : null };
+  return { ok: true, nap, sorok, kiigazitas: k.results || [], figyelmeztetesek: figy, igazolas_nelkul_regi: igazolasNelkulRegi, google_markas_lista: markas ? markas.length : null };
 }
 
 // ---------------- havi pillanatkep (forras v2) ----------------
