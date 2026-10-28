@@ -29,3 +29,6 @@ A PR visszavonása (a két oszlop az adatbázisban maradhat, nem zavar: NULL-ok)
 
 ## Mérést érint
 Igen (Google ARNYEK válasz-napló, QA-riport, D1-séma).
+
+## 2026-10-28 review-javitas (01-MERES 6463412395)
+Az `uzenetTisztit` a click ID / e-mail / hash mellett mostantol a telefonszamot (>= 9 szamjegy, +36 / 06 / szokozos / kotojeles; `[tel]`) es a kulcs-ertek alaku nevet (name / first_name / last_name / full_name / nev / keresztnev / vezeteknev; `[nev]`) is maszkolja. Szabad szovegben a nev mintaval nem ismerheto fel; a Zap-visszahivas torzsebe nevmezo nem kerul (dokumentalt kikotes). Teszt: `test-google-valasz` 8/8. Vedett hash valtozatlan (elosztas.js 8b15e0d11f, qa-nap.js 4651faf49d).

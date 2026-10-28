@@ -141,6 +141,28 @@ test('uzenet-maszkolas (review 6322303663): a click ID MINDEN alakban kimarad a 
   const v = w.sql('SELECT platform_valasz AS v FROM meres_kuldes WHERE id = ?1', s.id)[0].v;
   assert.match(v, /requestId=abc123def/); assert.match(v, /gclid expired/); assert.match(v, /CONVERSION_ACTION_NOT_ELIGIBLE/); assert.match(v, /gclid not found/);
 });
+test('uzenet-maszkolas (01-MERES review 6463412395): telefonszam (+36 / 06 / szokozos / kotojeles) es kulcs-ertek nev kimarad; a hasznos szoveg es a rovid szamok (kod, darabszam) megmaradnak', async () => {
+  const w = await vilag();
+  const alakok = [
+    ['hiba: +36 30 123 4567 nem elerheto', /\[tel\]/, ['123 4567', '+36 30']],
+    ['phone=06-30-123-4567 hibas', /\[tel\]/, ['06-30-123-4567']],
+    ['tel (20) 123-4567 invalid', /\[tel\]/, ['123-4567']],
+    ['{"first_name":"Teszt Elek","last_name":"Minta"}', /\[nev\]/, ['Teszt Elek', 'Minta']],
+    ['name: Teszt Elek nem talalhato; CONSENT_DENIED', /\[nev\]/, ['Teszt Elek']],
+    ['nev=Kovacs Bela&x=1', /\[nev\]/, ['Kovacs']],
+  ];
+  for (const [i, [uzenet, var_, tiltott]] of alakok.entries()) {
+    const s = await googleSor(w, `mb_0muwq2ciorsos0tznsfz${String(i).padStart(3, '0')}`, { ana: true, adv: true, fun: true });
+    assert.equal((await googleValaszRogzit(w.db, { id: s.id, kod: 'UNPARSEABLE_GCLID', uzenet }, NOW + 1000)).status, 200, uzenet);
+    const v = w.sql('SELECT platform_valasz AS v FROM meres_kuldes WHERE id = ?1', s.id)[0].v;
+    assert.match(v, var_, `maszkolt jel hianyzik: ${uzenet} -> ${v}`);
+    for (const k of tiltott) assert.ok(!v.includes(k), `kiszivarog (${k}): ${uzenet} -> ${v}`);
+  }
+  const s = await googleSor(w, 'mb_0muwq2ciorsos0tznsfz900', { ana: true, adv: true, fun: true });
+  await googleValaszRogzit(w.db, { id: s.id, kod: 'CONSENT_DENIED', uzenet: 'partial failure 3 of 12 rows; CONVERSION_ACTION_NOT_ELIGIBLE (code 42), requestId=abc123def' }, NOW + 1000);
+  const v = w.sql('SELECT platform_valasz AS v FROM meres_kuldes WHERE id = ?1', s.id)[0].v;
+  assert.match(v, /3 of 12 rows/); assert.match(v, /code 42/); assert.match(v, /requestId=abc123def/);
+});
 test('kezelGoogleValasz: kulcs nelkul MINDIG 404 (D1 nelkul is), a 503 csak ervenyes kulccsal', async () => {
   assert.equal((await kezelGoogleValasz(new Request('https://x.test/a', { method: 'POST', body: '{}' }), { KULCS_DB: null, MERES_GOOGLE_VALASZ_KULCS_HASH: KULCS_HASH })).status, 404);
   assert.equal((await kezelGoogleValasz(new Request('https://x.test/a', { method: 'POST', body: '{}' }), {})).status, 404);

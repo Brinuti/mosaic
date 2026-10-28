@@ -26,9 +26,14 @@ const ELVALASZTO = '[\\s"\':=,{}\\[\\]]*(?:%3[dD]|%22|%3[aA]|%27)*[\\s"\']*';
 const CLICK_RE = new RegExp(CLICK_KULCS + ELVALASZTO + '([A-Za-z0-9_-]{6,})', 'gi');
 const idSzeru = (x) => /\d/.test(x) || (/[a-z]/.test(x) && /[A-Z]/.test(x)); // "expired" / "not" nem click ID: csak a szam-tartalmu vagy vegyes kis/nagybetus ertek
 const hosszuToken = (x) => x.length >= 20 && ((/[a-z]/.test(x) && /[A-Z]/.test(x)) || (x.length >= 24 && /\d/.test(x) && /[A-Za-z]/.test(x)));
+// Telefonszam (01-MERES review 6463412395): >= 9 szamjegy, szokoz / kotojel / pont / zarojel elvalasztoval, +36 / 06 elotaggal is; NEV: kulcs-ertek alakban (name / first_name / last_name / full_name / nev / keresztnev / vezeteknev), mert szabad szovegben a nev nem ismerheto fel mintaval.
+const TEL_RE = /(?<![0-9A-Za-z])\+?\d(?:[\s().-]{0,2}\d){8,}(?![0-9A-Za-z])/g;
+const NEV_RE = /\b(first_?name|last_?name|full_?name|given_?name|family_?name|name|nev|keresztnev|vezeteknev)\b(\s*[:=]\s*|["']\s*:\s*)(["']?)([^",}\]\n;&]{1,60})/gi;
 const uzenetTisztit = (s) => valaszMaszk(String(s || ''))
   .replace(CLICK_RE, (m, kulcs, ertek) => (idSzeru(ertek) ? kulcs + '=[click]' : m))
   .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[email]')
+  .replace(NEV_RE, (m, kulcs, elv, idezo) => `${kulcs}${elv}${idezo}[nev]`)
+  .replace(TEL_RE, '[tel]')
   .replace(/[A-Za-z0-9_-]{20,}/g, (x) => (hosszuToken(x) ? '[token]' : x))
   .replace(/\s+/g, ' ').trim().slice(0, 300);
 const darab = (v) => (Number.isInteger(v) && v >= 0 && v <= 1000 ? v : null);
