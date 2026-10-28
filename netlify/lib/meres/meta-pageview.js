@@ -17,6 +17,7 @@ export const PV_DATASET = ELO_CELOK.meta[1]; // 1361403694872594 (Hair-pixel: fo
 export const PV_ESEMENY = 'PageView';
 export const PV_UZLETAGOK = Object.freeze(['oxigen', 'fodrasz']);
 const MAX_PROBA = 3, ELAKADAS_MP = 120;
+export const PV_FETCH_TIMEOUT_MS = 4000;
 const titokOk = (v) => typeof v === 'string' && v.length >= 16;
 export const pvUzletagok = (env) => (env && titokOk(env.META_PV_TOKEN) ? String(env.META_PV_BE || '').split(',').map((s) => s.trim()).filter((u) => PV_UZLETAGOK.includes(u)) : []);
 export const pvBe = (env, uzletag) => pvUzletagok(env).includes(uzletag);
@@ -81,7 +82,7 @@ export async function pvKuld(db, fk, deps = {}) {
     let allapot = 'hiba', http = null, valasz = null;
     try {
       const f = deps.fetchImpl || fetch;
-      const r = await f(`${kerelem.url}?access_token=${encodeURIComponent(env.META_PV_TOKEN)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(kerelem.body) });
+      const r = await f(`${kerelem.url}?access_token=${encodeURIComponent(env.META_PV_TOKEN)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(kerelem.body), signal: AbortSignal.timeout(PV_FETCH_TIMEOUT_MS) }); // a foglalasi valasz utjan van: a lassu Meta nem tarthatja fel (a megszakitas -> hiba, a sor ujraprobalhato)
       http = r.status; let j = null; try { j = await r.json(); } catch (err) { j = null; }
       valasz = szuk(j ? JSON.stringify(j.error ? { error: { code: j.error.code, type: j.error.type } } : { events_received: j.events_received }) : '');
       allapot = r.status >= 200 && r.status < 300 && j && j.events_received >= 1 ? 'elkuldve' : 'hiba';

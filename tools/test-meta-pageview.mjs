@@ -2,7 +2,7 @@
 //   node --test tools/test-meta-pageview.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PV_DATASET, PV_ESEMENY, PV_UZLETAGOK, pvBe, pvKerelem, pvKuld, pvUzletagok } from '../netlify/lib/meres/meta-pageview.js';
+import { PV_DATASET, PV_ESEMENY, PV_FETCH_TIMEOUT_MS, PV_UZLETAGOK, pvBe, pvKerelem, pvKuld, pvUzletagok } from '../netlify/lib/meres/meta-pageview.js';
 import { erkezesMent, meresSema } from '../netlify/lib/meres/elosztas.js';
 import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { d1 } from './lib-sd-teszt.mjs';
@@ -69,4 +69,13 @@ test('B) Meta-hiba -> hiba, ujraprobalas utan elkuldve, legfeljebb 3 probalkozas
   const jo = hamisFetch(); assert.equal((await pvKuld(d, FK(), dep(jo))).allapot, 'elkuldve'); assert.equal(d.db.prepare('SELECT probalkozas FROM meres_meta_pv').get().probalkozas, 2);
   const d2 = d1(); await beallit(d2); const rossz = hamisFetch({ events_received: 0 }, 500); for (let i = 0; i < 5; i++) await pvKuld(d2, FK(), dep(rossz)); assert.equal(rossz.hivasok.length, 3);
   const d3 = d1(); await beallit(d3); assert.equal((await pvKuld(d3, FK(), dep(async () => { throw new Error('halozat'); }))).allapot, 'hiba');
+});
+test('B) fetch-timeout: a kuldes AbortSignal.timeout-ot kap (4 s); a megszakitott / lassu Meta -> hiba, a sor ujraprobalhato, a foglalasi valaszt nem akasztja', async () => {
+  assert.equal(PV_FETCH_TIMEOUT_MS, 4000);
+  const d = d1(); await beallit(d); let jel = null;
+  const lassu = async (u, o) => { jel = o.signal; assert.ok(o.signal instanceof AbortSignal, 'a kerelem signal-t kap'); throw new DOMException('timeout', 'TimeoutError'); };
+  const dep = (f) => ({ env: ENV(), fetchImpl: f, now: () => NOW, eloEllenorzes: async () => 'aktiv' });
+  const r = await pvKuld(d, FK(), dep(lassu)); assert.equal(r.allapot, 'hiba'); assert.ok(jel);
+  const sor = d.db.prepare('SELECT allapot, probalkozas FROM meres_meta_pv').get(); assert.deepEqual([sor.allapot, sor.probalkozas], ['hiba', 1]);
+  assert.equal((await pvKuld(d, FK(), dep(hamisFetch()))).allapot, 'elkuldve', 'az ujraprobalas sikerul');
 });
