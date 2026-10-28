@@ -22,10 +22,10 @@ export const nap = (unix) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europ
  * A Salonic foglaloja, vendegkent: szolgaltatas -> szakember-valaszto -> a szakember "Osszes idopont" -> datumvalaszto.
  * Visszaad: { idopontok: Set<unix>, elerheto: bool, hiba?: string }; a datumvalaszton minden elerheto napra rakattint es kiolvassa a gombokat.
  */
-export async function salonicIdopontok(page, serviceId, staffId = BETTI, { maxHonap = 9 } = {}) {
+export async function salonicIdopontok(page, serviceId, staffId = BETTI, { maxHonap = 9, host = H, place = PLACE } = {}) {
   const ki = new Set();
-  if (String(staffId) === '-1') await page.goto(`${H}/selectDate/?employeeId=-1&placeId=${PLACE}&serviceId=${serviceId}&mh_nincs_atiranyitas=1`, { waitUntil: 'load', timeout: 60000 });
-  else await page.goto(`${H}/selectEmployee/?placeId=${PLACE}&serviceId=${serviceId}&mh_nincs_atiranyitas=1`, { waitUntil: 'load', timeout: 60000 });
+  if (String(staffId) === '-1') await page.goto(`${host}/selectDate/?employeeId=-1&placeId=${place}&serviceId=${serviceId}&mh_nincs_atiranyitas=1`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+  else await page.goto(`${host}/selectEmployee/?placeId=${place}&serviceId=${serviceId}&mh_nincs_atiranyitas=1`, { waitUntil: 'domcontentloaded', timeout: 90000 });
   await page.waitForTimeout(1500);
   // a szakember kartyaja: ha csak egy szakember van, a Salonic egybol a datumvalasztora ugrik
   let href = null;
@@ -65,10 +65,15 @@ export async function salonicIdopontok(page, serviceId, staffId = BETTI, { maxHo
         const napiak = () => olvas().then((l) => l.filter((u) => nap(u) === cel));
         let ol = [];
         // ha a kattintas tul hamar jon az elozo nap betoltese utan, a Salonic elnyeli: ujraprobaljuk (legfeljebb 3-szor)
-        for (let proba = 0; proba < 3 && !ol.length; proba++) {
+        let nincsUzenet = false;
+        for (let proba = 0; proba < 3 && !ol.length && !nincsUzenet; proba++) {
           await page.waitForTimeout(proba ? 1500 : 700);
           await page.locator(`.mbsc-calendar-slide-active .mbsc-calendar-cell:not(.mbsc-calendar-day-outer) [role=button][aria-label="${label}"]`).first().click({ force: true });
-          for (let i = 0; i < 20; i++) { await page.waitForTimeout(250); ol = await napiak(); if (ol.length) break; }
+          for (let i = 0; i < 20; i++) {
+            await page.waitForTimeout(250); ol = await napiak(); if (ol.length) break;
+            // a Salonic kiirja, ha arra a napra nincs idopont (a kesve bekapcsolo, meg nem szurt napok): nem kell ujraprobalni
+            if (i >= 4 && (nincsUzenet = await page.evaluate(() => /no appointment available|nincs (szabad )?id[őo]pont|nincs el[ée]rhet[őo]/i.test(document.body.innerText)))) break;
+          }
         }
         if (ol.length) { await page.waitForTimeout(400); ol = await napiak(); } // a lista teljes betoltese
         if (process.env.DBG) console.log('  nap', label, 'cel', cel, '->', ol.map(hhmm).join(' ') || '(nincs)', '| lathato anchorok:', (await olvas()).map((u) => nap(u) + 'T' + hhmm(u)).join(' '), '| url', page.url().slice(-60));
@@ -87,7 +92,7 @@ export async function salonicIdopontok(page, serviceId, staffId = BETTI, { maxHo
   return { idopontok: ki, elerheto: true, napok: latott.size };
 }
 
-const HONAP = { januar: 1, februar: 2, marcius: 3, aprilis: 4, majus: 5, junius: 6, julius: 7, augusztus: 8, szeptember: 9, oktober: 10, november: 11, december: 12 };
+const HONAP = { january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12, januar: 1, februar: 2, marcius: 3, aprilis: 4, majus: 5, junius: 6, julius: 7, augusztus: 8, szeptember: 9, oktober: 10, november: 11, december: 12 };
 const ekezetnelkul = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 export const MOTOR = process.env.MOTOR_URL || 'https://www.mosaicheadspa.hu';
 
@@ -95,19 +100,22 @@ export const MOTOR = process.env.MOTOR_URL || 'https://www.mosaicheadspa.hu';
  * A Mosaic foglalomotor, vendegkent: konkret szolgaltatas -> a fodrasz-valaszto "Betti" -> naptar. Minden "szabad" napra rakattint, kiolvassa az idopont-gombokat.
  * Visszaad: { idopontok: Set<"YYYY-MM-DD HH:MM">, napok }.
  */
-export async function motorIdopontok(page, serviceId, staffName = 'Betti', { maxHonap = 9 } = {}) {
+export async function motorIdopontok(page, serviceId, staffName = null, { maxHonap = 9, business = 'hair' } = {}) {
   const ki = new Set();
-  await page.goto(`${MOTOR}/foglalo-motor?business=hair&service=${serviceId}`, { waitUntil: 'load', timeout: 60000 });
-  // a fodrasz-valaszto (ha a kezelesnek tobb fodrasza van); egy fodrasznal / a konzultacional a motor egybol a naptarra ugrik (ilyenkor NEM szurunk fodraszra)
+  await page.goto(`${MOTOR}/foglalo-motor?business=${business}&service=${serviceId}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+  // szakember-valaszto (fodrasz / oxigen): staffName=null -> "Mindegy", egyebkent a nev; ahol nincs valaszto, a motor egybol a naptarra ugrik
   let valaszto = false;
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 160; i++) {
     if (await page.locator('.be-nnap').count()) break;
-    if (await page.getByText('Melyik fodrászt választod').count()) { await page.waitForTimeout(500); await page.getByText(staffName, { exact: false }).first().click(); valaszto = true; break; }
+    if (await page.getByText(/Melyik .* v[aá]lasztod/).count()) {
+      await page.waitForTimeout(500);
+      await page.getByText(staffName || 'Mindegy', { exact: false }).first().click(); valaszto = true; break;
+    }
     await page.waitForTimeout(250);
   }
   const van = await page.waitForSelector('.be-nnap', { state: 'attached', timeout: 45000 }).then(() => true).catch(() => false);
   if (!van) return { idopontok: ki, napok: 0, hiba: 'a naptar nem toltodott be' };
-  await page.waitForTimeout(2500); // a tovabbi honapok idopontjai kesobb erkeznek (onMore)
+  await page.waitForTimeout(2500);
   const fej = () => page.evaluate(() => { const t = document.body.innerText; const m = t.match(/(20\d\d)\.\s*([A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű]+)/); return m ? [m[1], m[2]] : null; });
   const latott = new Set();
   for (let ho = 0; ho < maxHonap; ho++) {
