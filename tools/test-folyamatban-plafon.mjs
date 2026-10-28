@@ -7,6 +7,7 @@ import { elosztas, erkezesMent, meresSema } from '../netlify/lib/meres/elosztas.
 import { ELO_FETCH_TIMEOUT_MS as META_TIMEOUT, metaEloKuld } from '../netlify/lib/meres/meta-elo.js';
 import { ELO_FETCH_TIMEOUT_MS as TT_TIMEOUT, tiktokEloKuld } from '../netlify/lib/meres/tiktok-elo.js';
 import { napIntervallum, qaKorlatNullaz, qaNap } from '../netlify/lib/meres/qa-nap.js';
+import { sema } from '../netlify/lib/foglalas-kulcs.js';
 import { d1 } from './lib-sd-teszt.mjs';
 
 const HOST = 'https://www.mosaicheadspa.hu';
@@ -111,4 +112,26 @@ test('P4 qa-nap: folyamatban_regi (> 10 perc) uzletag x platform, max_perc, megs
   const elotte = JSON.stringify(sorok(d));
   await qaNap(d, kor, { mostMs: NOW });
   assert.equal(JSON.stringify(sorok(d)), elotte);
+});
+
+test('P5 qa-nap erkezes_kuldes_nelkul (HS-G-S): kuldes nelkuli bongeszos erkezesek okkod szerint: kupon / level_van_kuldes_nincs / nincs_level / friss; a kuldessel rendelkezo nem szamit; csak olvas', async () => {
+  qaKorlatNullaz();
+  const D = d1(); const db = { prepare: D.prepare, batch: D.batch }; await sema(db); await meresSema(db);
+  D.db.prepare('CREATE TABLE IF NOT EXISTS meres_jelleg (source_id TEXT PRIMARY KEY, jelleg TEXT NOT NULL, kupon INTEGER NOT NULL, forras TEXT NOT NULL, ido INTEGER NOT NULL) WITHOUT ROWID').run();
+  const NOW = Date.UTC(2026, 9, 28, 12, 0, 0); const ido = (ms) => Math.floor((NOW - ms) / 1000);
+  const erk = (sid, uz, ms) => D.db.prepare("INSERT INTO meres_erkezes (source_id, uzletag, tipus, attr, hozz, ido, frissitve) VALUES (?,?,?,?,?,?,?)").run(sid, uz, 'foglalas', '{}', '{}', ido(ms), ido(ms));
+  const kuldes = (sid, uz) => D.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, letrehozva, frissitve) VALUES (?,?,?,?,?,?,?,?,?)").run('e_' + sid, 'FoglalasElso', 'alap', 'meta', uz, sid, 'elkuldve', ido(0), ido(0));
+  erk('mb_van', 'headspa', 5 * 3600e3); kuldes('mb_van', 'headspa');                                  // van kuldes -> nem szamit
+  erk('mb_kupon', 'headspa', 6 * 3600e3); D.db.prepare("INSERT INTO meres_jelleg VALUES ('mb_kupon','elso',1,'level',?)").run(ido(6 * 3600e3));
+  erk('mb_level', 'headspa', 7 * 3600e3); D.db.prepare("INSERT INTO foglalas_egyeztetes (uuid, allapot, booking_id, letrehozva, frissitve) VALUES ('u-1','parositott','mb_level',?,?)").run(ido(7 * 3600e3), ido(7 * 3600e3));
+  erk('mb_nincs', 'headspa', 8 * 3600e3);
+  erk('mb_friss', 'headspa', 600e3);                                                                  // 10 perc -> friss
+  erk('mb_oxi', 'oxigen', 9 * 3600e3);                                                                // masik uzletag
+  const j = await qaNap(D, napIntervallum('2026-10-28'), { mostMs: NOW });
+  assert.deepEqual(j.uzletagak.headspa.erkezes_kuldes_nelkul, { osszes: 4, kupon: 1, level_van_kuldes_nincs: 1, nincs_level: 1, friss: 1 });
+  assert.deepEqual(j.uzletagak.oxigen.erkezes_kuldes_nelkul, { osszes: 1, kupon: 0, level_van_kuldes_nincs: 0, nincs_level: 1, friss: 0 });
+  assert.deepEqual(j.osszes.erkezes_kuldes_nelkul, { osszes: 5, kupon: 1, level_van_kuldes_nincs: 1, nincs_level: 2, friss: 1 });
+  const elotte = JSON.stringify(D.db.prepare('SELECT * FROM meres_erkezes').all());
+  await qaNap(D, napIntervallum('2026-10-28'), { mostMs: NOW });
+  assert.equal(JSON.stringify(D.db.prepare('SELECT * FROM meres_erkezes').all()), elotte);
 });
