@@ -131,6 +131,11 @@ test('P5 qa-nap erkezes_kuldes_nelkul (HS-G-S): kuldes nelkuli bongeszos erkezes
   assert.deepEqual(j.uzletagak.headspa.erkezes_kuldes_nelkul, { osszes: 4, kupon: 1, level_van_kuldes_nincs: 1, nincs_level: 1, friss: 1 });
   assert.deepEqual(j.uzletagak.oxigen.erkezes_kuldes_nelkul, { osszes: 1, kupon: 0, level_van_kuldes_nincs: 0, nincs_level: 1, friss: 0 });
   assert.deepEqual(j.osszes.erkezes_kuldes_nelkul, { osszes: 5, kupon: 1, level_van_kuldes_nincs: 1, nincs_level: 2, friss: 1 });
+  // DECISION #251 (b): level_lanc_kimaradt = 6 oranal regebbi erkezes, amelyhez nincs foglalas_egyeztetes sor es nem kuponos (a kuldessel rendelkezo is szamit)
+  assert.deepEqual(j.uzletagak.headspa.level_lanc_kimaradt, { db: 1, max_ora: 8 });
+  assert.deepEqual(j.uzletagak.oxigen.level_lanc_kimaradt, { db: 1, max_ora: 9 });
+  assert.deepEqual(j.osszes.level_lanc_kimaradt, { db: 2, max_ora: 9 });
+  assert.notEqual(j.uzletagak.oxigen.lampa, 'zold', 'oxigen: sarga (vagy rosszabb) lampa'); // a headspa lampaja mas okbol is lehet piros
   const elotte = JSON.stringify(D.db.prepare('SELECT * FROM meres_erkezes').all());
   await qaNap(D, napIntervallum('2026-10-28'), { mostMs: NOW });
   assert.equal(JSON.stringify(D.db.prepare('SELECT * FROM meres_erkezes').all()), elotte);
