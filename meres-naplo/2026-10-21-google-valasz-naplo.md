@@ -1,6 +1,6 @@
 # Google ARNYEK feltöltés válasz-napló (UJ-11, draft)
 
-Kérés és specifikáció: #167 6321101806 (01-MERES + ChatGPT), 4. pont. **Az #460-ra épül** (alap ág: `claude/qa-meta-nevegyezes`, az a #459-re, az a #458-ra). **Merge és élesítés csak DECISION után** (D1-sémabővítés + új végpont + Zapier-lépés). A Zap-módosítás KIZÁRÓLAG Zapier-draftként készül, élő Zaphoz nem nyúlunk.
+Kérés és specifikáció: #167 6321101806 (01-MERES + ChatGPT), 4. pont. **2026-10-28: újraépítve a `main`-re** (a korábbi #461 a #460 → #459 → #458 láncra épült; a #459 / #460 lezárva – 01-MERES 6462419230 –, a #458 a `main`-ben van). A tartalom a három eredeti commit cherry-pickje a `main`-re; az egyetlen kézi lépés a `qa-nap.js` ütközésének feloldása (a #460 `meta_nevegyezes` szekciója NEM került át). **Merge és élesítés csak DECISION után** (D1-sémabővítés + új végpont + Zapier-lépés). A Zap-módosítás KIZÁRÓLAG Zapier-draftként készül, élő Zaphoz nem nyúlunk.
 
 ## Mi ez
 A Google-feltöltést egy Zapier-webhook végzi (`GOOGLE_ARNYEK_WEBHOOK_URL`); a motor a Google válaszát nem látja. Ez a változtatás naplózza a feltöltés kimenetelét, hogy az M0-5 kapu „0 elveszett feltöltés” bizonyítható legyen.
@@ -12,7 +12,7 @@ A Google-feltöltést egy Zapier-webhook végzi (`GOOGLE_ARNYEK_WEBHOOK_URL`); a
 4. **qa-nap** `google_valasz`: üzletáganként és összesen: `elkuldve`, `google_elfogadta`, `denied`, `reszleges_hiba`, `nincs_visszajelzes` (csak darabszám; `{ sema_hianyzik: true }` az új oszlopok nélkül; a lámpát nem érinti).
 
 ## Védett fájlok, hash
-`netlify/lib/meres/elosztas.js`: `f8a78f8430` (#458) → `8b15e0d11f`; `netlify/lib/meres/qa-nap.js`: `533adf86c6` (#460) → `079f69ded0`. A T2-rögzítő `sema_ujjlenyomat`-a a két új oszlop miatt szándékosan változik a deploy után (új T2-kiinduló rögzítés kell, ha a mérési oldal így akarja).
+`netlify/lib/meres/elosztas.js`: `f8a78f8430` (#458) → `8b15e0d11f`; `netlify/lib/meres/qa-nap.js`: `de6205f0eb` (`main`) → `4651faf49d` (a korábbi `079f69ded0` a #460 `meta_nevegyezes` szekciójával együtt számolt). A többi védett fájl változatlan: platformok 67911aace4, esemeny-modell 4342e6f09b, meta-bongeszo-kulcs 62143dda2b, vegpontok 085bed6aad. A T2-rögzítő `sema_ujjlenyomat`-a a két új oszlop miatt szándékosan változik a deploy után (új T2-kiinduló rögzítés kell, ha a mérési oldal így akarja).
 
 ## Zapier-draft (KÉSZ, nem publikált)
 A Zap egy durable workflow (kód); a módosítás a `docs/booking-engine/zapier/` mappában (eredeti = rollback-másolat, módosított, README). Zapier-draft ID `01a15f66-ef0c-7fa3-8246-4ef15e3eaa10` (az élő verzió `01a1122d-fc48-75d7-b7cf-69f4bf070aeb` változatlan). A Zapier Google Ads action a Google `partialFailure`-t nem adja vissza: a `""` kód = „a Zapier action nem dobott hibát”.
