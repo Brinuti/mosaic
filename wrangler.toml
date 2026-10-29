@@ -107,6 +107,8 @@ MERES_ELOSZTO = "1"
 # a PR-B elotti torzs-alak all vissza. A preview szekciojaba is kell. (A feluleten megadott nem titkos valtozot a wrangler.toml torli: tartosan csak ez a sor vagy egy Secret tipusu valtozo mukodik.)
 # MERES_GAZDAGITAS = "0"
 META_TESZT_KOD = "TEST83939"
+# UJ-62 (#167 6387024988): a HeadSpa ajandekkartya szabvanyos Meta Purchase esemenye. ki (alap) | arnyek (CSAK az ARNYEK datasetbe, tesztkoddal; a bongeszos Purchase-szal kozos st-<PaymentIntent> azonosito). Az "eles" ertek nincs implementalva (= ki): az atallas KULON, Feri kulon mondatahoz kotott valtoztatas.
+META_PURCHASE_MOD = "ki"
 # Feri 2026-10-20 ~21:55: az ELES oldalon az ARNYEK TikTok-pixelre tesztkod nelkul megy (valodi szam az osszeveteshez; hirdetes nem hasznalja a pixelt).
 # ROLLBACK: a kovetkezo sort torold es a TIKTOK_TESZT_KOD sort vedd vissza ("TEST83543"), majd deploy.
 TIKTOK_ARNYEK_ELES = "1"
@@ -169,6 +171,7 @@ AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nin
 MERES_ELOSZTO = "1"
 # MERES_HOZZAJARULAS_VALOS = "1"        # DECISION #202 visszagorgetes (lasd fent, [vars])
 # MERES_GAZDAGITAS = "0"                # DECISION #202 (PR-B) visszagorgetes: a bovitett mezok kimaradnak (lasd fent, [vars])
+META_PURCHASE_MOD = "ki"                # UJ-62: a szabvanyos Meta Purchase (lasd fent, [vars]); az arnyek-proba bekapcsolasa: "arnyek" (csak a preview-ban is a DECISION / Feri mondata utan)
 META_TESZT_KOD = "TEST83939"            # a Meta Esemenykezelo "Teszteszemenyek" kodja (dataset 28616665324611098, MOSAIC ARNYEK meres-teszt)
 TIKTOK_TESZT_KOD = "TEST83543"         # a TikTok Esemenykezelo "Teszteszemenyek" kodja (ARNYEK pixel DB2GTTJC77UE4D1NE4MG); a korabbi szintetikus TEST_MOSAIC_QA2 helyett (2026-10-06)
 GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"   # a GA4 TESZT-property (az elo G-H4206SQ0Q7 a kodban tiltott); a Measurement Protocol secret: GA4_TESZT_API_SECRET (titok)

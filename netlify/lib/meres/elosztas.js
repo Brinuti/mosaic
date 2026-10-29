@@ -5,7 +5,7 @@
 //   - MINDEN kuldes naplozva (meres_kuldes): a kerelem (titok nelkul, IP maszkolva), a platform valasza, a hozzajarulas, az allapot
 //   - esemeny kuldese ELOTT elo allapot-ellenorzes (deps.eloEllenorzes): torolt foglalasra nem megy pozitiv konverzio; nem ellenorizheto -> halasztva
 // Csak ARNYEKMODBAN fut (MERES_ELOSZTO=1 es a platformok.js vedelmei); elo pixelre / property-re / akciora nem kuldhet.
-import { esemenyek, konzultacioTabla, SOURCE_ID_MINTA, UZLETAGAK } from './esemeny-modell.js';
+import { esemenyek, konzultacioTabla, metaPurchaseMod, SOURCE_ID_MINTA, UZLETAGAK } from './esemeny-modell.js';
 import { felhasznaloHash } from './felhasznalo-hash.js';
 import { erkezesTisztit } from './erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from './hozzajarulas.js';
@@ -109,7 +109,7 @@ export async function elosztas(db, fk, deps = {}) {
   if (String(env.MERES_ELOSZTO) !== '1') return { allapot: 'ki', miert: 'MERES_ELOSZTO nincs bekapcsolva' };
   await meresSema(db);
   const t = sec(now);
-  const lista = esemenyek(fk, konzultacioTabla(env));
+  const lista = esemenyek(fk, konzultacioTabla(env), { metaPurchase: metaPurchaseMod(env) === 'arnyek' }); // UJ-62: a szabvanyos Meta Purchase csak META_PURCHASE_MOD=arnyek mellett (alapbol ki: a lista bajtra a regi)
   if (!lista.length) {
     // DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio -> nincs esemeny, nincs meres_kuldes-sor, platformra semmi nem megy ki (a kupon-jelzes a meres_jelleg-ben marad; a jelentesek szabalyos nullanak veszik)
     if (fk.tipus === 'foglalas' && fk.kupon) return { allapot: 'nincs_esemeny', kupon_nem_konverzio: true, miert: 'DECISION #194: a kuponos (ajandekkartyas) foglalas nem konverzio, semmilyen esemeny nem megy ki' };
@@ -130,7 +130,7 @@ export async function elosztas(db, fk, deps = {}) {
 
   // minden (esemeny, platform) cella mar VEGLEGES (elkuldve / modell szerint kihagyva / lemondva): nincs teendo, elo lekeres sem kell (az ismetelt hivas olcso es nem kuld)
   const { results: meglevok } = await db.prepare('SELECT esemeny_id, platform, allapot, indok, frissitve FROM meres_kuldes WHERE source_id = ?1').bind(fk.source_entity_id).all();
-  const teendo = lista.some((e) => PLATFORMOK.some((p) => { const m = (meglevok || []).find((x) => x.esemeny_id === e.esemeny_id && x.platform === p); if (e.nyitott && m && m.allapot === 'nyitott') return false; /* tovabbra is nyitott: nincs teendo */ return !m || ujraprobalhato(m, t); }));
+  const teendo = lista.some((e) => (e.csak_platform || PLATFORMOK).some((p) => { const m = (meglevok || []).find((x) => x.esemeny_id === e.esemeny_id && x.platform === p); if (e.nyitott && m && m.allapot === 'nyitott') return false; /* tovabbra is nyitott: nincs teendo */ return !m || ujraprobalhato(m, t); }));
   if (!teendo) return { ...osszefoglalo, allapot: 'mar_kuldve', miert: 'minden esemeny / platform cella mar vegleges allapotu' };
 
   // esemeny kuldese ELOTT elo allapot-ellenorzes (a levelek sorrendjetol fuggetlen: mindig az aktualis allapot)
@@ -162,7 +162,7 @@ export async function elosztas(db, fk, deps = {}) {
 
   for (const e of lista) {
     const sor = { esemeny_id: e.esemeny_id, nev: e.nev, tipus: e.tipus, ertek: e.ertek_nelkul ? null : e.ertek, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar, nyitott: e.nyitott, platformok: {} };
-    for (const platform of PLATFORMOK) {
+    for (const platform of (e.csak_platform || PLATFORMOK)) { // csak_platform (UJ-62 Purchase): a tobbi platformra nincs cella, nincs sor
       let mezok;
       if (fk.fixAllapot) mezok = { allapot: fk.fixAllapot.allapot, indok: fk.fixAllapot.indok }; // Salonic-direct: reschedule_confirmed (kihagyva) / reschedule_suspected (halasztva = hold)
       else if (kikapcsolva(kapcsolok, fk.uzletag, platform)) mezok = { allapot: 'kihagyva', indok: 'veszkapcsolo: ' + kikapcsolva(kapcsolok, fk.uzletag, platform) };
