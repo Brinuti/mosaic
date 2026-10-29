@@ -110,7 +110,7 @@ Ezen felül:
   szövege teljes szélességű, az álló videós lépések két hasábban.
 - **Menü és lábléc** (2026-10-16): a „Vélemények” után 5 csillag (Google-jel nélkül), a menü 1001 px-től egy sorban elfér; az almenü-ikonok GPT-vel készült vonalas ikonok
   (`assets/img/menu-ikon/<név>.webp`, 96 px), a piercerek mellett a portréjuk (`assets/img/csapat/`). A lábléc (`reszek/lablec.html`) az éles oldal láblécének tartalma sötét háttéren: menü,
-  tudnivalók, elérhetőségek, nyitvatartás (H–P 09:00–19:00, Szo 09:00–18:00, V zárva; a tulajdonos szerint a 9–19 a helyes – a régi oldalak láblécében álló „H-P: 10:00 - 19:00”-t a `tools/build.mjs` is javítja), két foglalás-gomb, jogi szövegek.
+  tudnivalók, elérhetőségek, nyitvatartás (**Hétfő–Szombat 08:00–19:00, Vasárnap zárva** – a tulajdonos 2026-10-29-i kérése; a régi Wix-oldalak láblécében és a tartalom-JSON-ok „H-P 9–19, Szo 9–18” szövegét a `tools/build.mjs` és a `tools/uj-oldalak/kategoria.mjs` (`NYITVATARTAS`) javítja; a telefonos elérhetőség „H–P 9:00–17:00” külön dolog, azt nem érinti), két foglalás-gomb, jogi szövegek.
 - **Videók mobilon** (a tulajdonos kérése, 2026-10-16): érintőképernyőn (`(hover: none) and (pointer: coarse)`) a lejátszott videó teljes képernyőre ugrik (`assets/js/uj-fooldal.js`, 3. és 3b.):
   a saját mp4-ek (`video[controls]`, a vendégvideók sávja is) `playsinline` nélkül (iPhone: a Safari saját lejátszója), Androidon a lejátszáskor `requestFullscreen`, a végén vissza; a YouTube-ablak
   (`#videoablak.mobil`) kitölti a képernyőt (a YouTube címsora, gombjai a fekete sávokra kerülnek, nem a videóra), Androidon teljes képernyő + fekvő tájolás, a beágyazás kap

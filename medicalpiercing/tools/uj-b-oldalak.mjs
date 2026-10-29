@@ -122,7 +122,7 @@ const helyek = () => `  <section class="tarto" id="idopontok">
     <div class="akc-hol">
 ${fej('Időpontok', 'calendar', 'Hol és mikor?', `${T.helyek}. A kitelepüléseken a megadott napokon fogadunk, a szabad időpontokat a foglalóban látod.`).replace('<p class="kat-alcim">', '<p class="kat-alcim akc-hol-al">')}
       <ul class="akc-helyek" data-akc-helyek>
-        <li class="akc-hely"><div><b>Budapest</b><span>állandó szalon · H–P 9–19, Szo 9–18</span></div><a class="gomb gomb-kicsi" href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=6029">Foglalás</a></li>
+        <li class="akc-hely"><div><b>Budapest</b><span>állandó szalon · H–Szo 8–19</span></div><a class="gomb gomb-kicsi" href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=6029">Foglalás</a></li>
       </ul>
     </div>
   </section>
@@ -343,7 +343,7 @@ OLDALAK['ful-piercing-beloves-budapest'] = () => elso({ cim: 'Fülpiercing bizto
 
 OLDALAK.elerhetosegek = () => elso({ cim: 'Helyszínek és elérhetőségek | Medical Piercing', leiras: `Budapesten állandó szalon, vidéken 14 helyszínen, előre meghirdetett napokon. Telefon: ${T.tel} (${T.telIdo}).`, akciosav: 'akcio-sav-b' }, 'a PDF 07 (uj helyszinoldal) terve.') + [
   hos({ cim: 'Helyszínek <em>és elérhetőségek</em>', al: 'Budapesten állandó szalon, vidéken 14 helyszínen, előre meghirdetett napokon.', gomb: cta('Időpont Budapestre', { href: 'https://medicalpiercing.salonic.hu/selectEmployee/?placeId=6029', ikon: 'pin' }),
-    gomb2: cta2('Vidéki helyszínek', '#helyszinek'), mikroSzoveg: 'Budapest, 1137 Újpesti rakpart 7. 5./25. · H–P 9:00–19:00, Szo 9:00–18:00', garancia: false,
+    gomb2: cta2('Vidéki helyszínek', '#helyszinek'), mikroSzoveg: 'Budapest, 1137 Újpesti rakpart 7. 5./25. · H–Szo 8:00–19:00', garancia: false,
     kep: ['/assets/img/f18724_e08a1bb28d4f4548b0b2d0fc06f811c3.webp', 1000, 667, 'A budapesti szalon'] }),
   helyek(),
   `  <section class="tarto">
