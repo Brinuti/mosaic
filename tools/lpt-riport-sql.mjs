@@ -68,7 +68,7 @@ ORDER BY uzletag, darab DESC;`,
     potolt: `-- a sutibol potolt kattintasazonositok (klikk_potolt: melyik tipus(ok) potlodtak a foglalo-atadasnal / a shadow-lanc attr-jaban)
 SELECT uzletag, klikk_potolt, COUNT(*) AS darab
 FROM meres_forras
-WHERE ${w} AND klikk_potolt IS NOT NULL
+WHERE ${w} AND klikk_potolt IS NOT NULL AND klikk_potolt NOT IN ('0', 'nem_mentve')
 GROUP BY uzletag, klikk_potolt
 ORDER BY uzletag, darab DESC;`,
     cimkek: `-- a vegso forras-cimkek (zart lista) bizonyitek-forrasonkent

@@ -314,7 +314,7 @@ test('C) munkamenet: a latogatas fizetett erintese adja a cimket; a valasz addit
   const s = sor(d);
   assert.deepEqual({ ...s }, { source_id: BID, uzletag: 'headspa', tipus: 'foglalas', ido: NOW, forras_cimke: 'google_nem_markas', ismeretlen_ok: null, cimke_megjegyzes: 'markas_lista_hianyzik', bizonyitek_forras: 'munkamenet', platform: 'google',
     utm_source: 'google', utm_medium: 'cpc', utm_campaign: '111', utm_term: null, utm_content: null, gad_campaignid: '111', adgroupid: '222', adid: '333', kattintas_param: 'gclid', kattintas_ido: NOW - 600, kattintas_kor_nap: null,
-    kesei_fizetett: 0, kesei_fizetett_platform: null, klikk_potolt: null, referrer_kat: 'search', kesei_kor_nap: null });
+    kesei_fizetett: 0, kesei_fizetett_platform: null, klikk_potolt: '0', referrer_kat: 'search', kesei_kor_nap: null }); // '0' = a potlas-logika lefutott, nem kellett potolni (NULL = nem ertekelheto)
   assert.equal(d.db.prepare('SELECT COUNT(*) AS n FROM meres_erkezes WHERE source_id = ?').get(BID).n, 1, 'a meres_erkezes sor megvan');
   assert.deepEqual(L.valaszAlak(s), j.forras);
 });
@@ -1038,10 +1038,16 @@ test('G) klikk_potolt csak akkor kerul a sorba / a valaszba, ha a potlas TENYLEG
   d.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, letrehozva, frissitve) VALUES ('FoglalasElso:' || ?1, 'FoglalasElso', 'alap', 'meta', 'headspa', ?1, 'elkuldve', ?2, ?2)").run(BID, NOW);
   const cookie = suti({ v: 1, kp: 'fbclid', kv: FBCLID, um: 'paid_social', us: 'meta', t: NOW - NAP });
   const r = await erkezes(env, ERK({ forras: SES({ rk: 'nincs' }), lpt_potlas: ['fbclid'] }), { cookie }); const j = await ures(r);
-  assert.equal(j.frissitve, false, 'az esemeny mar kiment'); assert.ok(j.forras, 'a cimke igy is megvan'); assert.equal(j.forras.klikk_potolt, null); assert.equal(sor(d).klikk_potolt, null);
+  assert.equal(j.frissitve, false, 'az esemeny mar kiment'); assert.ok(j.forras, 'a cimke igy is megvan'); assert.equal(j.forras.klikk_potolt, null); assert.equal(sor(d).klikk_potolt, 'nem_mentve', 'lefutott, de az esemeny mar kiment: kulon jelolt');
   assert.equal(d.db.prepare('SELECT COUNT(*) AS n FROM meres_erkezes WHERE source_id = ?').get(BID).n, 0, 'az attr nem mentodott');
   // kontroll: ugyanez egy meg nem kiment foglalasnal potolt
   const j2 = await ures(await erkezes(env, ERK({ source_id: ID('z'), forras: SES({ rk: 'nincs' }), lpt_potlas: ['fbclid'] }), { cookie })); assert.equal(j2.frissitve, true); assert.equal(j2.forras.klikk_potolt, 'fbclid');
+});
+test('G) klikk_potolt NULL != 0: a hirdetesi hozzajarulas nelkul NULL (nem ertekelheto), hozzajarulassal a lefutott-de-nem-kellett eset "0"; a kliensnek adott valaszban mindketto null (valtozatlan alak)', async () => {
+  const { d, env } = ujEnv();
+  const j0 = await ures(await erkezes(env, ERK({ forras: SES({ rk: 'search' }) }))); assert.equal(sor(d).klikk_potolt, '0'); assert.equal(j0.forras.klikk_potolt, null);
+  const jn = await ures(await erkezes(env, ERK({ source_id: ID('n'), forras: SES({ rk: 'search' }), forras_adv: false, hozz: { ana: true, adv: false, fun: true } }))); assert.equal(sor(d, ID('n')).klikk_potolt, null, 'elutasitott hozzajarulas: nem ertekelheto'); assert.equal(jn.forras.klikk_potolt, null);
+  assert.deepEqual(L.valaszAlak({ forras_cimke: 'x', klikk_potolt: '0', kesei_fizetett: 0 }).klikk_potolt, null); assert.equal(L.valaszAlak({ forras_cimke: 'x', klikk_potolt: 'gclid', kesei_fizetett: 0 }).klikk_potolt, 'gclid');
 });
 test('G) F3: a suti-tajekoztato (foglalas/suti-tajekoztato.html) 3.4 szakasza tenyszeru mh_lpt bejegyzest kapott (egyetlen <li>, a 3.4 szakaszban)', () => {
   const uj = fs.readFileSync(path.join(GYOKER, 'foglalas/suti-tajekoztato.html'), 'utf8');

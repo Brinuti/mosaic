@@ -162,6 +162,15 @@ LEZER_STRIPE_PUBLISHABLE_KEY = "pk_test_51TyudCKks72Z28LBIs0ejfk1gxD7q5eVctHYTfs
 OXIGEN_STRIPE_PUBLISHABLE_KEY = "pk_test_51UNS5dHZOCZhis2vCq59kelGDQCCiDd2Iz17PNJNgNwzqGWx2r8A2LkhJJlBGZUsfXxWVqhVlMNpz8uRGuF8SF7200wPsFLXeK"
 SZAMLA_ELONEZET = "1"
 AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nincs adoregisztracioja (0 ado), igy az ado-ellenorzes kikapcsolva; az eles mindig ellenoriz
+# KODOS ELO TIKTOK / META ESEMENY (DECISION #246 / #244; docs/booking-engine/TIKTOK_ELO.md, META_ELO.md): CSAK ELONEZET, a bekapcsolas elso (2.) lepese. Az ELO_CSAK_TESZT="1" vedohalo: teszt-kod nelkul a modul
+# NEM kuld (az elonezet sosem kuldhet az elo pixelre / datasetre). Amig a TIKTOK_ELO_TOKEN / META_ELO_TOKEN titok (Secret, Preview) es a Test Events kodok nincsenek meg, ez nem csinal semmit.
+# A Test Events kodok a mereso oldaltol jottek (2026-10-27; a META_TESZT_KOD / TIKTOK_TESZT_KOD az ARNYEK datasetre szol, ide NEM jo). A tokenek (TIKTOK_ELO_TOKEN, META_ELO_TOKEN) a Cloudflare-ben Secretkent bent vannak; a Meta kod datasetenkent kulonbozik.
+ELO_CSAK_TESZT = "1"
+TIKTOK_ELO_TESZT_KOD = "TEST16447"       # TikTok Test Events kod, ELO pixel CTDGK5BC77U0PIODKP30 (nem titok; 01-MERES, #167 6449837110)
+META_ELO_TESZT_KOD = "TEST47348"        # Meta Test Events kod, HeadSpa dataset 3473839859576758
+META_ELO_TESZT_KOD_PMU = "TEST43023"    # Meta Test Events kod, PMU dataset 1019878750660854 (datasetenkent kulonbozik)
+TIKTOK_ELO_BE = "headspa"
+META_ELO_BE = "headspa,pmu"
 # QA-2 ARNYEK-MERES (DECISION-LOG #99; lasd docs/booking-engine/QA2_ARNYEK.md): CSAK ELONEZET. Az eles ([vars]) NEM kapja meg: ott az elosztas ki van kapcsolva (MERES_ELOSZTO hianyzik).
 # A kuldes kizarolag az ARNYEK-celpontokra mehet (kodban rogzitve: netlify/lib/meres/platformok.js), tesztkoddal. A nem titkos ertekek ITT vannak; a titkok a Cloudflare feluleten / API-n,
 # Preview / Secret tipussal: META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GA4_TESZT_API_SECRET (beallitva 2026-10-06), GOOGLE_ARNYEK_WEBHOOK_URL (a Zapier-webhook; a Zap-et a meresi munkamenet epiti).
