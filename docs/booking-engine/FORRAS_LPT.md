@@ -59,7 +59,7 @@ A **késői fizetett kattintás** (a süti kattintása 8–30 napos, és a címk
 | `platform`, `utm_*`, `gad_campaignid`, `adgroupid`, `adid` | a bizonyíték fizetett platformja és tisztított mezői (Metánál a `gad_campaignid` = `utm_id`, az `adid` = `ad_id`) |
 | `kattintas_param`, `kattintas_ido`, `kattintas_kor_nap` | a bizonyíték kattintási paraméterének **típusa**, ideje; `suti` esetén a kattintás kora egész napokban |
 | `kesei_fizetett, kesei_fizetett_platform, kesei_kor_nap` | késői fizetett kattintás jelzés |
-| `klikk_potolt` | melyik azonosító(ka)t pótolta a süti (pl. `fbclid,gclid`) vagy NULL: a foglaló-átadás jelzése (csak ha a sütiben ugyanilyen azonosító van) + a shadow-lánc szerver-oldali pótlása |
+| `klikk_potolt` | melyik azonosító(ka)t pótolta a süti (pl. `fbclid,gclid`); **`0`** = a pótlás-logika lefutott, nem kellett pótolni; **`nem_mentve`** = lefutott, de az esemény már kiment (a `meres_erkezes` nem frissült); **NULL** = nem értékelhető (nincs hirdetési hozzájárulás / régi sor) – 2026-10-27-től (mérési oldal kérése, NULL ≠ 0). A kliensnek adott válaszban a `0` / `nem_mentve` továbbra is `null`. Eredeti leírás: a foglaló-átadás jelzése (csak ha a sütiben ugyanilyen azonosító van) + a shadow-lánc szerver-oldali pótlása |
 | `referrer_kat` | `search\|social\|egyeb\|nincs` (sütis bizonyítéknál NULL) |
 
 **Nyers kattintásazonosítót, IP-t, user agentet, vendégadatot a `meres_forras` nem tárol.** Megőrzés: 30 nap (mint a `meres_erkezes`; minden íráskor törli a régebbi sorokat; `MOSAIC_LPT_MEGORZES_NAP` 7–3650 között felülírja). `meres_beallitas (kulcs, ertek, ido)`: üresen jön létre, csak a márkás listát tárolja.
