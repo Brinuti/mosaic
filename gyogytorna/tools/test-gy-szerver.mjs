@@ -1938,3 +1938,65 @@ test('adapter: a "barmelyik" (-1) lekeres hianyos valaszat a szakemberenkenti le
   const dupla = (await hianyos.getServices(8439)).find((x) => x.serviceId === '24667');
   assert.deepEqual(dupla.staffIds, ST);
 });
+
+// --- DECISION #259 (UJ-86): igazolas tie-break: jelolt-eletkor (<= 48 ora) + 15 perces szabaly ------------------------------------------------------------------------
+// korok: az egyes jeloltek letrehozasa az igazolas erkezese (MOST) ELOTT ennyi masodperccel (foglalasonkent kulon munkatars -> kulonbozo parosito)
+async function jeloltekKorokkel(korok) {
+  const env = await ujKornyezet();
+  let i = 0;
+  for (const mp of korok) {
+    const dd = { ...deps(), most: () => MOST - mp * 1000 };
+    const emp = ['31525', '18783', '24001', '24002'][i];
+    const r = await foglalasVegpont({ request: kerelem('/api/gy-foglalas', foglalasBody({ url: { emp }, body: { uuid: `mb_tiebreak00000000${i}` } })), env, deps: dd });
+    assert.equal((await r.json()).ok, true); i++;
+  }
+  return env;
+}
+const igazolasHivas = async (env, felul = {}) => {
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  return igazolasVegpont({ request: zapKerelem(be), env, deps: { ...deps(), fetch: salonicHamis({ szabad: {}, foglalasok: { [SID]: { startUnix: START } } }), ...felul } });
+};
+const igazoltSorok = async (env) => (await env.GY_DB.prepare('SELECT uuid, igazolt, salonic_id FROM gy_foglalas ORDER BY uuid').all()).results.map((x) => [x.uuid.slice(-1), x.igazolt, x.salonic_id ? 1 : 0]);
+const riasztasok = async (env, tipus) => (await env.GY_DB.prepare('SELECT adat FROM gy_riasztas WHERE tipus = ?1 ORDER BY id').bind(tipus).all()).results.map((x) => x.adat);
+
+test('UJ-86 tie-break: a >48 oras "szellem" jelolt kimarad (10-28 eset: szellem + friss) -> a friss igazolodik, a szellem valtozatlan, naplo kizart48=1', async () => {
+  const env = await jeloltekKorokkel([5 * 86400, 120]);
+  const r = await igazolasHivas(env);
+  assert.deepEqual([r.status, (await r.json()).igazolt], [200, true]);
+  assert.deepEqual(await igazoltSorok(env), [['0', 0, 0], ['1', 1, 1]]);
+  assert.deepEqual(await riasztasok(env, 'igazolas_jelolt_szures'), ['kizart48=1;friss15=0']);
+  assert.deepEqual(await riasztasok(env, 'igazolas_tobb_par'), []);
+});
+
+test('UJ-86 tie-break: 3 jelolt (10-29 eset): a >48 oras kizarva, a 2 maradek kozul a 15 percen belul letrehozott nyer, ha a masik >= 15 perccel regebbi', async () => {
+  const env = await jeloltekKorokkel([60 * 3600, 3 * 3600, 120]);
+  const r = await igazolasHivas(env);
+  assert.deepEqual([r.status, (await r.json()).igazolt], [200, true]);
+  assert.deepEqual(await igazoltSorok(env), [['0', 0, 0], ['1', 0, 0], ['2', 1, 1]]);
+  assert.deepEqual(await riasztasok(env, 'igazolas_jelolt_szures'), ['kizart48=1;friss15=1']);
+});
+
+test('UJ-86 tie-break: 10-15 eset (2 jelolt egymas utan, nincs kuloniteni valo) -> 409 marad; a naplo kizart48=0;friss15=0; ugyanabban a pillanatban letrehozott jeloltek -> 409', async () => {
+  for (const korok of [[600, 540], [100, 100]]) {
+    const env = await jeloltekKorokkel(korok);
+    const r = await igazolasHivas(env);
+    assert.deepEqual([r.status, (await r.json()).okkod], [409, 'tobb_azonos_idopont_es_hely'], JSON.stringify(korok));
+    assert.deepEqual(await igazoltSorok(env), [['0', 0, 0], ['1', 0, 0]]);
+    assert.deepEqual(await riasztasok(env, 'igazolas_tobb_par'), ['db=2;tobb_azonos_idopont_es_hely;oldal_emp=0;kizart48=0;friss15=0']);
+  }
+});
+
+test('UJ-86 hatarertekek: pont 48 ora = jelolt, 48 ora + 1 mp = kizart (nincs_motoros_jelolt); pont 15 perc / pont 15 perc kulonbseg = nyer, 14:59 kulonbseg / 15:01 kor = 409', async () => {
+  // 48 ora: egyetlen jelolt
+  const e1 = await jeloltekKorokkel([48 * 3600]); const r1 = await igazolasHivas(e1);
+  assert.deepEqual([r1.status, (await r1.json()).igazolt], [200, true]);
+  const e2 = await jeloltekKorokkel([48 * 3600 + 1]); const r2 = await igazolasHivas(e2); const j2 = await r2.json();
+  assert.deepEqual([r2.status, j2.nincs_par, j2.okkod], [200, true, 'nincs_motoros_jelolt']); assert.deepEqual(await igazoltSorok(e2), [['0', 0, 0]]);
+  // 15 perc: a friss pont 15 perccel korabban, a masik pont 15 perccel regebbi NALA -> nyer
+  const e3 = await jeloltekKorokkel([1800, 900]); const r3 = await igazolasHivas(e3);
+  assert.deepEqual([r3.status, (await r3.json()).igazolt], [200, true]); assert.deepEqual(await igazoltSorok(e3), [['0', 0, 0], ['1', 1, 1]]);
+  // 14:59 kulonbseg -> 409
+  const e4 = await jeloltekKorokkel([1799, 900]); assert.equal((await igazolasHivas(e4)).status, 409);
+  // a legfrissebb 15:01-gyel korabban jott letre -> 409
+  const e5 = await jeloltekKorokkel([2000, 901]); assert.equal((await igazolasHivas(e5)).status, 409);
+});
