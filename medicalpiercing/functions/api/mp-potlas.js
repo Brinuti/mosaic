@@ -1,4 +1,4 @@
-// POST /api/mp-potlas: egyszeri, kulcs-listas potlas az elo All akcion (DECISION #253; lib/meres/potlas.js). Titkos fejlec: x-mp-kiigazitas.
+// POST /api/mp-potlas: egyszeri, kulcs-listas potlas a NORMAL ARNYEK-lancba (igazoltJeloles + lanc.js feltoltes; az elo All akciora SOHA; DECISION #256; lib/meres/potlas.js). Titkos fejlec: x-mp-kiigazitas.
 import { potlasVegpont } from '../../lib/meres/potlas.js';
 
 export async function onRequest(context) {
