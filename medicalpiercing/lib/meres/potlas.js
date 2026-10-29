@@ -1,14 +1,14 @@
-// DECISION #253 (Feri "mehet", 10-29; 01-MERES 6492062796 3. pont): EGYSZERI, kulcs-listas potlas az ELO "All - Idopontfoglalas" (7468541217) akcion azokra az igazolatlanul maradt
-// foglalasokra, amelyek Salonic-levele a Zapier compute-limit kiesese miatt keson ert be (a sor mar 'nem_igazolt', ezert az igazolasErkezes (lanc.js) nem keresi). KULON MODUL: a vedett lanc.js / igazolas.js /
-// google-ads.js valtozatlan; a google-elo.js-bol csak a meglevo oauth / konverzio-epito fuggvenyeket hasznalja. Ez NEM a sweep (eloPotlas) es nem kapcsolja be az UJ-63-at (MP_GADS_ELO ettol fuggetlen).
-// POST /api/mp-potlas, fejlec x-mp-kiigazitas (ugyanaz a titok, mint a mp-kiigazitas). Torzs: { kulcsok: [max 3 foglalasi kulcs], mod: "dry" (alap, validateOnly) | "eles" }.
-//   - dry : semmit nem ir az mp_foglalas / mp_salonic_igazolas tablakba; a Google csak ELLENORZI a feltoltest (validateOnly).
-//   - eles: csak ha elesKuldesE (MP_GADS_MOD=eles + eles host) ES a kozvetlen Google API hitelesitese megvan ES nincs vesz-kikapcsolo: igazoltra allitja a sort (mint lanc.js igazoltJeloles) es valodi feltoltest kuld.
-// Soronkent vedelmek: eles kornyezet, nem divat-ful, van Google-kattintas, hirdetesi hozzajarulas, a kattintas a Google ablakan belul, pontosan EGY Salonic-level (kezdes +0..59 s, munkatars egyezik, meg nincs hozzarendelve),
-// meg nincs sikeres feltoltes az akcion (mp_feltoltes_elo). A valasz nem tartalmaz kattintasazonositot / vendegadatot.
-import { MP_GADS, googleIdo, kitakar, maszk, elesKuldesE, kikapcsolvaE, ELES_HOST } from './google-ads.js';
-import { ELO_AKCIO, eloKonverzio, eloAblakNap, valaszErtekel, accessToken, apiVan } from './google-elo.js';
-import { semaBiztos } from './lanc.js';
+// DECISION #253 / #256 (01-MERES 6505041150): EGYSZERI, kulcs-listas potlas a NORMAL lancba azokra az igazolatlanul maradt foglalasokra, amelyek Salonic-levele a Zapier compute-limit kiesese miatt
+// keson ert be (a sor mar 'nem_igazolt', ezert az igazolasErkezes (lanc.js) nem keresi): igazoltra allitja a sort (a lanc.js igazoltJeloles ket UPDATE-jevel azonosan), majd a MEGLEVO ARNYEK-feltoltest futtatja
+// (lanc.js feltoltes -> google-ads.js akciokFoglalashoz: 7834926162 Foglalas + 7834926165/…68 uj/visszatero). AZ ELO "All - Idopontfoglalas" (7468541217) AKCIORA NEM TOLT: a bongeszos All-cimke nem visz orderId-t,
+// ezert egy szerveres feltoltes nem dedupolna (6504086965). KULON MODUL, a vedett lanc.js / igazolas.js / google-ads.js valtozatlan (csak a mar exportalt fuggvenyeket hivja).
+// POST /api/mp-potlas, fejlec x-mp-kiigazitas (ugyanaz a titok, mint a mp-kiigazitas). Torzs: { kulcsok: [max 3 foglalasi kulcs], mod: "dry" (alap) | "eles" }.
+//   - dry : SEMMIT nem ir az mp_foglalas / mp_salonic_igazolas tablakba; a normal lanc ellenorzo (validate / dryrun) modjat futtatja (MP_GADS_MOD felulirva: sosem eles), naplo: mp_feltoltes (mod validate / dryrun).
+//   - eles: csak ha elesKuldesE (MP_GADS_MOD=eles + eles host) ES van szallito (kozvetlen API vagy Zapier-webhook) ES nincs vesz-kikapcsolo: igazoltra allitja a sort, es eles ARNYEK-feltoltest kuld (az mar elkuldott akciot nem kuldi ujra).
+// Soronkent: eles kornyezet, nem divat-ful, van Google-kattintas, hirdetesi hozzajarulas, PONTOSAN EGY hozzarendeletlen Salonic-level (kezdes +0..59 s, munkatars egyezik). A 14 napos kattintas-kaput (DECISION #245) a
+// konverzio() maga alkalmazza (kihagyva). A valasz kattintasazonositot / vendegadatot / nyers Google-valaszt NEM tartalmaz.
+import { kikapcsolvaE, elesKuldesE, szallitoValaszt, ELES_HOST } from './google-ads.js';
+import { semaBiztos, feltoltes } from './lanc.js';
 
 const MAX_KULCS = 3;
 const KULCS_RE = /^\d+\|\d+\|\d+$/;
@@ -28,11 +28,8 @@ async function titok(db, env, kapott, eles) {
   return { van: true, jo: !!kapott && egyenlo(await sha256hex(kapott), h) };
 }
 
-const SEMA_ELO = `CREATE TABLE IF NOT EXISTS mp_feltoltes_elo (
-    kulcs TEXT PRIMARY KEY, mod TEXT NOT NULL, allapot TEXT NOT NULL, http_status INTEGER, kod TEXT, kattintas_maszk TEXT, probalkozas INTEGER NOT NULL DEFAULT 0, ido INTEGER NOT NULL)`;
-
 /** Egy kulcs vizsgalata (csak olvasas). -> { ok: true, sor, level } | { ok: false, ok_kod } */
-export async function ellenorzes(db, kulcs, env, most) {
+export async function ellenorzes(db, kulcs) {
   const sor = await db.prepare('SELECT * FROM mp_foglalas WHERE kulcs = ?').bind(kulcs).first();
   if (!sor) return { ok: false, ok_kod: 'nincs_sor' };
   if (sor.kornyezet !== 'eles') return { ok: false, ok_kod: 'nem_eles' };
@@ -45,30 +42,10 @@ export async function ellenorzes(db, kulcs, env, most) {
   const jo = lev.filter((l) => { const ids = String(l.employee_ids || '').split(',').filter(Boolean); return !ids.length || ids.includes(emp); });
   if (jo.length === 0) return { ok: false, ok_kod: 'nincs_salonic_level' };
   if (jo.length > 1) return { ok: false, ok_kod: 'tobb_salonic_level' };
-  const level = jo[0];
-  const foglalasIdo = Number(sor.igazolas === 'igazolt' && sor.foglalas_ido ? sor.foglalas_ido : level.erkezett);
-  const kattIdo = Number(sor.kattintas_ido);
-  if (Number.isFinite(kattIdo) && kattIdo > 0 && foglalasIdo - kattIdo > eloAblakNap(env) * 86400) return { ok: false, ok_kod: 'kattintas_ablakon_kivul' };
-  const volt = await db.prepare("SELECT allapot FROM mp_feltoltes_elo WHERE kulcs = ? AND allapot IN ('elkuldve', 'mar_bent')").bind(kulcs).first();
-  if (volt) return { ok: false, ok_kod: 'mar_felt_oltve' };
-  return { ok: true, sor, level, foglalasIdo };
+  return { ok: true, sor, level: jo[0] };
 }
 
-async function feltoltEgy({ db, env, sor, foglalasIdo, eles, fetchImpl, most, token }) {
-  const f = { kulcs: sor.kulcs, letrehozva: foglalasIdo, ertek: sor.ertek, kattintas: { tipus: sor.kattintas_tipus, ertek: sor.kattintas_ertek } };
-  const k = eloKonverzio(f); if (!k) return { allapot: 'hiba', kod: 'nincs_konverzio' };
-  let allapot = 'hiba', http = null, kod = null;
-  try {
-    const fejlec = { 'content-type': 'application/json', authorization: 'Bearer ' + token, 'developer-token': env.GOOGLE_ADS_DEVELOPER_TOKEN };
-    if (env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) fejlec['login-customer-id'] = String(env.GOOGLE_ADS_LOGIN_CUSTOMER_ID).replace(/\D/g, '');
-    const r = await fetchImpl(`https://googleads.googleapis.com/${env.MP_GADS_API_VERZIO || MP_GADS.apiVerzio}/customers/${MP_GADS.customerId}:uploadClickConversions`, { method: 'POST', headers: fejlec, body: JSON.stringify({ conversions: [k], partialFailure: true, validateOnly: !eles }) });
-    http = r.status; const e = valaszErtekel(r.status, kitakar(await r.text(), [sor.kattintas_ertek]), { validate: !eles }); allapot = e.allapot; kod = e.kod;
-  } catch (err) { kod = String(err && err.message || err).slice(0, 80); }
-  await db.prepare(`INSERT INTO mp_feltoltes_elo (kulcs, mod, allapot, http_status, kod, kattintas_maszk, probalkozas, ido) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1, ?7)
-    ON CONFLICT (kulcs) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, http_status = excluded.http_status, kod = excluded.kod, kattintas_maszk = excluded.kattintas_maszk, probalkozas = mp_feltoltes_elo.probalkozas + 1, ido = excluded.ido`)
-    .bind(sor.kulcs, eles ? 'eles' : 'dry', allapot, http, kod, await maszk(sor.kattintas_ertek), most).run();
-  return { allapot, kod, http_status: http };
-}
+const tisztaNaplo = (naplo) => (naplo || []).map((n) => ({ akcio: n.akcioId, allapot: n.allapot, mod: n.mod, http_status: n.http_status ?? null }));
 
 export async function potlasVegpont({ request, env = {} }, { fetchImpl = fetch, most = Math.floor(Date.now() / 1000) } = {}) {
   const db = env.MP_MERES_DB;
@@ -85,23 +62,30 @@ export async function potlasVegpont({ request, env = {} }, { fetchImpl = fetch, 
   const kert = String(b.mod || 'dry').toLowerCase();
   if (kert !== 'dry' && kert !== 'eles') return json({ ok: false, hiba: 'rossz_mod' }, 400);
   if (kikapcsolvaE(env)) return json({ ok: false, hiba: 'vesz_kikapcsolva' }, 409);
-  if (!apiVan(env)) return json({ ok: false, hiba: 'nincs_google_hitelesites' }, 409);
+  if (!szallitoValaszt(env)) return json({ ok: false, hiba: 'nincs_szallito' }, 409);
   const eles = kert === 'eles';
   if (eles && !elesKuldesE(env, host)) return json({ ok: false, hiba: 'eles_nem_engedelyezett', megjegyzes: 'MP_GADS_MOD=eles es az eles host kell' }, 409);
-  await db.prepare(SEMA_ELO).run();
-  const eredmenyek = {}; let token = null;
+  // dry: a normal lanc sosem kuldhet elesben (az MP_GADS_MOD felulirasa); eles: valtozatlan env
+  const futtatoEnv = eles ? env : { ...env, MP_GADS_MOD: 'validate' };
+  const eredmenyek = {};
   for (const kulcs of kulcsok) {
-    const e = await ellenorzes(db, kulcs, env, most);
+    const e = await ellenorzes(db, kulcs);
     if (!e.ok) { eredmenyek[kulcs] = { allapot: 'kihagyva', ok: e.ok_kod }; continue; }
-    try { token = token || await accessToken(env, fetchImpl); } catch (err) { eredmenyek[kulcs] = { allapot: 'hiba', kod: 'oauth' }; continue; }
-    if (eles && e.sor.igazolas !== 'igazolt') { // mint lanc.js igazoltJeloles: a sor igazolt + a level hozzarendelese
-      await db.batch([
-        db.prepare('UPDATE mp_foglalas SET igazolas = ?, igazolas_id = ?, foglalas_ido = ?, uj_vendeg_igazolt = ? WHERE kulcs = ?').bind('igazolt', e.level.booking_id, e.level.erkezett, e.level.uj_paciens === 1 ? 1 : null, kulcs),
-        db.prepare('UPDATE mp_salonic_igazolas SET kulcs = ? WHERE booking_id = ?').bind(kulcs, e.level.booking_id),
-      ]);
+    let sor = { ...e.sor };
+    const mezok = { igazolas: 'igazolt', igazolas_id: e.level.booking_id, foglalas_ido: e.level.erkezett, uj_vendeg_igazolt: e.level.uj_paciens === 1 ? 1 : null };
+    const jelolve = sor.igazolas !== 'igazolt';
+    if (jelolve) {
+      if (eles) { // mint lanc.js igazoltJeloles: a sor igazolt + a level hozzarendelese
+        await db.batch([
+          db.prepare('UPDATE mp_foglalas SET igazolas = ?, igazolas_id = ?, foglalas_ido = ?, uj_vendeg_igazolt = ? WHERE kulcs = ?').bind(mezok.igazolas, mezok.igazolas_id, mezok.foglalas_ido, mezok.uj_vendeg_igazolt, kulcs),
+          db.prepare('UPDATE mp_salonic_igazolas SET kulcs = ? WHERE booking_id = ?').bind(kulcs, e.level.booking_id),
+        ]);
+      }
+      sor = { ...sor, ...mezok }; // dry: csak a memoriaban
     }
-    const r = await feltoltEgy({ db, env, sor: e.sor, foglalasIdo: e.foglalasIdo, eles, fetchImpl, most, token });
-    eredmenyek[kulcs] = { ...r, igazolt_jelolve: eles && e.sor.igazolas !== 'igazolt' };
+    let naplo;
+    try { naplo = await feltoltes(db, sor, futtatoEnv, host, { fetchImpl, most }); } catch (err) { eredmenyek[kulcs] = { allapot: 'hiba', ok: 'feltoltes_kivetel', igazolt_jelolve: eles && jelolve }; continue; }
+    eredmenyek[kulcs] = { allapot: naplo.length ? 'feldolgozva' : 'nincs_uj_feltoltes', feltoltesek: tisztaNaplo(naplo), igazolt_jelolve: eles && jelolve };
   }
-  return json({ ok: true, mod: kert, akcio: ELO_AKCIO, eredmenyek });
+  return json({ ok: true, mod: kert, lanc: 'arnyek', eredmenyek });
 }
