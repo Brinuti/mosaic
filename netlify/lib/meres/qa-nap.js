@@ -405,6 +405,25 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     }
     return t;
   }, hibak);
+  // UJ-11 (#167 6321101806): Google ARNYEK feltoltes valasz-naplo, uzletagonkent: elkuldve / a Google elfogadta / DENIED (kuldeskori ad_user_data) / reszleges hiba / nincs visszajelzes (a Zap-visszahivas, google-valasz.js).
+  // Az M0-5 kapu "0 elveszett feltoltes" bizonyitekanak alapja. Csak darabszam, PII nelkul; a lampat nem erinti. { sema_hianyzik: true }: a ket uj oszlop meg nincs a D1-ben (a deploy utan az elso meres-hivas hozza letre).
+  const googleValasz = await vedett('google_valasz', async () => {
+    if (!kOszl.size) return null;
+    if (!kOszl.has('google_reszleges_hiba') || !kOszl.has('ad_user_data')) return { sema_hianyzik: true };
+    const sorok = await mind(db, `SELECT uzletag, allapot, ad_user_data AS adu, google_reszleges_hiba AS hiba FROM meres_kuldes WHERE platform = 'google' AND esemeny_tipus = 'alap' ${kOszl.has('forras') ? "AND forras <> 'google_proba'" : ''} AND letrehozva >= ?1 AND letrehozva < ?2`, from, to);
+    const uresG = () => ({ elkuldve: 0, google_elfogadta: 0, denied: 0, reszleges_hiba: 0, nincs_visszajelzes: 0 });
+    const g = { uzletagok: {}, osszes: uresG() };
+    for (const s of sorok) {
+      if (s.allapot !== 'elkuldve') continue;
+      const u = g.uzletagok[UZLETAGAK.includes(s.uzletag) ? s.uzletag : 'ismeretlen'] || (g.uzletagok[UZLETAGAK.includes(s.uzletag) ? s.uzletag : 'ismeretlen'] = uresG());
+      for (const c of [u, g.osszes]) {
+        c.elkuldve++;
+        if (s.adu === 'DENIED') c.denied++;
+        if (s.hiba === null || s.hiba === undefined) c.nincs_visszajelzes++; else if (s.hiba === '') c.google_elfogadta++; else c.reszleges_hiba++;
+      }
+    }
+    return g;
+  }, hibak);
   if (!ismeretlenHasznalt) delete uz.ismeretlen;
   if (hibak.length && LAMPA_RANG[osszLampa] < LAMPA_RANG.sarga) osszLampa = 'sarga'; // hiányos szekcio nem lehet "zold"
   return {
@@ -415,6 +434,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     szekcio_hibak: hibak,
     proba_szabaly: PROBA_SZABALY, proba_megadva: [...probaSet],
     t2, // DECISION #213: a T2-szamlalo napi erteke (null: hianyzo sema / szekcio-hiba)
+    google_valasz: googleValasz, // UJ-11: Google ARNYEK valasz-naplo darabszamok uzletagonkent ({ sema_hianyzik: true } az uj oszlopok nelkul; null: szekcio-hiba)
     osszes,
     uzletagak: uz,
   };

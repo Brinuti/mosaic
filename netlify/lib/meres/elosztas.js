@@ -21,7 +21,8 @@ const SEMA = [
 ];
 const kesz = new WeakSet();
 // Salonic-direct safety net (DECISION #127 (b)): ADDITIV oszlopok a naplora (a meglevo sorok forras = 'motor'); salonic_uuid: egy Salonic-foglalasbol egy esemenytipus egy platformra - az mb_ es az sd_ identitas kozott is
-const KULDES_BOVITES = [['forras', "TEXT NOT NULL DEFAULT 'motor'"], ['attr_minoseg', 'TEXT'], ['attr_jelek', 'TEXT'], ['salonic_uuid', 'TEXT'], ['ertek_minoseg', 'TEXT']];
+const KULDES_BOVITES = [['forras', "TEXT NOT NULL DEFAULT 'motor'"], ['attr_minoseg', 'TEXT'], ['attr_jelek', 'TEXT'], ['salonic_uuid', 'TEXT'], ['ertek_minoseg', 'TEXT'],
+  ['ad_user_data', 'TEXT'], ['google_reszleges_hiba', 'TEXT']]; // UJ-11 (#167 6321101806): a Google ARNYEK feltoltes KULDESKORI ad_user_data-ja (GRANTED / DENIED) es a Zap visszajelzese (NULL = nincs visszajelzes, '' = a Google elfogadta, kod = reszleges hiba / ZAP_HIBA; google-valasz.js)
 export async function meresSema(db) {
   if (kesz.has(db)) return;
   await db.batch(SEMA.map((s) => db.prepare(s)));
@@ -184,6 +185,7 @@ export async function elosztas(db, fk, deps = {}) {
           if (foglal.duplikalt) { sor.platformok[platform] = { allapot: foglal.allapot, duplikalt: true }; continue; }
           const eredmeny = await (deps.kuldo || kuldes)(kerelem, env, deps.fetchImpl || fetch);
           await ir(foglal.id, { ...naplo, allapot: eredmeny.allapot, http_status: eredmeny.http_status, platform_valasz: eredmeny.valasz, kuldo: eredmeny.kuldo, indok: eredmeny.allapot === 'nincs_hitelesites' ? 'a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)' : null });
+          if (platform === 'google') { const adu = kerelem.body && kerelem.body.ad_user_data; try { await db.prepare('UPDATE meres_kuldes SET ad_user_data = ?2 WHERE id = ?1').bind(foglal.id, adu === 'GRANTED' || adu === 'DENIED' ? adu : null).run(); } catch (e) { /* a naplo-kiegeszites hibaja nem akaszthatja meg a kuldest */ } } // UJ-11: a kuldeskori ad_user_data a sorban (a Zap-visszajelzes nelkul is latszik a QA-ban)
           sor.platformok[platform] = { id: foglal.id, allapot: eredmeny.allapot, http_status: eredmeny.http_status };
           continue;
         }
