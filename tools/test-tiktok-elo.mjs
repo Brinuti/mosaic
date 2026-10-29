@@ -192,3 +192,16 @@ test('E) vedett fajlok valtozatlanok: a modul csak importalja ( nem modositja ) 
   const src = fs.readFileSync(path.join(GYOKER, 'netlify/lib/meres/tiktok-elo.js'), 'utf8');
   assert.equal(/eval\(|new Function/.test(src), false);
 });
+
+test('B) elonezeti vedohalo: ELO_CSAK_TESZT=1 mellett teszt-kod nelkul NINCS kuldes (az elonezet nem kuldhet az ELO pixelre); teszt-koddal megy; a wrangler.toml-ban az ELO_BE csak az elonezeten van, az elesen nincs', async () => {
+  const d = d1(); const f = hamisFetch(); await beallit(d);
+  const r = await tiktokEloKuld(d, FK(), { env: ENV({ ELO_CSAK_TESZT: '1' }), fetchImpl: f, now: () => NOW });
+  assert.equal(r.allapot, 'kihagyva'); assert.match(r.indok, /TIKTOK_ELO_TESZT_KOD/); assert.equal(f.hivasok.length, 0);
+  const r2 = await tiktokEloKuld(d, FK(), { env: ENV({ ELO_CSAK_TESZT: '1', TIKTOK_ELO_TESZT_KOD: 'TEST12345' }), fetchImpl: f, now: () => NOW });
+  assert.equal(r2.allapot, 'elkuldve'); assert.equal(f.hivasok[0].body.test_event_code, 'TEST12345');
+  const w = fs.readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8');
+  const [eles, elonezet] = [w.slice(0, w.indexOf('[env.preview.vars]')), w.slice(w.indexOf('[env.preview.vars]'))];
+  assert.equal(/^TIKTOK_ELO_BE\s*=/m.test(eles), false, 'az eles [vars]-ban nincs TIKTOK_ELO_BE'); assert.equal(/^META_ELO_BE\s*=/m.test(eles), false);
+  assert.ok(/^ELO_CSAK_TESZT\s*=\s*"1"/m.test(elonezet)); assert.ok(/^TIKTOK_ELO_BE\s*=\s*"headspa"/m.test(elonezet)); assert.ok(/^META_ELO_BE\s*=\s*"headspa,pmu"/m.test(elonezet));
+  assert.equal(/^ELO_CSAK_TESZT\s*=/m.test(eles), false, 'az eles kornyezetben nincs vedohalo-kapcsolo (ott a BE + token a valodi bekapcsolas)');
+});

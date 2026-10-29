@@ -31,7 +31,7 @@ export async function meresSema(db) {
 }
 const sec = (now) => Math.floor(now / 1000);
 // Ujraprobalhato sor: hiba, tiltas (a beallitas kozben valtozhat), halasztas, a veszkapcsolo miatt kihagyott; a modell szerint kihagyott / lemondott / elkuldott sor VEGLEGES.
-const ujraprobalhato = (sor, t) => ['hiba', 'tiltva', 'halasztva', 'nyitott'].includes(sor.allapot) || (sor.allapot === 'kihagyva' && /^veszkapcsolo/.test(sor.indok || '')) || (sor.allapot === 'folyamatban' && t - sor.frissitve > ELAKADAS_MP);
+const ujraprobalhato = (sor, t) => ['hiba', 'tiltva', 'halasztva', 'nyitott'].includes(sor.allapot) || (sor.allapot === 'kihagyva' && /^veszkapcsolo/.test(sor.indok || '')) || (sor.allapot === 'folyamatban' && sor.probalkozas < MAX_PROBA && t - sor.frissitve > ELAKADAS_MP); // DECISION #250 (b): a folyamatban sor ujraprobaja plafonos (MAX_PROBA), utana 'megszakadt' (lasd lent)
 const MAX_PROBA = 3;
 const ELAKADAS_MP = 120;
 const MEGORZES_NAP = 30; // az erkezesi sor (IP, user agent) 30 nap utan torlodik
@@ -129,9 +129,14 @@ export async function elosztas(db, fk, deps = {}) {
   const osszefoglalo = { allapot: 'kesz', source_id: fk.source_entity_id, erkezesi_adat: !!erkRow, esemenyek: [] };
 
   // minden (esemeny, platform) cella mar VEGLEGES (elkuldve / modell szerint kihagyva / lemondva): nincs teendo, elo lekeres sem kell (az ismetelt hivas olcso es nem kuld)
-  const { results: meglevok } = await db.prepare('SELECT esemeny_id, platform, allapot, indok, frissitve FROM meres_kuldes WHERE source_id = ?1').bind(fk.source_entity_id).all();
+  // DECISION #250 (b): a MAX_PROBA-szor megkezdett, de be nem fejezett (megszakadt hivas) 'folyamatban' sor ELAKADAS_MP utan 'megszakadt' - nem marad vegtelen ideig folyamatban (a qa-nap folyamatban_regi / megszakadt szamlaloja latja). Utolag nem kuldheto ujra (a hash-elt vendegadat csak a kimeno kerelemben van).
+  await db.prepare("UPDATE meres_kuldes SET allapot = 'megszakadt', indok = ?2, frissitve = ?3 WHERE source_id = ?1 AND allapot = 'folyamatban' AND probalkozas >= ?4 AND frissitve <= ?5").bind(fk.source_entity_id, `megszakadt: a kuldes ${MAX_PROBA} probalkozas utan sem fejezodott be`, t, MAX_PROBA, t - ELAKADAS_MP).run();
+  const { results: meglevok } = await db.prepare('SELECT esemeny_id, platform, allapot, indok, frissitve, probalkozas FROM meres_kuldes WHERE source_id = ?1').bind(fk.source_entity_id).all();
+  // DECISION #250 (c): friss (ELAKADAS_MP-n belul) 'folyamatban' cella = egy MASIK hivas meg dolgozik / megszakadt; a hivonak (Zap) ujraprobal_mp: mikor erdemes ujra probalni (a hivo ujraprobaja ne essen az ablak ala)
+  const frissFolyamatban = (meglevok || []).filter((x) => x.allapot === 'folyamatban' && t - x.frissitve <= ELAKADAS_MP);
+  const folyamatbanVarMp = frissFolyamatban.length ? Math.max(...frissFolyamatban.map((x) => ELAKADAS_MP - (t - x.frissitve) + 5)) : null;
   const teendo = lista.some((e) => PLATFORMOK.some((p) => { const m = (meglevok || []).find((x) => x.esemeny_id === e.esemeny_id && x.platform === p); if (e.nyitott && m && m.allapot === 'nyitott') return false; /* tovabbra is nyitott: nincs teendo */ return !m || ujraprobalhato(m, t); }));
-  if (!teendo) return { ...osszefoglalo, allapot: 'mar_kuldve', miert: 'minden esemeny / platform cella mar vegleges allapotu' };
+  if (!teendo) return { ...osszefoglalo, allapot: 'mar_kuldve', miert: 'minden esemeny / platform cella mar vegleges allapotu', ...(folyamatbanVarMp ? { ujraprobal_mp: folyamatbanVarMp } : {}) };
 
   // esemeny kuldese ELOTT elo allapot-ellenorzes (a levelek sorrendjetol fuggetlen: mindig az aktualis allapot)
   let elo = 'nincs_ellenorzes';
@@ -188,6 +193,7 @@ export async function elosztas(db, fk, deps = {}) {
     }
     osszefoglalo.esemenyek.push(sor);
   }
+  if (folyamatbanVarMp) osszefoglalo.ujraprobal_mp = Math.max(osszefoglalo.ujraprobal_mp || 0, folyamatbanVarMp);
   return osszefoglalo;
 }
 // DECISION #202 / 4. pont: nyers vendegadat SEHOVA (D1-naplo se): a kimeno kerelemben a hash megy, a NAPLOZOTT torzsben a hash-ertekek ("[hash]") es a nyers IP maszkoltak (a mezo megleten latszik, melyik adat ment ki).
