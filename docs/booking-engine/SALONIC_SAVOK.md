@@ -100,9 +100,11 @@ Módszer: a Salonic nyilvános foglalója (vendégként, böngészőből) és a 
 | Mosaic HeadSpa | 4 normál szolgáltatás | 4 | a 4 kuponos (ajándékkártyás) előbb kuponkódot kér, azt nem hasonlítottuk |
 | Mosaic Oxigén | 3 szolgáltatás „bárki" + dolgozónként | 10 / 12 | az „Akciós hajkamerás vizsgálat"-nál a motor nem kínál dolgozó-választást (bárki), a Salonic igen |
 | Gyógytornászom | 18 szolgáltatás–helyszín | 16 | 2 eltérés a Nyugati téren (lásd 6.2) |
-| **Mosaic PMU** | 7 szolgáltatás | **0** | **a Salonic időpontjainak kb. 48%-a (minden :15 / :45 kezdés) nem látszik, lásd 6.1** |
+| **Mosaic PMU** | 7 szolgáltatás | **0** | **javítva 2026-10-29: a :15 / :45 kezdések is látszanak, lásd 6.1** (korábban a Salonic időpontjainak kb. 48%-a nem látszott) |
 
-### 6.1 PMU: a negyedórás kezdések rejtve vannak
+### 6.1 PMU: a negyedórás kezdések rejtve voltak (javítva 2026-10-29)
+**Javítás:** Feri 2026-10-29-i döntése szerint („amit a Salonic kínál, pontosan azt lássuk”) a `foglalo-pmu.js` minden Salonic-kínált kezdést mutat, a :15 / :45-et is. Az alábbi a javítás előtti állapot leírása.
+
 A `assets/js/foglalo-pmu.js` 491–494. sora a negyedórás kezdést csak akkor mutatja, ha mellette nincs egész vagy fél óra (a motor a PMU-nál szándékosan ritkít). Mind a 7 szolgáltatásnál a Salonic-only időpontok 100%-a :15 / :45 kezdés (szolgáltatásonként 337–425 db a közös időszakban). Ez ugyanaz a ritkítás, amit a Mosaic motor `flow.js` `dayTimes()`-ából a #520 kivett; a PMU saját oldala külön fájl, ott nem változott. **Döntés Feritől kell** (a foglalási folyamatot érinti): ugyanazt akarjuk-e itt is, mint a többi motornál (minden Salonic-kínált kezdés látszik).
 
 ### 6.2 Gyógytornászom: a Salonic naptár-API nagy ablakoknál hiányos listát adhat
