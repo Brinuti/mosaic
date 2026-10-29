@@ -399,6 +399,7 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .pk-ikon img { width: 21px; height: 21px; object-fit: contain; }
 .pk-cim { min-width: 0; }
 .pk-cim b { display: block; font: 600 15px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-szem { display: inline-block; margin-left: 7px; padding: 1px 8px; border-radius: 99px; background: #f6e4de; color: #8c3a2f; font: 600 11px/1.5 'poppins-semibold', Poppins, Arial, sans-serif; font-style: normal; letter-spacing: .01em; vertical-align: 1px; white-space: nowrap; }
 .pk-cim small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #6b6c80; }
 .pk-ar { display: grid; justify-items: end; gap: 1px; white-space: nowrap; }
 .pk-ar s { font-size: 11.5px; color: #9a9aa8; }
@@ -834,7 +835,7 @@ export function nyit(ctx) {
     const ikon = ikonKod(s);
     const id = esc(s.serviceId);
     const fej = `<button class="pk-fej" data-nyit="${id}" aria-expanded="${nyitva}" aria-controls="pk-t-${id}"><span class="pk-ikon">${ikon ? `<img src="/assets/img/ikon/${ikon}.webp" alt="" width="26" height="26" decoding="async">` : ''}</span>`
-      + `<span class="pk-cim"><b>${esc(a.nev)}</b><small>${esc(a.rovid)}</small></span><span class="pk-ar">${e ? `<s>${ft(e)}</s>` : ''}<b>${ft(s.activePrice)}</b></span></button>`;
+      + `<span class="pk-cim"><b>${esc(a.nev)}${a.szemely ? `<em class="pk-szem">${esc(a.szemely)}</em>` : ''}</b><small>${esc(a.rovid)}</small></span><span class="pk-ar">${e ? `<s>${ft(e)}</s>` : ''}<b>${ft(s.activePrice)}</b></span></button>`;
     let test = '';
     if (a.foto) test += `<div class="pk-pont"><img src="/assets/img/uj-galeria-${a.foto}-2.webp" alt="A ${esc(a.nev.toLowerCase())} helye a fülön" width="300" height="300" loading="lazy" decoding="async"><div><b>Vendégeink általában ezeken érnek el javulást:</b><p>${esc(a.javulas)}</p></div></div>`;
     if (a.kedvezmeny) test += a.kedvezmeny;
@@ -880,8 +881,8 @@ export function nyit(ctx) {
       let rovid = d === 3 ? 'a harmadik csak 5000 Ft' : 'a második féláron', sorok = [];
       if (d === 2 && A.egy && p > A.egy) { sorok = [['1. piercing', ft(A.egy)], ['2. piercing', '+ ' + ft(p - A.egy)]]; rovid = `a 2. piercing csak ${ft(p - A.egy)}`; }
       if (d === 3 && A.egy && A.ketto > A.egy && p > A.ketto) { sorok = [['1. piercing', ft(A.egy)], ['2. piercing', '+ ' + ft(A.ketto - A.egy)], ['3. piercing', '+ ' + ft(p - A.ketto)]]; rovid = `a 3. piercing csak ${ft(p - A.ketto)}`; }
-      return { nev: `${d} piercing`, rovid, garancia: true, kedvezmeny: sorok.length ? kedvezmeny(sorok, p, d, A.egy) : '',
-        csomag: `<p>Bármelyik ${d === 3 ? 'három' : 'két'} piercinget választhatod; ha még nem tudod, melyiket, a szalonban segítünk.</p>` };
+      return { nev: `${d} piercing`, szemely: '1 személyre', rovid, garancia: true, kedvezmeny: sorok.length ? kedvezmeny(sorok, p, d, A.egy) : '',
+        csomag: `<p><b>Egy személyre szól:</b> mind a ${d === 3 ? 'három' : 'két'} piercinget ugyanaz a vendég kapja, a csomag nem osztható meg. Ketten jöttök? Nézd a „2 személynek” csomagokat lejjebb.</p><p>Bármelyik ${d === 3 ? 'három' : 'két'} piercinget választhatod; ha még nem tudod, melyiket, a szalonban segítünk.</p>` };
     }
     if ((m = /szem\S*ynek\s*[-–]\s*(\d)\s*db/i.exec(n))) {
       const d = +m[1], k = d / 2, fo = p / 2;
