@@ -262,7 +262,7 @@ for kod, t in TIPUSOK.items():
 
 # ---- 04  E2: igy telik majd a latogatasod (folyamat, biztonsag, ekszerek) -----------------------------------
 level('04-E2-igy-zajlik', 'Ha legalább 7 nap van az időpontig: kb. a hátralévő idő felénél', 'Minden foglaló',
- 'Így telik majd az a fél óra nálunk', 'Lépésről lépésre: mi történik, milyen ékszert kapsz, és miért vagy biztonságban.', f'''<h1>Így telik majd az a fél óra nálunk</h1>
+ 'Így telik majd a látogatásod nálunk', 'Lépésről lépésre: mi történik, milyen ékszert kapsz, és miért vagy biztonságban.', f'''<h1>Így telik majd a látogatásod nálunk</h1>
 <p>{opt(f'{m(BP["nev"])}, az első', 'Az első')} szúrás előtt a legtöbben ugyanazt szeretnék tudni: mi fog pontosan történni? Elmeséljük – az ajtótól az utolsó lépésig.</p>
 <h2>1. Leülünk beszélgetni</h2>
 <p>Minden egy rövid beszélgetéssel kezdődik: megkérdezzük, mi miatt érkeztél, milyen gyakran és mennyire zavarnak a panaszaid, és rákérdezünk a fontos előzményekre. Utána elmondjuk, hová kerül az ékszer, mire számíthatsz – és megválaszoljuk az összes kérdésedet. Semmi nem történik úgy, hogy ne tudnád előre.</p>

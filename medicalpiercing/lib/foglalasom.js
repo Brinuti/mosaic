@@ -5,6 +5,7 @@
 // /f/minta: bemutató oldal mintaadatokkal (adatbázis nélkül), hogy a dizájn foglalás nélkül is látható legyen.
 
 import { szabadIdopontok, modosit as salonicModosit, lemond as salonicLemond } from './salonic-modosit.js';
+import { latogatasHossza } from './mp-idotartam.js';
 
 const SITE = 'https://www.medicalpiercing.hu';
 const TELEFON = '+36 1 901 7444';
@@ -43,7 +44,8 @@ export function szolgNev(nyers) {
   return String(nyers || '').replace(/[\p{Extended_Pictographic}‍️]+/gu, '').replace(/\s*-?\s*\d[\d.\s]*\s?Ft\b.*$/i, '').replace(/\s{2,}/g, ' ').trim();
 }
 export const munkatarsNev = (m) => String(m || '').replace(/\s+-\s*/g, '-').trim();
-const latogatas = (nyers) => (/^[23] piercing\b|\b[2-6] db\b|szemelynek|\b1 1 db\b/.test(ekezetNelkul(nyers)) ? 'kb. 40–50 perc' : 'kb. 30–40 perc');
+// a vart idotartam a Salonic-szolgaltatas idejebol (lib/mp-idotartam.js; ugyanaz, mint a leveleken); ismeretlen szolgaltatasnal nincs sor
+const latogatas = latogatasHossza;
 const HU_DATUM = new Intl.DateTimeFormat('hu-HU', { timeZone: 'Europe/Budapest', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 /** epoch mp -> { datum: "2026. október 23., csütörtök", ido: "14:30" } (budapesti idő) */
 export function datumIdo(epoch) {
@@ -219,7 +221,7 @@ export function foglalasOldal(f, opc = {}) {
     ['Szolgáltatás', esc(nev)],
     munkatars ? ['Szakember', `<span class="szemely">${foto ? `<img src="${esc(foto)}" alt="" width="40" height="40">` : ''}<span>${esc(munkatars)}</span></span>`] : null,
     bp ? ['Helyszín', `${esc(BP_CIM)}`] : null,
-    ['Időtartam', esc(latogatas(f.szolgaltatas))],
+    latogatas(f.szolgaltatas) ? ['Időtartam', esc(latogatas(f.szolgaltatas))] : null,
   ].filter(Boolean).map(([c, e]) => `<div class="sor"><div class="c">${c}</div><div class="e">${e}</div></div>`).join('');
   const lehetModosit = opc.minta || (f.id && UUID_RE.test(f.id) && f.allapot === 'aktiv');
   const ottLeszek = mult ? '' : megerositve
