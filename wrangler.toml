@@ -66,13 +66,6 @@ binding = "KULCS_DB"
 database_name = "mosaic-foglalas-kulcs-elonezet"
 database_id = "628113fe-9793-450d-baad-fc77814995eb"
 
-# UJ-82 (01-MERES 10-27): CSAK OLVASASRA hasznalt kotes az ELES foglalas-kulcs DB-hez, KIZAROLAG az elonezeten, a /api/meres-elo-ujrajatszas-hoz (SELECT; netlify/lib/meres/elo-ujrajatszas.js).
-# Mas kod nem hasznalja; az eles szekcioban nincs. Rollback = ez a 4 sor torlese + deploy.
-[[env.preview.d1_databases]]
-binding = "KULCS_DB_OLV"
-database_name = "mosaic-foglalas-kulcs"
-database_id = "ea7b0edd-c89b-4515-a4b1-50ea25bb50cc"
-
 # Hirdeteshez illo hos-kep (netlify/lib/hirdetes-hos.js, 2026-10-17): a mosaic-szerver riport-adatbazisa, CSAK a hirdetes_hos tablat olvassa (SELECT),
 # csak a Mosaic fiok (fiok_id 560662246028147) sorait. A tablat a mosaic-szerver tolti oranként. Elonezeten ugyanaz (csak olvasas), hogy a PR-elonezeten tesztelheto legyen.
 [[d1_databases]]
