@@ -103,7 +103,7 @@ Módszer: a Salonic nyilvános foglalója (vendégként, böngészőből) és a 
 | **Mosaic PMU** | 7 szolgáltatás | **0** | **javítva 2026-10-29: a :15 / :45 kezdések is látszanak, lásd 6.1** (korábban a Salonic időpontjainak kb. 48%-a nem látszott) |
 
 ### 6.1 PMU: a negyedórás kezdések rejtve voltak (javítva 2026-10-29)
-**Javítás:** Feri 2026-10-29-i döntése szerint („amit a Salonic kínál, pontosan azt lássuk”) a `foglalo-pmu.js` minden Salonic-kínált kezdést mutat, a :15 / :45-et is. Az alábbi a javítás előtti állapot leírása.
+**Javítás:** Feri 2026-10-29-i döntése szerint („amit a Salonic kínál, pontosan azt lássuk”) a `foglalo-pmu.js` minden Salonic-kínált kezdést mutat, a :15 / :45-et is. **Mérés a javítás után (előnézet, 2026-10-29):** mind a 7 PMU-szolgáltatásnál a motor és a Salonic külső felülete azonos (471034 710/710, 471152 710/710, 471153 766/766, 471154 766/766, 471160 890/890, 481061 826/826, 481062 710/710 időpont; 0 hiányzó, 0 felesleges). Az alábbi a javítás előtti állapot leírása.
 
 A `assets/js/foglalo-pmu.js` 491–494. sora a negyedórás kezdést csak akkor mutatja, ha mellette nincs egész vagy fél óra (a motor a PMU-nál szándékosan ritkít). Mind a 7 szolgáltatásnál a Salonic-only időpontok 100%-a :15 / :45 kezdés (szolgáltatásonként 337–425 db a közös időszakban). Ez ugyanaz a ritkítás, amit a Mosaic motor `flow.js` `dayTimes()`-ából a #520 kivett; a PMU saját oldala külön fájl, ott nem változott. **Döntés Feritől kell** (a foglalási folyamatot érinti): ugyanazt akarjuk-e itt is, mint a többi motornál (minden Salonic-kínált kezdés látszik).
 
