@@ -19,7 +19,7 @@ async function motor(sid) {
   for (let ho = 0; ho < HONAP; ho++) {
     const m = (await p.evaluate(() => document.body.innerText)).match(/(20\d\d)\.\s*([A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű]+)/); if (!m) break;
     const ev = +m[1], hon = HON[ek(m[2])];
-    for (const d of await p.evaluate(() => [...document.querySelectorAll('.nnap:not([disabled])')].map((e) => e.textContent.trim()))) {
+    for (const d of await p.evaluate(() => [...document.querySelectorAll('.nnap:not([disabled])')].map((e) => e.textContent.trim()).filter(Boolean))) { // az ures kitoltocellak nem napok (korabban hamis "-00" kulcsot adtak)
       const k = `${ev}-${hon}-${d}`; if (latott.has(k)) continue; latott.add(k);
       await p.locator('.nnap:not([disabled])', { hasText: new RegExp('^' + d + '$') }).first().click({ force: true }); await p.waitForTimeout(250);
       for (const t of await p.evaluate(() => [...document.querySelectorAll('.idogomb')].map((e) => e.textContent.trim()))) ki.add(`${ev}-${String(hon).padStart(2, '0')}-${String(d).padStart(2, '0')} ${t}`);
