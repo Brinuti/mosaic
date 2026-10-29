@@ -32,14 +32,14 @@ export function eloKonverzio(f) {
   return k;
 }
 
-async function accessToken(env, fetchImpl) {
+export async function accessToken(env, fetchImpl) {
   const r = await fetchImpl('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'refresh_token', client_id: env.GOOGLE_ADS_CLIENT_ID, client_secret: env.GOOGLE_ADS_CLIENT_SECRET, refresh_token: env.GOOGLE_ADS_REFRESH_TOKEN }).toString() });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.access_token) throw new Error('oauth: HTTP ' + r.status);
   return j.access_token;
 }
-const apiVan = (env) => !!(env.GOOGLE_ADS_DEVELOPER_TOKEN && env.GOOGLE_ADS_CLIENT_ID && env.GOOGLE_ADS_CLIENT_SECRET && env.GOOGLE_ADS_REFRESH_TOKEN);
+export const apiVan = (env) => !!(env.GOOGLE_ADS_DEVELOPER_TOKEN && env.GOOGLE_ADS_CLIENT_ID && env.GOOGLE_ADS_CLIENT_SECRET && env.GOOGLE_ADS_REFRESH_TOKEN);
 
 /** Az API valasza -> { allapot: 'elfogadva'|'elkuldve'|'mar_bent'|'hiba', kod }. A partialFailure hibakodjai kozul az "mar bent van" sikernek szamit. */
 export function valaszErtekel(status, szoveg, { validate }) {
