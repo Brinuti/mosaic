@@ -167,6 +167,13 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
 .idok { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; margin-top: 10px; }
 .ido { border: 1px solid #d7aba8; background: #fff; border-radius: 10px; padding: 10px 0; font: 600 15px/1 'poppins-semibold', Poppins, Arial, sans-serif; color: #454659; cursor: pointer; }
 .ido:hover, .ido:focus-visible { background: #d7aba8; color: #fff; outline: none; }
+/* alacsony asztali kepernyon (pl. 1366x768-as laptop) tomorebb naptar, hogy az idopontok is beferjenek (2026-10-29, Feri) */
+@media (min-width: 701px) and (max-height: 820px) {
+  .ablak[data-lepes="ido"] .nap { height: 34px; }
+  .ablak[data-lepes="ido"] .racs .fejnap { padding: 2px 0; }
+  .ablak[data-lepes="ido"] .alcim { margin: 12px 0 6px; }
+  .ablak[data-lepes="ido"] .honap-fej { margin: 0 0 4px; }
+}
 .gomb { display: inline-block; border: 0; border-radius: 99px; background: #d7aba8; color: #fff; padding: 12px 22px; font: 600 15px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; text-decoration: none; }
 .gomb.masodlagos { background: #f6efee; color: #454659; }
 .uzenet { padding: 18px 4px; line-height: 1.5; }
@@ -978,6 +985,21 @@ export function nyit(ctx) {
         : munkatarsak.length === 1 ? `<div class="alcim">Szakember</div><div class="chipek"><span class="chip valasztott egy" title="${esc(munkatarsak[0][1])}" aria-label="Szakember: ${esc(munkatarsak[0][1])}">${szakemberJel(munkatarsak[0][1])}</span></div>` : '')
       + `<div class="honap-fej"><button class="gomb-ikon" data-honap="${hi > 0 ? honapok[hi - 1] : ''}" ${hi > 0 ? '' : 'disabled style="visibility:hidden"'} aria-label="Előző hónap">‹</button><span>${ev}. ${HONAP[ho - 1]}</span><button class="gomb-ikon" data-honap="${hi < honapok.length - 1 ? honapok[hi + 1] : ''}" ${hi < honapok.length - 1 ? '' : 'disabled style="visibility:hidden"'} aria-label="Következő hónap">›</button></div>`
       + `<div class="racs">${racs}</div>${all.tovabbi ? '<div class="kicsi tovabbi">További napok betöltése…</div>' : ''}<div class="alcim">${esc(napCim(all.nap))}</div><div class="idok">${idok.map((x) => `<button class="ido" data-slot="${x.start_unix}">${sb(x).ido}</button>`).join('')}</div>`;
+    idokLatszon();
+  }
+  // Asztalon (>700 px) ha az idopont-gombok a naptar alatt kilognanak a latott reszbol, a tartalom annyit gorget, hogy az elso ket sor latsszon:
+  // alacsony laptop-kepernyon kulonben csak a naptar latszott, es videken (1-2 nap, mar kijelolve) nem volt mire kattintani (2026-10-29, Feri). Csak lefele gorget.
+  function idokLatszon() {
+    try {
+      if (matchMedia('(max-width: 700px)').matches) return;
+      const el = tartalom.querySelector('.idok');
+      if (!el || !el.firstElementChild) return;
+      const t = tartalom.getBoundingClientRect(), e = el.getBoundingClientRect();
+      const sor = el.firstElementChild.getBoundingClientRect().height + 8;
+      const cimke = el.previousElementSibling && el.previousElementSibling.classList.contains('alcim') ? el.previousElementSibling.getBoundingClientRect().top : e.top;
+      const kell = Math.min(e.top + Math.min(e.height, sor * 2) + 12 - t.bottom, cimke - t.top - 8); // a nap-cimke ne csusszon ki felul
+      if (kell > 0) tartalom.scrollTop += kell;
+    } catch (x) { /* a gorgetes soha nem akaszthatja meg a foglalast */ }
   }
 
   // az adatlap tetejen: melyik szakemberhez szol a foglalas (a kijelolt szakember, vagy a helyszin egyetlen szakembere, kulonben "Barki" - ilyenkor a Salonic
