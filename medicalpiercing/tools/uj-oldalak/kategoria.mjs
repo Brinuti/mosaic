@@ -12,6 +12,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { statDoboz, BEVIDEO_LEPESEK } from './kozos.mjs';
 
+// A weboldalon kirajzolt nyitvatartas (a tulajdonos, 2026-10-29): hetfo-szombat 8-19, vasarnap zarva.
+export const NYITVATARTAS = [['H–SZO', '08:00–19:00'], ['VAS', 'ZÁRVA']];
+
 export const KATEGORIA_UTAK = new Set(['/migren-piercing', '/shenmen-piercing', '/klimax-piercing', '/slim-etvagycsokkento-piercing',
   '/allergia-piercing', '/maj-piercing', '/pajzsmirigy-piercing', '/lep-piercing', '/vastagbel-piercing']);
 // A "B" valtozat: az eredeti "-b" oldalak (galeria a hosben, az o szekcio-sorrendjuk es szovegeik) a kategoria-dizajnnal. A tulajdonos donteseert (2026-10-13)
@@ -669,11 +672,12 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     const terkep = lv.find((x) => x.t === 'iframe' && x.fajta === 'terkep');
     const gomb = lv.find((x) => x.t === 'gomb');
     const kozosseg = lv.filter((x) => x.t === 'kep' && x.link);
-    // nyitvatartas: a cimkek ("H-P", "SZO<br>VAS") es az idok ("09:00 - 19:00", ...) egy-egy oszlop, sor-soronkent egymas mellett
+    // nyitvatartas: a cimkek ("H-P" / "H-SZO", "SZO<br>VAS") es az idok ("09:00 - 19:00", ...) egy-egy oszlop, sor-soronkent egymas mellett.
+    // A kirajzolt nyitvatartas a tulajdonos 2026-10-29-i szerint: hetfotol szombatig 8-19, vasarnap zarva (a regi Wix-tartalom 9-19 / szombat 9-18 volt)
     const sorKi = (html) => html.split(/<br\s*\/?>/i).map((x) => szovegTiszta(x)).filter(Boolean);
-    const oszlopok = lv.filter((x) => x.t === 'p' && /^(H\s*[-–]\s*P|SZO|VAS|\d{2}:\d{2}|ZÁRVA)/i.test(szovegTiszta(x.html)));
-    const cimkek = oszlopok.filter((x) => /^(H\s*[-–]\s*P|SZO|VAS)/i.test(szovegTiszta(x.html))).flatMap((x) => sorKi(x.html));
-    const idok = oszlopok.filter((x) => !/^(H\s*[-–]\s*P|SZO|VAS)/i.test(szovegTiszta(x.html))).flatMap((x) => sorKi(x.html));
+    const oszlopok = lv.filter((x) => x.t === 'p' && /^(H\s*[-–]\s*(?:P|SZO?)|SZO|VAS|\d{2}:\d{2}|ZÁRVA)/i.test(szovegTiszta(x.html)));
+    const cimkek = oszlopok.filter((x) => /^(H\s*[-–]\s*(?:P|SZO?)|SZO|VAS)/i.test(szovegTiszta(x.html))).flatMap((x) => sorKi(x.html));
+    const idok = oszlopok.filter((x) => !/^(H\s*[-–]\s*(?:P|SZO?)|SZO|VAS)/i.test(szovegTiszta(x.html))).flatMap((x) => sorKi(x.html));
     if (!cimP || !terkep || !cimkek.length || cimkek.length !== idok.length) {   // nem a megszokott felepites: valtozatlan tartalom
       return `<section class="tarto" id="elerhetoseg"><div class="sz kat-doboz kat-egyeb"><h2 class="cim">${szovegLink(b.cim.html)}</h2>${b.nodes.map((n) => T.csomopont(n, c)).join('\n')}</div></section>`;
     }
@@ -687,7 +691,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
       <div class="kat-elerh-adat">
         <div class="kat-elerh-sor">${IK('pin')}<div><h3>Címe</h3><p>${szovegLink(cimP.html)}</p></div></div>
         <div class="kat-elerh-sor">${IK('phone')}<div><h3>Elérhetőségei</h3>${tel ? `<p>${tel}</p>` : ''}${mail ? `<p><a href="mailto:${esc(mail)}">${esc(mail)}</a></p>` : ''}</div></div>
-        <div class="kat-elerh-sor">${IK('clock')}<div><h3>Nyitvatartása</h3><dl class="kat-nyitva">${cimkek.map((x, i) => `<div><dt>${esc(x.replace(/\s*[-–]\s*/, '–'))}</dt><dd>${esc(idok[i].replace(/\s*[-–]\s*/, '–'))}</dd></div>`).join('')}</dl></div></div>
+        <div class="kat-elerh-sor">${IK('clock')}<div><h3>Nyitvatartása</h3><dl class="kat-nyitva">${NYITVATARTAS.map(([nap, ido]) => `<div><dt>${esc(nap)}</dt><dd>${esc(ido)}</dd></div>`).join('')}</dl></div></div>
         <div class="kat-elerh-akcio">
           ${gomb ? `<a class="gomb gomb-tomor" href="${esc(belso(gomb.href))}">${esc(gomb.szoveg.replace(/!$/, ''))}${IK('chev', 'ik-nyil')}</a>` : ''}
           <ul class="kat-kozosseg">${kozosseg.map((k) => `<li><a href="${esc(k.link)}" target="_blank" rel="noopener" aria-label="${esc((k.alt || '').trim() || ikonNev(k.link))}">${IK(ikonNev(k.link))}</a></li>`).join('')}</ul>
