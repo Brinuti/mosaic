@@ -16,6 +16,9 @@ GY_GADS_FELTOLTES = "eles"       # GY-25: ki | dry (csak naplo) | eles (Feri 202
 GY_GADS_KIIGAZITAS = "ki"       # GY-27: ki | dry (csak naplo) | eles. ALAPERTEK ki: a lemondott foglalasok RETRACTION kiigazitasa (uploadConversionAdjustments) nincs bekapcsolva; dry / eles CSAK kulon DECISION / Feri mondata utan
 GY_GADS_CONSENT = "granted"      # DECISION #220 (Feri 2026-10-21): a feltoltes consent.adUserData / adPersonalization = GRANTED (a latogato kifejezett elutasitasa elsobbseget el); csak az UJ sorokra; rollback: ez a sor torlese (a Zap vedohalo visszafele kompatibilis, v01a15fa3)
 GY_GADS_BRAID = "be"           # gbraid / wbraid feltoltes: ki (alap: kihagyva_braid) | be (csak a gbraid / wbraid kattintasu foglalasok is mennek, egyszerre egy click-ID); bekapcsolas elott a Zap vedohalojanak is engednie kell; rollback: "ki"
+# UJ-94 / GYT #506 validate-futas (01-MERES 6515266617, mero DECISION kell a merge-hez): VALIDATEONLY - a Google csak ellenorzi, NEM rogzit konverziot; az elo "Allapot-ok" 7362127659 akciot nem terheli. A naplo: gy_feltoltes_elo (darabszam). TOL: a validate-futas kezdete (NEM a bongeszos order_id-s cimke elesitese: az meg nincs). A braid-kapu (GY_GADS_ELO_BRAID) alapbol ki marad. Rollback: a ket sor torlese.
+GY_GADS_ELO = "validate"
+GY_GADS_ELO_TOL = "1793340000"   # kb. 2026-10-30 06:00Z; ennel korabbi foglalast nem vizsgalunk
 
 # A titkok a Cloudflare felueleten, Secret tipussal, kornyezetenkent: GY_HMAC_KULCS (tranzakcio_id es parosito), GY_ADMIN_KULCS_HASH (a /api/gy-admin es
 # /api/gy-kampanyok kulcsanak SHA-256 hash-e).
