@@ -64,7 +64,7 @@ const apiVan = (env) => !!(env.GOOGLE_ADS_DEVELOPER_TOKEN && env.GOOGLE_ADS_CLIE
  * A sweep: a jogosult, meg fel nem toltott HeadSpa-sorok potlasa. Hivasi pont (KESOBB, kulon DECISION utan): a Pages Function waitUntil-lel; a hiba elnyelt.
  * -> { allapot: 'ki' | 'nincs_tol' | 'nincs_szallito' | 'kesz' | 'hiba', feldolgozva, eredmenyek: { allapot: db } }
  */
-export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Date.now() / 1000), fetchImpl = fetch, limit = 3 }) {
+export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Date.now() / 1000), fetchImpl = fetch, limit = 3, esemenyIdk = null }) {
   try {
     const mod = eloMod(env);
     if (mod === 'ki') return { allapot: 'ki' };
@@ -73,10 +73,12 @@ export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Dat
     if (!apiVan(env)) return { allapot: 'nincs_szallito' };
     const eles = elesKuldesE(env, host);
     await sema(db);
+    const idk = Array.isArray(esemenyIdk) ? esemenyIdk.map(String).slice(0, 10) : null; // kezi potlas: csak a megadott esemeny-azonositok
+    if (idk && !idk.length) return { allapot: 'kesz', feldolgozva: 0, eredmenyek: {} };
     const { results } = await db.prepare(`SELECT k.esemeny_id, k.source_id, k.ertek, k.letrehozva, e.attr, e.hozz FROM meres_kuldes k JOIN meres_erkezes e ON e.source_id = k.source_id
-      WHERE k.platform = 'google' AND k.uzletag = ?1 AND k.esemeny_nev = ?2 AND k.letrehozva >= ?3 AND k.letrehozva <= ?4
+      WHERE k.platform = 'google' AND k.uzletag = ?1 AND k.esemeny_nev = ?2 AND k.letrehozva >= ?3 AND k.letrehozva <= ?4${idk ? ` AND k.esemeny_id IN (${idk.map((_, i) => '?' + (8 + i)).join(', ')})` : ''}
         AND NOT EXISTS (SELECT 1 FROM meres_google_elo g WHERE g.esemeny_id = k.esemeny_id AND (g.allapot IN ('elkuldve', 'mar_bent', 'kihagyva_ablakon_kivul') OR g.probalkozas >= ?5 OR (g.mod = ?6 AND g.allapot = 'elfogadva')))
-      ORDER BY k.letrehozva LIMIT ?7`).bind(ELO_UZLETAG, ELO_NEV, tol, most - VARAKOZAS_MOSAIC, MAX_PROBA, eles ? 'eles' : 'dry', limit).all();
+      ORDER BY k.letrehozva LIMIT ?7`).bind(ELO_UZLETAG, ELO_NEV, tol, most - VARAKOZAS_MOSAIC, MAX_PROBA, eles ? 'eles' : 'dry', limit, ...(idk || [])).all();
     const sorok = results || [];
     const eredmenyek = {};
     const szamol = (a) => { eredmenyek[a] = (eredmenyek[a] || 0) + 1; };

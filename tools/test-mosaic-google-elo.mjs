@@ -114,3 +114,48 @@ test('a valasz kattintas-visszhangja kitakarva, a hiba a naploba nem viszi a gcl
   assert.equal(eloKonverzio({ ido: MOST, kattintas: { tipus: 'x', ertek: 'a' } }), null);
   assert.equal(eloKonverzio({ ido: MOST, ertek: 0, kattintas: { tipus: 'gclid', ertek: 'a' }, jel: { ad_user_data: 'DENIED' } }).consent.adUserData, 'DENIED');
 });
+
+// --- kezi potlas-vegpont (netlify/lib/meres/google-potlas.js) ---
+import crypto from 'node:crypto';
+import { potlasVegpont } from '../netlify/lib/meres/google-potlas.js';
+const KULCS = 'teszt-egyeztetes-kulcs';
+const KULCS_HASH = crypto.createHash('sha256').update(KULCS).digest('hex');
+const kerelem = (torzs, { kulcs = KULCS, metodus = 'POST', host = 'www.mosaicheadspa.hu' } = {}) => new Request(`https://${host}/api/mosaic-potlas`, { method: metodus, headers: kulcs ? { 'x-egyeztetes-kulcs': kulcs, 'content-type': 'application/json' } : {}, body: metodus === 'POST' ? JSON.stringify(torzs) : undefined });
+const vegpont = async (D, h, torzs, env = {}, opt = {}) => { const r = await potlasVegpont({ request: kerelem(torzs, opt), env: { ...ENV, EGYEZTETES_KULCS_HASH: KULCS_HASH, KULCS_DB: D, ...env }, deps: { most: MOST, fetchImpl: h.fetchImpl } }); return { status: r.status, body: await r.json() }; };
+
+test('vegpont: kulcs nelkul / rossz kulccsal / GET: 404, halozat nincs', async () => {
+  const D = await adatbazis([{ source: 's1', esemeny: 'ev1' }]); const h = halozat();
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'dry' }, {}, { kulcs: '' })).status, 404);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'dry' }, {}, { kulcs: 'rossz' })).status, 404);
+  assert.equal((await vegpont(D, h, null, {}, { metodus: 'GET' })).status, 404);
+  assert.equal(h.hivasok.length, 0);
+});
+
+test('vegpont: torzs-ellenorzes (1-3 azonosito, ismetlodes nincs, mod) es a globalis KI kapu', async () => {
+  const D = await adatbazis([{ source: 's1', esemeny: 'ev1' }]); const h = halozat();
+  assert.equal((await vegpont(D, h, { esemeny_idk: [], mod: 'dry' })).status, 400);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1', 'ev2', 'ev3', 'ev4'], mod: 'dry' })).status, 400);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1', 'ev1'], mod: 'dry' })).status, 400);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['e1;drop'], mod: 'dry' })).status, 400);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'x' })).status, 400);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'dry' }, { MOSAIC_GADS_ELO: 'ki' })).status, 409);
+  assert.equal(h.hivasok.length, 0);
+});
+
+test('vegpont: dry csak a megadott esemenyre fut, a valasz csak darabszam (nincs gclid)', async () => {
+  const D = await adatbazis([{ source: 's1', esemeny: 'ev1' }, { source: 's2', esemeny: 'ev2' }]); const h = halozat();
+  const r = await vegpont(D, h, { esemeny_idk: ['ev2'], mod: 'dry' });
+  assert.equal(r.status, 200); assert.deepEqual(r.body, { ok: true, mod: 'dry', allapot: 'kesz', feldolgozva: 1, eredmenyek: { elfogadva: 1 } });
+  assert.equal(feltoltesek(h).length, 1); assert.ok(!JSON.stringify(r.body).includes(GCLID));
+  assert.deepEqual((await tabla(D)).map((x) => x.esemeny_id), ['ev2']);
+});
+
+test('vegpont: eles kapu zarva (nincs engedely-jelzo / nem eles host) -> 409; kapuk nyitva -> valodi feltoltes', async () => {
+  const D = await adatbazis([{ source: 's1', esemeny: 'ev1' }]); const h = halozat();
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'eles' }, { MOSAIC_GADS_ELO: 'eles' })).status, 409);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'eles' }, { MOSAIC_GADS_ELO: 'eles', MOSAIC_GADS_ELO_ENGEDELY: 'DECISION-ELES' }, { host: 'preview.mosaic-d77.pages.dev' })).status, 409);
+  assert.equal((await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'eles' }, { MOSAIC_GADS_ELO: 'dry', MOSAIC_GADS_ELO_ENGEDELY: 'DECISION-ELES' })).status, 409);
+  assert.equal(h.hivasok.length, 0);
+  const ok = await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'eles' }, { MOSAIC_GADS_ELO: 'eles', MOSAIC_GADS_ELO_ENGEDELY: 'DECISION-ELES' });
+  assert.equal(ok.status, 200); assert.deepEqual(ok.body.eredmenyek, { elkuldve: 1 }); assert.equal(JSON.parse(feltoltesek(h)[0].body).validateOnly, false);
+});
