@@ -26,16 +26,23 @@ Kérés: 01-MERES 6523418697 (feri_dontes 18: **végrehajtás csak Feri „mehet
 
 | lépés | hol | mi |
 |---|---|---|
-| a) új web-változó | A76 web (GTM-M34XP4W), új munkaterület az élő v45-ből | `JS – first_booking_raw`: a `first_booking` URL-paraméter **nyers értékének szűrt tokenje**: kis-/nagybetű-egyesítés, csak `[a-z0-9]`, legfeljebb 8 karakter; ha nincs paraméter: `üres`; ha a szűrés után nem `true`/`false`/`1`/`0`: `egyeb` |
+| a) új web-változó | A76 web (GTM-M34XP4W), új munkaterület az élő v45-ből | `JS – first_booking_raw`: a `first_booking` URL-paraméter értékét **zárt tokenre** képezi: `hianyzik` (nincs paraméter) · `ures` (üres érték) · `true` · `false` · `1` · `0` · `egyeb` (bármi más; a nyers érték nem kerül ki) · `hiba` (kivétel) |
 | b) a foglalási eseményt szállító web Data Tag | ugyanott | `custom_data` +1 elem: `first_booking_raw = {{JS – first_booking_raw}}`. **A pontos címke azonosítandó a workspace-ben** (a 158-as címke jegyzete „Stape Data Tag 35"-öt említ; a 124-es a Schedule-é, a 137-es az érintésnapló) – olyan Data Tag kell, amelynek eseménye a szerveren a 57-es triggert indítja (`/foglalas-` oldal, nem `a76_schedule` / `a76_touch`) |
 | c) szerver esemény-adat változó | A76 szerver (GTM-WZDSDB3K), új munkaterület az élő v37-ből | `ED – first_booking_raw` (eseményadat-kulcs `first_booking_raw`) |
 | d) Store-címke | szerver | a 56-os „Stape Store – foglalás forrása" (gyűjtemény `a76_foglalas_forras`, trigger 57) `customDataList` +1 mező: `first_booking_raw = {{ED – first_booking_raw}}` |
 | e) olvasás | repó | a meglévő `A76 Stape Store számláló` workflow bővítése (külön PR, csak darabszám): `first_booking_raw` szerinti napi bontás (true / false / 1 / 0 / üres / egyéb), vendégadat és azonosító nélkül |
 
-- Platformra (Meta / Google / TikTok) **nem küld**, személyes adat nincs (egy szűrt, legfeljebb 8 karakteres token).
+- Platformra (Meta / Google / TikTok) **nem küld**, személyes adat nincs (zárt tokenkészlet, a nyers érték sosem kerül ki).
 - **Rollback:** a `custom_data` elem és a Store-mező elhagyása (a két munkaterület előző verziója: web v45, szerver v37).
 - **Teszt (Preview, publikálás nélkül):** `?first_booking=true|false|1|0|` és hiányzó paraméter → a Store-sor `first_booking_raw` mezője a várt érték; a Schedule / SubmitApplication viselkedése **változatlan** (ez a lépés nem érinti a 90 / 103 / 116 szabályt).
 - **Ütemezés (01-MERES javaslata):** élesítés Feri „mehet"-je után → 3 nap adat → értékelés (legkorábban 11-03) → UJ-93 publikálás.
+
+
+### 2/c. ÁLLAPOT – ÉLESÍTVE 2026-10-30 14:23Z (15:23 Budapest), Feri „mehet"-je (DECISION #263, feri_dontes 18)
+- **Szerver (GTM-WZDSDB3K): v38** publikálva (munkaterület 39, az élő v37-ből): új `ED – first_booking_raw` (id 88) + a **56-os** Stape Store-címke (`a76_foglalas_forras`) +1 `customDataList` mező. 15 címke / 12 trigger / 43 változó, fordítási hiba nincs. Rollback: **v37**.
+- **Web (GTM-M34XP4W): v46** publikálva (munkaterület 48, az élő v45-ből): új `JS – first_booking_raw` (id 160) + **Data Tag 35** (trigger 89 / 90 / 103 / 105) `custom_data` +1 elem. 50 címke / 36 trigger / 53 változó, fordítási hiba nincs; a tag 95 blokkoló triggere (120) és minden más címke változatlan. Rollback: **v45**.
+- **Nem változott:** tag 95 / 94 / 90 / 103 / 116, a Schedule és a SubmitApplication szabály, a hirdetési platformok, a foglalási folyamat. Platformra a mező nem megy.
+- **Olvasás:** `A76 Stape Store számláló` workflow, új `kategoria=1` mód (zárt halmaz, esemény szerinti napi bontás, nyers érték nem kerül a naplóba) – `claude/a76-store-filter` (#501).
 
 ## 3. Javasolt módosítás (új munkaterületen, az ÉLŐ v45-ből indítva)
 **0. lépés:** új munkaterület az élő v45-ből (vagy a Default Workspace szinkronja a v45-tel), ne a 29-es állapotából.
