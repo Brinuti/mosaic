@@ -2,6 +2,10 @@
 
 **Állapot: MP (#505) és GYT (#506) kód draft PR-ben, alapból KI; Mosaic HeadSpa + 4 üzletág: kód még nincs (a közvetlen Google Ads API döntésre vár). MÉRÉST ÉRINTŐ; élesítés nincs.** Kérés: #167 6394447316 (UJ-63, MP), 6394677817 (UJ-63 kiterjesztése: Mosaic HeadSpa + 4 üzletág), 6395410560 (UJ-72, GYT, Feri DECISION #234), 6434558379 / 6435507939 (UJ-82: „terv és első PR-vázlat”). Feri elve: **„a lehető legkevesebb helyen cserélünk, mert a kampányok újratanulnak”** → az élő akció marad, nincs csere; a hiányzó / kihagyott foglalások ugyanabba az élő akcióba kerülnek vissza, ugyanazzal az `order_id`-val (nincs dupla), lemondás miatt **nem** csökken a darabszám (nincs RETRACT; Feri 10-25-i szabálya a **GYT-re** szól, az MP-re és a többi üzletágra ez külön döntés).
 
+## ⚠ Frissítés 2026-10-30 – Mosaic HeadSpa: a szerveres pótlás az élő akcióra NEM kivitelezhető
+
+A 01-MERES `validateOnly` próbája (#167 6520621462, Google Ads API v23, a Zapier saját Mosaic Google Ads-kapcsolatával; nincs titok, semmi nem rögzült): az élő HeadSpa elsődleges akció **7030256606** (WEBPAGE_CODELESS, URL-szabály) kattintás-feltöltésre `INVALID_CONVERSION_ACTION_TYPE`-ot ad, ugyanaz a gclid az **ARNYEK 7825199989**-en (UPLOAD_CLICKS) elfogadva. A §4 3. pont (Mosaic HeadSpa + 4 üzletág) így ebben a formában **nem megy**; a #535 (Mosaic `google-elo.js`) **lezárva, nem mergelve**. A §6 B ág (nem fogad kattintás-feltöltést) lép érvénybe: döntés 11-02 után: (b) konverziócsere az UPLOAD_CLICKS akcióra 7 nap párhuzam után, vagy (c) kódos GTM-címke `orderId`-vel az URL-szabály helyett. Az MP (#505) és GYT (#506/#536 validate) sorra külön igazolandó: az MP élő All 7468541217 típusa `WEBPAGE` (kóddal), a GYT 7362127659 típusa a #536 `validate`-eredményéből derül ki.
+
 ## 1. Cél (egy mondatban)
 Minden élő Google-akció konverziója kapjon **foglalás-azonosítót** (`order_id`) a böngészős címkében, és a szerver a **hiányzó** foglalásokat (adblock, süti-elutasítás, későn betöltődő címke, Safari) **ugyanerre az akcióra**, **azonos `order_id`-vel** töltse fel → a Google az azonos akció + azonos `order_id` párt egy konverziónak számolja.
 
