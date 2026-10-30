@@ -30,6 +30,7 @@ const kesz = new WeakSet();
 const NAPLO_SEMA = `CREATE TABLE IF NOT EXISTS gy_elo_naplo (nap TEXT NOT NULL, allapot TEXT NOT NULL, host_kat TEXT NOT NULL, db INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (nap, allapot, host_kat))`; // UJ-94 / DECISION #264 (a): napi darabszam a sweep kimeneterol (korai kilepesek is) - vendegadat es host-ertek NELKUL (host_kat: eles / pages_dev / egyeb); nap = UTC datum
 const naploKesz = new WeakSet();
 async function sema(db) { if (kesz.has(db)) return; await db.batch(SEMA.map((s) => db.prepare(s))); kesz.add(db); }
+export const eloSema = sema; // UJ-94 (#264 b): a Zapier-validate modul is ugyanezt a tablat hasznalja
 
 /** A feltoltendo konverzio (tiszta fuggveny). consent: DECISION #220 szerint (GY_GADS_CONSENT=granted es nincs kifejezett elutasitas) GRANTED, egyebkent nincs consent mezo. */
 export function eloKonverzio({ kattTipus, kattErtek, konverzioIdo, orderId, consent = false }) {
