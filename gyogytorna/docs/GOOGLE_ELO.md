@@ -31,3 +31,16 @@ A motor a sikeres foglalás után a böngészőnek kiadja a HMAC-alapú tranzakc
 - **Próbálkozás-plafon módonként.** A 3 próbálkozás módonként számol (dry + validate után az első éles hiba nem végleges); módváltáskor a számláló 1-ről indul.
 - **Host-védelem.** `validate` / `eles` csak az éles hoston (`gyogytornaszom.hu`, `www.`-val is) fut; előnézet / ismeretlen host: próbaüzem (`dry`), Google-hívás nincs (az MP `elesKuldesE` mintájára).
 - Védett `gfeltoltes.js` (6f5deb2070) és `gkiigazitas.js` (016ad1c4cc) változatlan.
+
+## UJ-94 / DECISION #264 (b): validateOnly-proba Zapier-mintan (`/api/gy-gads-elo-zap`)
+
+A Worker-oldali `GY_GADS_ELO=validate` nem tud lefutni, mert a GY-26 szerint nincs `GOOGLE_ADS_*` titok a Pages-projektben (`nincs_kuldo`). Ezert a validateOnly-proba a GY-26 mintan megy:
+
+- **Alapbol KI:** `GY_GADS_ELO_ZAP = ki` (alap) | `validate`. A `wrangler.toml`-ban NINCS beallitva (a bekapcsolas kulon lepes: a Cloudflare-valtozo a 01-MERES dontese szerint).
+- **Hitelesites:** `x-gy-zap-kulcs` (mint a `/api/gy-gads-zap`), uj titok nincs.
+- **GET** -> `{ok, mod:'validate', zar, db, kihagyva, cel, keres}` vagy `{nincs:true, miert}`. A `keres` = `{conversions:[...], partialFailure:true, validateOnly:true}` (legfeljebb 10 jelolt, csak az ELO `7362127659` akcio, gclid, 19000 HUF, a bongeszonek kiadott HMAC order_id). A vedohalo (`vedohaloElo`) minden kimeno keresre kikenyszeriti a `validateOnly === true`-t; hiba eseten 500 `vedohalo`. A click-ID csak ebben a kulcsos HTTPS-valaszban van.
+- **Zapier:** a `keres`-t VALTOZTATAS NELKUL kuldi a Google Ads `customers/2596120588:uploadClickConversions` v23 vegpontra (a sajat kapcsolataval), majd a valaszt POST-olja.
+- **POST** `{zar, http, valasz}` -> soronkent `elfogadva` / `mar_bent` / `hiba` (+ Google hibakod `[A-Z0-9_]{1,64}`); a valasz csak darabszam + hibakod. Egy zar egyszer hasznalhato (409 `mar_lezarva`); ismeretlen zar 409.
+- **Tarolas:** `gy_feltoltes_elo` (`mod = 'zap_validate'`, a `katt_maszk` maszkolt), + `gy_elo_zap_zar (zar, idk, letrehozva, lezarva)` (uj tabla, vendegadat nelkul). A lefoglalt, lezaratlan sor 15 percig nem kerul ujra a keresbe; legfeljebb 3 proba / sor.
+- **Az eles (validateOnly=false) potlas NEM ebben van:** kulon DECISION + Feri kulon mondata (elo konverzio).
+- **Rollback:** `GY_GADS_ELO_ZAP` torlese / `ki` (a vegpont `{nincs:true}`-t ad), vagy a PR revertje; a tablak uresen maradhatnak.
