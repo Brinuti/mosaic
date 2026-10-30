@@ -341,6 +341,84 @@ test('nem eles kornyezet / ki mod: nincs kihagyas-sor', async () => {
     assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot]), [['k|regi|1', 'kihagyva:nem_igazolt']]);
   });
 
+  test('igazolt kihagyas naplo (MP-T-S): naplosor nelkuli, MOST IS kihagyando igazolt sor (ful = divat_fulpiercing) kap kihagyva sort, a kuldheto sor NEM (nincs visszamenoleges kuldes), fetch nincs, idempotens', async () => {
+    const { igazoltKihagyasNaplo } = await import('../lib/meres/lanc.js');
+    const db = await alap(); const h = [];
+    const alapIg = { forras: 'motor', igazolas: 'igazolt', foglalas_ido: MOST - 2 * 86400, letrehozva: MOST - 2 * 86400 };
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|ful|1', tipus: 'ful' });                       // divat_fulpiercing
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|kuldheto|2' });                                // jogosult: NEM naplozzuk, NEM kuldjuk
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|nincshj|3', hozzajarulas_hirdetes: 0 });       // nincs_hozzajarulas
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|regi|4', foglalas_ido: MOST - 9 * 86400, letrehozva: MOST - 9 * 86400 }); // ablakon_kivul
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|nagyonregi|5', foglalas_ido: MOST - 20 * 86400, letrehozva: MOST - 20 * 86400 }); // 14 napnal regebbi: nem
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|elonezet|6', kornyezet: 'elonezet', tipus: 'ful' });
+    let tobb = 0; for (let k = 0; k < 10; k += 1) { const r = await igazoltKihagyasNaplo(db, { TIKTOK_EVENTS_TOKEN: 't' }, HOST, { most: MOST, fetchImpl: f(h) }); tobb += r.naplozva; if (!r.naplozva) break; }
+    assert.equal(tobb, 3); // kerelmenkent NAPLO_KORLAT sor, tobb kerelem alatt mind
+    assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot, x.payload_maszkolt]).sort(), [['k|ful|1', 'kihagyva:divat_fulpiercing', null], ['k|nincshj|3', 'kihagyva:nincs_hozzajarulas', null], ['k|regi|4', 'kihagyva:ablakon_kivul', null]]);
+    assert.deepEqual(await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST + 60, fetchImpl: f(h) }), { naplozva: 0 }); // idempotens
+    assert.equal(h.length, 0, 'halozati hivas nincs');
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM mp_foglalas').first()).n, 6); // mp_foglalas erintetlen
+  });
+
+  test('igazolt kihagyas naplo: ELES modban (token + eles host) SOHA nincs kuldes: a kuldheto (ttclid-es) sor kimarad, fetch 0, csak kihagyva-sor keletkezik', async () => {
+    const { igazoltKihagyasNaplo } = await import('../lib/meres/lanc.js');
+    const db = await alap('eles'); const h = [];
+    const alapIg = { forras: 'motor', igazolas: 'igazolt', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400, tiktok_ttclid: 'TTCLID_MINTA_ERTEK_1234567890' };
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|kuldheto|1' });                  // jogosult: eles modban kuldene -> ITT kimarad
+    await sorBeszur(db, { ...alapIg, kulcs: 'k|ful|2', tipus: 'ful' });          // kihagyando
+    assert.deepEqual(await igazoltKihagyasNaplo(db, { TIKTOK_EVENTS_TOKEN: 't' }, HOST, { most: MOST, fetchImpl: f(h) }), { naplozva: 1 });
+    assert.equal(h.length, 0, 'eles modban sincs halozati hivas');
+    assert.deepEqual((await naploSorok(db)).map((x) => [x.kulcs, x.allapot, x.mod]), [['k|ful|2', 'kihagyva:divat_fulpiercing', 'eles']]);
+  });
+
+  test('D1-lekerdezesszam (Cloudflare ingyenes csomag: 50 / hivas): a hatralekos kerelem LEGROSSZABB esete a ket kihagyas-naplo fuggvennyel egyutt (kulon-kulon hivva) <= 16 lekerdezes; ures hatralekkal <= 2', async () => {
+    const { igazoltKihagyasNaplo } = await import('../lib/meres/lanc.js');
+    const szamol = (db) => { let n = 0; const stmt = (sql, args = []) => ({ bind: (...a) => stmt(sql, a), run: () => { n += 1; return db.prepare(sql).bind(...args).run(); }, first: () => { n += 1; return db.prepare(sql).bind(...args).first(); }, all: () => { n += 1; return db.prepare(sql).bind(...args).all(); } }); return { prepare: (sql) => stmt(sql), batch: (l) => { n += l.length; return db.batch(l); }, get n() { return n; } }; };
+    const alapDb = await alap();
+    for (let i = 0; i < 12; i++) await sorBeszur(alapDb, { kulcs: `k|n${i}`, letrehozva: MOST - 3 * 86400 + i }); // 12 nem_igazolt Salonic-sor
+    for (let i = 0; i < 12; i++) await sorBeszur(alapDb, { kulcs: `k|f${i}`, forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400 + i }); // 12 ful
+    for (const env of [{}, { TIKTOK_EVENTS_TOKEN: 't' }]) { // naplo es eles mod
+      const c = szamol(alapDb);
+      await nemIgazoltNaplo(c, env, HOST, { most: MOST + 100 });
+      await igazoltKihagyasNaplo(c, env, HOST, { most: MOST + 100 });
+      assert.ok(c.n <= 16, `legrosszabb eset: ${c.n} lekerdezes`);
+    }
+    const ures = szamol(await alap());
+    await nemIgazoltNaplo(ures, {}, HOST, { most: MOST }); await igazoltKihagyasNaplo(ures, {}, HOST, { most: MOST });
+    assert.ok(ures.n <= 2, `ures hatralek: ${ures.n} lekerdezes`); // 1 jelolt-SELECT fuggvenyenkent
+  });
+
+  test('D1-lekerdezesszam, TELJES foglalas-kerelem (foglalasErkezes) legrosszabb hatralekkal: <= 44 (mert 41; a Cloudflare ingyenes csomag hivasonkenti korlatja 50)', async () => {
+    _semaTorles(); const db0 = d1();
+    let n = 0;
+    const stmt = (sql, args = []) => ({ bind: (...a) => stmt(sql, a), run: () => { n += 1; return db0.prepare(sql).bind(...args).run(); }, first: () => { n += 1; return db0.prepare(sql).bind(...args).first(); }, all: () => { n += 1; return db0.prepare(sql).bind(...args).all(); } });
+    const db = { prepare: (sql) => stmt(sql), batch: (l) => { n += l.length; return db0.batch(l); } };
+    const env = { MP_MERES_DB: db, MP_IGAZOLAS_TITOK: 'ig-TITOK', MP_GADS_MOD: 'validate', TIKTOK_EVENTS_TOKEN: 'tok-TITOK' };
+    const h = [];
+    const ujFoglalas = (cookie, start) => new Request(`https://${HOST}/api/mp-foglalas`, { method: 'POST', headers: { 'content-type': 'application/json', cookie },
+      body: JSON.stringify({ ut: '/foglalas-ok-mi', p: { price: '24900', first_booking: 'true', placeId: '12169', employeeId: '555', startDate: String(start) }, kattintas: { ttclid: { ertek: TTCLID, ido: MOST - 1800 } } }) });
+    await foglalasErkezes({ request: ujFoglalas(`mp_suti=v1-s1-m1-t${MOST}`, 1791900000), env }, { fetchImpl: f(h), most: MOST }); // sema + elso sor
+    const alapIg = { forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST + 86400 * 2 - 3600 };
+    for (let i = 0; i < 10; i++) await sorBeszur(db0, { kulcs: `k|nem${i}`, letrehozva: MOST - 4 * 86400 + i });                                  // nem_igazolt hatralek
+    for (let i = 0; i < 10; i++) await sorBeszur(db0, { ...alapIg, kulcs: `k|ful${i}`, letrehozva: MOST + 86400 * 2 - 3600 + i });                  // igazolt-kihagyando hatralek
+    n = 0;
+    const r = await foglalasErkezes({ request: ujFoglalas(`mp_suti=v1-s1-m1-t${MOST + 86400 * 2}`, 1791990000), env }, { fetchImpl: f(h), most: MOST + 86400 * 2 });
+    assert.equal(r.status, 200); assert.equal((await r.json()).uj, true, 'uj foglalas (nem duplikalt): a teljes lanc fut');
+    assert.ok(n <= 44, `teljes kerelem: ${n} D1-lekerdezes`); // mert: alapterhe ~36 (hatralek nelkul), legrosszabb hatralekkal 41; a korlat hivasonkent 50
+    assert.equal(h.filter((u) => u.includes('tiktok')).length, 0, 'TikTok-hivas nincs');
+  });
+
+  test('igazolt kihagyas naplo: ki mod -> semmi; kerelmenkent legfeljebb NAPLO_KORLAT naplosor; a kuldheto sorok nem szoritjak ki a naplozandokat', async () => {
+    const { igazoltKihagyasNaplo, NAPLO_KORLAT } = await import('../lib/meres/lanc.js');
+    const dbKi = await alap('ki'); await sorBeszur(dbKi, { forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST - 86400 });
+    assert.deepEqual(await igazoltKihagyasNaplo(dbKi, {}, HOST, { most: MOST }), { naplozva: 0 });
+    const db = await alap();
+    for (let i = 0; i < 12; i++) await sorBeszur(db, { kulcs: `k|k${i}`, forras: 'motor', igazolas: 'igazolt', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400 + i }); // 12 kuldheto
+    for (let i = 0; i < 12; i++) await sorBeszur(db, { kulcs: `k|f${i}`, forras: 'motor', igazolas: 'igazolt', tipus: 'ful', foglalas_ido: MOST - 86400, letrehozva: MOST - 86400 + 100 + i }); // 12 ful
+    let osszes = 0; // a 12 kuldheto sor kimarad, a naplozandokat a LIMIT 50 olvasat eleri; kerelmenkent NAPLO_KORLAT
+    for (let k = 0; k < 40; k += 1) { const r = await igazoltKihagyasNaplo(db, {}, HOST, { most: MOST + k }); assert.ok(r.naplozva <= NAPLO_KORLAT); osszes += r.naplozva; if (!r.naplozva) break; }
+    assert.equal(osszes, 12, 'mind a 12 ful sor naplozva, a 12 kuldheto nem');
+  });
+
   test('D1-lekerdezesszam, TELJES foglalas-kerelem (foglalasErkezes) hatralekkal: Salonic-level nelkul <= 44 (a naplo fut), Salonic-levellel <= 50 (a naplo NEM fut, az igazolas-ag alapterhe ~48); a Cloudflare ingyenes csomag hivasonkenti korlatja 50', async () => {
     const meres = async (levellel) => {
       _semaTorles(); const db0 = d1();
