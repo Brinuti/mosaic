@@ -95,8 +95,12 @@ test('2) nincs kozos adatbazis: a D1-kotes neve es az adatbazis-azonosito kulon 
   const lc = blokkok.filter((b) => b.binding === 'LIFECYCLE_DB'), mr = blokkok.filter((b) => b.binding === 'KULCS_DB');
   assert.ok(lc.length >= 2, 'LIFECYCLE_DB kotes (eles + elonezet)');
   assert.ok(mr.length >= 1, 'KULCS_DB kotes');
-  const ids = blokkok.filter((b) => b.id).map((b) => b.id);
+  // HOS_DB (mosaic-riport, #390): SZANDEKOSAN ugyanaz eles es elonezeten - csak olvasas (SELECT a hirdetes_hos tablabol), hogy a PR-elonezeten tesztelheto legyen; minden mas kotes kulon adatbazisra mutat
+  const ids = blokkok.filter((b) => b.id && b.binding !== 'HOS_DB').map((b) => b.id);
   assert.equal(new Set(ids).size, ids.length, 'ket kotes ugyanarra az adatbazis-azonositora mutat');
+  const hos = blokkok.filter((b) => b.binding === 'HOS_DB');
+  assert.ok(hos.length >= 1 && hos.every((b) => b.nev === 'mosaic-riport'), 'a HOS_DB csak a mosaic-riport (olvaso) adatbazisra mutat');
+  assert.ok(!ids.includes(hos[0].id), 'a HOS_DB azonositoja nem egyezik semelyik masik kotesevel');
   for (const a of lc) for (const b of mr) { assert.notEqual(a.id, b.id); assert.notEqual(a.nev, b.nev); assert.notEqual(a.binding, b.binding); }
   // a kodban a lifecycle csak LIFECYCLE_DB-t, a meres csak KULCS_DB-t er el
   const dbNevek = (lista) => { const ki = new Set(); for (const f of lista) for (const m of olvas(f).matchAll(/\b(?:env|k\.env|context\.env)\.([A-Z][A-Z0-9]*_DB)\b/g)) ki.add(m[1]); return ki; };
