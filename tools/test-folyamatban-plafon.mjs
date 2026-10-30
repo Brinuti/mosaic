@@ -140,3 +140,53 @@ test('P5 qa-nap erkezes_kuldes_nelkul (HS-G-S): kuldes nelkuli bongeszos erkezes
   await qaNap(D, napIntervallum('2026-10-28'), { mostMs: NOW });
   assert.equal(JSON.stringify(D.db.prepare('SELECT * FROM meres_erkezes').all()), elotte);
 });
+
+test('P7 UJ-96 takarito: egy MASIK forras 10 percnel regebbi folyamatban sora a kovetkezo futasnal megszakadt (nem kuld ujra), a friss es a vegleges sor erintetlen', async () => {
+  const d = d1(); await meresSema(d);
+  const A = ID('a'); const B = ID('b');
+  await erkezesMent(d, ERK({ source_id: A }), T0); await erkezesMent(d, ERK({ source_id: B }), T0);
+  const megszakit = async () => { throw new Error('megszakitva (a hivo lecsatlakozott)'); };
+  const hiv = []; const jo = async (k) => { hiv.push(k.platform); return OK; };
+  // A forras: megszakad a kuldes -> folyamatban (probalkozas 1); a hivo nem jon vissza
+  await assert.rejects(elosztas(d, FK({ source_entity_id: A }), { env: EV_ENV, kuldo: megszakit, now: () => T0 }), /megszakitva/);
+  const a0 = sorok(d).filter((r) => r.allapot === 'folyamatban'); assert.ok(a0.length >= 1);
+  // B forras +9 perc: az A sor meg friss (<10 perc) -> marad
+  await elosztas(d, FK({ source_entity_id: B }), { env: EV_ENV, kuldo: jo, now: () => T0 + 9 * 60000 });
+  assert.equal(sorok(d).filter((r) => r.allapot === 'folyamatban').length, a0.length, '9 percesnel nem takarit');
+  // B forras ujabb futasa +11 perc: az A sor megszakadt, nem kuldtunk ujra az A-nak
+  hiv.length = 0;
+  await elosztas(d, FK({ source_entity_id: B }), { env: EV_ENV, kuldo: jo, now: () => T0 + 11 * 60000 });
+  const mind = d.db.prepare('SELECT id, allapot, indok, source_id FROM meres_kuldes').all();
+  const aSorok = mind.filter((r) => r.source_id === A);
+  assert.ok(aSorok.some((r) => r.allapot === 'megszakadt' && /takarito/.test(r.indok)), 'az A sor megszakadt (takarito)');
+  assert.ok(!aSorok.some((r) => r.allapot === 'folyamatban'), 'nincs A folyamatban sor');
+  assert.equal(hiv.length, 0, 'a B forras sorai mar veglegesek, az A-nak nem ment ujra kuldes');
+  // a vegleges (elkuldve) B sorok erintetlenek
+  assert.ok(mind.filter((r) => r.source_id === B).every((r) => r.allapot !== 'megszakadt'));
+});
+
+test('P8 UJ-96 (01-MERES review): a SAJAT forras 11 perces, probalkozas<3 folyamatban sora a takarito utan is ujrakuldheto (mint a main-en); a masik forras altal lezart sor is ujraprobalhato', async () => {
+  const d = d1(); await meresSema(d);
+  const A = ID('a'); const B = ID('b');
+  await erkezesMent(d, ERK({ source_id: A }), T0); await erkezesMent(d, ERK({ source_id: B }), T0);
+  const megszakit = async () => { throw new Error('megszakitva (a hivo lecsatlakozott)'); };
+  const hiv = []; const jo = async (k) => { hiv.push(k.platform); return OK; };
+  await assert.rejects(elosztas(d, FK({ source_entity_id: A }), { env: EV_ENV, kuldo: megszakit, now: () => T0 }), /megszakitva/);
+  const stuck = sorok(d).filter((r) => r.allapot === 'folyamatban'); assert.ok(stuck.length >= 1); assert.equal(stuck[0].probalkozas, 1);
+  // 1) sajat forras +11 perc: NEM takaritja le, hanem ujrakuldi
+  await elosztas(d, FK({ source_entity_id: A }), { env: EV_ENV, kuldo: jo, now: () => T0 + 11 * 60000 });
+  assert.ok(hiv.length >= 1, 'a sajat forras sora ujrakuldodott');
+  const a1 = d.db.prepare('SELECT allapot, indok FROM meres_kuldes WHERE source_id = ?').all(A);
+  assert.ok(!a1.some((r) => /takarito/.test(r.indok || '')), 'a sajat sort nem takaritotta le');
+  assert.ok(a1.every((r) => r.allapot === 'elkuldve' || r.allapot === 'kihagyva' || r.allapot === 'nyitott' || r.allapot === 'halasztva' || r.allapot === 'tiltva' || r.allapot === 'hiba' ? true : false), `allapotok: ${JSON.stringify(a1)}`);
+  // 2) masik forras altal lezart sor (takarito): kesobbi sajat hivasra ujrakuldheto (probalkozas<3)
+  const d2 = d1(); await meresSema(d2);
+  await erkezesMent(d2, ERK({ source_id: A }), T0); await erkezesMent(d2, ERK({ source_id: B }), T0);
+  await assert.rejects(elosztas(d2, FK({ source_entity_id: A }), { env: EV_ENV, kuldo: megszakit, now: () => T0 }), /megszakitva/);
+  await elosztas(d2, FK({ source_entity_id: B }), { env: EV_ENV, kuldo: jo, now: () => T0 + 11 * 60000 });
+  assert.ok(d2.db.prepare("SELECT 1 FROM meres_kuldes WHERE source_id = ? AND allapot = 'megszakadt' AND indok LIKE '%takarito%'").get(A), 'a B futasa lezarta az A sort');
+  hiv.length = 0;
+  await elosztas(d2, FK({ source_entity_id: A }), { env: EV_ENV, kuldo: jo, now: () => T0 + 3 * 3600000 });
+  assert.ok(hiv.length >= 1, 'a takarito altal lezart, 3-nal kevesebbszer probalt sor ujrakuldodott');
+  assert.ok(!d2.db.prepare("SELECT 1 FROM meres_kuldes WHERE source_id = ? AND allapot IN ('folyamatban','megszakadt')").get(A), 'nincs fennmarado folyamatban/megszakadt A sor');
+});
