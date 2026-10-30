@@ -127,3 +127,34 @@ test('D) a determinisztikusan kihagyott sorok (kihagyva_click_id / kihagyva_ido_
   for (let i = 0; i < 4; i++) await eloPotlas({ host: 'gyogytornaszom.hu', db, env: ENV(), most: MOST + i * 60, budapestIdo, kuldo: k, limit: 50 });
   assert.deepEqual(naplo(db).map((x) => [x.allapot, x.probalkozas]), [['kihagyva_click_id', 1], ['kihagyva_ido_sorrend', 1]]); assert.equal(k.h.length, 0);
 });
+
+test('E) UJ-94 / DECISION #264 (a): gy_elo_naplo - a korai kilepesek es a kesz sweep napi darabszama allapot x host_kat szerint; host-ertek / vendegadat nincs; ki modban nem ir', async () => {
+  const db = ujD1(); await sema(db);
+  const naploSorok = () => db._db.prepare('SELECT nap, allapot, host_kat, db FROM gy_elo_naplo ORDER BY allapot, host_kat').all().map((r) => ({ ...r }));
+  const nap = new Date(MOST * 1000).toISOString().slice(0, 10);
+  // ki mod: semmi nem ir (a tabla meg nem is letezik)
+  assert.deepEqual(await eloPotlas({ db, env: {}, most: MOST, host: 'gyogytornaszom.hu' }), { allapot: 'ki' });
+  assert.equal(db._db.prepare("SELECT name FROM sqlite_master WHERE name = 'gy_elo_naplo'").all().length, 0);
+  // nincs_tol / nincs_titkos_kulcs / nincs_kuldo (validate az eles hoston, GOOGLE_ADS_* titok nelkul)
+  await eloPotlas({ db, env: { GY_GADS_ELO: 'validate' }, most: MOST, host: 'www.gyogytornaszom.hu' });
+  await eloPotlas({ db, env: { GY_GADS_ELO: 'validate', GY_GADS_ELO_TOL: String(TOL) }, most: MOST, host: 'gyogytornaszom.hu' });
+  const envKuldoNelkul = { GY_GADS_ELO: 'validate', GY_GADS_ELO_TOL: String(TOL), GY_HMAC_KULCS: KULCS };
+  await eloPotlas({ db, env: envKuldoNelkul, most: MOST, host: 'gyogytornaszom.hu' });
+  await eloPotlas({ db, env: envKuldoNelkul, most: MOST, host: 'gyogytornaszom.hu' });
+  // validate, de pages.dev host: probauzem (dry) -> 'kesz', host_kat pages_dev; ismeretlen / ures host: egyeb
+  await eloPotlas({ db, env: envKuldoNelkul, most: MOST, host: 'gyogytorna.pages.dev' });
+  await eloPotlas({ db, env: envKuldoNelkul, most: MOST, host: '' });
+  assert.deepEqual(naploSorok(), [
+    { nap, allapot: 'kesz', host_kat: 'egyeb', db: 1 },
+    { nap, allapot: 'kesz', host_kat: 'pages_dev', db: 1 },
+    { nap, allapot: 'nincs_kuldo', host_kat: 'eles', db: 2 },
+    { nap, allapot: 'nincs_titkos_kulcs', host_kat: 'eles', db: 1 },
+    { nap, allapot: 'nincs_tol', host_kat: 'eles', db: 1 },
+  ]);
+  // sem host-ertek, sem uuid / click-ID nincs a tablaban
+  const szoveg = JSON.stringify(db._db.prepare('SELECT * FROM gy_elo_naplo').all());
+  assert.ok(!/pages\.dev|gyogytornaszom|gclid|uuid/i.test(szoveg), `a naplo nem tartalmazhat host-erteket: ${szoveg}`);
+  // a naplo hibaja nem valtoztatja az eredmenyt
+  const hibasDb = { prepare: (q) => { if (/gy_elo_naplo/.test(q)) throw new Error('naplo-hiba'); return db.prepare(q); }, batch: (...a) => db.batch(...a) };
+  assert.equal((await eloPotlas({ db: hibasDb, env: envKuldoNelkul, most: MOST, host: 'gyogytornaszom.hu' })).allapot, 'nincs_kuldo');
+});

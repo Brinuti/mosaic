@@ -27,6 +27,8 @@ const SEMA = [
     hiba TEXT, http INTEGER, probalkozas INTEGER NOT NULL DEFAULT 0, letrehozva INTEGER NOT NULL, frissitve INTEGER NOT NULL)`,
 ];
 const kesz = new WeakSet();
+const NAPLO_SEMA = `CREATE TABLE IF NOT EXISTS gy_elo_naplo (nap TEXT NOT NULL, allapot TEXT NOT NULL, host_kat TEXT NOT NULL, db INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (nap, allapot, host_kat))`; // UJ-94 / DECISION #264 (a): napi darabszam a sweep kimeneterol (korai kilepesek is) - vendegadat es host-ertek NELKUL (host_kat: eles / pages_dev / egyeb); nap = UTC datum
+const naploKesz = new WeakSet();
 async function sema(db) { if (kesz.has(db)) return; await db.batch(SEMA.map((s) => db.prepare(s))); kesz.add(db); }
 
 /** A feltoltendo konverzio (tiszta fuggveny). consent: DECISION #220 szerint (GY_GADS_CONSENT=granted es nincs kifejezett elutasitas) GRANTED, egyebkent nincs consent mezo. */
@@ -54,7 +56,7 @@ export function eloValasz(http, json, { validate }) {
  * letrehozva >= TOL es legalabb ELO_KESLELTETES-sel regebbi.
  * -> { allapot: 'ki' | 'nincs_tol' | 'nincs_titkos_kulcs' | 'nincs_kuldo' | 'kesz', feldolgozva, eredmenyek }
  */
-export async function eloPotlas({ db, env = {}, most = Math.floor(Date.now() / 1000), budapestIdo, kuldo, limit = 10, host = '' }) {
+async function eloPotlasBelso({ db, env = {}, most = Math.floor(Date.now() / 1000), budapestIdo, kuldo, limit = 10, host = '' }) {
   try {
     const mod = eloMod(env) === 'ki' ? 'ki' : (eloMod(env) !== 'dry' && !eloKuldesE(env, host) ? 'dry' : eloMod(env)); // nem eles host: validate / eles helyett probauzem
     if (mod === 'ki') return { allapot: 'ki' };
@@ -106,4 +108,21 @@ export async function eloPotlas({ db, env = {}, most = Math.floor(Date.now() / 1
     console.error('gyt google-elo: hiba', String(err && err.message || err).slice(0, 200));
     return { allapot: 'hiba' };
   }
+}
+
+/** A host kategoriaja a naplohoz (a host erteke NEM kerul tarolasra). */
+export const hostKat = (host) => { const h = String(host || '').toLowerCase().replace(/^www\./, ''); return h === ELES_HOST ? 'eles' : (h.endsWith('.pages.dev') ? 'pages_dev' : 'egyeb'); };
+
+/** UJ-94 / DECISION #264 (a): a sweep + napi darabszam-naplo (allapot x host_kat). A naplo hibaja elnyelt, az eredmenyt nem valtoztatja; 'ki' modban nem ir. */
+export async function eloPotlas(args) {
+  const v = await eloPotlasBelso(args);
+  try {
+    if (v && v.allapot !== 'ki' && args && args.db) {
+      if (!naploKesz.has(args.db)) { await args.db.prepare(NAPLO_SEMA).run(); naploKesz.add(args.db); }
+      const most = Number.isFinite(args.most) ? args.most : Math.floor(Date.now() / 1000);
+      const nap = new Date(most * 1000).toISOString().slice(0, 10);
+      await args.db.prepare('INSERT INTO gy_elo_naplo (nap, allapot, host_kat, db) VALUES (?1, ?2, ?3, 1) ON CONFLICT (nap, allapot, host_kat) DO UPDATE SET db = db + 1').bind(nap, String(v.allapot), hostKat(args.host)).run();
+    }
+  } catch (e) { /* a naplo hibaja nem erintheti a sweep-et */ }
+  return v;
 }
