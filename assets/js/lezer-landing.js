@@ -12,6 +12,26 @@
 (() => {
   'use strict';
 
+  // Szovegek: a magyar az alapertelmezes (valtozatlan), az angol / ukran oldal egy kulon fajlbol (assets/js/lezer-szoveg-en.js / -uk.js) tolti a sajatjat a window.LEZER_SZOVEG-be
+  const SZ = Object.assign({
+    locale: 'hu-HU', penz: '\u00a0Ft', ezres: '\u00a0',
+    hetnapok: ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'],
+    konzult: 'Ingyenes konzultáció', egyedi: 'Több terület (egyedi csomag)', egyediOpcio: ' \u2013 \u00e1r a kalkul\u00e1tor szerint',
+    kalkulator: 'Árkalkulátor', benneVan: 'Benne van a(z) {nev} árában', alkalmankent: 'Alkalmanként', reszletek: 'Részletek ↓',
+    ures1: 'Válassz legalább egy területet.', ures2: 'Például teljes láb + hónalj: 59&nbsp;000 + 9&nbsp;500 = 68&nbsp;500 Ft alkalmanként.',
+    teljesAr: 'teljes ár', legdragabb: 'a legdrágább: teljes ár', fel: '50% kedvezmény · {ar} helyett',
+    csomagKedv: 'Csomagkedvezmény alkalmanként', elsoKez: 'Az első kezelés 20% kedvezménnyel',
+    program: '8 alkalmas program: csak 6 alkalmat fizetsz', ajandek: 'A 4. és a 8. alkalom ajándék ({ar} értékben).',
+    foglalokEgy: 'Időpontot foglalok', foglalokEgyedi: 'Egyedi csomagot foglalok',
+    labHosszu: 'Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.', labRovid: 'Az ár fix, 8 alkalomból csak 6-ot fizetsz, 2 ajándék.',
+    elozoHonap: 'Előző hónap', kovHonap: 'Következő hónap', napAria: '{nap}. {honap}: szabad időpontok',
+    nincsSzabad: 'A következő hetekre most nincs szabad időpont. ', nezdMeg: 'Nézd meg a foglalóban →',
+    hiba: 'Most nem sikerült lekérni a szabad időpontokat. ', nezdMegItt: 'Nézd meg itt az összeset →',
+    video: 'Videó', nagyitott: 'Nagyított kép', bezar: 'Bezárás', elozoKep: 'Előző kép', kovKep: 'Következő kép',
+    tiCim: 'Google-vélemények (Trustindex)', terkepCim: 'Térkép: MOSAIC, 1023 Budapest, Bécsi út 2.',
+  }, window.LEZER_SZOVEG || {});
+  const sz = (kulcs, valt = {}) => SZ[kulcs].replace(/\{(\w+)\}/g, (m, k) => (k in valt ? valt[k] : m));
+
   const SZALON = {
     cim: 'https://mosaic-elysion.salonic.hu',
     placeId: 14586,
@@ -21,8 +41,8 @@
   const API = 'https://api.salonic.hu/calendar/getAvailableTimes';
   const ZONA = 'Europe/Budapest';
   const ELORE_NAP = 92;
-  const KONZULT = { nev: 'Ingyenes konzultáció', elso: '476477' };
-  const EGYEDI = { kulcs: 'egyedi', nev: 'Több terület (egyedi csomag)', elso: '476478' };
+  const KONZULT = { nev: SZ.konzult, elso: '476477' };
+  const EGYEDI = { kulcs: 'egyedi', nev: SZ.egyedi, elso: '476478' };
   const ALAP_VALASZTAS = ['lab', 'honalj', 'intim']; // a kalkulator indito allapota
   const ELSO_KEDVEZMENY = 0.8; // az elso kezeles 20% kedvezmennyel
 
@@ -39,9 +59,9 @@
     return e;
   };
   // 12 000 Ft (nem torheto szokozzel; az Intl a 4 jegyu szamokat nem tagolna: 9 500 -> "9500")
-  const szam = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  const ft = (n) => szam(n) + ' Ft';
-  const fmt = (ts, o) => new Intl.DateTimeFormat('hu-HU', { timeZone: ZONA, ...o }).format(new Date(ts * 1000));
+  const szam = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, SZ.ezres);
+  const ft = (n) => szam(n) + SZ.penz;
+  const fmt = (ts, o) => new Intl.DateTimeFormat(SZ.locale, { timeZone: ZONA, ...o }).format(new Date(ts * 1000));
   const ora = (ts) => fmt(ts, { hour: '2-digit', minute: '2-digit' });
   const isoNap = (ts) => new Intl.DateTimeFormat('sv-SE', { timeZone: ZONA }).format(new Date(ts * 1000)); // 2026-10-07
   const SVG_NYIL = (irany) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${irany < 0 ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'}"/></svg>`;
@@ -64,7 +84,7 @@
   for (const o of document.querySelectorAll('#terulet-select option')) {
     if (o.dataset.arKiirva) continue;
     const sor = AR[o.value];
-    o.textContent += o.value === EGYEDI.kulcs ? ' \u2013 \u00e1r a kalkul\u00e1tor szerint' : (sor ? ' \u2013 ' + ft(sor.ar).replace(/ /g, '\u00a0') : '');
+    o.textContent += o.value === EGYEDI.kulcs ? SZ.egyediOpcio : (sor ? ' \u2013 ' + ft(sor.ar).replace(/ /g, '\u00a0') : '');
     o.dataset.arKiirva = '1';
   }
 
@@ -95,38 +115,38 @@
     const hova = $('szamolo-valaszto');
     const e = szamol(valasztott);
     hova.replaceChildren(
-      elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor` }),
+      elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>${SZ.kalkulator}` }),
       ...SZAMOLO_CSOPORTOK.map((cs) => elem('div', { class: 'sz-csoport' },
         elem('div', { class: 'sz-csoport-nev', html: `${SOROK.find((s) => s.csoport === cs).csoportIkon}<span>${cs}</span>` }),
         elem('div', { class: 'sz-chipek' }, ...SOROK.filter((s) => !s.csomag && s.csoport === cs).map((s) => {
           const szulo = szuloje(s.kulcs);
           return elem('button', {
             type: 'button', class: 'sz-chip', 'data-kulcs': s.kulcs, 'aria-pressed': String(valasztott.has(s.kulcs)), disabled: !!szulo,
-            title: szulo ? `Benne van a(z) ${szulo.nev} árában` : false,
+            title: szulo ? sz('benneVan', { nev: szulo.nev }) : false,
             html: `<span>${s.nev.replace(/ \(.*/, '')}</span> <small>${ft(s.ar)}</small>`,
           });
         })))),
       // telefonon a gombok alatt van az eredmeny: egy ragados osszegsav mutatja az aktualis arat (tapra az eredmenyhez ugrik)
-      elem('a', { class: 'sz-sav', href: '#szamolo-eredmeny-cim', hidden: !e.tetelek.length, html: `<span>Alkalmanként <b>${ft(e.alkalom)}</b></span><span>Részletek ↓</span>` }));
+      elem('a', { class: 'sz-sav', href: '#szamolo-eredmeny-cim', hidden: !e.tetelek.length, html: `<span>${SZ.alkalmankent} <b>${ft(e.alkalom)}</b></span><span>${SZ.reszletek}</span>` }));
     const tartalom = $('szamolo-tartalom');
     if (!e.tetelek.length) {
-      tartalom.innerHTML = '<p class="szamolo-ures">Válassz legalább egy területet.<br><span class="halk">Például teljes láb + hónalj: 59&nbsp;000 + 9&nbsp;500 = 68&nbsp;500 Ft alkalmanként.</span></p>';
+      tartalom.innerHTML = '<p class="szamolo-ures">' + SZ.ures1 + '<br><span class="halk">' + SZ.ures2 + '</span></p>';
       return;
     }
     const egy = e.tetelek.length === 1;
     tartalom.replaceChildren(...[
       elem('ul', { class: 'sz-sorok' }, ...e.tetelek.map((t) => elem('li', { class: t.teljes ? 'teljes' : '' },
-        elem('span', { html: `<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
+        elem('span', { html: `<span>${t.nev}<small>${t.teljes ? (egy ? SZ.teljesAr : SZ.legdragabb) : sz('fel', { ar: ft(t.ar) })}</small></span>` }),
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
       // tobb teruletnel az eredeti (kulon-kulon vett) ar athuzva, pirossal: lassa, mekkora a kedvezmeny; egy teruletnel nincs mit athuzni
-      elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('div', { class: 'sz-ar' }, e.kedvezmeny ? elem('s', { class: 'regi-ar', szoveg: ft(e.lista) }) : null, elem('b', { szoveg: ft(e.alkalom) }))),
-      e.kedvezmeny ? elem('div', { class: 'sz-kedv', html: `<span>Csomagkedvezmény alkalmanként</span><span>−${ft(e.kedvezmeny)}</span>` }) : null,
-      elem('div', { class: 'sz-elso', html: `<span>Az első kezelés 20% kedvezménnyel</span><b>${ft(e.elso)}</b>` }),
-      elem('div', { class: 'sz-program', html: `<div class="sz-sor"><span>8 alkalmas program: csak 6 alkalmat fizetsz</span><b>${ft(e.program)}</b></div><small>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).</small>` }),
+      elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: SZ.alkalmankent }), elem('div', { class: 'sz-ar' }, e.kedvezmeny ? elem('s', { class: 'regi-ar', szoveg: ft(e.lista) }) : null, elem('b', { szoveg: ft(e.alkalom) }))),
+      e.kedvezmeny ? elem('div', { class: 'sz-kedv', html: `<span>${SZ.csomagKedv}</span><span>−${ft(e.kedvezmeny)}</span>` }) : null,
+      elem('div', { class: 'sz-elso', html: `<span>${SZ.elsoKez}</span><b>${ft(e.elso)}</b>` }),
+      elem('div', { class: 'sz-program', html: `<div class="sz-sor"><span>${SZ.program}</span><b>${ft(e.program)}</b></div><small>${sz('ajandek', { ar: ft(e.ajandek) })}</small>` }),
       elem('div', { class: 'sz-cta' },
-        elem('a', { class: 'gomb gomb-arany gomb-szeles', href: `/foglalo-motor?business=laser&service=${(SZOLGALTATAS[egy ? e.tetelek[0].kulcs : EGYEDI.kulcs] || EGYEDI).elso}`, 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
+        elem('a', { class: 'gomb gomb-arany gomb-szeles', href: `/foglalo-motor?business=laser&service=${(SZOLGALTATAS[egy ? e.tetelek[0].kulcs : EGYEDI.kulcs] || EGYEDI).elso}`, 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? SZ.foglalokEgy : SZ.foglalokEgyedi} <span class="nyil">→</span>` }),
         // telefonon rovidebb valtozat, hogy elferjen egy sorban
-        elem('p', { class: 'sz-lab', html: '<span class="hosszu">Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.</span><span class="rovid">Az ár fix, 8 alkalomból csak 6-ot fizetsz, 2 ajándék.</span>' }))].filter(Boolean));
+        elem('p', { class: 'sz-lab', html: '<span class="hosszu">' + SZ.labHosszu + '</span><span class="rovid">' + SZ.labRovid + '</span>' }))].filter(Boolean));
   }
   $('szamolo-valaszto').addEventListener('click', (e) => {
     const b = e.target.closest('.sz-chip');
@@ -207,20 +227,20 @@
     const [y, mo] = allapot.honap;
     const kulcsok = [...allapot.napok.keys()];
     const ho = `${y}-${ketjegy(mo + 1)}`;
-    const cim = new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(y, mo, 15)));
+    const cim = new Intl.DateTimeFormat(SZ.locale, { year: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(y, mo, 15)));
     const lapoz = (irany, tiltva) => elem('button', {
-      type: 'button', class: 'naptar-lapoz', 'aria-label': irany < 0 ? 'Előző hónap' : 'Következő hónap', disabled: tiltva, html: SVG_NYIL(irany), onclick: () => honapLep(irany),
+      type: 'button', class: 'naptar-lapoz', 'aria-label': irany < 0 ? SZ.elozoHonap : SZ.kovHonap, disabled: tiltva, html: SVG_NYIL(irany), onclick: () => honapLep(irany),
     });
     const eltolas = (new Date(Date.UTC(y, mo, 1)).getUTCDay() + 6) % 7; // hetfo az elso oszlop
     const hossz = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
     const cellak = [];
-    for (const nap of ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V']) cellak.push(elem('span', { class: 'naptar-hetnap', szoveg: nap }));
+    for (const nap of SZ.hetnapok) cellak.push(elem('span', { class: 'naptar-hetnap', szoveg: nap }));
     for (let i = 0; i < eltolas; i++) cellak.push(elem('span'));
     for (let d = 1; d <= hossz; d++) {
       const iso = `${ho}-${ketjegy(d)}`;
       if (allapot.napok.has(iso)) {
         cellak.push(elem('button', {
-          type: 'button', class: 'naptar-nap', 'aria-pressed': String(iso === allapot.nap), 'aria-label': `${d}. ${cim.split(' ')[1] || ''}: szabad időpontok`, szoveg: String(d), onclick: () => napValaszt(iso),
+          type: 'button', class: 'naptar-nap', 'aria-pressed': String(iso === allapot.nap), 'aria-label': sz('napAria', { nap: d, honap: cim.split(' ')[1] || '', datum: new Intl.DateTimeFormat(SZ.locale, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(y, mo, d))) }), szoveg: String(d), onclick: () => napValaszt(iso),
         }));
       } else cellak.push(elem('span', { class: 'naptar-nap', szoveg: String(d) }));
     }
@@ -249,7 +269,7 @@
       allapot.napok = napok;
       if (!napok.size) {
         $('naptar').replaceChildren();
-        uzenet.replaceChildren('A következő hetekre most nincs szabad időpont. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg a foglalóban →' }));
+        uzenet.replaceChildren(SZ.nincsSzabad, elem('a', { href: motorUrl(), szoveg: SZ.nezdMeg }));
         uzenet.hidden = false;
         return;
       }
@@ -261,7 +281,7 @@
       if (en !== kerNo) return;
       console.error(hiba);
       $('naptar').replaceChildren();
-      uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg itt az összeset →' }));
+      uzenet.replaceChildren(SZ.hiba, elem('a', { href: motorUrl(), szoveg: SZ.nezdMegItt }));
       uzenet.hidden = false;
     }
   }
@@ -310,7 +330,7 @@
   for (const zv of document.querySelectorAll('.video-kartya[data-video]')) {
     zv.addEventListener('click', () => {
       const poszter = zv.querySelector('img');
-      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': zv.dataset.cim || 'Videó' });
+      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': zv.dataset.cim || SZ.video });
       v.append(elem('source', { src: zv.dataset.video, type: 'video/mp4' }));
       const hely = elem('div', { class: 'video-kartya' }, v);
       zv.replaceWith(hely);
@@ -333,14 +353,14 @@
   // --- Zsofi kepgaleria: kattintasra nagyban (lapozhato, Esc / hatterre kattintas bezarja) ------------------------------------------------
   const gKepek = [...document.querySelectorAll('.galeria-kep')];
   if (gKepek.length) {
-    const nagyito = elem('dialog', { class: 'nagyito', 'aria-label': 'Nagyított kép' });
+    const nagyito = elem('dialog', { class: 'nagyito', 'aria-label': SZ.nagyitott });
     const nagyKep = elem('img', { alt: '' });
     let idx = 0;
     const mutat = (i) => { idx = (i + gKepek.length) % gKepek.length; const im = gKepek[idx].querySelector('img'); nagyKep.src = gKepek[idx].dataset.nagy || im.src; nagyKep.alt = im.alt; };
     nagyito.append(nagyKep,
-      elem('button', { type: 'button', class: 'zar', 'aria-label': 'Bezárás', szoveg: '×', onclick: () => nagyito.close() }),
-      elem('button', { type: 'button', class: 'elozo', 'aria-label': 'Előző kép', szoveg: '‹', onclick: () => mutat(idx - 1) }),
-      elem('button', { type: 'button', class: 'kov', 'aria-label': 'Következő kép', szoveg: '›', onclick: () => mutat(idx + 1) }));
+      elem('button', { type: 'button', class: 'zar', 'aria-label': SZ.bezar, szoveg: '×', onclick: () => nagyito.close() }),
+      elem('button', { type: 'button', class: 'elozo', 'aria-label': SZ.elozoKep, szoveg: '‹', onclick: () => mutat(idx - 1) }),
+      elem('button', { type: 'button', class: 'kov', 'aria-label': SZ.kovKep, szoveg: '›', onclick: () => mutat(idx + 1) }));
     nagyito.addEventListener('click', (e) => { if (e.target === nagyito) nagyito.close(); });
     nagyito.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') mutat(idx - 1); if (e.key === 'ArrowRight') mutat(idx + 1); });
     document.body.append(nagyito);
@@ -355,7 +375,7 @@
   function trustindexBetolt() {
     if (!tiDoboz || tiBetoltve) return;
     tiBetoltve = true;
-    const f = elem('iframe', { class: 'ti-keret', src: tiDoboz.dataset.embed, title: 'Google-vélemények (Trustindex)', loading: 'eager', scrolling: 'no' });  // nem lazy: a hozzajarulas utan azonnal toltodjon, ne csak gorgetesre
+    const f = elem('iframe', { class: 'ti-keret', src: tiDoboz.dataset.embed, title: SZ.tiCim, loading: 'eager', scrolling: 'no' });  // nem lazy: a hozzajarulas utan azonnal toltodjon, ne csak gorgetesre
     let proba = 0, legnagyobb = 0;
     const meret = (nullaz) => {
       try {
@@ -412,7 +432,7 @@
     const t = $('terkep');
     if (!t || t.querySelector('iframe')) return;
     t.prepend(elem('iframe', {
-      title: 'Térkép: MOSAIC, 1023 Budapest, Bécsi út 2.', loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade',
+      title: SZ.terkepCim, loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade',
       src: 'https://www.google.com/maps?q=' + encodeURIComponent('MOSAIC Head Spa, 1023 Budapest, Bécsi út 2.') + '&output=embed',
     }));
     const h = $('terkep-hely');
@@ -433,7 +453,7 @@
       const n = ((a && a.textContent.match(/\d[\d\s.]*/)) || [''])[0].replace(/\D/g, '');
       if (!n) return;
       for (const e of document.querySelectorAll('[data-ertekeles-db]')) e.textContent = szam(+n);
-      for (const l of document.querySelectorAll('.google-nagy[aria-label]')) l.setAttribute('aria-label', l.getAttribute('aria-label').replace(/\d+ Google-vélemény/, `${n} Google-vélemény`));
+      for (const l of document.querySelectorAll('.google-nagy[aria-label]')) l.setAttribute('aria-label', l.getAttribute('aria-label').replace(/\d{3,}/, n));
     } catch (hiba) { tiKesz = false; console.error(hiba); }
   }
   ertekelesFrissit();
