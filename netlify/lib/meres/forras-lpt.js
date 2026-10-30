@@ -17,6 +17,7 @@ import { erkezesTisztit } from './erkezes.js';
 import { hozzajarulasTisztit } from './hozzajarulas.js';
 import { SOURCE_ID_MINTA, UZLETAGAK } from './esemeny-modell.js';
 import { oszlopokBiztosit } from './sema-seged.js';
+import { vidMukodik, vidKulcs, vidUj, vidOlvas, vidSuti, vidSutiVan, vidHash, klikkHash, erintesSor, erintesIr, vidErkezesIr, utvonalLezar } from './erintesnaplo.js'; // #495 (UJ-80): erintesnaplo, MERES_VID_BE=1 mellett
 import { eloBongeszoJelzes } from './tiktok-elo.js'; // UJ-67/69/71/73: a kodos elo TikTok-esemeny jelzese a kliensnek (csak bekapcsolt uzletagnal)
 
 export const CIMKEK = Object.freeze(['meta', 'tiktok', 'google_nem_markas', 'google_markas', 'organikus_direkt', 'ismeretlen']);
@@ -289,11 +290,38 @@ export async function forrasMent(db, sor, { env = {} } = {}) {
 }
 
 // ---------- HTTP ----------
-const json = (o, status = 200, extra = {}) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...extra } });
+const json = (o, status = 200, extra = {}) => {
+  const h = new Headers({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+  for (const [k, v] of Object.entries(extra)) { if (Array.isArray(v)) v.forEach((x) => h.append(k, x)); else h.set(k, v); } // tobb Set-Cookie (mh_lpt + mh_vid) fejlec is lehet
+  return new Response(JSON.stringify(o), { status, headers: h });
+};
 export const ELES_HOST = /^(www\.)?mosaicheadspa\.hu$/;
 /** Eles domain, *.pages.dev elonezet, helyi fejlesztes; minden mas host 404. */
 export const hostEngedett = (host) => ELES_HOST.test(host) || /\.pages\.dev$/.test(host) || host === 'localhost' || host === '127.0.0.1';
 export const lptKi = (env) => !!env && String(env.MOSAIC_LPT_KI) === '1';
+
+/**
+ * #495 (UJ-80) ERINTESNAPLO: a fizetett erkezes (vagy a napi 1 organikus / direkt visszateres: b.organikus === true) eseten az mh_vid suti (30 nap, gordulo) es az erintes-sor (meres_erintes).
+ * A hozzajarulas-dontest a hivo mar meghozta (ugyanaz, mint az mh_lpt-nel: hozz.adv === false -> ide nem jutunk). FAIL-CLOSED: MERES_VID_BE != 1 vagy nincs kulcs -> null (nincs suti, nincs sor).
+ * e: az erintesTisztit eredmenye (kv-vel, ha van). -> { fejlec: 'mh_vid=...' } | null. A D1-hiba NEM akadalyozza a sutit (de a sor elmarad), es az mh_lpt-t semmi nem erinti.
+ */
+async function vidKezel({ env, b, e, cookie, most }) {
+  if (!vidMukodik(env) || !e) return null;
+  if (hozzajarulasTisztit(b && b.hozz).adv !== true) return null; // az mh_vid-hez kifejezett marketing-hozzajarulas kell (a nem megadott sem eleg)
+  const kulcs = vidKulcs(env);
+  const vid = vidOlvas(cookie) || vidUj();
+  if (env.KULCS_DB) {
+    try {
+      const vh = await vidHash(kulcs, vid);
+      const markas = await markasListaOlvas(env.KULCS_DB);
+      const { forras_cimke: cimke } = cimkez(e, markas);
+      const kh = e.kp && e.kv ? await klikkHash(kulcs, e.kp, e.kv) : null;
+      const sor = erintesSor({ e, cimke, vidHashErtek: vh, klikkHashErtek: kh, lap: b && b.lap, most });
+      if (sor) await erintesIr(env.KULCS_DB, sor, { most });
+    } catch (err) { console.error('erintesnaplo: hiba (a suti es az mh_lpt nem erintett)', String(err && err.message || err).slice(0, 200)); }
+  }
+  return { fejlec: vidSuti(vid) };
+}
 
 /**
  * /api/mosaic-forras
@@ -322,16 +350,26 @@ export async function forrasVegpont({ request, env = {} }, { most = sec(Date.now
   let b; try { b = JSON.parse(szoveg); } catch (e) { return json({ ok: false, miert: 'nem JSON' }, 400); }
   if (!b || typeof b !== 'object' || Array.isArray(b)) return json({ ok: false, miert: 'nem objektum' }, 400);
   const hozz = hozzajarulasTisztit(b.hozz);
-  if (hozz.adv === false) { // kifejezett elutasitas / visszavonas: sutit nem irunk, a meglevot toroljuk
-    return json({ ok: true, suti: false }, 200, LPT_SUTI in sutik(cookie) ? { 'set-cookie': lptSuti(null, true) } : {});
+  if (hozz.adv === false) { // kifejezett elutasitas / visszavonas: sutit nem irunk, a meglevot toroljuk (az mh_vid-et is: #495)
+    const torol = []; if (LPT_SUTI in sutik(cookie)) torol.push(lptSuti(null, true)); if (vidSutiVan(cookie)) torol.push(vidSuti(null, true));
+    return json({ ok: true, suti: false }, 200, torol.length ? { 'set-cookie': torol.length === 1 ? torol[0] : torol } : {});
   }
   const e = erintesTisztit(b.forras, most, { kv: true });
-  if (!e || !fizetett(e)) return json({ ok: true, suti: false }); // nem fizetett erkezes: nem ir, nem torol
+  if (!e || !fizetett(e)) { // nem fizetett erkezes: az mh_lpt-t nem irja, nem torli; #495: a napi 1 organikus / direkt visszateres az erintesnaplo-ba (MERES_VID_BE=1 mellett)
+    if (e && b.organikus === true) {
+      if (!vidMukodik(env)) return json({ ok: true, suti: false, vid: false }); // kikapcsolt / kulcs nelkuli allapot: a kliens 7 napig nem probalkozik ujra
+      try { const v = await vidKezel({ env, b, e, cookie, most }); if (v) return json({ ok: true, suti: false }, 200, { 'set-cookie': v.fejlec }); } catch (err) { /* az mh_vid hibaja nem akadalyoz */ }
+    }
+    return json({ ok: true, suti: false });
+  }
+  const eVid = { ...e }; // az erintesnaplo a tisztitott erintest kapja (rk-val, t-vel), az mh_lpt logika alatta valtozatlan
   delete e.rk;
   // ugyanaz a kattintas (azonos azonosito) ujratoltese / masik lapon valo ujranyitasa NEM frissiti az idot; minden mas (uj kattintas) a mostani szerver-idot kapja
   const regi = lptOlvas(cookie, most);
   e.t = regi && e.kv && regi.kv === e.kv && regi.kp === e.kp ? regi.t : most;
-  return json({ ok: true, suti: true }, 200, { 'set-cookie': lptSuti(e) });
+  const sutik2 = [lptSuti(e)];
+  if (vidMukodik(env)) { try { const v = await vidKezel({ env, b, e: eVid, cookie, most }); if (v) sutik2.push(v.fejlec); } catch (err) { /* az mh_vid hibaja nem akadalyoz */ } }
+  return json({ ok: true, suti: true }, 200, { 'set-cookie': sutik2.length === 1 ? sutik2[0] : sutik2 });
 }
 
 /**
@@ -384,6 +422,13 @@ export async function erkezesForrassal(request, env, kezel, deps = {}) {
     const { sor } = forrasSor({ be: mentve ? be : { ...be, lpt_potlas: undefined }, cookieFejlec: cookie, most, markasLista: markas, szerverPotlas: mentve && ujKeres ? szerverPotlas : [] });
     if (!mentve && sor.klikk_potolt === KLIKK_POTOLT_NINCS) sor.klikk_potolt = KLIKK_POTOLT_NEM_MENTVE;
     const forras = await forrasMent(env.KULCS_DB, sor, { env });
+    if (vidMukodik(env) && advEngedett(be)) { // #495: source_id -> vid_hash (az utvonal-zarashoz) + a fuggo utvonalak zarasa; hiba nem torheti el a valaszt
+      try {
+        const vid = vidOlvas(cookie);
+        if (vid) await vidErkezesIr(env.KULCS_DB, { source_id: be.source_id, vid_hash: await vidHash(vidKulcs(env), vid), most });
+        await utvonalLezar(env.KULCS_DB, { most, limit: 25 }); // a koszonooldali valasz elott fut: kis tetel; a maradekot a riport zarja
+      } catch (err) { console.error('erintesnaplo: utvonal-hiba (a foglalas / a meres_erkezes mentese nem erintett)', String(err && err.message || err).slice(0, 200)); }
+    }
     return new Response(JSON.stringify({ ...j, forras, ...(tt ? { tiktok_elo: tt } : {}) }), { status: valasz.status, headers: valasz.headers });
   } catch (e) {
     console.error('meres_forras: hiba (a foglalas / a meres_erkezes mentese nem erintett)', String(e && e.message || e).slice(0, 200));

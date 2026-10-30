@@ -264,9 +264,26 @@
     if (!engedely() || !fizetett(t)) return;
     var f = tiszta(t); delete f.rk;
     if (kv && f.kp && MINTA[f.kp] && MINTA[f.kp].test(kv)) f.kv = kv;
-    lptPost({ forras: f, hozz: hozzPost() });
+    lptPost({ forras: f, lap: location.pathname, hozz: hozzPost() }); // lap: a landing utvonal (az erintesnaplohoz; query nelkul)
   }
   function lptTorolKuld() { lptPost({ hozz: { adv: false } }); } // kifejezett elutasitas / visszavonas: a szerver torli a sutit
+  // #495 (UJ-80) ERINTESNAPLO: az organikus / direkt visszateres (nem fizetett erkezes, nem belso navigacio, nem ujratoltes) NAPI 1x jelzes a szervernek (mh_vid suti + konnyu erintes-sor). A szerver a MERES_VID_BE
+  // kapcsolo es a titkos kulcs hianyaban semmit nem ir, es "vid: false"-t jelez: ekkor 7 napig nem probalkozunk ujra. Marketing-engedely nelkul nem megy; a napi korlat a localStorage-ban (tiltott tarolo: nem kuldunk).
+  var F_VID_NAP = 'mh_vid_nap', F_VID_KI = 'mh_vid_ki';
+  function napKulcs() { var dt = new Date(); return dt.getUTCFullYear() + '-' + (dt.getUTCMonth() + 1) + '-' + dt.getUTCDate(); }
+  function vidOrganikusKuld(t) {
+    if (!engedely() || fizetett(t) || !LPT_HOST || typeof fetch !== 'function') return;
+    try {
+      if (Number(localStorage.getItem(F_VID_KI) || 0) > ma()) return; // a szerver kikapcsolt allapotot jelzett: nem probalkozunk
+      if (localStorage.getItem(F_VID_NAP) === napKulcs()) return;
+    } catch (e) { return; }
+    try {
+      fetch('/api/mosaic-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify({ forras: tiszta(t), organikus: true, lap: location.pathname, hozz: hozzPost() }) })
+        .then(function (r) { return r && r.ok ? r.json() : null; })
+        .then(function (j) { if (!j) return; try { localStorage.setItem(F_VID_NAP, napKulcs()); if (j.vid === false) localStorage.setItem(F_VID_KI, String(ma() + 86400)); } catch (e2) { /* nem baj */ } }) // a napi jelzes csak sikeres valasz utan; kikapcsolt szerver: 1 nap szunet
+        .catch(function () { /* nem zavar */ });
+    } catch (e3) { /* regi bongeszo */ }
+  }
   function erkezesFeldolgoz() {
     if (!LPT_HOST) return;
     if (!engedely()) { // nincs engedely: nincs erzekeles. KIFEJEZETT elutasitasnal a tarolt erintes torolve, a korabban irt suti torlese (munkamenetenkent egyszer); dontes / suti.js nelkul semmi nem torlodik
@@ -285,6 +302,7 @@
     if (csere) mIr(uj);
     var nt = navTipus();
     if (fizetett(uj) && rk !== 'belso' && nt !== 'reload' && nt !== 'back_forward') lptKuld(uj, er.kv); // a szerver ugyanazt a kattintast nem frissiti ujra
+    else if (!fizetett(uj) && rk !== 'belso' && nt !== 'reload' && nt !== 'back_forward') vidOrganikusKuld(uj); // #495: organikus / direkt visszateres, napi 1x
     latogatasFrissit();
   }
   function latogatasFrissit() { var o = forrasOlvas(); if (o) lIr(o); } // minden oldalmegtekintes, amig van erintes, 2 orara megujitja a latogatas-tarolot
