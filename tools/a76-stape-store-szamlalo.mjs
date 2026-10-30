@@ -88,6 +88,25 @@ export function kategoriakNaponta(docs, { tolMs, mezo }) {
   return nap;
 }
 
+// UJ-93 0. lepes: a mezo nelkuli ("nincs") sorok SZERKEZETE - csak kulcsnevek (ertek nelkul): melyik masik mezok vannak meg (pl. a76_nav), ora (UTC) es oldal-utvonal (query nelkul) szerint.
+// Cel: eldonteni, hogy a hianyzo sorok a Data Tag 35 regi valtozatabol (van a76_nav, nincs first_booking_raw) vagy mas kuldotol jonnek (mas kulcskeszlet).
+export function hianyzoSzerkezet(docs, { tolMs, mezo, megjelenit = ['a76_nav', 'a76_nav_diag', 'a76_sched_ok'] }) {
+  const ki = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at);
+    if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    const van = dd[mezo] !== undefined && dd[mezo] !== null;
+    const csop = van ? 'van' : 'nincs';
+    const jel = megjelenit.map((k) => (dd[k] !== undefined && dd[k] !== null ? k : '-' + k)).join(',');
+    let ut = '-'; try { ut = new URL(String(dd.page_location || '')).pathname.replace(/[^A-Za-z0-9/_-]/g, '').slice(0, 40) || '-'; } catch { /* nincs */ }
+    const ora = new Date(ms).toISOString().slice(0, 13) + 'Z';
+    const kulcs = `${csop} | ${jel} | kulcsszam=${Object.keys(dd).length} | ${ut} | ${ora}`;
+    ki[kulcs] = (ki[kulcs] || 0) + 1;
+  }
+  return ki;
+}
+
 export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, napok = 7, tol = '', mezo = 'fbc_suti_van', sorok = false, kategoria: kategoriaMod = false, fetchImpl = fetch, naplo = (s) => console.log(s), most = Date.now() }) {
   if (!key) { naplo('HIBA: a STAPE_KEY (secret STAPE_A76_CONTAINER_KEY) nincs beallitva.'); return { ok: false }; }
   const rejt = (s) => String(s).split(key).join('***');
@@ -119,6 +138,8 @@ export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, n
       naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${String(dd.consent_state || '-').slice(0, 40)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}${process.env.SOROK === '2' ? ' | ' + Object.entries(priceJellemzes(dd.page_location)).map(([k, x]) => k + '=' + x).join(' ') : ''}`);
     }
     if (kategoriaMod) {
+      const hs = hianyzoSzerkezet(k.docs, { tolMs, mezo });
+      for (const kk of Object.keys(hs).sort()) naplo(`  szerkezet | ${kk} | db=${hs[kk]}`);
       const kn = kategoriakNaponta(k.docs, { tolMs, mezo });
       for (const nap of Object.keys(kn).sort()) for (const ev of Object.keys(kn[nap]).sort()) naplo(`  ${nap} | ${ev} | ${mezo}: ` + KATEGORIAK.filter((x) => kn[nap][ev][x]).map((x) => `${x}=${kn[nap][ev][x]}`).join(' '));
     }

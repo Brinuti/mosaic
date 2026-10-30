@@ -80,3 +80,21 @@ test('kategoriakNaponta (UJ-93 0. lepes): zart halmaz, esemenynev szerinti napi 
   await futtat({ key: KEY, kollekciok: ['a76_schedule_log'], tol: '2026-10-26T10:40:00Z', kategoria: true, mezo: 'fbc_suti_van', fetchImpl: f, naplo: (s) => sorok.push(s), most: Date.parse('2026-10-26T12:00:00Z') });
   assert.equal(sorok.join('\n').includes(KEY), false);
 });
+
+test('hianyzoSzerkezet (UJ-93 0. lepes): a mezo nelkuli sorok kulcskeszlete (csak kulcsnevek), ora (UTC) es utvonal szerint; nyers ertek / URL-query / azonosito nem kerul a kimenetre', async () => {
+  const { hianyzoSzerkezet } = await import('./a76-stape-store-szamlalo.mjs');
+  const mk = (iso, dd) => ({ created_at: iso, data: dd });
+  const docs = [
+    mk('2026-10-30T15:06:10Z', { event_name: 'gtm.js', a76_nav: 'navigate', a76_nav_diag: 'x', first_booking_raw: 'false', page_location: 'https://www.a76.hu/foglalas-moricz/?first_booking=false&gclid=TITKOS1234' }),
+    mk('2026-10-30T15:48:20Z', { event_name: 'gtm.js', a76_nav: 'navigate', page_location: 'https://www.a76.hu/foglalas-moricz/?gclid=TITKOS5678' }),
+    mk('2026-10-30T15:49:20Z', { event_name: 'gtm.js', client_id: 'c1', page_location: 'https://www.a76.hu/foglalas-oktogon/' }),
+    mk('2026-10-30T12:00:00Z', { event_name: 'gtm.js', page_location: 'https://www.a76.hu/foglalas-moricz/' }), // tol elott
+  ];
+  const ki = hianyzoSzerkezet(docs, { tolMs: Date.parse('2026-10-30T14:46:30Z'), mezo: 'first_booking_raw' });
+  assert.deepEqual(ki, {
+    'van | a76_nav,a76_nav_diag,-a76_sched_ok | kulcsszam=5 | /foglalas-moricz/ | 2026-10-30T15Z': 1,
+    'nincs | a76_nav,-a76_nav_diag,-a76_sched_ok | kulcsszam=3 | /foglalas-moricz/ | 2026-10-30T15Z': 1,
+    'nincs | -a76_nav,-a76_nav_diag,-a76_sched_ok | kulcsszam=3 | /foglalas-oktogon/ | 2026-10-30T15Z': 1,
+  });
+  const szoveg = JSON.stringify(ki); assert.ok(!/TITKOS|gclid|first_booking=/.test(szoveg), 'nincs nyers ertek / query');
+});
