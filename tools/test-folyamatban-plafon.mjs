@@ -140,3 +140,27 @@ test('P5 qa-nap erkezes_kuldes_nelkul (HS-G-S): kuldes nelkuli bongeszos erkezes
   await qaNap(D, napIntervallum('2026-10-28'), { mostMs: NOW });
   assert.equal(JSON.stringify(D.db.prepare('SELECT * FROM meres_erkezes').all()), elotte);
 });
+
+test('P7 UJ-96 takarito: egy MASIK forras 10 percnel regebbi folyamatban sora a kovetkezo futasnal megszakadt (nem kuld ujra), a friss es a vegleges sor erintetlen', async () => {
+  const d = d1(); await meresSema(d);
+  const A = ID('a'); const B = ID('b');
+  await erkezesMent(d, ERK({ source_id: A }), T0); await erkezesMent(d, ERK({ source_id: B }), T0);
+  const megszakit = async () => { throw new Error('megszakitva (a hivo lecsatlakozott)'); };
+  const hiv = []; const jo = async (k) => { hiv.push(k.platform); return OK; };
+  // A forras: megszakad a kuldes -> folyamatban (probalkozas 1); a hivo nem jon vissza
+  await assert.rejects(elosztas(d, FK({ source_entity_id: A }), { env: EV_ENV, kuldo: megszakit, now: () => T0 }), /megszakitva/);
+  const a0 = sorok(d).filter((r) => r.allapot === 'folyamatban'); assert.ok(a0.length >= 1);
+  // B forras +9 perc: az A sor meg friss (<10 perc) -> marad
+  await elosztas(d, FK({ source_entity_id: B }), { env: EV_ENV, kuldo: jo, now: () => T0 + 9 * 60000 });
+  assert.equal(sorok(d).filter((r) => r.allapot === 'folyamatban').length, a0.length, '9 percesnel nem takarit');
+  // B forras ujabb futasa +11 perc: az A sor megszakadt, nem kuldtunk ujra az A-nak
+  hiv.length = 0;
+  await elosztas(d, FK({ source_entity_id: B }), { env: EV_ENV, kuldo: jo, now: () => T0 + 11 * 60000 });
+  const mind = d.db.prepare('SELECT id, allapot, indok, source_id FROM meres_kuldes').all();
+  const aSorok = mind.filter((r) => r.source_id === A);
+  assert.ok(aSorok.some((r) => r.allapot === 'megszakadt' && /takarito/.test(r.indok)), 'az A sor megszakadt (takarito)');
+  assert.ok(!aSorok.some((r) => r.allapot === 'folyamatban'), 'nincs A folyamatban sor');
+  assert.equal(hiv.length, 0, 'a B forras sorai mar veglegesek, az A-nak nem ment ujra kuldes');
+  // a vegleges (elkuldve) B sorok erintetlenek
+  assert.ok(mind.filter((r) => r.source_id === B).every((r) => r.allapot !== 'megszakadt'));
+});
