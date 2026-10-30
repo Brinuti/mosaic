@@ -27,6 +27,10 @@ on:
         description: "0/1 jelzo mezo orankenti eloszlasa (alap: fbc_suti_van)"
         required: false
         default: "fbc_suti_van"
+      kategoria:
+        description: "1 = a mezo KATEGORIKUS (pl. first_booking_raw) napi bontasa esemenynev szerint, zart halmazzal (nyers ertek nem kerul a naplora)"
+        required: false
+        default: "0"
 
 permissions:
   contents: read
@@ -54,4 +58,5 @@ jobs:
           TOL: ${{ github.event.inputs.tol }}
           MEZO_JELZO: ${{ github.event.inputs.mezo }}
           SOROK: ${{ github.event.inputs.sorok }}
+          KATEGORIA: ${{ github.event.inputs.kategoria }}
         run: node tools/a76-stape-store-szamlalo.mjs

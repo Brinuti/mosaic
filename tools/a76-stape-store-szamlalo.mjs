@@ -67,7 +67,28 @@ export function osszegez(docs, { tolMs, mezo }) {
   return { mezonevek: [...nevek].sort(), oraSzam, jelzo, idoNelkul };
 }
 
-export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, napok = 7, tol = '', mezo = 'fbc_suti_van', sorok = false, fetchImpl = fetch, naplo = (s) => console.log(s), most = Date.now() }) {
+
+// UJ-93 0. lepes (DECISION #263): a first_booking_raw KATEGORIKUS mezo napi (budapesti) bontasa esemenynev szerint.
+// Zart halmaz: hianyzik | ures | true | false | 1 | 0 | egyeb | hiba | nincs; minden mas ertek "egyeb"-be kerul (nyers ertek, azonosito, URL SOHA nem kerul a naploba).
+export const KATEGORIAK = Object.freeze(['hianyzik', 'ures', 'true', 'false', '1', '0', 'egyeb', 'hiba', 'nincs']);
+const kategoria = (v) => (v === undefined || v === null ? 'nincs' : KATEGORIAK.includes(String(v)) ? String(v) : 'egyeb');
+const bpNap = (ms) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date(ms));
+export function kategoriakNaponta(docs, { tolMs, mezo }) {
+  const nap = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at);
+    if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    const ev = String(dd.event_name || '-').replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 40) || '-';
+    const n = (nap[bpNap(ms)] = nap[bpNap(ms)] || {});
+    const e = (n[ev] = n[ev] || {});
+    const k = kategoria(dd[mezo]);
+    e[k] = (e[k] || 0) + 1;
+  }
+  return nap;
+}
+
+export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, napok = 7, tol = '', mezo = 'fbc_suti_van', sorok = false, kategoria: kategoriaMod = false, fetchImpl = fetch, naplo = (s) => console.log(s), most = Date.now() }) {
   if (!key) { naplo('HIBA: a STAPE_KEY (secret STAPE_A76_CONTAINER_KEY) nincs beallitva.'); return { ok: false }; }
   const rejt = (s) => String(s).split(key).join('***');
   const api = `${String(base).replace(/\/+$/, '')}/stape-api/${key}/v2/store`;
@@ -97,6 +118,10 @@ export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, n
       let ut = '-'; try { ut = new URL(String(dd.page_location || '')).pathname; } catch { /* nincs */ }
       naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${String(dd.consent_state || '-').slice(0, 40)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}${process.env.SOROK === '2' ? ' | ' + Object.entries(priceJellemzes(dd.page_location)).map(([k, x]) => k + '=' + x).join(' ') : ''}`);
     }
+    if (kategoriaMod) {
+      const kn = kategoriakNaponta(k.docs, { tolMs, mezo });
+      for (const nap of Object.keys(kn).sort()) for (const ev of Object.keys(kn[nap]).sort()) naplo(`  ${nap} | ${ev} | ${mezo}: ` + KATEGORIAK.filter((x) => kn[nap][ev][x]).map((x) => `${x}=${kn[nap][ev][x]}`).join(' '));
+    }
     for (const ora of Object.keys(o.oraSzam).sort()) naplo(`  ${ora}h (Budapest): ${o.oraSzam[ora]} sor; ${mezo}: 1=${o.jelzo[ora][1]} 0=${o.jelzo[ora][0]} nincs=${o.jelzo[ora].nincs}`);
   }
   return { ok: true, eredmeny };
@@ -106,7 +131,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const r = await futtat({
     key: process.env.STAPE_KEY || '', base: process.env.STAPE_BASE || 'https://stape.a76.hu',
     kollekciok: (process.env.KOLLEKCIOK || 'a76_schedule_log,a76_foglalas_forras').split(',').map((s) => s.trim()).filter(Boolean),
-    napok: process.env.NAPOK || 7, tol: process.env.TOL || '', mezo: process.env.MEZO_JELZO || 'fbc_suti_van', sorok: process.env.SOROK === '1' || process.env.SOROK === '2',
+    napok: process.env.NAPOK || 7, tol: process.env.TOL || '', mezo: process.env.MEZO_JELZO || 'fbc_suti_van', sorok: process.env.SOROK === '1' || process.env.SOROK === '2', kategoria: process.env.KATEGORIA === '1',
   });
   if (!r.ok) process.exit(1);
 }

@@ -60,3 +60,23 @@ test('priceJellemzes: csak jellemzes, ertek nincs (van / ures / csak szamjegy / 
   assert.equal(priceJellemzes('nem url').price, 'nincs_url');
   assert.equal(JSON.stringify(priceJellemzes('https://a76.hu/?price=1234&email=a@b.hu')).includes('1234'), false, 'az ertek nem kerul ki');
 });
+
+test('kategoriakNaponta (UJ-93 0. lepes): zart halmaz, esemenynev szerinti napi bontas, nyers ertek / URL nem kerul ki', async () => {
+  const { kategoriakNaponta, KATEGORIAK } = await import('./a76-stape-store-szamlalo.mjs');
+  const doc = (t, ev, fb) => ({ created_at: t, data: { event_name: ev, first_booking_raw: fb, page_location: 'https://x/?email=SZEMELYES@x.hu' } });
+  const docs = [
+    doc('2026-10-30T14:30:00Z', 'a76_booking_booked', 'false'), doc('2026-10-30T14:40:00Z', 'a76_booking_booked', 'false'),
+    doc('2026-10-30T15:00:00Z', 'page_view', 'hianyzik'), doc('2026-10-30T15:10:00Z', 'a76_booking_booked', 'true'),
+    doc('2026-10-30T15:20:00Z', 'a76_booking_booked', 'SZEMELYES@x.hu'), doc('2026-10-30T15:30:00Z', 'a76_booking_booked', undefined),
+    doc('2026-10-29T10:00:00Z', 'a76_booking_booked', '1'), doc('2026-10-20T10:00:00Z', 'a76_booking_booked', '0'),
+  ];
+  const r = kategoriakNaponta(docs, { tolMs: Date.parse('2026-10-29T00:00:00Z'), mezo: 'first_booking_raw' });
+  assert.deepEqual(r['2026-10-30'].a76_booking_booked, { false: 2, true: 1, egyeb: 1, nincs: 1 });
+  assert.deepEqual(r['2026-10-30'].page_view, { hianyzik: 1 });
+  assert.deepEqual(r['2026-10-29'].a76_booking_booked, { 1: 1 });
+  assert.equal(r['2026-10-20'], undefined, 'a tol elotti dokumentum kimarad');
+  assert.equal(JSON.stringify(r).includes('SZEMELYES'), false); assert.ok(KATEGORIAK.includes('egyeb'));
+  const sorok = []; const f = szerver(LAPOK);
+  await futtat({ key: KEY, kollekciok: ['a76_schedule_log'], tol: '2026-10-26T10:40:00Z', kategoria: true, mezo: 'fbc_suti_van', fetchImpl: f, naplo: (s) => sorok.push(s), most: Date.parse('2026-10-26T12:00:00Z') });
+  assert.equal(sorok.join('\n').includes(KEY), false);
+});
