@@ -4,7 +4,8 @@
 // A fordito-tabla (en.json / uk.json): a MAGYAR szoveg (szovegcsomopont vagy alt / aria-label / title / data-nev / data-cim / label / placeholder ertek) -> fordítas.
 // Ha a magyar oldalon uj / megvaltozott szoveg van, es nincs a tablaban, a generator HIBAVAL leall (nem marad magyar szoveg az idegen nyelvu oldalon).
 // Az ar-ertekek ("19 000 Ft") a generator formazza: en: 19,000 HUF; uk: 19 000 HUF. A szamolo / naptar felirati: assets/js/lezer-szoveg-<nyelv>.js.
-// Az oldalak noindex (csak hirdetesekhez), a fejlec / lablec: az angolon a kozos angol valtozat (<!--mh-nyelv:en-->), az ukranon a kozos (magyar) - a tulajdonos kerese, 2026-10-30.
+// Az oldalak ZART landingek (csak hirdetesekhez, noindex): nincs menu-fejlec (csak a logo, nem link) es nincs a kozos lablec: minimalis lablec (cim, telefon, e-mail,
+// nyitvatartas, suti-beallitasok), hogy a latogato ne tudjon elnavigalni a (magyar) oldalra - a tulajdonos kerese, 2026-10-30. A stilus: assets/css/lezer-zart.css.
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -12,8 +13,16 @@ const GYOKER = path.resolve(import.meta.dirname, '..', '..');
 const FORRAS = path.join(GYOKER, 'foglalas', 'vegleges-szortelenites-budapest.html');
 const ALAP_URL = 'https://www.mosaicheadspa.hu/';
 const NYELVEK = {
-  en: { fajl: 'permanent-hair-removal-budapest', ezres: ',', penz: '&nbsp;HUF', fejlec: '<!--mh-nyelv:en-->', cimke: 'angol' },
-  uk: { fajl: 'ostatochne-vydalennya-volossya-budapesht', ezres: '&nbsp;', penz: '&nbsp;HUF', fejlec: '', cimke: 'ukran' },
+  en: {
+    fajl: 'permanent-hair-removal-budapest', ezres: ',', penz: '&nbsp;HUF', cimke: 'angol',
+    logoAlt: 'MOSAIC Head Spa and Hair',
+    lablec: { cim: '1023 Budapest, Bécsi út 2. (between Kolosy tér and Zsigmond tér)', ora: 'Monday–Saturday 8:00–20:00 · Sunday closed', suti: 'Cookie settings' },
+  },
+  uk: {
+    fajl: 'ostatochne-vydalennya-volossya-budapesht', ezres: '&nbsp;', penz: '&nbsp;HUF', cimke: 'ukran',
+    logoAlt: 'MOSAIC Head Spa and Hair',
+    lablec: { cim: '1023 Budapest, Bécsi út 2. (між Kolosy tér і Zsigmond tér)', ora: 'Пн–Сб 8:00–20:00 · Нд — вихідний', suti: 'Налаштування cookie' },
+  },
 };
 const ATTR = ['alt', 'aria-label', 'title', 'data-cim', 'data-nev', 'label', 'placeholder'];
 const CSAK_JEL = /^[\d\s,.\/+★→%–·:()&;-]*$/;           // szamok / jelek: nem kell fordítani
@@ -59,8 +68,6 @@ function fordítOldal(forras, kod) {
   csere(`<link rel="canonical" href="${huUrl}">`, `<link rel="canonical" href="${url}">`);
   csere(`<meta property="og:url" content="${huUrl}">`, `<meta property="og:url" content="${url}">`);
   csere('<script src="/assets/js/lezer-landing.js" defer></script>', `<script src="/assets/js/lezer-szoveg-${kod}.js" defer></script>\n<script src="/assets/js/lezer-landing.js" defer></script>`);
-  if (nyelv.fejlec) csere('<!--mh-fejlec-->\n', '<!--mh-fejlec-->\n' + nyelv.fejlec + '\n');
-
   // --- torzs: szovegcsomopontok + attributumok ---
   const b0 = h.indexOf('<body>') + '<body>'.length;
   const fej = h.slice(0, b0);
@@ -83,6 +90,15 @@ function fordítOldal(forras, kod) {
     return elol + fordit(kulcs, tabla, nyelv, hianyzo, 'szoveg') + utan;
   });
   h = fej + torzs;
+  // zart landing: a kozos (menus) fejlec es lablec helyett minimalis; semmi nem linkel a magyar oldalra (a suti-beallitasok gomb a suti.js-ben kotodik: id="mh-cc-lablec")
+  h = h.replace(/<!-- A MOSAIC oldal fejlece:[\s\S]*?-->\n/, '');
+  csere('<!--mh-fejlec-->\n<!--mh-menu-aktiv:/lezeres-szortelenites-budapest-->\n',
+    `<header class="zart-fej"><img src="/assets/img/logo-143x54@2x.png" width="143" height="54" alt="${nyelv.logoAlt}"></header>\n`);
+  csere('<!--mh-lablec-->',
+    `<footer class="zart-lab"><b>MOSAIC Head Spa and Hair</b><p>${nyelv.lablec.cim}</p><p>${nyelv.lablec.ora}</p>` +
+    '<p><a href="tel:+36202474444">+36 20 247 4444</a> · <a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a></p>' +
+    `<p class="zart-jog">© Big in Japan Kft. · <a id="mh-cc-lablec" href="#">${nyelv.lablec.suti}</a></p></footer>`);
+  csere('<link rel="stylesheet" href="/assets/css/lezer-landing.css">', '<link rel="stylesheet" href="/assets/css/lezer-landing.css">\n<link rel="stylesheet" href="/assets/css/lezer-zart.css">');
   // minosegkapu: nem maradhat magyar-specifikus betu a szovegben / attributumokban (azonosan hagyott cimek: ld. tabla), ukranon van cirill
   const latszik = h.slice(h.indexOf('<body>')).replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<svg[\s\S]*?<\/svg>|<!--[\s\S]*?-->/g, '');
   const huBetu = [...latszik.matchAll(/[^<>]*[őűŐŰ][^<>]*/g)].map((m) => m[0].trim().slice(0, 100));

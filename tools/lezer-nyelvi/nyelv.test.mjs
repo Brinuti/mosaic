@@ -28,7 +28,6 @@ for (const [kod, fajl] of Object.entries(OLDALAK)) {
     const i = h.indexOf(`/assets/js/lezer-szoveg-${kod}.js`), j = h.indexOf('/assets/js/lezer-landing.js');
     assert.ok(i > 0 && j > i, 'a szoveg-fajl a lezer-landing.js elott toltodik');
     assert.ok(fs.existsSync(path.join(GYOKER, 'assets', 'js', `lezer-szoveg-${kod}.js`)));
-    assert.equal(h.includes('<!--mh-nyelv:en-->'), kod === 'en', 'az angol fejlec-jelolo csak az angol oldalon');
   });
 
   test(`${kod}: a latszo szovegben nincs magyar-specifikus betu (ő / ű), es az arak nem "Ft"-ban vannak`, () => {
@@ -37,6 +36,23 @@ for (const [kod, fajl] of Object.entries(OLDALAK)) {
     assert.ok(!/[őűŐŰ]/.test(latszik), 'maradt magyar szoveg');
     assert.ok(!/\d(?:&nbsp;| )Ft\b/.test(latszik), 'maradt Ft-os ar');
     assert.match(latszik, /\d(?:&nbsp;)HUF/);
+  });
+}
+
+for (const [kod, fajl] of Object.entries(OLDALAK)) {
+  test(`${kod}: zart landing: nincs menus fejlec / kozos lablec, minimalis lablec suti-beallitassal; csak foglalo / terkep / telefon / e-mail / horgony link`, () => {
+    const h = olvas('foglalas', fajl + '.html');
+    for (const j of ['<!--mh-fejlec-->', '<!--mh-lablec-->', '<!--mh-nyelv:en-->', 'SITE_HEADER']) assert.ok(!h.includes(j), 'nem maradhat: ' + j);
+    assert.match(h, /<header class="zart-fej"><img [^>]*><\/header>/);
+    assert.ok(!/<header class="zart-fej"><a /.test(h), 'a logo nem link');
+    assert.match(h, /<footer class="zart-lab">[\s\S]*id="mh-cc-lablec"[\s\S]*<\/footer>/);
+    assert.ok(h.includes('/assets/css/lezer-zart.css'));
+    const torzs = h.slice(h.indexOf('<body>')).replace(/<script[\s\S]*?<\/script>|<svg[\s\S]*?<\/svg>|<!--[\s\S]*?-->/g, '');
+    const hrefek = [...torzs.matchAll(/<a\b[^>]*\shref="([^"]*)"/g)].map((m) => m[1]);
+    assert.ok(hrefek.length > 10);
+    for (const l of hrefek) {
+      assert.ok(/^(#|tel:|mailto:|\/foglalo-motor\?|https:\/\/www\.google\.com\/maps\/)/.test(l), 'nem engedett (elnavigalo) link: ' + l);
+    }
   });
 }
 
