@@ -3,7 +3,7 @@
 //   (ONE_PER_CLICK) - ez HIPOTEZIS, a meresi oldal GAQL-olvasasa dont (#167). Addig a modul csak dry (validateOnly) modban futhat, az `eles` mod ketszeresen zarva marad.
 // KULON MODUL: a vedett platformok.js / elosztas.js valtozatlan (csak importaljuk az idoformatumot es a kattintas-valasztot); a meglevo ARNYEK-lanc (Zapier-webhook) erintetlen.
 // ALAPBOL KI: MOSAIC_GADS_ELO = ki (alap) | dry (validateOnly: a Google csak ellenorzi, nem rogzit) | eles (valodi feltoltes: MOSAIC_GADS_ELO_ENGEDELY = 'DECISION-ELES' ES eles host ES kulon DECISION / Feri mondata).
-// Jogosult sor: meres_kuldes google / headspa / FoglalasElso, van Google-kattintas a meres_erkezes-ben, a hozzajarulas-szabaly engedi, letrehozva >= MOSAIC_GADS_ELO_TOL, legalabb VARAKOZAS_MOSAIC-kal regebbi.
+// Jogosult sor: meres_kuldes google / headspa / FoglalasElso, allapot = 'elkuldve' (a kihagyva / lemondott / teszt sort a meglevo kizarasi lanc mar kiszurte: azt SOHA nem toltjuk fel), van Google-kattintas a meres_erkezes-ben, a hozzajarulas-szabaly engedi, letrehozva >= MOSAIC_GADS_ELO_TOL, legalabb VARAKOZAS_MOSAIC-kal regebbi.
 // Nincs RETRACT, vendegadat nem megy ki (csak a kattintasazonosito + idopont + ertek + hozzajarulasi jel); a kattintas ertek a naploban/valaszban SOHA (maszk: sha256 8 hex).
 import { googleIdo } from './platformok.js';
 import { googleKattintas } from './erkezes.js';
@@ -18,6 +18,8 @@ export const VARAKOZAS_MOSAIC = 1800; // a cimke elobb rogzitse a sajat konverzi
 export const ABLAK_NAP_ALAP = 30; // regebbi kattintasra a Google EXPIRED_EVENT-et ad (MP tapasztalat); MOSAIC_GADS_ELO_ABLAK_NAP felulirja (1-90)
 const MAX_PROBA = 3;
 const API_VERZIO_ALAP = 'v23';
+// nem ideiglenes Google-hibakodok: nem ujraprobalhatok (tipus-, jogosultsag- vagy akcio-hiba), egy probalkozas utan veglegesek
+const NEM_IDEIGLENES = new Set(['INVALID_CONVERSION_ACTION_TYPE', 'CONVERSION_ACTION_NOT_ELIGIBLE_FOR_UPLOAD', 'USER_PERMISSION_DENIED', 'PERMISSION_DENIED', 'UNAUTHENTICATED', 'CUSTOMER_NOT_ENABLED', 'DEVELOPER_TOKEN_NOT_APPROVED', 'INVALID_ARGUMENT']);
 const MAR_BENT = new Set(['CLICK_CONVERSION_ALREADY_EXISTS', 'ORDER_ID_ALREADY_IN_USE', 'DUPLICATE_ORDER_ID']);
 
 export const eloMod = (env = {}) => { const m = String(env.MOSAIC_GADS_ELO || '').trim().toLowerCase(); return m === 'dry' || m === 'eles' ? m : 'ki'; };
@@ -76,7 +78,7 @@ export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Dat
     const idk = Array.isArray(esemenyIdk) ? esemenyIdk.map(String).slice(0, 10) : null; // kezi potlas: csak a megadott esemeny-azonositok
     if (idk && !idk.length) return { allapot: 'kesz', feldolgozva: 0, eredmenyek: {} };
     const { results } = await db.prepare(`SELECT k.esemeny_id, k.source_id, k.ertek, k.letrehozva, e.attr, e.hozz FROM meres_kuldes k JOIN meres_erkezes e ON e.source_id = k.source_id
-      WHERE k.platform = 'google' AND k.uzletag = ?1 AND k.esemeny_nev = ?2 AND k.letrehozva >= ?3 AND k.letrehozva <= ?4${idk ? ` AND k.esemeny_id IN (${idk.map((_, i) => '?' + (8 + i)).join(', ')})` : ''}
+      WHERE k.platform = 'google' AND k.allapot = 'elkuldve' AND k.uzletag = ?1 AND k.esemeny_nev = ?2 AND k.letrehozva >= ?3 AND k.letrehozva <= ?4${idk ? ` AND k.esemeny_id IN (${idk.map((_, i) => '?' + (8 + i)).join(', ')})` : ''}
         AND NOT EXISTS (SELECT 1 FROM meres_google_elo g WHERE g.esemeny_id = k.esemeny_id AND (g.allapot IN ('elkuldve', 'mar_bent', 'kihagyva_ablakon_kivul') OR g.probalkozas >= ?5 OR (g.mod = ?6 AND g.allapot = 'elfogadva')))
       ORDER BY k.letrehozva LIMIT ?7`).bind(ELO_UZLETAG, ELO_NEV, tol, most - VARAKOZAS_MOSAIC, MAX_PROBA, eles ? 'eles' : 'dry', limit, ...(idk || [])).all();
     const sorok = results || [];
@@ -106,9 +108,9 @@ export async function eloPotlas({ db, env = {}, host = '', most = Math.floor(Dat
         const r = await fetchImpl(`https://googleads.googleapis.com/${env.MOSAIC_GADS_API_VERZIO || API_VERZIO_ALAP}/customers/${ELO_FIOK}:uploadClickConversions`, { method: 'POST', headers: fejlec, body: JSON.stringify({ conversions: [k], partialFailure: true, validateOnly: !eles }) });
         http = r.status; const e = valaszErtekel(r.status, kitakar(await r.text(), [kattintas.ertek]), { validate: !eles }); allapot = e.allapot; kod = e.kod;
       } catch (err) { kod = String(err && err.message || err).slice(0, 80); }
-      await db.prepare(`INSERT INTO meres_google_elo (esemeny_id, mod, allapot, http_status, kod, kattintas_maszk, probalkozas, ido) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1, ?7)
-        ON CONFLICT (esemeny_id) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, http_status = excluded.http_status, kod = excluded.kod, kattintas_maszk = excluded.kattintas_maszk, probalkozas = meres_google_elo.probalkozas + 1, ido = excluded.ido`)
-        .bind(sor.esemeny_id, kodMod, allapot, http, kod, await maszk(kattintas.ertek), most).run();
+      await db.prepare(`INSERT INTO meres_google_elo (esemeny_id, mod, allapot, http_status, kod, kattintas_maszk, probalkozas, ido) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CASE WHEN ?8 = 1 THEN ${MAX_PROBA} ELSE 1 END, ?7)
+        ON CONFLICT (esemeny_id) DO UPDATE SET mod = excluded.mod, allapot = excluded.allapot, http_status = excluded.http_status, kod = excluded.kod, kattintas_maszk = excluded.kattintas_maszk, probalkozas = CASE WHEN ?8 = 1 THEN ${MAX_PROBA} ELSE meres_google_elo.probalkozas + 1 END, ido = excluded.ido`)
+        .bind(sor.esemeny_id, kodMod, allapot, http, kod, await maszk(kattintas.ertek), most, allapot === 'hiba' && NEM_IDEIGLENES.has(kod) ? 1 : 0).run();
       szamol(allapot);
     }
     return { allapot: 'kesz', feldolgozva: Object.values(eredmenyek).reduce((a, b) => a + b, 0), eredmenyek };

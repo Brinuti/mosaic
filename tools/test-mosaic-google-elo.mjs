@@ -18,8 +18,8 @@ async function adatbazis(sorok) {
   for (const s of sorok) {
     const attr = s.nincsKattintas ? {} : { google: { gclid: { ertek: GCLID, ts: s.kattTs ?? MOST - 86400 } } };
     await D.prepare('INSERT INTO meres_erkezes (source_id, uzletag, tipus, attr, hozz, ido, frissitve) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)').bind(s.source, 'headspa', 'foglalas', JSON.stringify(attr), JSON.stringify(s.hozz || {}), MOST - 7200).run();
-    await D.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, ertek, probalkozas, letrehozva, frissitve) VALUES (?1, ?2, 'alap', 'google', 'ARNYEK-7825199989', ?3, ?4, 'elkuldve', ?5, 1, ?6, ?6)")
-      .bind(s.esemeny, s.nev || 'FoglalasElso', s.uzletag || 'headspa', s.source, s.ertek ?? 15000, s.letrehozva ?? MOST - 7200).run();
+    await D.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, ertek, probalkozas, letrehozva, frissitve) VALUES (?1, ?2, 'alap', 'google', 'ARNYEK-7825199989', ?3, ?4, ?7, ?5, 1, ?6, ?6)")
+      .bind(s.esemeny, s.nev || 'FoglalasElso', s.uzletag || 'headspa', s.source, s.ertek ?? 15000, s.letrehozva ?? MOST - 7200, s.allapot || 'elkuldve').run();
   }
   return D;
 }
@@ -91,6 +91,7 @@ test('kihagyasok: tol elotti, tul friss, mas uzletag / esemeny, nincs kattintas,
     { source: 'e', esemeny: 'nincskatt', nincsKattintas: true },
     { source: 'f', esemeny: 'lejart', kattTs: MOST - 40 * 86400 },
     { source: 'g', esemeny: 'jo' },
+    { source: 'h', esemeny: 'lemondott', allapot: 'kihagyva' }, // a lemondott / kizart sort a meglevo lanc mar kiszurte: kattintassal sem toltjuk fel
   ]);
   const h = halozat(); const r = await eloPotlas({ db: D, env: ENV, most: MOST, fetchImpl: h.fetchImpl, limit: 10 });
   assert.deepEqual(r.eredmenyek, { kihagyva_nincs_kattintas: 1, kihagyva_ablakon_kivul: 1, elfogadva: 1 });
@@ -158,4 +159,11 @@ test('vegpont: eles kapu zarva (nincs engedely-jelzo / nem eles host) -> 409; ka
   assert.equal(h.hivasok.length, 0);
   const ok = await vegpont(D, h, { esemeny_idk: ['ev1'], mod: 'eles' }, { MOSAIC_GADS_ELO: 'eles', MOSAIC_GADS_ELO_ENGEDELY: 'DECISION-ELES' });
   assert.equal(ok.status, 200); assert.deepEqual(ok.body.eredmenyek, { elkuldve: 1 }); assert.equal(JSON.parse(feltoltesek(h)[0].body).validateOnly, false);
+});
+
+test('nem ideiglenes Google-hiba (pl. INVALID_CONVERSION_ACTION_TYPE): egy probalkozas utan vegleges, nem ismetlodik', async () => {
+  const pf = JSON.stringify({ partialFailureError: { details: [{ errors: [{ errorCode: { conversionUploadError: 'INVALID_CONVERSION_ACTION_TYPE' } }] }] } });
+  const D = await adatbazis([{ source: 's1', esemeny: 'ev1' }]); const h = halozat({ status: 200, body: pf });
+  for (let i = 0; i < 4; i++) await eloPotlas({ db: D, env: ENV, most: MOST + i, fetchImpl: h.fetchImpl });
+  assert.equal(feltoltesek(h).length, 1); const t = await tabla(D); assert.equal(t[0].allapot, 'hiba'); assert.equal(t[0].probalkozas, 3);
 });
