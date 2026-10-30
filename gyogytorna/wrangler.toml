@@ -19,6 +19,7 @@ GY_GADS_BRAID = "be"           # gbraid / wbraid feltoltes: ki (alap: kihagyva_b
 # UJ-94 / GYT #506 validate-futas (01-MERES 6515266617, mero DECISION kell a merge-hez): VALIDATEONLY - a Google csak ellenorzi, NEM rogzit konverziot; az elo "Allapot-ok" 7362127659 akciot nem terheli. A naplo: gy_feltoltes_elo (darabszam). TOL: a validate-futas kezdete (NEM a bongeszos order_id-s cimke elesitese: az meg nincs). A braid-kapu (GY_GADS_ELO_BRAID) alapbol ki marad. Rollback: a ket sor torlese.
 GY_GADS_ELO = "validate"
 GY_GADS_ELO_TOL = "1793340000"   # kb. 2026-10-30 06:00Z; ennel korabbi foglalast nem vizsgalunk
+GY_GADS_ELO_ZAP = "validate"   # UJ-94 / #536 (b), DECISION #264 (b): a Zapier-mintaju validateOnly-proba (/api/gy-gads-elo-zap) BEKAPCSOLVA; KIZAROLAG validateOnly=true (vedohaloElo), az eles potlas nem resze; rollback: ez a sor torlese / "ki"
 
 # A titkok a Cloudflare felueleten, Secret tipussal, kornyezetenkent: GY_HMAC_KULCS (tranzakcio_id es parosito), GY_ADMIN_KULCS_HASH (a /api/gy-admin es
 # /api/gy-kampanyok kulcsanak SHA-256 hash-e).
