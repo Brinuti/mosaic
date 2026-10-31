@@ -107,6 +107,26 @@ export function hianyzoSzerkezet(docs, { tolMs, mezo, megjelenit = ['a76_nav', '
   return ki;
 }
 
+// UJ-99 (01-MERES 6540620052, 11-01 12:00): a consent_state objektum zart jellemzese - CSAK a negy ismert kulcs (ad_storage, analytics_storage, ad_user_data, ad_personalization), ertekuk zart halmaz (granted / denied / egyeb / nincs); mas kulcs vagy nyers ertek nem kerul ki.
+export const CONSENT_KULCSOK = Object.freeze(['ad_storage', 'analytics_storage', 'ad_user_data', 'ad_personalization']);
+export function consentJellemzes(cs, kulcsok = ['ad_storage']) {
+  if (!cs || typeof cs !== 'object') return kulcsok.map((k) => k + '=nincs').join(',');
+  return kulcsok.filter((k) => CONSENT_KULCSOK.includes(k)).map((k) => { const v = cs[k]; return k + '=' + (v === undefined || v === null ? 'nincs' : (v === 'granted' || v === 'denied' ? v : 'egyeb')); }).join(',');
+}
+/** Sorszintu osszesites: utvonal (zart halmaz: a ket foglalasi oldal, egyebkent 'egyeb') x jelzo-mezo ertek (0/1/nincs/egyeb) x ad_storage -> darab. A page_location query-je nem kerul ki. */
+export function utvonalConsentOsszesites(docs, { tolMs = 0, mezo = 'first_booking_raw' } = {}) {
+  const ki = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    let ut = 'egyeb'; try { const pn = new URL(String(dd.page_location || '')).pathname; ut = pn === '/foglalas-ok/' || pn === '/foglalas-moricz/' ? pn : 'egyeb'; } catch { /* nincs */ }
+    const v = dd[mezo]; const jel = v === undefined || v === null ? 'nincs' : (['0', '1', 'true', 'false', ''].includes(String(v)) ? (String(v) === '' ? 'ures' : String(v)) : 'egyeb');
+    const kulcs = `${ut} | ${mezo}=${jel} | ${consentJellemzes(dd.consent_state)}`;
+    ki[kulcs] = (ki[kulcs] || 0) + 1;
+  }
+  return ki;
+}
+
 // UJ-99 (01-MERES 6539251724): first_booking_raw x a76_nav (navigacio tipusa) keresztbontas - a tag 95 blokkolo triggere (120) nem-navigate betoltesnel tilt; zart halmaz, nyers ertek nem kerul ki.
 export const NAV_HALMAZ = Object.freeze(['navigate', 'reload', 'back_forward', 'prerender']);
 export function keresztNavFirstBooking(docs, { tolMs, mezo = 'first_booking_raw', navMezo = 'a76_nav' }) {
@@ -151,8 +171,9 @@ export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, n
     if (process.env.SOROK === '1' || process.env.SOROK === '2' || sorok) for (const d of k.docs) { // sorszintu nezet: Budapest-ido, esemenynev, hozzajarulas-allapot, jelzo, az oldal CSAK utvonala (query / azonosito nelkul)
       const ms = Date.parse(d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue; const dd = d.data || {};
       let ut = '-'; try { ut = new URL(String(dd.page_location || '')).pathname; } catch { /* nincs */ }
-      naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${String(dd.consent_state || '-').slice(0, 40)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}${process.env.SOROK === '2' ? ' | ' + Object.entries(priceJellemzes(dd.page_location)).map(([k, x]) => k + '=' + x).join(' ') : ''}`);
+      naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${consentJellemzes(dd.consent_state, CONSENT_KULCSOK)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}${process.env.SOROK === '2' ? ' | ' + Object.entries(priceJellemzes(dd.page_location)).map(([k, x]) => k + '=' + x).join(' ') : ''}`);
     }
+    if (process.env.SOROK === '1' || process.env.SOROK === '2' || sorok) { const uo = utvonalConsentOsszesites(k.docs, { tolMs, mezo }); for (const kk of Object.keys(uo).sort()) naplo(`  osszesites | ${kk} | db=${uo[kk]}`); }
     if (kategoriaMod) {
       const kr = keresztNavFirstBooking(k.docs, { tolMs, mezo });
       for (const kk of Object.keys(kr).sort()) naplo(`  kereszt | ${kk} | db=${kr[kk]}`);
