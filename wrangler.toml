@@ -121,6 +121,10 @@ MERES_SALONIC_DIRECT = "1"
 # KODOS ELO TIKTOK-ESEMENY (UJ-67/69/71/73; lasd docs/booking-engine/TIKTOK_ELO.md): ALAPBOL KI. Uzletagonkent: TIKTOK_ELO_BE = "headspa" (vesszovel: headspa,szor,oxigen,fodrasz,pmu) ES a TIKTOK_ELO_TOKEN titok (Secret, Production; az elo pixel Events API tokenje)
 # egyutt kapcsolja BE a szerveres kuldest es a bongeszos ttq esemenyt. Elotte igazolas: TIKTOK_ELO_TESZT_KOD (Test Events, nem szamit konverziokent). A TikTok Events Managerben az URL-szabalyt a mereso oldal ugyanabban a lepesben kapcsolja ki.
 # ROLLBACK: a sor torlese (vagy TIKTOK_ELO_BE ures) + deploy; az URL-szabaly visszakapcsolasa.
+# KODOS ELO META SCHEDULE, MOSAIC PMU (UJ-79, DECISION #244, Feri 2026-10-27 08:33: 1 hetes parhuzam; lasd docs/booking-engine/META_ELO.md): a szerveres Schedule a PMU SAJAT eles datasetere (1019878750660854), KOZOS (bongeszos) event_id-vel, tesztkod NELKUL
+# (az eles [vars]-ban nincs META_ELO_TESZT_KOD*; ezek csak az [env.preview.vars]-ban vannak). Kell hozza a META_ELO_TOKEN titok (Secret, Production). A HeadSpa (META_ELO_BE = "headspa") KULON DECISION #240-szerinti lepes, ide NEM kerul.
+# ROLLBACK: a kovetkezo sor torlese (vagy META_ELO_BE ures) + deploy; a bongeszos pmu-ok URL-szabaly valtozatlan marad.
+META_ELO_BE = "pmu"
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei

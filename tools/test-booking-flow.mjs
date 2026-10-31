@@ -585,3 +585,24 @@ test('havi naptar: a nap MINDEN kinalt idopontja latszik (a negyedoras kezdes is
   assert.deepEqual(dayTimes(nap, '2026-10-06').map((x) => timeLabel(x.start_unix)), ['09:00']);
   assert.deepEqual(dayTimes(nap, '2026-10-07'), []);
 });
+
+test('lezer: ?staff=brigi - a lezer foglalo a linkben megadott szakemberre szur (staffLink), szakember-valaszto nelkul', async () => {
+  const { findStaff, staffLinkKey } = await import('../assets/js/booking-engine/flow.js');
+  assert.equal(LASER.staffLink, true, 'a lezernel be van kapcsolva a munkatars-link');
+  assert.equal(LASER.showStaffFilter, false, 'de nincs szakember-valaszto / szakember-sor a lezernel');
+  const ketten = [{ id: '32417', label: 'Zsófi' }, { id: '32833', label: 'Brigi' }];
+  assert.equal(findStaff(ketten, 'brigi').id, '32833');
+  assert.equal(findStaff(ketten, 'BRIGI').id, '32833');
+  assert.equal(findStaff(ketten, 'zsofi').id, '32417');
+  assert.equal(findStaff(ketten, '32833').label, 'Brigi', 'a Salonic azonosito is jo kulcs');
+  assert.equal(staffLinkKey('Brigi', ketten), 'brigi');
+  // amig Brigi naptara nem aktiv, a linkben megadott kulcs nem talalhato: marad a "barmely szakember" (nincs hibauzenet)
+  assert.equal(findStaff([{ id: '32417', label: 'Zsófi' }], 'brigi'), null);
+  assert.equal(findStaff(ketten, 'nincs-ilyen'), null);
+  // a munkatars-link a lezeres foglalo linkjeben is megmarad (parseContext)
+  assert.equal(parseContext('?business=laser&intent=first&staff=brigi', '', 'https://www.mosaicheadspa.hu', {}).staffKey, 'brigi');
+  // az engine csak a lezer-folyamatban (flow.staffLink) alkalmazza a kulcsot a szakember-valaszto nelkul; a tobbi uzletag viselkedese valtozatlan
+  const engine = fs.readFileSync(path.join(here, '..', 'assets', 'js', 'booking-engine', 'engine.js'), 'utf8');
+  assert.ok(engine.includes('flow.staffLink && ctx.staffKey && !S.staff'), 'a naptar (C1) feloldja a linkben megadott szakembert');
+  for (const flow of [HEADSPA, OXYGEN, HAIR]) assert.ok(!flow.staffLink, flow.business + ': nincs staffLink');
+});

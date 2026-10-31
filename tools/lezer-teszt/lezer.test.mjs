@@ -1070,7 +1070,9 @@ describe('a tizennegyedik kor: tisztabb arlista, azonnali velemenyek, helyszin-k
 
   test('a Trustindex-keret nem lazy (hozzajarulas utan azonnal toltodik); a helyszin kepe fix magassagu (nem logat a lablecbe)', async () => {
     const forras = fs.readFileSync(path.join(GYOKER, 'assets', 'js', 'lezer-landing.js'), 'utf8');
-    assert.match(forras, /title: 'Google-vélemények \(Trustindex\)', loading: 'eager'/);
+    // a felirat a lezer-landing.js SZ szotaraban van (az angol / ukran oldal sajat szoveget tolt); a keret ettol meg nem lazy
+    assert.match(forras, /title: SZ\.tiCim, loading: 'eager'/);
+    assert.match(forras, /tiCim: 'Google-vélemények \(Trustindex\)'/);
     for (const mobil of [false, true]) {
       const { p, ctx } = await nyit({ mobil });
       await p.locator('.helyszin').scrollIntoViewIfNeeded();

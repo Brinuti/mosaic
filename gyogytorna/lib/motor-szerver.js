@@ -14,7 +14,7 @@ import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { gfeltoltesFut, gfeltoltesRiport, gfeltoltesMod, gfeltoltesKuld, googleAdsKuldo, zapKivalaszt, zapFazis } from './gfeltoltes.js';
 import { gkiigazitasFut, gkiigazitasMod, gkiigazitasRiport, kiigazitasKivalaszt, kiigazitasFazis } from './gkiigazitas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
-import { igazolasJeloltek, foglalasSalonicIdAlapjan, budapestNap } from './db.js';
+import { igazolasJeloltekKorral, foglalasSalonicIdAlapjan, budapestNap } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK, erintesUtolso, erintesIr, erintesDiag, erintesek, erintesTorol, kattintasTorol, lpcHiba, motorStatNo } from './db.js';
 import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot, UUID_RE } from './salonic-szerver.js';
 /** Unix -> Budapest helyi ido, Google Ads import formatum: "yyyy-mm-dd hh:mm:ss+hh:mm" (a nyari / teli ido szerinti eltolassal). */
@@ -62,6 +62,7 @@ async function jsonTest(request, maxBajt = 8192) {
   try { const j = JSON.parse(t); return j && typeof j === 'object' ? j : null; } catch (e) { return null; }
 }
 
+const FRISS_JELOLT_MP = 15 * 60; // DECISION #259 (3)
 const mostUnix = (deps) => Math.floor((deps && deps.most ? deps.most() : Date.now()) / 1000);
 const suti = (nev, ertek, { maxAge = null, torol = false } = {}) => `${nev}=${torol ? '' : ertek}; Path=/; Secure; HttpOnly; SameSite=Lax${torol ? '; Max-Age=0' : maxAge ? `; Max-Age=${maxAge}` : ''}`;
 const savKi = (env) => String(env.GY_SAV_KI ?? '0') === '1'; // sutisav kikapcsolva: dontes nelkul az alapertelmezes "megadott" (Feri dontese 2026-10-14); vesz-kikapcsolas: "0"
@@ -424,7 +425,9 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
   const start = egesz(be.start_unix, 1e9, 4e9), hely = egesz(be.place_id, 1, 999999);
   if (start === null || !HELYSZINEK[hely]) return nincsKerelem('ervenytelen_idopont_vagy_hely');
   if (elo.allapot !== 'aktiv' || (elo.startUnix && elo.startUnix !== start)) { await riaszt(db, 'igazolas_nem_aktiv', { adat: elo.miert || elo.allapot, most }); return valasz(409, { ok: false, hiba: 'nem_aktiv_vagy_idopont_nem_egyezik', okkod: elo.allapot !== 'aktiv' ? 'salonic_nem_aktiv' : 'idopont_elteres' }); }
-  let jeloltek = await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`));
+  const kor = await igazolasJeloltekKorral(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`), most); // DECISION #259: csak az igazolas elott <= 48 oraval letrehozott igazolatlan sor jelolt
+  let jeloltek = kor.jeloltek;
+  let frissDontott = false;
   // tobb jelolt (ugyanaz a hely + idopont, kulonbozo munkatars): a Zap opcionalis `munkatars_nev` mezoje CSAK szukit (nincs fuzzy egyezes). Pontosan egy employeeId a helyszinen, utana pontosan egy HMAC-egyezo jelolt kell.
   let tobbOkkod = 'tobb_azonos_idopont_es_hely';
   // elsodleges: ha az ELO bookingDetails oldal egyertelmuen hordozza a munkatars azonositojat, azzal szukitunk (megbizhatobb a nevnel)
@@ -443,12 +446,19 @@ export async function igazolasVegpont({ request, env, deps = {} }) {
     // jelolt ugyanarra az idopontra -> hely_elteres (illesztesi hiba gyanu), kulonben nincs_motoros_jelolt (valoszinuleg a Salonicban kozvetlenul letrejott foglalas).
     let okkod = 'nincs_motoros_jelolt';
     for (const masik of Object.keys(HELYSZINEK).map(Number).filter((h) => h !== hely)) {
-      if ((await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${masik}`))).length) { okkod = 'hely_elteres'; break; }
+      if ((await igazolasJeloltekKorral(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${masik}`), most)).jeloltek.length) { okkod = 'hely_elteres'; break; }
     }
     await riaszt(db, 'igazolas_nincs_par', { adat: okkod, most });
     return valasz(200, { ok: true, nincs_par: true, okkod });
   }
-  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length};${tobbOkkod};${oldalDiag}`.slice(0, 190), most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
+  // DECISION #259 (3): ha a szures utan is tobb a jelolt, az nyer, amelyik az igazolas erkezese elott <= 15 perccel jott letre, es a kovetkezo legfrissebb jelolt >= 15 perccel regebbi NALA (egyenlosegig); kulonben 409 marad, nem talalgatunk.
+  if (jeloltek.length > 1) {
+    const frissen = [...jeloltek].sort((a, b) => (b.letrehozva || 0) - (a.letrehozva || 0));
+    if (Number.isFinite(frissen[0].letrehozva) && Number.isFinite(frissen[1].letrehozva) && most - frissen[0].letrehozva <= FRISS_JELOLT_MP && frissen[0].letrehozva - frissen[1].letrehozva >= FRISS_JELOLT_MP) { jeloltek = [frissen[0]]; frissDontott = true; }
+  }
+  const szuresNaplo = `kizart48=${kor.kizart_kor};friss15=${frissDontott ? 1 : 0}`;
+  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length};${tobbOkkod};${oldalDiag};${szuresNaplo}`.slice(0, 190), most }); return valasz(409, { ok: false, hiba: 'tobb_par', okkod: tobbOkkod }); }
+  if (kor.kizart_kor > 0 || frissDontott) await riaszt(db, 'igazolas_jelolt_szures', { adat: szuresNaplo, most }); // technikai napló: hany regi jelöltet zárt ki a 48 órás korlat / döntött-e a 15 perces szabaly
   await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
   try { await gfeltoltesFut({ db, env, most, budapestIdo }); } catch (e) { await lpcHiba(db, most, 'gfeltoltes'); } // GY-25: dry-run napló: a legalabb 1 oraja igazolt, meg nem naplozott foglalasokat veszi fel (az uj foglalas maga 1 ora mulva); hiba SOHA nem erinti az igazolast
   if (gkiigazitasMod(env) !== 'ki') { try { await gkiigazitasFut({ db, env, most }); } catch (e) { await lpcHiba(db, most, 'gkiigazitas'); } } // GY-27: kiigazitasi jeloltek naplozasa (mod `ki`: semmi nem tortenik); hiba SOHA nem erinti az igazolast

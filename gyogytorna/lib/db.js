@@ -143,6 +143,15 @@ export async function foglalasAllapot(db, uuid, allapot, most, mezok = {}) {
 export async function igazolasJeloltek(db, parositoHely) {
   return (await db.prepare("SELECT uuid, allapot, teszt, parosito FROM gy_foglalas WHERE parosito_hely = ?1 AND salonic_id IS NULL AND allapot IN ('fuggo','aktiv','bizonytalan')").bind(parositoHely).all()).results || [];
 }
+
+// DECISION #259 (UJ-86): jelolt-eletkor korlat. Az igazolas erkezese elott legfeljebb 48 oraval (egyenlosegig) letrehozott, igazolatlan sor lehet jelolt; a regebbi "szellem" sor
+// (pl. Salonicban lemondott, de a D1 nem tudott rola) kimarad. A viszonyitas: az igazolas D1-be erkezesenek ideje (unix mp), nem a Zap ujraprobajae.
+export const JELOLT_ABLAK_MP = 48 * 3600;
+export async function igazolasJeloltekKorral(db, parositoHely, most) {
+  const mind = (await db.prepare("SELECT uuid, allapot, teszt, parosito, letrehozva FROM gy_foglalas WHERE parosito_hely = ?1 AND salonic_id IS NULL AND allapot IN ('fuggo','aktiv','bizonytalan')").bind(parositoHely).all()).results || [];
+  const jeloltek = mind.filter((j) => !(Number.isFinite(j.letrehozva) && most - j.letrehozva > JELOLT_ABLAK_MP));
+  return { jeloltek, kizart_kor: mind.length - jeloltek.length };
+}
 export async function foglalasSalonicIdAlapjan(db, salonicId) {
   return db.prepare('SELECT uuid, allapot, igazolt FROM gy_foglalas WHERE salonic_id = ?').bind(salonicId).first();
 }

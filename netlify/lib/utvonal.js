@@ -37,6 +37,7 @@ const ATIRANYITASOK = {
   '/head-spa-velemenyek-uj': '/head-spa-velemenyek',
   '/headspa-ferfiaknak-uj': '/headspa-ferfiaknak',
   '/headspa-budapest-hungary-uj': '/headspa-budapest-hungary',
+  '/lezeres-szortelenites-brigi': '/vegleges-szortelenites-budapest',   // Brigi oldala 2026-10-30 ota SEO-barat cimen (a tulajdonos kerese)
   '/contact': '/', '/services': '/', '/en': '/',
 };
 

@@ -32,9 +32,10 @@ export async function meresSema(db) {
 }
 const sec = (now) => Math.floor(now / 1000);
 // Ujraprobalhato sor: hiba, tiltas (a beallitas kozben valtozhat), halasztas, a veszkapcsolo miatt kihagyott; a modell szerint kihagyott / lemondott / elkuldott sor VEGLEGES.
-const ujraprobalhato = (sor, t) => ['hiba', 'tiltva', 'halasztva', 'nyitott'].includes(sor.allapot) || (sor.allapot === 'kihagyva' && /^veszkapcsolo/.test(sor.indok || '')) || (sor.allapot === 'folyamatban' && sor.probalkozas < MAX_PROBA && t - sor.frissitve > ELAKADAS_MP); // DECISION #250 (b): a folyamatban sor ujraprobaja plafonos (MAX_PROBA), utana 'megszakadt' (lasd lent)
+const ujraprobalhato = (sor, t) => ['hiba', 'tiltva', 'halasztva', 'nyitott'].includes(sor.allapot) || (sor.allapot === 'kihagyva' && /^veszkapcsolo/.test(sor.indok || '')) || (sor.allapot === 'folyamatban' && sor.probalkozas < MAX_PROBA && t - sor.frissitve > ELAKADAS_MP) || (sor.allapot === 'megszakadt' && /takarito/.test(sor.indok || '') && sor.probalkozas < MAX_PROBA); // UJ-96 (01-MERES review B): a takarito altal lezart, MAX_PROBA alatti sor tovabbra is ujraprobalhato (a main-en is igy volt) // DECISION #250 (b): a folyamatban sor ujraprobaja plafonos (MAX_PROBA), utana 'megszakadt' (lasd lent)
 const MAX_PROBA = 3;
 const ELAKADAS_MP = 120;
+const TAKARITAS_MP = 600; // UJ-96: ennel regebbi 'folyamatban' sor (barmelyik forras) a kovetkezo futasnal 'megszakadt'
 const MEGORZES_NAP = 30; // az erkezesi sor (IP, user agent) 30 nap utan torlodik
 export const maszkIp = (ip) => { const s = String(ip || ''); if (/^\d+\.\d+\.\d+\.\d+$/.test(s)) return s.replace(/\d+$/, 'xxx'); return s.includes(':') ? s.split(':').slice(0, 3).join(':') + ':xxxx' : null; };
 
@@ -130,6 +131,8 @@ export async function elosztas(db, fk, deps = {}) {
   const osszefoglalo = { allapot: 'kesz', source_id: fk.source_entity_id, erkezesi_adat: !!erkRow, esemenyek: [] };
 
   // minden (esemeny, platform) cella mar VEGLEGES (elkuldve / modell szerint kihagyva / lemondva): nincs teendo, elo lekeres sem kell (az ismetelt hivas olcso es nem kuld)
+  // UJ-96 (01-MERES 6525689887): takarito - MASIK forras TAKARITAS_MP-nel regebbi 'folyamatban' sora 'megszakadt' lesz a kovetkezo (barmilyen) futasnal; eddig csak ugyanazon forras ujabb hivasa zarta le (a hivo nem jott vissza -> a sor orokre folyamatban maradt). Nem kuld ujra (a hash-elt vendegadat csak a kimeno kerelemben van); a qa-nap megszakadt_7nap szamlaloja latja.
+  await db.prepare("UPDATE meres_kuldes SET allapot = 'megszakadt', indok = ?1, frissitve = ?2 WHERE allapot = 'folyamatban' AND frissitve <= ?3 AND source_id <> ?4").bind(`megszakadt: a sor ${TAKARITAS_MP / 60} percnel tovabb folyamatban maradt (takarito)`, t, t - TAKARITAS_MP, fk.source_entity_id).run();
   // DECISION #250 (b): a MAX_PROBA-szor megkezdett, de be nem fejezett (megszakadt hivas) 'folyamatban' sor ELAKADAS_MP utan 'megszakadt' - nem marad vegtelen ideig folyamatban (a qa-nap folyamatban_regi / megszakadt szamlaloja latja). Utolag nem kuldheto ujra (a hash-elt vendegadat csak a kimeno kerelemben van).
   await db.prepare("UPDATE meres_kuldes SET allapot = 'megszakadt', indok = ?2, frissitve = ?3 WHERE source_id = ?1 AND allapot = 'folyamatban' AND probalkozas >= ?4 AND frissitve <= ?5").bind(fk.source_entity_id, `megszakadt: a kuldes ${MAX_PROBA} probalkozas utan sem fejezodott be`, t, MAX_PROBA, t - ELAKADAS_MP).run();
   const { results: meglevok } = await db.prepare('SELECT esemeny_id, platform, allapot, indok, frissitve, probalkozas FROM meres_kuldes WHERE source_id = ?1').bind(fk.source_entity_id).all();
@@ -150,7 +153,7 @@ export async function elosztas(db, fk, deps = {}) {
     const sor = { esemeny_id: e.esemeny_id, esemeny_nev: e.nev, esemeny_tipus: e.tipus, platform, platform_nev: null, uzletag: fk.uzletag, source_id: fk.source_entity_id, ertek: e.ertek_nelkul ? null : e.ertek, penznem: e.ertek_nelkul ? null : e.penznem, hozzajarulas: JSON.stringify({ allapot: hozz, szabaly: ctxAlap.hozz[platform] }), allapot: 'tiltva', indok: null, kerelem: null, http_status: null, platform_valasz: null, kuldo: null, ...mezok };
     // a motoros foglalasnal forras = 'motor' (a fk.uuid a Salonic-UUID, ha ismert), a safety netnel 'salonic_direct' + attr_minoseg / attr_jelek / ertek_minoseg
     const bov = { forras: fk.forras || 'motor', attr_minoseg: fk.attr_minoseg || null, attr_jelek: fk.attr_jelek ? JSON.stringify(fk.attr_jelek) : null, salonic_uuid: fk.uuid ? String(fk.uuid).toLowerCase() : null, ertek_minoseg: fk.ertek_minoseg || null };
-    const meglevo = await db.prepare('SELECT id, allapot, probalkozas, frissitve FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = ?2').bind(e.esemeny_id, platform).first();
+    const meglevo = await db.prepare('SELECT id, allapot, indok, probalkozas, frissitve FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = ?2').bind(e.esemeny_id, platform).first();
     if (meglevo && !ujraprobalhato(meglevo, t)) return { id: meglevo.id, allapot: meglevo.allapot, duplikalt: true }; // egy megszakadt hivas sora (folyamatban) ELAKADAS_MP utan ujraprobalhato
     if (meglevo && meglevo.probalkozas >= MAX_PROBA && meglevo.allapot === 'hiba') return { id: meglevo.id, allapot: 'hiba', duplikalt: true, indok: 'tul sok sikertelen probalkozas' };
     if (meglevo) { const rr = await db.prepare('UPDATE meres_kuldes SET allapot = ?2, indok = ?3, platform_nev = ?4, kerelem = ?5, http_status = ?6, platform_valasz = ?7, kuldo = ?8, hozzajarulas = ?9, ertek = ?10, probalkozas = probalkozas + 1, frissitve = ?11 WHERE id = ?1 AND probalkozas = ?12').bind(meglevo.id, sor.allapot, sor.indok, sor.platform_nev, sor.kerelem, sor.http_status, sor.platform_valasz, sor.kuldo, sor.hozzajarulas, sor.ertek, t, meglevo.probalkozas).run();
