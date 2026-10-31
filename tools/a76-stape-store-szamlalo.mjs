@@ -111,7 +111,7 @@ export function hianyzoSzerkezet(docs, { tolMs, mezo, megjelenit = ['a76_nav', '
 export const CONSENT_KULCSOK = Object.freeze(['ad_storage', 'analytics_storage', 'ad_user_data', 'ad_personalization']);
 export function consentJellemzes(cs, kulcsok = ['ad_storage']) {
   if (!cs || typeof cs !== 'object') return kulcsok.map((k) => k + '=nincs').join(',');
-  return kulcsok.filter((k) => CONSENT_KULCSOK.includes(k)).map((k) => { const v = cs[k]; return k + '=' + (v === undefined || v === null ? 'nincs' : (v === 'granted' || v === 'denied' ? v : 'egyeb')); }).join(',');
+  return kulcsok.filter((k) => CONSENT_KULCSOK.includes(k)).map((k) => { const v = cs[k]; return k + '=' + (v === undefined || v === null ? 'nincs' : (v === 'granted' || v === 'denied' ? v : 'egyeb:' + typeof v + ':' + String(v).toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 12))); }).join(',');
 }
 /** Sorszintu osszesites: utvonal (zart halmaz: a ket foglalasi oldal, egyebkent 'egyeb') x jelzo-mezo ertek (0/1/nincs/egyeb) x ad_storage -> darab. A page_location query-je nem kerul ki. */
 export function utvonalConsentOsszesites(docs, { tolMs = 0, mezo = 'first_booking_raw' } = {}) {
@@ -121,7 +121,8 @@ export function utvonalConsentOsszesites(docs, { tolMs = 0, mezo = 'first_bookin
     const dd = (d && d.data) || {};
     let ut = 'egyeb'; try { const pn = new URL(String(dd.page_location || '')).pathname; ut = pn === '/foglalas-ok/' || pn === '/foglalas-moricz/' ? pn : 'egyeb'; } catch { /* nincs */ }
     const v = dd[mezo]; const jel = v === undefined || v === null ? 'nincs' : (['0', '1', 'true', 'false', ''].includes(String(v)) ? (String(v) === '' ? 'ures' : String(v)) : 'egyeb');
-    const kulcs = `${ut} | ${mezo}=${jel} | ${consentJellemzes(dd.consent_state)}`;
+    const nap = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short' }).format(new Date(ms)); // Budapest-nap
+    const kulcs = `${nap} | ${ut} | ${mezo}=${jel} | ${consentJellemzes(dd.consent_state)}`;
     ki[kulcs] = (ki[kulcs] || 0) + 1;
   }
   return ki;

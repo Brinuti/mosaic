@@ -118,7 +118,7 @@ test('keresztNavFirstBooking (UJ-99): first_booking_raw x a76_nav zart halmaz, a
 test('consentJellemzes + utvonalConsentOsszesites (UJ-99): zart halmaz, query / nyers ertek nem kerul ki, tol elotti sor kimarad', async () => {
   const { consentJellemzes, utvonalConsentOsszesites } = await import('./a76-stape-store-szamlalo.mjs');
   assert.equal(consentJellemzes({ ad_storage: 'granted', analytics_storage: 'denied', titkos: 'x' }, ['ad_storage', 'analytics_storage', 'titkos']), 'ad_storage=granted,analytics_storage=denied');
-  assert.equal(consentJellemzes({ ad_storage: 'valami-egyeb' }), 'ad_storage=egyeb'); assert.equal(consentJellemzes(null), 'ad_storage=nincs'); assert.equal(consentJellemzes({}), 'ad_storage=nincs');
+  assert.equal(consentJellemzes({ ad_storage: 'valami-egyeb' }), 'ad_storage=egyeb:string:valamiegyeb'); assert.equal(consentJellemzes({ ad_storage: true }), 'ad_storage=egyeb:boolean:true'); assert.equal(consentJellemzes(null), 'ad_storage=nincs'); assert.equal(consentJellemzes({}), 'ad_storage=nincs');
   const t = '2026-10-30T14:46:30Z';
   const sor = (iso, loc, fb, cs) => ({ created_at: iso, data: { page_location: loc, first_booking_raw: fb, consent_state: cs } });
   const docs = [
@@ -129,6 +129,6 @@ test('consentJellemzes + utvonalConsentOsszesites (UJ-99): zart halmaz, query / 
     sor('2026-10-30T10:00:00Z', 'https://a76.hu/foglalas-ok/', '1', { ad_storage: 'granted' }), // tol elott
   ];
   const ki = utvonalConsentOsszesites(docs, { tolMs: Date.parse(t) });
-  assert.deepEqual(ki, { '/foglalas-ok/ | first_booking_raw=1 | ad_storage=granted': 1, '/foglalas-moricz/ | first_booking_raw=0 | ad_storage=denied': 1, '/foglalas-moricz/ | first_booking_raw=nincs | ad_storage=granted': 1, 'egyeb | first_booking_raw=egyeb | ad_storage=granted': 1 });
+  assert.deepEqual(ki, { '2026-10-30 | /foglalas-ok/ | first_booking_raw=1 | ad_storage=granted': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=0 | ad_storage=denied': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=nincs | ad_storage=granted': 1, '2026-10-30 | egyeb | first_booking_raw=egyeb | ad_storage=granted': 1 });
   assert.ok(!JSON.stringify(ki).match(/price|email|varatlan/));
 });
