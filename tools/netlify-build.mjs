@@ -300,7 +300,7 @@ const verzio = Object.fromEntries(SAJAT.map((f) => [f,
 const FOGLALAS_KOSZONO = new Set(['ajikartya-ok', 'eltavolitas-ok', 'elysion-ok', 'fodrasz-ok', 'foglalas-ok', 'korrekcio-ok', 'oxigenterapia-ok', 'pmu-ok', 'szor-konzi-ok', 'szortelenites-ok',
   'oxigenterapia-masodik', 'success-foglalas', 'success-foglalas-4kezes', 'success-foglalas-egyeni', 'success-foglalas-egyeni-vip', 'success-foglalas-paros', 'success-foglalas-paros-vip'].map((x) => x + '.html'));
 // A sajat foglalo-oldalak (a motor / a PMU foglalo / a probaoldalak) maguk toltik a foglalot: ezekre a launcher nem kerul.
-const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html', 'szajtetovalas-budapest.html']);
+const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html', 'szajtetovalas-budapest.html', 'szemoldok-tetovalas-budapest.html']); // + a szemoldok-celoldal (a /sminktetovalas-budapest masolata: a beagyazott PMU-foglalot tolti)
 // Szovegfinomitasok a kozos fejlecben/lableben. A Wixes oldalakban a szoveg HTML-entitasokkal van kodolva, a sajat darabokban sima betukkel: a mintak mindkettot elfogadjak.
 const ENTITAS = { 'á': '&aacute;', 'é': '&eacute;', 'ó': '&oacute;', 'ö': '&ouml;', 'ő': '&odblac;', 'ü': '&uuml;', 'ű': '&udblac;', 'í': '&iacute;', 'ú': '&uacute;', 'Á': '&Aacute;' };
 const TOLERANS = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[áéóöőüűíúÁ]/g, (c) => '(?:' + c + '|' + ENTITAS[c] + ')');

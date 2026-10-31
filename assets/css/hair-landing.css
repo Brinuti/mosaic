@@ -241,6 +241,10 @@ main.hl .mini-kartya .ik { font-size: 30px; color: var(--bronz-s); margin-bottom
 main.hl .mini-kartya h3 { font-size: 19px; margin-bottom: 6px; }
 main.hl .mini-kartya p { font-size: 15px; line-height: 1.5; color: #2c3d3d; }
 main.hl .halvany .mini-kartya { background: var(--ivory); }
+/* Google Ads celoldalak (tools/hair-oldalak/google-oldalak.mjs): a keresett kifejezesek alcimei (H2) kis kartyakon, a mini-kartya h3-javal azonos meretben */
+main.hl .kulcsszo-szekcio { padding: clamp(32px, 5vw, 56px) 0; }
+main.hl .kulcsszo-kartya h2 { font-size: 20px; line-height: 1.22; margin-bottom: 6px; text-wrap: balance; }
+main.hl .hero-szoveg h1:has(+ .hero-bevezeto) { text-wrap: balance; } /* csak a celoldalak rovid H1-je: ne maradjon egy szo a 2. sorban */
 
 /* --- bemutatkozas, festek --- */
 main.hl .bemutat .lead + .lead { margin-top: 12px; }
