@@ -1,130 +1,199 @@
-// A76 Stape Store szamlalo (01-MERES, A76-3) – CSAK OLVAS, CSAK DARABSZAMOT IR KI.
+// A76 Stape Store szamlalo (01-MERES, A76-3 / #474) – CSAK OLVAS, CSAK DARABSZAMOT IR KI.
+// A Stape Data Store „Filter documents” utvonala (Feri a Playgroundbol, #167 6425534783):
+//   POST {kontener}/stape-api/{api_key}/v2/store/collections/{collection_name}/documents
+//   body: { filter?: { operator, conditions: [{ field, operator, value }] }, time_range?: { created_at: { from, to }, updated_at: { from, to } }, pagination: { limit } }
+//   valasz: { success, data: { pagination: { limit, next_cursor }, items: [{ data, key, collection_name, created_at, updated_at }] } }
 //
 // Bemenet (kornyezeti valtozok):
-//   STAPE_KEY   – az A76 sGTM kontener "Container API Key"-e (GitHub secret, soha nem irjuk ki)
+//   STAPE_KEY   – az A76 sGTM kontener „Container API Key”-e (GitHub secret, soha nem irjuk ki)
 //   STAPE_BASE  – a kontener domainje, alap: https://stape.a76.hu
 //   KOLLEKCIOK  – vesszovel elvalasztva, alap: a76_schedule_log,a76_foglalas_forras
-//   NAPOK       – hany napra visszamenoleg szamoljunk, alap: 7
+//   NAPOK       – hany napra visszamenoleg szamoljunk, alap: 7 (ha a TOL meg van adva, az ervenyes)
+//   TOL         – ISO idopont (UTC), pl. 2026-10-26T10:40:00Z: ettol szamolunk
+//   MEZO_JELZO  – egy 0/1 jelzo mezo neve a dokumentum data-jaban, aminek eloszlasat kerjuk oranként (alap: fbc_suti_van)
 //
-// Kimenet: vegpontonkent HTTP-statusz, kollekcionkent dokumentumszam, a dokumentumok
-// MEZONEVEI (ertek nelkul) es napi (budapesti) darabszam, ha talal idobelyeg-mezot.
-// Vendegadat, azonosito, ertek NEM kerul a naploba.
+// Kimenet: HTTP-statusz, kollekcionkent dokumentumszam, a dokumentumok MEZONEVEI (ertek nelkul), ORANKENTI (budapesti) darabszam es a jelzo-mezo eloszlasa (0 / 1 / nincs).
+// Vendegadat, azonosito, kulcs, nyers ertek NEM kerul a naploba.
+import { pathToFileURL } from 'node:url';
 
-const KEY = process.env.STAPE_KEY || "";
-const BASE = (process.env.STAPE_BASE || "https://stape.a76.hu").replace(/\/+$/, "");
-const KOLLEKCIOK = (process.env.KOLLEKCIOK || "a76_schedule_log,a76_foglalas_forras")
-  .split(",").map((s) => s.trim()).filter(Boolean);
-const NAPOK = Math.max(1, Math.min(60, Number(process.env.NAPOK || 7)));
+const bpOra = (ms) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).format(new Date(ms));
+const jelzoErtek = (v) => (v === 1 || v === '1' || v === true || v === 'true' ? '1' : v === 0 || v === '0' || v === false || v === 'false' ? '0' : 'nincs');
 
-if (!KEY) {
-  console.log("HIBA: a STAPE_KEY (secret STAPE_A76_CONTAINER_KEY) nincs beallitva.");
-  process.exit(1);
-}
-
-const api = `${BASE}/stape-api/${KEY}/v2/store`;
-const rejt = (s) => String(s).split(KEY).join("***");
-
-async function hiv(method, path, body) {
-  try {
-    const r = await fetch(api + path, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-    const text = await r.text();
-    let json = null;
-    try { json = JSON.parse(text); } catch { /* nem JSON */ }
-    return { status: r.status, json };
-  } catch (e) {
-    return { status: 0, json: null, hiba: rejt(e && e.message ? e.message : e) };
-  }
-}
-
-// Dokumentumlista kikeresese tetszoleges valaszformabol.
-function dokumentumok(json) {
-  if (!json) return null;
-  if (Array.isArray(json)) return json;
-  for (const k of ["data", "documents", "items", "results", "docs"]) {
-    const v = json[k];
-    if (Array.isArray(v)) return v;
-    if (v && typeof v === "object") {
-      const belso = dokumentumok(v);
-      if (belso) return belso;
-    }
-  }
-  return null;
-}
-
-const IDO_MEZOK = /^(timestamp|ts|time|created|created_at|createdAt|updated_at|updatedAt|date|datum|ido|event_time|t)$/i;
-
-function idobelyeg(doc) {
-  const forrasok = [doc, doc && doc.data, doc && doc.document, doc && doc.fields].filter(
-    (x) => x && typeof x === "object",
-  );
-  for (const f of forrasok) {
-    for (const [k, v] of Object.entries(f)) {
-      if (!IDO_MEZOK.test(k)) continue;
-      let ms = null;
-      if (typeof v === "number") ms = v > 1e12 ? v : v * 1000;
-      else if (typeof v === "string" && /^\d{10,13}$/.test(v)) ms = Number(v) > 1e12 ? Number(v) : Number(v) * 1000;
-      else if (typeof v === "string" && !Number.isNaN(Date.parse(v))) ms = Date.parse(v);
-      if (ms) return { mezo: k, ms };
-    }
-  }
-  return null;
-}
-
-function mezonevek(docs) {
-  const nevek = new Set();
-  for (const d of docs.slice(0, 50)) {
-    for (const f of [d, d && d.data].filter((x) => x && typeof x === "object")) {
-      for (const k of Object.keys(f)) nevek.add(k);
-    }
-  }
-  return [...nevek].sort();
-}
-
-const budapestNap = (ms) =>
-  new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Budapest" }).format(new Date(ms));
-
-console.log(`A76 Stape Store szamlalo – ${new Date().toISOString()} – ${NAPOK} nap`);
-const gyujt = await hiv("GET", "/collections");
-const gyujtLista = dokumentumok(gyujt.json);
-console.log(`GET /collections -> ${gyujt.status}${gyujtLista ? `, ${gyujtLista.length} kollekcio` : ""}${gyujt.hiba ? " " + gyujt.hiba : ""}`);
-if (gyujtLista) {
-  const nevek = gyujtLista.map((c) => (c && (c.name || c.id || c.collection)) || "?").slice(0, 50);
-  console.log(`  kollekcio-nevek: ${nevek.join(", ")}`);
-}
-
-const hatar = Date.now() - NAPOK * 86400000;
-for (const kol of KOLLEKCIOK) {
+/** Egy kollekcio osszes dokumentuma a time_range-ben, lapozva. -> { docs, valtozat, hiba } (a lapozas kurzor-mezo nevet kiprobalja). */
+export async function dokumentumokLeker({ api, kol, tolIso, hiv, limit = 100, maxLap = 200 }) {
   const e = encodeURIComponent(kol);
-  const probak = [
-    ["POST", `/collections/${e}/documents/filter`, { limit: 1000 }],
-    ["POST", `/collections/${e}/documents/filter`, {}],
-    ["GET", `/collections/${e}/documents?limit=1000`, undefined],
-    ["GET", `/collections/${e}/documents`, undefined],
-  ];
-  let docs = null;
-  for (const [m, p, b] of probak) {
-    const r = await hiv(m, p, b);
-    const d = dokumentumok(r.json);
-    console.log(`${kol}: ${m} ${p.replace(e, "<kol>")} -> ${r.status}${d ? `, ${d.length} dokumentum` : ""}${r.hiba ? " " + r.hiba : ""}`);
-    if (r.status >= 200 && r.status < 300 && d) { docs = d; break; }
+  const alap = { time_range: { created_at: { from: tolIso } } };
+  const docs = []; let kurzor = null; let valtozat = null; let elozoElso = null;
+  for (let lap = 0; lap < maxLap; lap++) {
+    let r = null; let ok = null;
+    const probak = lap === 0 ? [{ pagination: { limit } }] : [{ pagination: { limit, cursor: kurzor } }, { pagination: { limit, next_cursor: kurzor } }, { pagination: { limit, after: kurzor } }];
+    if (lap > 0 && valtozat) probak.splice(0, probak.length, { pagination: { limit, [valtozat]: kurzor } });
+    for (const p of probak) {
+      r = await hiv('POST', `${api}/collections/${e}/documents`, { ...alap, ...p });
+      const j = r.json && r.json.data; const items = j && Array.isArray(j.items) ? j.items : null;
+      if (r.status >= 200 && r.status < 300 && items) {
+        const elso = items[0] && items[0].key;
+        if (lap > 0 && elso && elso === elozoElso) continue; // a kurzor-mezo nev nem ervenyes (ugyanazt a lapot adta vissza): kovetkezo valtozat
+        ok = { items, kovetkezo: j.pagination && j.pagination.next_cursor, kulcs: Object.keys(p.pagination).find((k) => k !== 'limit') };
+        break;
+      }
+    }
+    if (!ok) return { docs, valtozat, hiba: r ? `HTTP ${r.status}${r.hiba ? ' ' + r.hiba : ''}` : 'nincs valasz', lap };
+    if (ok.kulcs) valtozat = ok.kulcs;
+    docs.push(...ok.items); elozoElso = ok.items[0] && ok.items[0].key;
+    if (!ok.kovetkezo || !ok.items.length) return { docs, valtozat, hiba: null, lap: lap + 1 };
+    kurzor = ok.kovetkezo;
   }
-  if (!docs) { console.log(`${kol}: nem sikerult listazni.`); continue; }
-  console.log(`${kol}: mezonevek (ertek nelkul): ${mezonevek(docs).join(", ") || "-"}`);
-  const napi = {};
-  let idoNelkul = 0;
-  let idoMezo = null;
+  return { docs, valtozat, hiba: 'maxLap', lap: maxLap };
+}
+
+/** A page_location query-jenek JELLEMZESE ERTEK NELKUL (A76-2): van-e `price`, ures-e, csak szamjegy-e, van-e first_booking=true. Mas paramerter erteke sehol nem kerul ki. */
+export function priceJellemzes(pageLocation) {
+  let q; try { q = new URL(String(pageLocation || '')).searchParams; } catch { return { price: 'nincs_url', ures: '-', csak_szamjegy: '-', first_booking: '-' }; }
+  const van = q.has('price'); const v = van ? q.get('price') : null;
+  return { price: van ? 'van' : 'nincs', ures: van ? (v.trim() === '' ? 'igen' : 'nem') : '-', csak_szamjegy: van ? (/^\d+$/.test(v) ? 'igen' : 'nem') : '-', first_booking: q.get('first_booking') === 'true' ? 'igen' : 'nem' };
+}
+
+export function osszegez(docs, { tolMs, mezo }) {
+  const oraSzam = {}; const jelzo = {}; const nevek = new Set(); let idoNelkul = 0;
   for (const d of docs) {
-    const t = idobelyeg(d);
-    if (!t) { idoNelkul++; continue; }
-    idoMezo = idoMezo || t.mezo;
-    if (t.ms < hatar) continue;
-    const nap = budapestNap(t.ms);
-    napi[nap] = (napi[nap] || 0) + 1;
+    for (const k of Object.keys((d && d.data) || {})) nevek.add(k);
+    const ms = Date.parse(d && d.created_at);
+    if (!Number.isFinite(ms)) { idoNelkul++; continue; }
+    if (ms < tolMs) continue;
+    const ora = bpOra(ms); oraSzam[ora] = (oraSzam[ora] || 0) + 1;
+    const j = (jelzo[ora] = jelzo[ora] || { 0: 0, 1: 0, nincs: 0 }); j[jelzoErtek(d && d.data && d.data[mezo])]++;
   }
-  console.log(`${kol}: idobelyeg-mezo: ${idoMezo || "nincs"}; ido nelkuli dokumentum: ${idoNelkul}`);
-  for (const nap of Object.keys(napi).sort()) console.log(`  ${nap}: ${napi[nap]}`);
+  return { mezonevek: [...nevek].sort(), oraSzam, jelzo, idoNelkul };
+}
+
+
+// UJ-93 0. lepes (DECISION #263): a first_booking_raw KATEGORIKUS mezo napi (budapesti) bontasa esemenynev szerint.
+// Zart halmaz: hianyzik | ures | true | false | 1 | 0 | egyeb | hiba | nincs; minden mas ertek "egyeb"-be kerul (nyers ertek, azonosito, URL SOHA nem kerul a naploba).
+export const KATEGORIAK = Object.freeze(['hianyzik', 'ures', 'true', 'false', '1', '0', 'egyeb', 'hiba', 'nincs']);
+const kategoria = (v) => (v === undefined || v === null ? 'nincs' : KATEGORIAK.includes(String(v)) ? String(v) : 'egyeb');
+const bpNap = (ms) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date(ms));
+export function kategoriakNaponta(docs, { tolMs, mezo }) {
+  const nap = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at);
+    if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    const ev = String(dd.event_name || '-').replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 40) || '-';
+    const n = (nap[bpNap(ms)] = nap[bpNap(ms)] || {});
+    const e = (n[ev] = n[ev] || {});
+    const k = kategoria(dd[mezo]);
+    e[k] = (e[k] || 0) + 1;
+  }
+  return nap;
+}
+
+// UJ-93 0. lepes: a mezo nelkuli ("nincs") sorok SZERKEZETE - csak kulcsnevek (ertek nelkul): melyik masik mezok vannak meg (pl. a76_nav), ora (UTC) es oldal-utvonal (query nelkul) szerint.
+// Cel: eldonteni, hogy a hianyzo sorok a Data Tag 35 regi valtozatabol (van a76_nav, nincs first_booking_raw) vagy mas kuldotol jonnek (mas kulcskeszlet).
+export function hianyzoSzerkezet(docs, { tolMs, mezo, megjelenit = ['a76_nav', 'a76_nav_diag', 'a76_sched_ok'] }) {
+  const ki = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at);
+    if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    const van = dd[mezo] !== undefined && dd[mezo] !== null;
+    const csop = van ? 'van' : 'nincs';
+    const jel = megjelenit.map((k) => (dd[k] !== undefined && dd[k] !== null ? k : '-' + k)).join(',');
+    let ut = '-'; try { ut = new URL(String(dd.page_location || '')).pathname.replace(/[^A-Za-z0-9/_-]/g, '').slice(0, 40) || '-'; } catch { /* nincs */ }
+    const ora = new Date(ms).toISOString().slice(0, 13) + 'Z';
+    const kulcs = `${csop} | ${jel} | kulcsszam=${Object.keys(dd).length} | ${ut} | ${ora}`;
+    ki[kulcs] = (ki[kulcs] || 0) + 1;
+  }
+  return ki;
+}
+
+// UJ-99 (01-MERES 6540620052, 11-01 12:00): a consent_state objektum zart jellemzese - CSAK a negy ismert kulcs (ad_storage, analytics_storage, ad_user_data, ad_personalization), ertekuk zart halmaz (granted / denied / egyeb / nincs); mas kulcs vagy nyers ertek nem kerul ki.
+export const CONSENT_KULCSOK = Object.freeze(['ad_storage', 'analytics_storage', 'ad_user_data', 'ad_personalization']);
+export function consentJellemzes(cs, kulcsok = ['ad_storage']) {
+  if (!cs || typeof cs !== 'object') return kulcsok.map((k) => k + '=nincs').join(',');
+  return kulcsok.filter((k) => CONSENT_KULCSOK.includes(k)).map((k) => { const v = cs[k]; return k + '=' + (v === undefined || v === null ? 'nincs' : (v === 'granted' || v === 'denied' ? v : 'egyeb:' + typeof v + ':' + String(v).toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 12))); }).join(',');
+}
+/** Sorszintu osszesites: utvonal (zart halmaz: a ket foglalasi oldal, egyebkent 'egyeb') x jelzo-mezo ertek (0/1/nincs/egyeb) x ad_storage -> darab. A page_location query-je nem kerul ki. */
+export function utvonalConsentOsszesites(docs, { tolMs = 0, mezo = 'first_booking_raw' } = {}) {
+  const ki = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    let ut = 'egyeb'; try { const pn = new URL(String(dd.page_location || '')).pathname; ut = pn === '/foglalas-ok/' || pn === '/foglalas-moricz/' ? pn : 'egyeb'; } catch { /* nincs */ }
+    const jel = kategoria(dd[mezo]); // ugyanaz a zart osztalyozas, mint a keresztNavFirstBooking-ben
+    const nv = dd.a76_nav === undefined || dd.a76_nav === null ? 'nincs' : (NAV_HALMAZ.includes(String(dd.a76_nav).split('|')[0]) ? String(dd.a76_nav).split('|')[0] : 'egyeb');
+    const nap = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short' }).format(new Date(ms)); // Budapest-nap
+    const kulcs = `${nap} | ${ut} | ${mezo}=${jel} | nav=${nv} | ${consentJellemzes(dd.consent_state)}`;
+    ki[kulcs] = (ki[kulcs] || 0) + 1;
+  }
+  return ki;
+}
+
+// UJ-99 (01-MERES 6539251724): first_booking_raw x a76_nav (navigacio tipusa) keresztbontas - a tag 95 blokkolo triggere (120) nem-navigate betoltesnel tilt; zart halmaz, nyers ertek nem kerul ki.
+export const NAV_HALMAZ = Object.freeze(['navigate', 'reload', 'back_forward', 'prerender']);
+export function keresztNavFirstBooking(docs, { tolMs, mezo = 'first_booking_raw', navMezo = 'a76_nav' }) {
+  const ki = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at);
+    if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    const fb = kategoria(dd[mezo]);
+    const nv = dd[navMezo] === undefined || dd[navMezo] === null ? 'nincs' : (NAV_HALMAZ.includes(String(dd[navMezo]).split('|')[0]) ? String(dd[navMezo]).split('|')[0] : 'egyeb');
+    const kulcs = `${fb} x ${nv}`;
+    ki[kulcs] = (ki[kulcs] || 0) + 1;
+  }
+  return ki;
+}
+
+export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, napok = 7, tol = '', mezo = 'fbc_suti_van', sorok = false, kategoria: kategoriaMod = false, fetchImpl = fetch, naplo = (s) => console.log(s), most = Date.now() }) {
+  if (!key) { naplo('HIBA: a STAPE_KEY (secret STAPE_A76_CONTAINER_KEY) nincs beallitva.'); return { ok: false }; }
+  const rejt = (s) => String(s).split(key).join('***');
+  const api = `${String(base).replace(/\/+$/, '')}/stape-api/${key}/v2/store`;
+  const hiv = async (method, url, body) => {
+    try {
+      const r = await fetchImpl(url, { method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+      const text = await r.text(); let json = null; try { json = JSON.parse(text); } catch { /* nem JSON */ }
+      return { status: r.status, json };
+    } catch (e) { return { status: 0, json: null, hiba: rejt(e && e.message ? e.message : e) }; }
+  };
+  const tolMs = tol && Number.isFinite(Date.parse(tol)) ? Date.parse(tol) : most - Math.max(1, Math.min(60, Number(napok) || 7)) * 86400000;
+  const tolIso = new Date(tolMs).toISOString();
+  naplo(`A76 Stape Store szamlalo – ${new Date(most).toISOString()} – tol ${tolIso} – jelzo-mezo: ${mezo}`);
+  const gy = await hiv('GET', `${api}/collections`);
+  const lista = gy.json && (gy.json.data && Array.isArray(gy.json.data.items) ? gy.json.data.items : Array.isArray(gy.json.data) ? gy.json.data : Array.isArray(gy.json) ? gy.json : null);
+  naplo(`GET /collections -> ${gy.status}${lista ? `, ${lista.length} kollekcio` : ''}${gy.hiba ? ' ' + gy.hiba : ''}`);
+  const eredmeny = {};
+  for (const kol of kollekciok) {
+    const k = await dokumentumokLeker({ api, kol, tolIso, hiv });
+    naplo(`${kol}: POST /collections/<kol>/documents (Filter documents) -> ${k.hiba ? 'HIBA ' + k.hiba : 'ok'}, ${k.docs.length} dokumentum, ${k.lap} lap, lapozo-mezo: ${k.valtozat || '-'}`);
+    if (!k.docs.length) continue;
+    const o = osszegez(k.docs, { tolMs, mezo });
+    eredmeny[kol] = o;
+    naplo(`${kol}: mezonevek (ertek nelkul): ${o.mezonevek.join(', ') || '-'}; created_at nelkuli: ${o.idoNelkul}`);
+    if (process.env.SOROK === '1' || process.env.SOROK === '2' || sorok) for (const d of k.docs) { // sorszintu nezet: Budapest-ido, esemenynev, hozzajarulas-allapot, jelzo, az oldal CSAK utvonala (query / azonosito nelkul)
+      const ms = Date.parse(d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue; const dd = d.data || {};
+      let ut = '-'; try { ut = new URL(String(dd.page_location || '')).pathname; } catch { /* nincs */ }
+      naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${consentJellemzes(dd.consent_state, CONSENT_KULCSOK)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}${process.env.SOROK === '2' ? ' | ' + Object.entries(priceJellemzes(dd.page_location)).map(([k, x]) => k + '=' + x).join(' ') : ''}`);
+    }
+    if (process.env.SOROK === '1' || process.env.SOROK === '2' || sorok) { const uo = utvonalConsentOsszesites(k.docs, { tolMs, mezo }); for (const kk of Object.keys(uo).sort()) naplo(`  osszesites | ${kk} | db=${uo[kk]}`); }
+    if (kategoriaMod) {
+      const kr = keresztNavFirstBooking(k.docs, { tolMs, mezo });
+      for (const kk of Object.keys(kr).sort()) naplo(`  kereszt | ${kk} | db=${kr[kk]}`);
+      const hs = hianyzoSzerkezet(k.docs, { tolMs, mezo });
+      for (const kk of Object.keys(hs).sort()) naplo(`  szerkezet | ${kk} | db=${hs[kk]}`);
+      const kn = kategoriakNaponta(k.docs, { tolMs, mezo });
+      for (const nap of Object.keys(kn).sort()) for (const ev of Object.keys(kn[nap]).sort()) naplo(`  ${nap} | ${ev} | ${mezo}: ` + KATEGORIAK.filter((x) => kn[nap][ev][x]).map((x) => `${x}=${kn[nap][ev][x]}`).join(' '));
+    }
+    for (const ora of Object.keys(o.oraSzam).sort()) naplo(`  ${ora}h (Budapest): ${o.oraSzam[ora]} sor; ${mezo}: 1=${o.jelzo[ora][1]} 0=${o.jelzo[ora][0]} nincs=${o.jelzo[ora].nincs}`);
+  }
+  return { ok: true, eredmeny };
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const r = await futtat({
+    key: process.env.STAPE_KEY || '', base: process.env.STAPE_BASE || 'https://stape.a76.hu',
+    kollekciok: (process.env.KOLLEKCIOK || 'a76_schedule_log,a76_foglalas_forras').split(',').map((s) => s.trim()).filter(Boolean),
+    napok: process.env.NAPOK || 7, tol: process.env.TOL || '', mezo: process.env.MEZO_JELZO || 'fbc_suti_van', sorok: process.env.SOROK === '1' || process.env.SOROK === '2', kategoria: process.env.KATEGORIA === '1',
+  });
+  if (!r.ok) process.exit(1);
 }
