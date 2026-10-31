@@ -118,17 +118,17 @@ const BELSO_FOGLALAS = /^(?:https?:\/\/(?:www\.)?mosaicheadspa\.hu)?(\/(?:idpont
 /** Az oldal uzletaga a fajlnev alapjan (a gombok celja ettol fugg); null = nem ismert (HeadSpa az alapertelmezes az /idpontfoglalas gombjainal). */
 export function oldalUzletag(fajlnev) {
   const n = String(fajlnev).replace(/\.html$/, '').replace(/^.*\//, '');
-  if (/^(sminktetovalas|szajtetovalas|szemoldok-tetovalas|pmu-|foglalo-pmu$)/.test(n)) return 'pmu'; // + a Google Ads szemoldok-celoldal (2026-10-31) // UJ-66: a pmu-* oldalak (pl. /pmu-foglalas) is PMU oldalak: lablec / Info-ablak gombja business=pmu
+  if (/^(sminktetovalas|szajtetovalas|szemoldok-tetovalas-budapest$|pmu-|foglalo-pmu$)/.test(n)) return 'pmu'; // + a Google Ads szemoldok-celoldal (2026-10-31) // UJ-66: a pmu-* oldalak (pl. /pmu-foglalas) is PMU oldalak: lablec / Info-ablak gombja business=pmu
   if (/^(lezeres-|szortelenites-|szőrtelenítés|szor-konzi|vegleges-)/.test(n)) return 'lezer';
-  if (/^(oxigenterapia-|hajhullas-kezeles)/.test(n)) return 'oxigen'; // + a Google Ads hajhullas-celoldal (az /oxigenterapia-budapest masolata, 2026-10-31)
-  if (/^(noi-fodrasz|noi-hajfestes|hajfestes-|balayage-|30szazalek|fodrasz-|fodraszat-)/.test(n)) return 'fodraszat'; // hajfestes-, fodrasz-obuda, balayage-budapest: a Google Ads celoldalak (2026-10-31)
+  if (/^(oxigenterapia-|hajhullas-kezeles-budapest$)/.test(n)) return 'oxigen'; // + a Google Ads hajhullas-celoldal (az /oxigenterapia-budapest masolata, 2026-10-31)
+  if (/^(noi-fodrasz|noi-hajfestes|hajfestes-budapest$|balayage-|30szazalek|fodrasz-|fodraszat-)/.test(n)) return 'fodraszat'; // hajfestes-budapest (a fodrasz-obuda es a balayage-budapest a meglevo elotagokkal): a Google Ads celoldalak (2026-10-31)
   if (/^(headspa|head-spa|paros-headspa|4-kezes|home$|index$|ajandekkartya|japan-headspa)/.test(n)) return 'headspa';
   return null;
 }
 const kategoriaOldal = (fajlnev) => {
   const n = String(fajlnev).replace(/\.html$/, '').replace(/^.*\//, '');
   if (/balayage/.test(n)) return 'balayage';
-  if (/^(noi-)?hajfestes/.test(n)) return 'color';
+  if (/^(noi-hajfestes|hajfestes-budapest$)/.test(n)) return 'color';
   return null;
 };
 const BETU = { '&aacute;': 'á', '&eacute;': 'é', '&iacute;': 'í', '&oacute;': 'ó', '&ouml;': 'ö', '&odblac;': 'ő', '&uacute;': 'ú', '&uuml;': 'ü', '&udblac;': 'ű', '&Aacute;': 'Á', '&Eacute;': 'É', '&Iacute;': 'Í', '&Oacute;': 'Ó', '&Ouml;': 'Ö', '&Odblac;': 'Ő', '&Uacute;': 'Ú', '&Uuml;': 'Ü', '&Udblac;': 'Ű', '&amp;': '&', '&gt;': '>', '&nbsp;': ' ' };

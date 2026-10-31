@@ -165,6 +165,15 @@ test('oldalUzletag: a fajlnev alapjan', () => {
   for (const [f, e] of Object.entries(v)) assert.equal(oldalUzletag(f), e, f);
 });
 
+test('oldalUzletag: a Google Ads celoldalak (2026-10-31) a forrasoldaluk uzletagat kapjak; a pontos nevek nem fognak meg mas oldalt', () => {
+  const v = { 'fodrasz-obuda': 'fodraszat', 'balayage-budapest': 'fodraszat', 'hajfestes-budapest': 'fodraszat', 'szemoldok-tetovalas-budapest': 'pmu', 'hajhullas-kezeles-budapest': 'oxigen',
+    'hajfestes-budapest-regi': null, 'szemoldok-tetovalas': null, 'hajhullas-kezeles': null };
+  for (const [f, e] of Object.entries(v)) assert.equal(oldalUzletag(f + '.html'), e, f);
+  // a hajfestes-celoldal foglalo-kategoriaja is a forrase (color), mint a /noi-hajfestes-budapest-en
+  assert.equal(belsoCel('/mosaic-hair-idopontfoglalas', 'hajfestes-budapest', 'FOGLALOK!')?.cel, belsoCel('/mosaic-hair-idopontfoglalas', 'noi-hajfestes-budapest', 'FOGLALOK!')?.cel);
+  assert.equal(belsoCel('/mosaic-hair-idopontfoglalas', 'balayage-budapest', 'FOGLALOK!')?.cel, belsoCel('/mosaic-hair-idopontfoglalas', 'balayage-haj-festes-budapest', 'FOGLALOK!')?.cel);
+});
+
 test('belsoCel: fomenu FOGLALAS = altalanos; a gombok az oldal uzletagara; onhivatkozas nem; ismeretlen link nem', () => {
   const c = (href, fajl, szoveg) => belsoCel(href, fajl, szoveg)?.cel ?? null;
   const k = (href, fajl, szoveg) => belsoCel(href, fajl, szoveg)?.kapcsolo ?? null;

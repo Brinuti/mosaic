@@ -34,7 +34,7 @@ export const CELOLDALAK = {
       // Ajak- / szemhej-blokkok: kimaradnak a masolatbol (mas tema - az ajaknak sajat oldala van)
       ['<span>Szemöldök 79 000 Ft-tól<small class="tenyek-al">Ajak 99 000 Ft-tól</small></span>', '<span>Szemöldök 79 000 Ft-tól</span>'],
       ['    <h2 class="kozepre helyzet-felso">Szemöldök- és ajaktetoválás</h2>\n', ''],
-      ['    <div class="helyzet-racs">', '    <div class="helyzet-racs ketto">'],
+      ['    <div class="helyzet-racs">', '    <div class="helyzet-racs ketto-szemoldok">'],
       [/\n      <article class="helyzet">\n        <img src="\/assets\/img\/pmu\/ajak-03\.jpg"[\s\S]*?<\/article>/, ''],
       ['\n      <button type="button" role="tab" aria-selected="false" data-szuro="ajak">Ajak</button>', ''],
       [/\n      <figure class="ref" data-kategoria="ajak">[^\n]*<\/figure>/g, '', 8],
@@ -47,7 +47,7 @@ export const CELOLDALAK = {
       ['<h2 id="ar-cim" class="nagy">Sminktetoválás árak</h2>', '<h2 id="ar-cim" class="nagy">Szemöldök tetoválás árak</h2>'],
       ['<p class="lead ar-mondat">Szemöldök tetoválás 79&nbsp;000&nbsp;Ft, ajaktetoválás 99&nbsp;000&nbsp;Ft-tól, a korrekció mindkettőben benne van.</p>',
         '<p class="lead ar-mondat">Szemöldök tetoválás: 79&nbsp;000&nbsp;Ft, a 4–7 hét utáni korrekcióval együtt, előleg nélkül.</p>'],
-      ['    <div class="ar-racs">', '    <div class="ar-racs ketto">'],
+      ['    <div class="ar-racs">', '    <div class="ar-racs ketto-szemoldok">'],
       [/(data-cta="ar-szemoldok-hibrid">Időpontot nézek<\/a><\/div>\n      <\/article>\n    <\/div>\n)/, '$1    <div class="technikak">\n'
         + '      <div class="technika"><h2>Púderes szemöldök tetoválás (powder brows)</h2><p>A púderes szemöldök puha, sminkszerű árnyékolás.</p></div>\n'
         + '      <div class="technika"><h2>Hibrid szemöldök tetoválás</h2><p>A hibrid szemöldök az árnyékolást finom szálas rajzolattal kombinálja.</p></div>\n'
@@ -67,7 +67,7 @@ export const CELOLDALAK = {
       // a forras OX-1-es kulcsszo-szekcioja helyett a hajhullas-kifejezesek (4 alcim + mondat)
       [/<!-- ============ 1b\. KERESETT KIFEJEZESEK \(Google Ads celoldal-terv, OX-1, 2026-10-31\) ============ -->[\s\S]*?<\/section>/,
         '<!-- ============ 1b. KERESETT KIFEJEZESEK (Google Ads celoldal-terv, OX-4, 2026-10-31) ============ -->\n'
-        + '<section class="kulcsszo-szekcio" aria-label="Hajhullás vizsgálat és kezelés">\n  <div class="tartalom">\n    <ul class="kulcsszo-racs">\n'
+        + '<section class="kulcsszo-szekcio">\n  <div class="tartalom">\n    <ul class="kulcsszo-racs">\n'
         + '      <li class="kulcsszo-kartya"><h2>Hajhullás vizsgálat Budapest</h2><p>Hajkamerával közelről megnézzük a fejbőr és a hajszálak állapotát.</p></li>\n'
         + '      <li class="kulcsszo-kartya"><h2>Erős hajhullás kezelése</h2><p>Erős hajhullásnál is a felméréssel kezdünk, és ez alapján javasolunk kezelést.</p></li>\n'
         + '      <li class="kulcsszo-kartya"><h2>Női hajhullás kezelése</h2><p>Női vendégeinknél is ugyanígy: felmérés, majd személyre szabott kezelési terv.</p></li>\n'

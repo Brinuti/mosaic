@@ -1012,21 +1012,22 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 .technika h2 { font-size: 23px; line-height: 1.2; text-align: left; margin-bottom: 6px; text-wrap: balance; }
 .technika p { margin: 0; color: var(--szoveg); }
 .szakember-adatok .szakember-hely { margin: 10px 0 0; font-size: 15px; color: var(--halk); }
-/* a szemoldok-celoldal (/szemoldok-tetovalas-budapest): ket helyzet-kartya es ket ar-kartya (asztalon fekvo elrendezes, mint a /szajtetovalas-budapest oldalon) */
+/* a szemoldok-celoldal (/szemoldok-tetovalas-budapest): ket helyzet-kartya es ket ar-kartya, asztalon fekvo elrendezes. SAJAT osztaly (ketto-szemoldok):
+   a /szajtetovalas-budapest "ar-racs ketto" kartyait nem erinti (azok a szajtetovalas-landing.css-bol jonnek) */
 @media (min-width: 1101px) {
-  .helyzet-racs.ketto { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 860px; margin-left: auto; margin-right: auto; }
+  .helyzet-racs.ketto-szemoldok { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 860px; margin-left: auto; margin-right: auto; }
 }
 @media (min-width: 701px) {
-  .ar-racs.ketto { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-  .ar-racs.ketto .ar-kartya { flex-direction: row; }
-  .ar-racs.ketto .ar-kartya img { width: 42%; flex: none; aspect-ratio: auto; height: auto; min-height: 280px; }
-  .ar-racs.ketto .ar-kartya > div { padding: 26px 24px; }
-  .ar-racs.ketto .ar-kartya h3 { font: 500 23px/1.25 var(--cim); }
-  .ar-racs.ketto .ar-kartya .ar { font-size: 36px; margin: 12px 0 10px; }
-  .ar-racs.ketto .ar-kartya p:not(.ar) { font-size: 14.5px; }
+  .ar-racs.ketto-szemoldok { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .ar-racs.ketto-szemoldok .ar-kartya { flex-direction: row; }
+  .ar-racs.ketto-szemoldok .ar-kartya img { width: 42%; flex: none; aspect-ratio: auto; height: auto; min-height: 280px; }
+  .ar-racs.ketto-szemoldok .ar-kartya > div { padding: 26px 24px; }
+  .ar-racs.ketto-szemoldok .ar-kartya h3 { font: 500 23px/1.25 var(--cim); }
+  .ar-racs.ketto-szemoldok .ar-kartya .ar { font-size: 36px; margin: 12px 0 10px; }
+  .ar-racs.ketto-szemoldok .ar-kartya p:not(.ar) { font-size: 14.5px; }
 }
 @media (max-width: 700px) {
-  .helyzetek h2.helyzet-felso { font-size: 12.5px; text-align: center; }
-  .technika h2 { font-size: 21px; text-align: left; }
+  main .helyzetek h2.helyzet-felso { font-size: 12.5px !important; line-height: 1.3; text-align: center; } /* a "main h2 {...!important}" mobil-szabaly (2026-10-04) folott */
+  main .technika h2 { font-size: 21px !important; line-height: 1.2; text-align: left; }
   .technika { padding: 16px 18px; }
 }

@@ -81,7 +81,7 @@ const szamjegy = (s) => +String(s).replace(/\D/g, '');
 describe('oldal', () => {
   test('betoltodik, hibak nelkul, kulso kereseket nem kuld (suti-hozzajarulas nelkul)', async () => {
     const { p, ctx, hibak, kulso } = await nyit();
-    assert.match(await p.title(), /Lézeres szőrtelenítés Budapesten/);
+    assert.equal(await p.title(), 'Lézeres szőrtelenítés Budapest – végleges szőrtelenítés garanciával – MOSAIC'); // a Google Ads celoldal-terv (SZ-1, 2026-10-31) szerint
     assert.equal(await p.locator('h1').count(), 1);
     assert.equal(await p.locator('link[rel=canonical]').getAttribute('href'), 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest');
     assert.equal(await p.locator('meta[name=robots]').count(), 0, 'eles oldal: indexelheto (nincs noindex)');
@@ -826,7 +826,8 @@ describe('a hatodik kor visszajelzesei', () => {
       await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
       await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
       const h1 = await p.$eval('.hero h1', (e) => { const r = e.getBoundingClientRect(); return { sor: Math.round(r.height / parseFloat(getComputedStyle(e).lineHeight)), alja: r.bottom }; });
-      assert.equal(h1.sor, 2, w + ' px: a fo cim 2 sor');
+      // a Google Ads celoldal-terv (SZ-1, 2026-10-31) hosszabb fo cimet ir elo (Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával): telefonon legfeljebb 3 sor
+      assert.ok(h1.sor >= 2 && h1.sor <= 3, w + ' px: a fo cim 2-3 sor: ' + h1.sor);
       const kep = await p.$eval('.hero-kep', (e) => e.getBoundingClientRect().top);
       const ajanlat = await p.$eval('.hero-ajanlat', (e) => e.getBoundingClientRect().top);
       assert.ok(h1.alja <= kep + 1 && kep < ajanlat, w + ' px: cim -> kep -> tobbi szoveg: ' + [h1.alja, kep, ajanlat]);

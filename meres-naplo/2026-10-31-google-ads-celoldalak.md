@@ -45,13 +45,26 @@ A foglalási folyamat nem változik (ugyanaz a foglaló, ugyanazok a linkek és 
    a régi oldal közben végig változatlanul él (a Meta-hirdetések arra visznek), a Google Ads csak az átvétel után kerül át az új linkre.
 3. A `suti.js` visszaállítása: a 2 lista-bővítés + megjegyzés törlése (a többi oldal mérése nem függ tőle).
 
+## Független review (1. kör: FAIL → javítva)
+
+A review (külön ügynök, csak olvasott) a következőket jelezte; mind javítva vagy megindokolva:
+1. `oldalUzletag` `fodrasz-` előtag más oldalakat is megfog – **nem ez a PR vezette be** (az `origin/main` 124. sorában már benne van); a saját bővítések pontos névre szűkítve
+   (`hajfestes-budapest$`, `szemoldok-tetovalas-budapest$`, `hajhullas-kezeles-budapest$`), új teszt (`test-foglalo-atkotes.mjs`).
+2. A `.ar-racs.ketto` szabály a `/szajtetovalas-budapest` árkártyáit is átrendezte volna (a `szajtetovalas-landing.css` 38. sorában le nem zárt `@media` miatt az oldal
+   saját szabályai sosem érvényesültek – régi hiba, ebben a PR-ben nem javítjuk) → saját osztály: `ketto-szemoldok`. Mérve: a szájoldal árrácsa 1366 / 900 / 320 px-en azonos a `main`-nel.
+3. Mobilon a `main h2 {…!important}` (2026-10-04) felülírta az új alcímek méretét → `!important`-tal javítva (mérve 320 px-en: 12,5 px, nincs kilógás).
+4. A kulcsszó-szekciók `aria-label`-je (nem látható szöveg) törölve.
+5. A hajfestés-oldalon a kivett hajhosszabbítás-kártyát nem pótoljuk más szöveggel (a terv szerint csak kimarad).
+6. A „november 30-ig” mondat a terv szövege; 12-01-re emlékeztető (Noel kedvezményének és a Salonic-pillanatképnek az ellenőrzése).
+7. A céloldal-teszt statikus része a böngésző nélkül is fut (a böngésző-hook a böngészős `describe`-ban).
+
 ## Bizonyíték (2026-10-31)
 
 - `node tools/hair-oldalak.mjs --ellenoriz`: 7 oldal egyezik (a meglévő 4 fodrász-oldal bájtra változatlan).
 - `node tools/google-celoldalak.mjs --ellenoriz`: 2 céloldal egyezik.
-- Új teszt: `tools/google-celoldalak-teszt/celoldalak.test.mjs` (statikus + böngészős, 1366 px és 390 px): **43 / 43 zöld**; ellenpróba: a kulcsszó-blokkot
+- Új teszt: `tools/google-celoldalak-teszt/celoldalak.test.mjs` (statikus + böngészős, 1366 px és 390 px): **44 / 44 zöld**; ellenpróba: a kulcsszó-blokkot
   `display:none`-ra állítva a teszt piros (a rejtett szöveget kiszúrja).
 - Meglévő tesztek: `tools/hair-teszt/hair.test.mjs` 55/55, `tools/oxigen-teszt/oxigen.test.mjs` 12/12, `tools/arlista-teszt/arlista.test.mjs` 39/39,
-  `tools/test-foglalo-atkotes.mjs` 19/19, `tools/test-sminktetovalas-oldal.mjs` 2/2, `tools/szaj-teszt/szaj.test.mjs` 22/22
+  `tools/test-foglalo-atkotes.mjs` 20/20, `tools/ujrastilus-teszt/oxigen-hajvizsgalat.test.mjs` 29/29, `tools/lezer-teszt/tartalom.test.mjs` 6/6, `tools/lezer-teszt/lezer.test.mjs` 86/87 (az 1 FAIL – Trustindex „Failed to fetch” konzolhiba – a `main`-en is ugyanígy bukik), `tools/test-sminktetovalas-oldal.mjs` 2/2, `tools/szaj-teszt/szaj.test.mjs` 22/22
   (a terv szerinti új cím / H1 / H2 / „ajak sminktetoválás” miatt frissítve; a videós részteszt 4 futásból egyszer időzítés miatt elbukott, egyedül futtatva zöld).
 - Build (`node tools/netlify-build.mjs`): az 5 új oldal foglaló-linkjei asztalon és mobilon is azonosak a forrásoldaléval (a `/hajfestes-budapest`-ről csak a kivett póthaj-gomb hiányzik).

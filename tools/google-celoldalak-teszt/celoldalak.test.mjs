@@ -5,7 +5,7 @@
 //
 // Statikus resz: a terv „ezt kell beírni” szovegei BETU SZERINT a foglalas/*.html fajlokban (title, meta, H1, alcimek, mondatok), a generalt masolatok frissek,
 // indexelhetok, sajat canonical, sitemap, a mero-kod (Meta-pixel) es a foglalo-uzletag ugyanaz, mint a forrasoldalon.
-// Bongeszos resz (a dist/ build, helyi szerver, csak helyi forgalom): 200, nincs atiranyitas, a szovegek LATHATOK (nincs rejtett szoveg) asztali (1366 px) es
+// Bongeszos resz (a dist/ build, helyi szerver, csak helyi forgalom; csak ez kivanja a buildet es a Chrome-ot): 200, nincs atiranyitas, a szovegek LATHATOK (nincs rejtett szoveg) asztali (1366 px) es
 // telefon (390 px, mobil UA) nezetben, nincs vizszintes kilogas, nincs JS-hiba; kepernyokep: KEPERNYOKEP_MAPPA (ha meg van adva).
 // Kornyezeti valtozok: CHROME_UTVONAL, PLAYWRIGHT_UTVONAL (mint a tobbi tesztnel).
 import test, { before, after, describe } from 'node:test';
@@ -65,7 +65,7 @@ const UJ = {
       'Szőkítés és világosítás a hajad állapotához igazítva, előzetes konzultációval.',
       'Ha nem lett jó a szín, előbb felmérjük, aztán javítjuk.',
     ],
-    nincs: ['Hajhosszabbítás', 'Póthaj', 'póthaj'],
+    nincs: ['Hajhosszabbítás', 'Póthaj', 'póthaj', 'Előbb beszélünk, aztán festünk'],
   },
   'szemoldok-tetovalas-budapest': {
     forras: 'sminktetovalas-budapest',
@@ -164,6 +164,7 @@ describe('a terv szovegei a forrasfajlokban (betu szerint)', () => {
       const sz = lapSzoveg(h);
       for (const m of t.szoveg) assert.ok(sz.includes(m), `hianyzik a szoveg: ${m}`);
       for (const n of t.nincs || []) assert.ok(!h.includes(n), `nem maradhat a masolatban: ${n}`);
+      assert.ok(!/kulcsszo-szekcio[^>]*aria-label=/.test(h), 'a kulcsszo-szekcion nincs (nem lathato) aria-label szoveg');
     });
   }
 });
@@ -198,6 +199,11 @@ describe('az uj oldalak: masolat, indexelheto, sajat canonical, sitemap, meres, 
     const g = await import(pathToFileURL(path.join(GYOKER, 'tools/google-celoldalak.mjs')).href);
     for (const f of Object.keys(g.CELOLDALAK)) assert.equal(olvas('foglalas', f + '.html'), g.masolat(f), `${f}.html elavult: node tools/google-celoldalak.mjs`);
   });
+  test('a szemoldok-celoldal ket-kartyas stilusa sajat osztalyon: a /szajtetovalas-budapest "ar-racs ketto" kartyait nem erinti', () => {
+    assert.ok(olvas('foglalas', 'szemoldok-tetovalas-budapest.html').includes('<div class="ar-racs ketto-szemoldok">'));
+    assert.ok(!olvas('foglalas', 'szajtetovalas-budapest.html').includes('ketto-szemoldok'));
+    assert.ok(!/\.ar-racs\.ketto[ .{]/.test(olvas('assets/css/pmu-landing.css')), 'a pmu-landing.css nem ad stilust az .ar-racs.ketto osztalynak');
+  });
   test('a szemoldok-celoldal a beagyazott PMU-foglalot tolti (nem kap launchert), mint a forrasa', () => {
     assert.match(olvas('tools/netlify-build.mjs'), /FOGLALO_OLDALAK = new Set\(\[[^\]]*'szemoldok-tetovalas-budapest\.html'/);
   });
@@ -211,25 +217,6 @@ function playwright() {
 }
 const DIST = path.join(GYOKER, 'dist');
 let szerver, bazis, bongeszo;
-before(async () => {
-  if (!fs.existsSync(path.join(DIST, '_a', 'fodrasz-obuda.html'))) throw new Error('nincs friss dist/: futtasd elobb: node tools/netlify-build.mjs');
-  const { fajlUtvonal } = await import(pathToFileURL(path.join(GYOKER, 'tools/serve-dist.mjs')).href);
-  szerver = http.createServer((req, res) => {
-    const u = new URL(req.url, 'http://x');
-    if (req.method === 'POST') { res.writeHead(200); return res.end('{}'); }
-    const e = fajlUtvonal(decodeURIComponent(u.pathname), req.headers['user-agent']);
-    if (e.atiranyit) { res.writeHead(301, { location: encodeURI(e.atiranyit) + u.search }); return res.end(); }
-    fs.readFile(e.fajl, (hiba, adat) => {
-      if (hiba) { res.writeHead(404); return res.end('nincs'); }
-      const tipus = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json' }[path.extname(e.fajl)];
-      res.writeHead(200, tipus ? { 'content-type': tipus } : {}); res.end(adat);
-    });
-  });
-  await new Promise((ok) => szerver.listen(0, ok));
-  bazis = `http://localhost:${szerver.address().port}`;
-  bongeszo = await playwright().chromium.launch({ executablePath: CHROME, headless: true });
-});
-after(async () => { await bongeszo?.close(); szerver?.close(); });
 
 async function vizsgal(fajl, t, mobil) {
   const ctx = await bongeszo.newContext({ viewport: { width: mobil ? 390 : 1366, height: mobil ? 844 : 900 }, reducedMotion: 'reduce', ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}) });
@@ -271,6 +258,26 @@ async function vizsgal(fajl, t, mobil) {
 }
 
 describe('bongeszoben: a szovegek lathatok, nincs kilogas, nincs JS-hiba (asztali 1366 px + telefon 390 px)', () => {
+  // a bongeszo / dist / helyi szerver csak ehhez a reszhez kell (a statikus ellenorzesek nelkule is futnak)
+  before(async () => {
+    if (!fs.existsSync(path.join(DIST, '_a', 'fodrasz-obuda.html'))) throw new Error('nincs friss dist/: futtasd elobb: node tools/netlify-build.mjs');
+    const { fajlUtvonal } = await import(pathToFileURL(path.join(GYOKER, 'tools/serve-dist.mjs')).href);
+    szerver = http.createServer((req, res) => {
+      const u = new URL(req.url, 'http://x');
+      if (req.method === 'POST') { res.writeHead(200); return res.end('{}'); }
+      const e = fajlUtvonal(decodeURIComponent(u.pathname), req.headers['user-agent']);
+      if (e.atiranyit) { res.writeHead(301, { location: encodeURI(e.atiranyit) + u.search }); return res.end(); }
+      fs.readFile(e.fajl, (hiba, adat) => {
+        if (hiba) { res.writeHead(404); return res.end('nincs'); }
+        const tipus = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json' }[path.extname(e.fajl)];
+        res.writeHead(200, tipus ? { 'content-type': tipus } : {}); res.end(adat);
+      });
+    });
+    await new Promise((ok) => szerver.listen(0, ok));
+    bazis = `http://localhost:${szerver.address().port}`;
+    bongeszo = await playwright().chromium.launch({ executablePath: CHROME, headless: true });
+  });
+  after(async () => { await bongeszo?.close(); szerver?.close(); });
   for (const [fajl, t] of Object.entries({ ...UJ, ...MEGLEVO })) {
     for (const mobil of [false, true]) {
       test(`${fajl} – ${mobil ? 'telefon' : 'asztali'}`, async () => {

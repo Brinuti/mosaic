@@ -264,9 +264,9 @@ const sticky = (fodrasz) => `<div class="sticky-cta" id="sticky-cta" aria-hidden
 </div>`;
 
 // ---- Google Ads celoldal-valtozat (tools/hair-oldalak/google-oldalak.mjs): a keresett kifejezesek sajat alcimmel (H2) + egy mondattal, lathato, normal szovegkent ----
-// v.kulcsszavak: { cimke, kartyak: [[ikon, H2, mondat], ...] } - 3 kartya: harom oszlop, 4 kartya: negy oszlop (asztalon). A valtozat nelkuli oldalak kimenete nem valtozik.
+// v.kulcsszavak: { kartyak: [[ikon, H2, mondat], ...] } - 3 kartya: harom oszlop, 4 kartya: negy oszlop (asztalon). A valtozat nelkuli oldalak kimenete nem valtozik.
 const kulcsszoSzekcio = (k) => `<!-- ============ KERESETT KIFEJEZESEK (Google Ads celoldal) ============ -->
-<section class="szekcio halvany kulcsszo-szekcio" aria-label="${esc(k.cimke)}">
+<section class="szekcio halvany kulcsszo-szekcio">
   <div class="tartalom">
     <ul class="kartya-racs ${k.kartyak.length === 4 ? 'negy' : 'harom'} kicsi-kartyak">
 ${k.kartyak.map(([ikon, cim, mondat]) => `      <li class="mini-kartya kulcsszo-kartya">${ik(ikon)}<h2>${cim}</h2><p>${mondat}</p></li>`).join('\n')}

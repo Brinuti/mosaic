@@ -25,7 +25,6 @@ export const GOOGLE_LAPOK = {
       h1: 'Fodrász Óbudán, a Kolosy térnél',
       bevezeto: 'Fodrászat Óbuda szívében, a Kolosy tér mellett, a Bécsi út 2. alatt – a 2. és a 3. kerület határán. Hajfestés, tőfestés, őszfedés és balayage Bettinél, Noelnél és Evelinnél, előtte ingyenes 30 perces konzultációval.',
       kulcsszavak: {
-        cimke: 'Fodrász Óbudán, a 2. és a 3. kerület határán',
         kartyak: [
           ['pin', 'Fodrászat a 3. kerület közelében', 'Ha fodrászt keresel a 3. kerületben, a Kolosy térnél, Óbuda kapujában találsz minket.'],
           ['pin', 'Fodrász a 2. kerület határán', 'A 2. kerületből pár perc: a Bécsi út 2. a Margit híd budai hídfőjétől is gyorsan elérhető.'],
@@ -45,7 +44,6 @@ export const GOOGLE_LAPOK = {
       h1: 'Balayage festés Budapesten',
       bevezeto: 'Balayage Budapesten, a Kolosy térnél (Bécsi út 2.): természetes hatású balayage hajfestés Noelnél. A balayage ár vágással és szárítással együtt értendő; a 30 perces ingyenes konzultáción átbeszéljük a várható árat.',
       kulcsszavak: {
-        cimke: 'Babylights, airtouch, melír és ombre',
         kartyak: [
           ['level', 'Babylights festés', 'A babylights finom, vékony tincsekkel ad természetes, napszítta hatást.'],
           ['gyemant', 'Airtouch hajfestés', 'Airtouch technikával a világosítás átmenete még lágyabb.'],
@@ -70,7 +68,6 @@ export const GOOGLE_LAPOK = {
       h1: 'Női hajfestés Budapesten',
       bevezeto: 'Hajfestés Budapesten, Óbudán, a Kolosy tér mellett (Bécsi út 2.). Tőfestés, őszfedés, szőkítés és hajszín korrekció Evelinnél – a 2. és 3. kerület határán, előtte ingyenes konzultációval.',
       kulcsszavak: {
-        cimke: 'Tőfestés, őszfedés, szőkítés és hajszín korrekció',
         kartyak: [
           ['ora', 'Tőfestés', `Tőfestés ${tol(katAdat('Tőfestés + szárítás', 'evelin').tol)}, festékkel és szárítással.`],
           ['level', 'Őszfedés', 'Egyenletes őszfedés, a saját színedhez igazítva.'],
@@ -82,8 +79,7 @@ export const GOOGLE_LAPOK = {
       fodrasz: {
         szakteruletek: FODRASZOK.evelin.szakteruletek.filter((s) => s !== 'pothaj'),
         kiemelesek: FODRASZOK.evelin.kiemelesek.filter((s) => !/hosszabbítás|póthaj/i.test(s)),
-        miert: FODRASZOK.evelin.miert.map((m) => (/hosszabbítás|póthaj/i.test(m.join(' '))
-          ? ['Előbb beszélünk, aztán festünk', 'Az ingyenes konzultáción megnézzük a hajad állapotát, és megbeszéljük, mi a reális.'] : m)),
+        miert: FODRASZOK.evelin.miert.filter((m) => !/hosszabbítás|póthaj/i.test(m.join(' '))),
         gyik: FODRASZOK.evelin.gyik.filter((q) => !/hosszabbítás|póthaj/i.test(q.join(' '))),
       },
     }),
