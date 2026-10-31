@@ -107,6 +107,22 @@ export function hianyzoSzerkezet(docs, { tolMs, mezo, megjelenit = ['a76_nav', '
   return ki;
 }
 
+// UJ-99 (01-MERES 6539251724): first_booking_raw x a76_nav (navigacio tipusa) keresztbontas - a tag 95 blokkolo triggere (120) nem-navigate betoltesnel tilt; zart halmaz, nyers ertek nem kerul ki.
+export const NAV_HALMAZ = Object.freeze(['navigate', 'reload', 'back_forward', 'prerender']);
+export function keresztNavFirstBooking(docs, { tolMs, mezo = 'first_booking_raw', navMezo = 'a76_nav' }) {
+  const ki = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at);
+    if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    const fb = kategoria(dd[mezo]);
+    const nv = dd[navMezo] === undefined || dd[navMezo] === null ? 'nincs' : (NAV_HALMAZ.includes(String(dd[navMezo]).split('|')[0]) ? String(dd[navMezo]).split('|')[0] : 'egyeb');
+    const kulcs = `${fb} x ${nv}`;
+    ki[kulcs] = (ki[kulcs] || 0) + 1;
+  }
+  return ki;
+}
+
 export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, napok = 7, tol = '', mezo = 'fbc_suti_van', sorok = false, kategoria: kategoriaMod = false, fetchImpl = fetch, naplo = (s) => console.log(s), most = Date.now() }) {
   if (!key) { naplo('HIBA: a STAPE_KEY (secret STAPE_A76_CONTAINER_KEY) nincs beallitva.'); return { ok: false }; }
   const rejt = (s) => String(s).split(key).join('***');
@@ -138,6 +154,8 @@ export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, n
       naplo(`  sor ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short', timeStyle: 'medium' }).format(new Date(ms))} | ${String(dd.event_name || '-').slice(0, 40)} | consent=${String(dd.consent_state || '-').slice(0, 40)} | ${mezo}=${jelzoErtek(dd[mezo])} | ${ut.slice(0, 60)}${process.env.SOROK === '2' ? ' | ' + Object.entries(priceJellemzes(dd.page_location)).map(([k, x]) => k + '=' + x).join(' ') : ''}`);
     }
     if (kategoriaMod) {
+      const kr = keresztNavFirstBooking(k.docs, { tolMs, mezo });
+      for (const kk of Object.keys(kr).sort()) naplo(`  kereszt | ${kk} | db=${kr[kk]}`);
       const hs = hianyzoSzerkezet(k.docs, { tolMs, mezo });
       for (const kk of Object.keys(hs).sort()) naplo(`  szerkezet | ${kk} | db=${hs[kk]}`);
       const kn = kategoriakNaponta(k.docs, { tolMs, mezo });

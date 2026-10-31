@@ -98,3 +98,19 @@ test('hianyzoSzerkezet (UJ-93 0. lepes): a mezo nelkuli sorok kulcskeszlete (csa
   });
   const szoveg = JSON.stringify(ki); assert.ok(!/TITKOS|gclid|first_booking=/.test(szoveg), 'nincs nyers ertek / query');
 });
+
+test('keresztNavFirstBooking (UJ-99): first_booking_raw x a76_nav zart halmaz, a tol elotti sor kimarad, nyers ertek nem kerul ki', async () => {
+  const { keresztNavFirstBooking } = await import('./a76-stape-store-szamlalo.mjs');
+  const mk = (iso, dd) => ({ created_at: iso, data: dd });
+  const docs = [
+    mk('2026-10-30T15:06:00Z', { first_booking_raw: 'false', a76_nav: 'navigate' }),
+    mk('2026-10-30T15:07:00Z', { first_booking_raw: 'false', a76_nav: 'reload' }),
+    mk('2026-10-30T15:08:00Z', { first_booking_raw: 'ures', a76_nav: 'back_forward|x|y' }),
+    mk('2026-10-30T15:09:00Z', { first_booking_raw: 'TITKOS', a76_nav: 'valami_mas' }),
+    mk('2026-10-30T15:10:00Z', { a76_nav: 'navigate' }),
+    mk('2026-10-30T12:00:00Z', { first_booking_raw: 'true', a76_nav: 'navigate' }), // tol elott
+  ];
+  const ki = keresztNavFirstBooking(docs, { tolMs: Date.parse('2026-10-30T14:46:30Z') });
+  assert.deepEqual(ki, { 'false x navigate': 1, 'false x reload': 1, 'ures x back_forward': 1, 'egyeb x egyeb': 1, 'nincs x navigate': 1 });
+  assert.ok(!/TITKOS|valami_mas/.test(JSON.stringify(ki)));
+});
