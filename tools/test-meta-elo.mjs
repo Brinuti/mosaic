@@ -22,9 +22,10 @@ const tablaVan = (d, t) => d.db.prepare('SELECT count(*) AS n FROM sqlite_master
 
 test('A) kapcsolo: alapbol KI; csak META_ELO_BE=headspa ES >= 16 karakteres META_ELO_TOKEN; mas uzletag nem kapcsolhato; az elo dataset a HeadSpa pixel; az esemeny Schedule', () => {
   assert.deepEqual(metaEloUzletagok({}), []); assert.deepEqual(metaEloUzletagok({ META_ELO_BE: 'headspa' }), []); assert.deepEqual(metaEloUzletagok({ META_ELO_BE: 'headspa', META_ELO_TOKEN: 'rovid' }), []);
-  assert.deepEqual(metaEloUzletagok(ENV({ META_ELO_BE: 'headspa, szor,pmu' })), ['headspa', 'pmu'], 'HeadSpa (DECISION #240) + PMU (DECISION #244); a szor nem kapcsolhato');
+  assert.deepEqual(metaEloUzletagok(ENV({ META_ELO_BE: 'headspa, szor,pmu,fodrasz' })), ['headspa', 'szor', 'pmu'], 'HeadSpa (DECISION #240) + PMU (DECISION #244) + Szor (Feri 10-31); a fodrasz nem kapcsolhato');
+  assert.equal(ELO_DATASETEK.szor, '643342342027957'); assert.ok(ELO_CELOK.meta.includes(ELO_DATASETEK.szor));
   assert.deepEqual(metaEloUzletagok(ENV({ META_ELO_BE: 'pmu' })), ['pmu']); assert.equal(ELO_DATASETEK.pmu, '1019878750660854'); assert.equal(ELO_DATASETEK.headspa, ELO_DATASET); assert.ok(ELO_CELOK.meta.includes(ELO_DATASETEK.pmu));
-  assert.equal(metaEloBe(ENV(), 'headspa'), true); assert.equal(metaEloBe(ENV(), 'szor'), false);
+  assert.equal(metaEloBe(ENV(), 'headspa'), true); assert.equal(metaEloBe(ENV(), 'szor'), false, 'a szor csak a META_ELO_BE-ben kapcsolhato'); assert.equal(metaEloBe(ENV({ META_ELO_BE: 'szor' }), 'szor'), true);
   assert.equal(ELO_DATASET, '3473839859576758'); assert.ok(ELO_CELOK.meta.includes(ELO_DATASET)); assert.equal(ELO_META_ESEMENY, 'Schedule');
 });
 test('A) metaEloKerelem: az ELO datasetre, Schedule, event_id, hash-elt user_data; nyers e-mail / telefon / ar / szolgaltatasnev nincs; teszt kod csak ha van', () => {
@@ -137,6 +138,28 @@ test('B) PMU: egy Salonic-foglalas legfeljebb 1 Schedule - az mb_ es az sd_ ut u
   assert.equal((await metaEloKuld(d, PMU_FK({ uuid }), dep)).allapot, 'mar_kuldve');
   assert.equal(f.hivasok.length, 1); assert.equal(f.hivasok[0].body.data[0].event_id, 'pmu-' + uuid);
   const rh = await metaEloKuld(d, FK({ source_entity_id: 'sd_' + 'f'.repeat(24) }), dep); assert.equal(rh.allapot, 'kihagyva'); assert.match(rh.indok, /kozos/); assert.equal(f.hivasok.length, 1, 'HeadSpa sd_: valtozatlanul nem kuld');
+});
+
+const SZ_FK = (o = {}) => FK({ uzletag: 'szor', jelleg: 'elso', ...o });
+test('B) Szor (Feri 10-31 16:51, ugyanugy mint a PMU): sd_ ut is kuld uuid-alapu szor-<uuid> event_id-val az Elysion pixelre; csak uj vendeg; korrekcio soha; kapcsolo nelkul nem megy; HeadSpa/PMU valtozatlan', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d);
+  const U = (n) => '00000000-0000-4000-8000-00000000002' + n; const SD = (c) => 'sd_' + c.repeat(24);
+  const dep = (be) => ({ env: ENV({ META_ELO_BE: be }), fetchImpl: f, now: () => NOW, eloEllenorzes: async () => 'aktiv' });
+  assert.equal((await metaEloKuld(d, SZ_FK({ source_entity_id: SD('a'), uuid: U(1) }), dep('headspa,pmu'))).allapot, 'ki', 'kapcsolo nelkul nincs kuldes');
+  const r = await metaEloKuld(d, SZ_FK({ source_entity_id: SD('a'), uuid: U(1) }), dep('szor')); assert.deepEqual([r.allapot, r.esemeny], ['elkuldve', 'Schedule']);
+  const h = f.hivasok[0]; assert.match(h.u, /\/643342342027957\/events\?access_token=/); assert.equal(h.body.data[0].event_id, 'szor-' + U(1)); assert.equal(h.body.data[0].event_source_url, HOST + '/elysion-ok');
+  assert.equal(h.body.data[0].user_data.fbc, undefined); assert.ok(h.body.data[0].user_data.em && h.body.data[0].user_data.ph); assert.equal(h.body.data[0].custom_data, undefined);
+  assert.equal((await metaEloKuld(d, SZ_FK({ source_entity_id: SD('b'), uuid: U(1) }), dep('szor'))).allapot, 'mar_kuldve', 'ugyanaz az uuid: legfeljebb 1');
+  assert.equal((await metaEloKuld(d, SZ_FK({ source_entity_id: SD('c'), uuid: U(2), jelleg: 'konzultacio', ertek: 0 }), dep('szor'))).allapot, 'elkuldve', 'uj konzultacio / allapotfelmeres: van');
+  for (const [nev, o] of [['korrekcio', { szolgaltatas: 'Korrekció' }], ['visszajaro', { jelleg: 'visszajaro' }], ['kupon', { kupon: true }]]) assert.equal((await metaEloKuld(d, SZ_FK({ source_entity_id: SD('d'), uuid: U(3), ...o }), dep('szor'))).allapot, 'nincs_ernyo', nev);
+  assert.equal(f.hivasok.length, 2);
+  assert.equal((await metaEloKuld(d, FK({ source_entity_id: SD('e') }), dep('szor'))).allapot, 'ki', 'HeadSpa a szor kapcsolotol nem indul');
+  assert.equal((await metaEloKuld(d, PMU_FK({ source_entity_id: SD('f'), uuid: U(4) }), dep('szor'))).allapot, 'ki', 'PMU a szor kapcsolotol nem indul');
+  // elonezeti vedohalo: ELO_CSAK_TESZT=1 mellett a szor a SAJAT teszt-kodjat varja
+  const dp = d1(); const fp = hamisFetch(); await meresSema(dp);
+  const pd = (extra) => ({ env: ENV({ META_ELO_BE: 'szor', ELO_CSAK_TESZT: '1', ...extra }), fetchImpl: fp, now: () => NOW, eloEllenorzes: async () => 'aktiv' });
+  const rk = await metaEloKuld(dp, SZ_FK({ source_entity_id: SD('9'), uuid: U(5) }), pd({ META_ELO_TESZT_KOD: 'TEST47348', META_ELO_TESZT_KOD_PMU: 'TEST43023' })); assert.equal(rk.allapot, 'kihagyva'); assert.match(rk.indok, /META_ELO_TESZT_KOD_SZOR/); assert.equal(fp.hivasok.length, 0);
+  const rt = await metaEloKuld(dp, SZ_FK({ source_entity_id: SD('9'), uuid: U(5) }), pd({ META_ELO_TESZT_KOD_SZOR: 'TESTSZOR1' })); assert.equal(rt.allapot, 'elkuldve'); assert.equal(fp.hivasok[0].body.test_event_code, 'TESTSZOR1');
 });
 
 test('B) elonezeti vedohalo: ELO_CSAK_TESZT=1 mellett teszt-kod nelkul NINCS kuldes (HeadSpa es PMU sem); teszt-koddal megy', async () => {
