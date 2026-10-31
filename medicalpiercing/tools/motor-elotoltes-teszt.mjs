@@ -12,6 +12,7 @@
 //   D  lassu elotoltes (4 mp): a valasztas a mar futo kerest varja meg, nem indit ujat, a naptar megjelenik (nem ragad be), kozben latszik a toltes
 //   E  az elotoltes valasza 20 mp-ig nem jon: 6 mp utan friss tartalek-keres indul, a naptar ~7-8 mp alatt megjelenik (nem varja ki a 15 mp-es idokorlatot)
 //   I  a Salonic minden kerese hibas: a regi hiba-kepernyo (tartalek-link a Salonicra) megjelenik, nem ragad be a "betoltes"
+//   L  az elotoltott (teljesen letoltott) lista nem veszhet el: Debrecen 3 piercing naptara a 3 heten tuli napokat is mutatja, lapozhato
 //   K  a tavolabbi napok (21-100.) kerese hibas: egyszer ujraproba, a naptarban a 3 heten tuli honapok is latszanak
 //   J  a valasztaskori (nem elotoltott) keres hibat kap, de az ujraprobalas sikeres: a naptar megjelenik, hiba-kepernyo nincs
 //   F  helyszincsere az elotoltes elott: a regi helyszinre nem megy elotoltes, az uj helyszin naptara jo helyszinrol jon
@@ -207,6 +208,30 @@ const elotoltott = (k) => [...new Set(k.naplo.map((x) => x.sid))];
   const ido = await k.varj(NAPTAR_KESZ, null, 25000);
   ok('J: az elso keres hibaja utan a tartalek-keres a naptarat hozza', ido >= 0, `${ido} ms, ${keresek(k, nemElo, t0).length} keres`);
   ok('J: nincs JS-hiba', k.jsHiba.length === 0, k.jsHiba.join(' | '));
+  await k.ctx.close();
+}
+
+// L (2026-10-31, Feri: Debrecen, 3 es 2 piercing: "nem lehet decemberre lapozni"): az ELOTOLTOTT (mar teljesen letoltott) lista az idopont-lepesben nem veszhet el:
+// az onMore a teljes (0-100. nap) naptarat rajzolta, majd az elso resz (0-21. nap) felulirta -> csak 3 het latszott, lapozo nyil nelkul. Debrecen (11424) mutatta.
+{
+  const k = await kontextus();
+  ok('L: a piercing-lista megnyilik (Debrecen)', await listaig(k, 11424));
+  const lista = await k.sr(SZOLGOK);
+  await alszik(2500);
+  ok('L: az elso (3 piercing) kartya elotoltodott', elotoltott(k).includes(lista[0]));
+  await kattint(k, lista[0]);
+  await k.varj('return !!r.querySelector("[data-nap]") && !r.querySelector(".toltes")', null, 20000);
+  await alszik(2500);
+  const hon = new Set(); let nyil = 0;
+  for (let i = 0; i < 6; i++) {
+    for (const n of await k.sr('return [...r.querySelectorAll("[data-nap]")].map(x => x.dataset.nap)')) hon.add(n);
+    const tovabb = await k.sr('const b = r.querySelector(".honap-fej button:last-child"); if (!b || b.disabled || !b.dataset.honap) return false; b.click(); return true');
+    if (!tovabb) break; nyil++; await alszik(300);
+  }
+  const hatar = new Date(Date.now() + 25 * 86400000).toISOString().slice(0, 10);
+  const utolso = [...hon].sort().pop();
+  ok('L: az elotoltott piercing naptara a 3 heten tuli napokat is mutatja, lapozhato a kovetkezo honapra', utolso > hatar && nyil >= 1, `utolso nap: ${utolso} | lapozas: ${nyil} | hatar: ${hatar}`);
+  ok('L: nincs JS-hiba', k.jsHiba.length === 0, k.jsHiba.join(' | '));
   await k.ctx.close();
 }
 

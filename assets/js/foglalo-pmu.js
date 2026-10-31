@@ -488,10 +488,9 @@
     $('naptar').replaceChildren(...cellak);
     ment(); // a nezett nap / honap is megmarad
     // a valasztott nap idopontjai
-    // a Salonic negyedorankent kinal: az egesz es fel orakat mutatjuk, a negyedet csak ha mellette nincs ilyen
-    const napi = allapot.kezdesek.filter((ts) => napKulcs(ts) === allapot.naptarNap);
-    const napiSet = new Set(napi);
-    const idok = napi.filter((ts) => ts % 1800 === 0 || (!napiSet.has(ts - 900) && !napiSet.has(ts + 900)));
+    // MINDEN Salonic-kinalt kezdest mutatunk (a negyedoras :15 / :45 is): amit a Salonic kinal, pontosan azt latja a vendeg (Feri, 2026-10-29; a Mosaic motorban mar igy van, #520).
+    // Korabban a negyedet csak akkor mutattuk, ha mellette nem volt egesz / fel ora: ez a Salonic idopontjainak kb. 48 %-at elrejtette (2026-10-28 meres, docs/booking-engine/SALONIC_SAVOK.md 6.1).
+    const idok = allapot.kezdesek.filter((ts) => napKulcs(ts) === allapot.naptarNap);
     // egy erintes az idoponton = tovabb (nincs kulon "ezt valasztom" gomb)
     $('nap-idok').replaceChildren(...(idok.length ? [elem('div', { class: 'nap-cim', szoveg: napNev(idok[0]) }), elem('div', { class: 'idolista' }, ...idok.map((ts) =>
       elem('button', { type: 'button', class: 'idogomb', 'aria-pressed': String(ts === allapot.slot), szoveg: ora(ts), onclick: () => slotValaszt(ts) })))]

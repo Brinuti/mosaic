@@ -241,6 +241,10 @@ main.hl .mini-kartya .ik { font-size: 30px; color: var(--bronz-s); margin-bottom
 main.hl .mini-kartya h3 { font-size: 19px; margin-bottom: 6px; }
 main.hl .mini-kartya p { font-size: 15px; line-height: 1.5; color: #2c3d3d; }
 main.hl .halvany .mini-kartya { background: var(--ivory); }
+/* Google Ads celoldalak (tools/hair-oldalak/google-oldalak.mjs): a keresett kifejezesek alcimei (H2) kis kartyakon, a mini-kartya h3-javal azonos meretben */
+main.hl .kulcsszo-szekcio { padding: clamp(32px, 5vw, 56px) 0; }
+main.hl .kulcsszo-kartya h2 { font-size: 20px; line-height: 1.22; margin-bottom: 6px; text-wrap: balance; }
+main.hl .hero-szoveg h1:has(+ .hero-bevezeto) { text-wrap: balance; } /* csak a celoldalak rovid H1-je: ne maradjon egy szo a 2. sorban */
 
 /* --- bemutatkozas, festek --- */
 main.hl .bemutat .lead + .lead { margin-top: 12px; }
@@ -411,3 +415,14 @@ main.hl .konzult-videok { display: grid; grid-template-columns: repeat(3, minmax
 main.hl .konzult-videok .vid { max-width: none; }
 main.hl .bemutat-racs { display: grid; gap: 26px; }
 main.hl .bemutat { max-width: 680px; }
+
+/* --- Google Ads celoldalak (hl-celoldal, tools/hair-oldalak/google-oldalak.mjs): telefonon az elso gomb az elso kepernyon (Feri, 2026-10-31) ---
+   rovidebb hero-kep, es a gomb rogton a bevezeto mondat alatt; a tobbi szoveg (alcim, idezet, jelvenyek) a gomb utan, valtozatlanul lathato */
+@media (max-width: 899px) {
+  main.hl.hl-celoldal .hero .hero-kep { aspect-ratio: 3 / 2; }
+  main.hl.hl-celoldal .hero .hero-szoveg > .hero-bevezeto { order: 3; }
+  main.hl.hl-celoldal .hero .hero-szoveg > .cta-sor { order: 4; }
+  main.hl.hl-celoldal .hero .hero-szoveg > .lead:not(.hero-bevezeto),
+  main.hl.hl-celoldal .hero .hero-szoveg > .hero-idezet,
+  main.hl.hl-celoldal .hero .hero-szoveg > .hero-blokkok { order: 5; }
+}

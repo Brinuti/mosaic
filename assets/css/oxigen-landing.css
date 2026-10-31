@@ -739,3 +739,28 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .ajk-lista small { display: block; color: var(--halk); font-size: 14px; margin-top: 2px; }
 @media (max-width: 1024px) { .ajk-racs { grid-template-columns: 1fr; gap: 30px; } .ajk h2 { font-size: 36px; } }
 @media (max-width: 700px) { .ajk { padding: 44px 0; } .ajk h2 { font-size: 31px; } .ajk-szoveg .gomb { width: 100%; } }
+
+/* ============ Google Ads celoldal-terv (2026-10-31): a keresett kifejezesek alcimei es mondatai - lathato, normal szoveg ============ */
+.hero-alcim { font: 500 23px/1.25 var(--cim); color: var(--sotet); margin: 4px 0 0; }
+.hero-szoveg > .hero-alcim + .hero-al { margin-top: 10px; }
+.hero-lead.hero-bevezeto { margin-top: 0; margin-bottom: 4px; }
+.kulcsszo-szekcio { padding: 44px 0 40px; background: #fff; border-block: 1px solid #e4e8de; }
+.kulcsszo-racs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
+.kulcsszo-kartya { background: var(--lap); border: 1px solid #dfe3d8; border-radius: 16px; padding: 20px 22px; }
+.kulcsszo-kartya h2 { font-size: 22px; line-height: 1.22; margin-bottom: 8px; text-wrap: balance; }
+.kulcsszo-kartya p { font-size: 15.5px; line-height: 1.55; color: #3c4b4b; margin: 0; }
+.kulcsszo-mondat { margin: 18px auto 0; max-width: 760px; text-align: center; font-size: 16px; line-height: 1.5; color: #2f4040; }
+@media (max-width: 700px) {
+  .hero-alcim { font-size: 20px; }
+  .kulcsszo-szekcio { padding: 30px 0 28px; }
+  .kulcsszo-kartya h2 { font-size: 20px; }
+}
+
+/* ============ Google Ads celoldal (main.celoldal: /hajhullas-kezeles-budapest): telefonon az elso gomb az elso kepernyon (Feri, 2026-10-31) ============
+   a fo gomb rogton a bevezeto mondat alatt; a tobbi (95%, labjegyzet, leiras, tenyek, ertekeles) utana, valtozatlanul lathato */
+@media (max-width: 700px) {
+  main.celoldal .hero-szoveg { display: flex; flex-direction: column; }
+  main.celoldal .hero-szoveg > * { order: 3; }
+  main.celoldal .hero-szoveg > .hero-bevezeto { order: 1; }
+  main.celoldal .hero-szoveg > .hero-cta { order: 2; margin-top: 14px; margin-bottom: 6px; }
+}

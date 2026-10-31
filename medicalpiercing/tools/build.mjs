@@ -164,18 +164,29 @@ else if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.
   console.log(`koszonooldal-cim semleges: ${n} lapon`);
 }
 
-// nyitvatartas (a tulajdonos, 2026-10-16: "9-19 a helyes"): a regi (Wix-) oldalak lableceben "H-P: 10:00 - 19:00" all; a buildben javitjuk,
-// igy egy uj Wix-tukrozes utan is a helyes ido latszik
+// nyitvatartas (a tulajdonos, 2026-10-29): hetfotol szombatig 8-19, vasarnap zarva. A regi (Wix-) oldalak lableceben "H-P: 10:00 - 19:00" + "SZO: 09:00 - 18:00" all
+// (a tulajdonos 2026-10-16-i "9-19 a helyes" is mar elavult); a buildben javitjuk, igy egy uj Wix-tukrozes utan is a helyes ido latszik
 {
   let n = 0;
   for (const ki of ['_a', '_m']) for (const f of fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html'))) {
     const fajl = path.join(DIST, ki, f);
     const html = fs.readFileSync(fajl, 'utf8');
-    if (!html.includes('H-P: 10:00 - 19:00')) continue;
-    fs.writeFileSync(fajl, html.replaceAll('H-P: 10:00 - 19:00', 'H-P: 09:00 - 19:00'));
+    const uj = html
+      .replace(/H-P: 1?0:00 - 19:00/g, 'H-SZO: 08:00 - 19:00')
+      .replace(/<br class="wixui-rich-text__text">(?:\s|&nbsp;|\u00a0)*SZO: 09:00 - 18:00/g, '')   // a "SZO" sor a H-SZO sorba olvadt; a "VAS: ZARVA" marad
+      // az uj (tartalom-JSON-bol epulo) oldalak "Nyitvatartasa" oszlopa: cimkek es idok egy-egy veremben
+      .replace(/<p>H-P<\/p><p>SZO<br>\s*VAS<\/p>/g, '<p>H-SZO</p><p>VAS</p>')
+      .replace(/<p>(?:09|10):00 [–-] 19:00<\/p><p>\d\d:00 [–-] 1[89]:00<\/p><p>ZÁRVA<\/p>/g, '<p>08:00 – 19:00</p><p>ZÁRVA</p>')
+      // a /regi/ alatti (Wix-szerkezetu) oldalak: a cimke-oszlop ("H-P", "SZO<br> VAS") es az ido-oszlop (3 sor) kulon-kulon szovegblokk
+      .replace(/(class="wixui-rich-text__text">)H-P(<\/span>)/g, '$1H-SZO$2')
+      .replace(/(class="wixui-rich-text__text">)SZO<br class="wixui-rich-text__text">(?:\s|&nbsp;|\u00a0)*VAS(<\/span>)/g, '$1VAS$2')
+      .replace(/<p class="font_8[^>]*><span[^>]*><span[^>]*class="wixui-rich-text__text">(?:09:00|19:00) - 18:00<\/span><\/span><\/p>\s*/g, '')
+      .replace(/(class="wixui-rich-text__text">)(?:09|10):00 [–-] 19:00(<\/span>)/g, '$108:00 – 19:00$2');
+    if (uj === html) continue;
+    fs.writeFileSync(fajl, uj);
     n++;
   }
-  console.log(`nyitvatartas H-P 09:00-19:00: ${n} lapon`);
+  console.log(`nyitvatartas H-SZO 08:00-19:00 (VAS zarva): ${n} lapon`);
 }
 
 // a regi velemenyszamok (a tulajdonos kerese, 2026-10-17: "mindenhol 5000 valamennyi legyen, amennyi az aktualis"): az uj lapokon a szovegJavit

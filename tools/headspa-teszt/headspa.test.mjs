@@ -29,7 +29,7 @@ const OLDALAK = [
       'Olvasási idő: 11 perc', 'Zsíros fejbőr esetén', 'Száraz fejbőr esetén', 'Hajhullás esetén', 'Deák Ferenc István', 'A MOSAIC Headspa alapítója', 'Fejmasszázs eszközökkel', 'Személyre kikevert arcpakolás',
       'minden 5. headspa alkalom féláron van', 'a Bécsi út 11-et'] },
   { nev: 'headspa-arak-budapest', cim: 'Head Spa Kezelések árai a MOSAIC-ban', h1: 'Head Spa Csomagok és Árak', videok: 0,
-    szoveg: ['Októberben 20% kedvezménnyel!', '39.900 Ft', '26.900 Ft', '53.800 Ft', '49.900 Ft', '65.900 Ft', 'Időtartam: 50+30 perc', 'Hajkamerás diagnosztika és konzultáció', 'Méregtelenítő arcpakolás',
+    szoveg: ['Novemberben 20% kedvezménnyel!', '39.900 Ft', '26.900 Ft', '53.800 Ft', '49.900 Ft', '65.900 Ft', 'Időtartam: 50+30 perc', 'Hajkamerás diagnosztika és konzultáció', 'Méregtelenítő arcpakolás',
       'Pezsgő alkoholos/alkohol mentes', 'SZÉP Kártyát is elfogadunk', 'Itt találsz meg minket', '1023 Budapest Bécsi út 2.', '06 20 247 4444', 'mosaicheadspa@gmail.com', 'Hétfő - Péntek'] },
   // a head-spa-kedvezmeny (akcio) oldal 2026-10-09 ota az Egyeni / Paros Head Spa landing: tesztjei a tools/egyeni-teszt/egyeni.test.mjs-ben vannak
   { nev: 'headspa-termekek-oxygeni', cim: 'Head Spa kezelések OXYGENI Termékekkel', h1: 'Organikus, vegán és kemikáliamentes.', videok: 0,
@@ -105,7 +105,7 @@ for (const o of OLDALAK) {
       assert.equal(sav.bg, 'rgb(238, 5, 163)', 'az eredeti rozsaszin hatter (2026-10-09: a tulajdonos kerese)');
       assert.equal(sav.szin, 'rgb(255, 255, 255)', 'feher felirat');
       assert.equal(sav.href, '/head-spa-kedvezmeny');
-      assert.match(sav.szoveg, /Októberi akció! - 20% kedvezmény minden headspa foglalásra \+ ajándékkártyára!/);
+      assert.match(sav.szoveg, /Novemberi akció! - 20% kedvezmény minden headspa foglalásra \+ ajándékkártyára!/);
       assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('main h1')).fontFamily), /Playfair Display/);
       assert.match(await p.evaluate(() => getComputedStyle(document.body).fontFamily), /Jost/);
       assert.ok(await p.locator('.sticky-cta').count() === 1);

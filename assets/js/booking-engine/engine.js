@@ -739,6 +739,12 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (!S.slots.length && !S.slotsFull) await S.fullP; // az elso 14 napban nincs idopont: megvarjuk a teljes listat, mielott "nincs idopont"-ot mondunk
       if (S.restoreDay && !S.slotsFull && S.restoreDay > F.dayKey(nowUnix() + 14 * 86400)) await S.fullP; // a korabban nezett nap az elso 14 napon tul van: megvarjuk a teljes listat
       if (S.restoreDay) { S.day = S.restoreDay; S.month = S.restoreMonth; S.restoreDay = null; S.restoreMonth = null; } // visszaallitott allapot: a korabban nezett nap
+      // lezer (flow.staffLink): ?staff=brigi - a szakember-valaszto nincs, de a naptar a linkben megadott szakember idopontjait mutatja (ha o nem talalhato / nincs szabad ideje, marad a barmely szakember)
+      if (flow.staffLink && ctx.staffKey && !S.staff) {
+        const svc0 = S.service;
+        try { const m = F.findStaff(await staffChoices([S.service]), ctx.staffKey); if (m) { S.staff = m.id; S.staffLabel = m.label; track('booking_filter_used', { filter: 'staff_link' }); } } catch (e) { /* marad a barmely szakember */ }
+        if (destroyed || S.service !== svc0) return null; // kozben mas kezelest valasztott / bezarta: ez a naptar mar nem az ove (nincs ketszeres meres / atiranyitas)
+      }
       meter.c1(S.slots, S.staff, nowUnix()); // (#205 e) csak meres: a kovetkezo 7 nap szabad idopontjai + a legkorabbi szabad nap, a mar betoltott listabol
       if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'C1' }); meter.error('no_slots', 'C1'); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
       const hk = F.monthList(nowUnix(), NAPTAR_NAP);
@@ -750,7 +756,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         const pool = S.staff ? F.filterSlots(S.slots, { staffId: S.staff }) : S.slots;
         if (!pool.length) {
           naptar.replaceChildren(alertBox(`${S.staffLabel || 'A kiválasztott szakembernek'} most nincs szabad időpontja.`),
-            h('div', { class: 'be-actions' }, primary('Bármely szakember', () => { S.staff = null; S.staffLabel = null; S.day = null; paint(); })));
+            h('div', { class: 'be-actions' }, primary('Bármely szakember', () => { S.staff = null; S.staffLabel = null; if (flow.staffLink) ctx.staffKey = null; S.day = null; paint(); })));
           return;
         }
         const szabad = new Set(pool.map((s) => F.dayKey(s.start_unix)));
@@ -1210,7 +1216,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       } catch (e) { console.error(e); }
     }
     // munkatars-link + egyenesen az idopont-naptarra (pl. konzultacio): a szakember beallitasa (a szakember-valaszto ilyenkor nem jon elo)
-    if (ctx.staffKey && first === 'C1' && S.service && flow.showStaffFilter && !S.staff) {
+    if (ctx.staffKey && first === 'C1' && S.service && (flow.showStaffFilter || flow.staffLink) && !S.staff) {
       try { const m = F.findStaff(await staffChoices([S.service]), ctx.staffKey); if (m) { S.staff = m.id; S.staffLabel = m.label; track('booking_filter_used', { filter: 'staff_link' }); } } catch (e) { /* a naptar szakember nelkul is megnyilik */ }
     }
     // Idopont-link (?start=<unix>): a vendeg az oldalon mar idopontot valasztott -> kihagyjuk a naptarat, rogton az adatlap (C4) jon. A naptar a vissza gombbal

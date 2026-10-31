@@ -231,7 +231,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
     test('a kulcs-arak lathatok: Head Spa (az athuzott regi ar nincs kiirva), szortelenites (alkalom + 8 alkalmas program, kesz csomag "kulon-kulon" ara), fodraszat, oxigen, PMU, ajandekkartya', async () => {
       const { p, ctx } = await nyit();
       const hs = await szov(p, '#headspa');
-      for (const r of ['Egyéni Head Spa kezelés', '26 900 Ft', '„4 Kezes” Head Spa kezelés', '39 900 Ft', 'Páros Head Spa kezelés', '53 800 Ft', '2 fő', 'Októberben 20% kedvezménnyel']) assert.ok(hs.includes(r), 'Head Spa: ' + r);
+      for (const r of ['Egyéni Head Spa kezelés', '26 900 Ft', '„4 Kezes” Head Spa kezelés', '39 900 Ft', 'Páros Head Spa kezelés', '53 800 Ft', '2 fő', 'Novemberben 20% kedvezménnyel']) assert.ok(hs.includes(r), 'Head Spa: ' + r);
       assert.equal(await p.locator('#headspa s.arl-regi').count(), 0, 'nincs athuzott regi ar');
       assert.equal(await p.locator('#headspa details.arl-reszlet').count(), 3);
       const sz = await szov(p, '#szortelenites');

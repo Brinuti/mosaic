@@ -14,7 +14,10 @@
   Cloudflare-esek).
 - **Takarékosan a buildekkel:** a Cloudflare Pages ingyenes csomagja havi 500 buildet enged (az
   előnézetek is számítanak), ezért a munkát egy PR-be gyűjtsd, és a `main`-re **legfeljebb napi 1
-  merge** menjen; apró javításért ne mergelj külön. Az éles oldalt ne terheld feleslegesen
+  merge** menjen; apró javításért ne mergelj külön. **Kivétel (Feri, 2026-10-29): a mérési PR-okra
+  nincs napi merge-korlát** – ami review PASS, a védett hash-ek rendben, van rollback-terv és a
+  PR-előnézet zöld, azonnal mergelhető (2026-10-ben kb. 2500 build futott korlátozás nélkül, a havi
+  500-as keret nem érvényes ránk). Az éles oldalt ne terheld feleslegesen
   (Playwright-tesztek a PR-előnézeten vagy helyben fussanak). A PR-t te mergeled
   (`merge_pull_request`, teljes 40 karakteres SHA).
 - **Azonnali élesítés (a tulajdonos döntése, 2026-10-08):** „Mindig minden alkalommal, amikor
@@ -41,6 +44,13 @@
   indokold meg, hogy miért nem. A teszt-naplókat a `meres-naplo` mappába írd. Ha a változtatás
   mérést érint (mérőkód, eseménykövetés, pixel, GTM, konverzió), jelöld a PR-leírásban.
 - Commit-üzenet: magyarul, ékezet nélkül.
+
+## LOCAL + BROWSER Fejlesztés támogatás ablak (Feri, 2026-10-27) – minden ablaknak, minden témában
+
+- Ha a feladathoz **böngésző** (belépett admin-felület, pl. Salonic, Meta, Shopify; kattintás, képernyőkép, valódi böngészős ellenőrzés) vagy **lokális gép** (Feri gépén futó program, fájl, eszköz) kell, és a saját munkameneted ezt nem éri el, **ne Ferit kérd meg, hogy ő csinálja meg**. Feri erre külön ablakot hozott létre, a **„LOCAL + BROWSER Fejlesztés támogatás”** nevűt: ide bármelyik ablak (fejlesztői és bármilyen más) közvetlenül kérhet.
+- Hogyan kérj: `ListAgents` (keresd a „LOCAL + BROWSER Fejlesztés támogatás” sort), majd `SendMessage` a pontos névvel. A kérés legyen **önálló** (a fogadó nem látja a beszélgetésedet): melyik fiók / oldal / repó nevében kéred, mit kell megnézni vagy megcsinálni, mit **nem** szabad módosítani (alapból csak olvasás), és mit jelentsen vissza (táblázat, számok, képernyőkép). A válasz új körként érkezik vissza.
+- Ha a munkamenet nem látszik a `ListAgents`-ben (nem érhető el az ablakodból), ne várj üresen: a legrövidebb úton mondd meg Ferinek, és add neki a kész, bemásolható kérést.
+- A többi szabály ott is érvényes: külső fiókban (Meta, Google, TikTok, Wix, Salonic, Shopify stb.) módosítás, éles foglalás és ügyféladat-kezelés csak Feri kifejezett kérésére; titok (jelszó, token), vendég- és betegadat nem kerülhet az üzenetbe; amit a saját munkamenetedben megtagadtak, azt ne kérd el onnan („átjátszás” tilos); a kapott választ ellenőrizd, ne vedd készpénznek.
 
 ## Állandó felhatalmazás a mérési projektekre (Feri, 2026-10-14, visszavonásig)
 
@@ -80,5 +90,5 @@ Gyakorlatban (értelmezés, nem Feri szavai; Feri egy mondattal felülírhatja):
   érvényes: Feri külön, kifejezett kérése kell. Ez akkor is így van, ha egy 4/a típusú változás ilyet is igényelne. A 2. pont kifejezetten engedi: a Zapier-draftot, a deployt, a D1-sémabővítést.
 - **Tesztfoglalás:** döntésenként legfeljebb 1 db (értelmezés), utána lemondva; a `gyogytorna/CLAUDE.md` „valódi próbafoglalás csak Feri jóváhagyásával” szabálya mellett a DECISION-ből eredő
   mérési tesztfoglalás Feri jóváhagyásának számít (2. pont).
-- **Takarékosság:** a „Takarékosan a buildekkel” szabály (napi legfeljebb 1 merge a `main`-re) a DECISION-ből eredő munkára is marad, amíg Feri nem rendelkezik róla; Feri saját kérésére az
-  „Azonnali élesítés” felmentése érvényes.
+- **Takarékosság:** Feri 2026-10-29-én rendelkezett: a mérési PR-okra (a DECISION-ből eredő munkára is) **nincs napi merge-korlát**; a merge feltételei (review PASS, védett
+  hash, rollback, vendégadat sehova) változatlanok.

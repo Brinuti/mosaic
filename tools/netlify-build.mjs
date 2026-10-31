@@ -300,21 +300,31 @@ const verzio = Object.fromEntries(SAJAT.map((f) => [f,
 const FOGLALAS_KOSZONO = new Set(['ajikartya-ok', 'eltavolitas-ok', 'elysion-ok', 'fodrasz-ok', 'foglalas-ok', 'korrekcio-ok', 'oxigenterapia-ok', 'pmu-ok', 'szor-konzi-ok', 'szortelenites-ok',
   'oxigenterapia-masodik', 'success-foglalas', 'success-foglalas-4kezes', 'success-foglalas-egyeni', 'success-foglalas-egyeni-vip', 'success-foglalas-paros', 'success-foglalas-paros-vip'].map((x) => x + '.html'));
 // A sajat foglalo-oldalak (a motor / a PMU foglalo / a probaoldalak) maguk toltik a foglalot: ezekre a launcher nem kerul.
-const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html', 'szajtetovalas-budapest.html']);
+const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html', 'szajtetovalas-budapest.html', 'szemoldok-tetovalas-budapest.html']); // + a szemoldok-celoldal (a /sminktetovalas-budapest masolata: a beagyazott PMU-foglalot tolti)
 // Szovegfinomitasok a kozos fejlecben/lableben. A Wixes oldalakban a szoveg HTML-entitasokkal van kodolva, a sajat darabokban sima betukkel: a mintak mindkettot elfogadjak.
 const ENTITAS = { 'á': '&aacute;', 'é': '&eacute;', 'ó': '&oacute;', 'ö': '&ouml;', 'ő': '&odblac;', 'ü': '&uuml;', 'ű': '&udblac;', 'í': '&iacute;', 'ú': '&uacute;', 'Á': '&Aacute;' };
 const TOLERANS = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[áéóöőüűíúÁ]/g, (c) => '(?:' + c + '|' + ENTITAS[c] + ')');
-const AKCIOSAV = new RegExp(TOLERANS('Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!'), 'g');
+﻿const AKCIOSAV = new RegExp(TOLERANS('Novemberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!'), 'g');
+// A havi akcio (20% kedvezmeny) honapja a Wixes (klon/) oldalak beegetett szovegeiben is: az oldalak forrasa nem valtozik,
+// a build cserel. Havvaltaskor ezt a listat kell leptetni (a sajat oldalak forrasaiban is).
+const HONAP_CSERE = [
+  [/2026 októberben leadott, de ak(á|&aacute;)r novemberi/g, '2026 novemberben leadott, de ak$1r decemberi'],
+  [/(2026 )októberben( v(?:á|&aacute;)s(?:á|&aacute;)rolt)/g, '$1novemberben$2'],
+  [/OKT(?:Ó|&Oacute;)BERI/g, 'NOVEMBERI'],
+  [/([Oo])kt(?:ó|&oacute;)beri/g, (m, c) => (c === 'O' ? 'N' : 'n') + 'ovemberi'],
+  [/Okt(?:ó|&oacute;)berben/g, 'Novemberben'],
+];
+const honapCsere = (h) => HONAP_CSERE.reduce((s, [minta, uj]) => s.replace(minta, uj), h);
 const FOGLALAS_GOMB = new RegExp('(<a [^>]*style-mo70g2c7__root[^>]*aria-label=")' + TOLERANS('FOGLALÁS') + '("[^>]*><span class="StylableButton2545352419__container"><span class="StylableButton2545352419__label wixui-button__label" data-testid="stylablebutton-label">)' + TOLERANS('FOGLALÁS') + '(</span>)');
 function fejlecSzoveg(h, mobil) {
   // a Wixes oldalak beegetett fomenujeben az Ajandekkartya menupont lenyilo lesz (a sajat oldalak darabjain mar megtortent: ismetelve nem csinal semmit)
-  h = fejlecAtalakit(h, mobil);
+  h = honapCsere(fejlecAtalakit(h, mobil));
   // lablec: az elvalasztok " - " helyett " · " (csak a szoveg-csomopontokban)
   h = h.replace(/(<div id="comp-m40zyigs"[^>]*><p[^>]*>)([\s\S]*?)(<\/p>)/,
     (m, a, tartalom, c) => a + tartalom.replace(/(^|>)([^<]*)/g, (mm, k, sz) => k + sz.replace(/ - /g, ' · ')) + c);
   if (mobil) {
     // az akciosav egy sorba ferjen (rovidebb szoveg), a fejlec gombja ne legyen csupa nagybetus
-    h = h.replace(AKCIOSAV, 'Októberi akció! 20% kedvezmény minden headspa + ajándékkártyára');
+    h = h.replace(AKCIOSAV, 'Novemberi akció! 20% kedvezmény minden headspa + ajándékkártyára');
     h = h.replace(FOGLALAS_GOMB, '$1Foglalás$2Foglalás$3');
   }
   return h;

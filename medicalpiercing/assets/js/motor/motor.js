@@ -167,6 +167,13 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
 .idok { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; margin-top: 10px; }
 .ido { border: 1px solid #d7aba8; background: #fff; border-radius: 10px; padding: 10px 0; font: 600 15px/1 'poppins-semibold', Poppins, Arial, sans-serif; color: #454659; cursor: pointer; }
 .ido:hover, .ido:focus-visible { background: #d7aba8; color: #fff; outline: none; }
+/* alacsony asztali kepernyon (pl. 1366x768-as laptop) tomorebb naptar, hogy az idopontok is beferjenek (2026-10-29, Feri) */
+@media (min-width: 701px) and (max-height: 820px) {
+  .ablak[data-lepes="ido"] .nap { height: 34px; }
+  .ablak[data-lepes="ido"] .racs .fejnap { padding: 2px 0; }
+  .ablak[data-lepes="ido"] .alcim { margin: 12px 0 6px; }
+  .ablak[data-lepes="ido"] .honap-fej { margin: 0 0 4px; }
+}
 .gomb { display: inline-block; border: 0; border-radius: 99px; background: #d7aba8; color: #fff; padding: 12px 22px; font: 600 15px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; text-decoration: none; }
 .gomb.masodlagos { background: #f6efee; color: #454659; }
 .uzenet { padding: 18px 4px; line-height: 1.5; }
@@ -392,6 +399,7 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .pk-ikon img { width: 21px; height: 21px; object-fit: contain; }
 .pk-cim { min-width: 0; }
 .pk-cim b { display: block; font: 600 15px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-szem { display: inline-block; margin-left: 7px; padding: 1px 8px; border-radius: 99px; background: #f6e4de; color: #8c3a2f; font: 600 11px/1.5 'poppins-semibold', Poppins, Arial, sans-serif; font-style: normal; letter-spacing: .01em; vertical-align: 1px; white-space: nowrap; }
 .pk-cim small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #6b6c80; }
 .pk-ar { display: grid; justify-items: end; gap: 1px; white-space: nowrap; }
 .pk-ar s { font-size: 11.5px; color: #9a9aa8; }
@@ -827,7 +835,7 @@ export function nyit(ctx) {
     const ikon = ikonKod(s);
     const id = esc(s.serviceId);
     const fej = `<button class="pk-fej" data-nyit="${id}" aria-expanded="${nyitva}" aria-controls="pk-t-${id}"><span class="pk-ikon">${ikon ? `<img src="/assets/img/ikon/${ikon}.webp" alt="" width="26" height="26" decoding="async">` : ''}</span>`
-      + `<span class="pk-cim"><b>${esc(a.nev)}</b><small>${esc(a.rovid)}</small></span><span class="pk-ar">${e ? `<s>${ft(e)}</s>` : ''}<b>${ft(s.activePrice)}</b></span></button>`;
+      + `<span class="pk-cim"><b>${esc(a.nev)}${a.szemely ? `<em class="pk-szem">${esc(a.szemely)}</em>` : ''}</b><small>${esc(a.rovid)}</small></span><span class="pk-ar">${e ? `<s>${ft(e)}</s>` : ''}<b>${ft(s.activePrice)}</b></span></button>`;
     let test = '';
     if (a.foto) test += `<div class="pk-pont"><img src="/assets/img/uj-galeria-${a.foto}-2.webp" alt="A ${esc(a.nev.toLowerCase())} helye a fülön" width="300" height="300" loading="lazy" decoding="async"><div><b>Vendégeink általában ezeken érnek el javulást:</b><p>${esc(a.javulas)}</p></div></div>`;
     if (a.kedvezmeny) test += a.kedvezmeny;
@@ -873,8 +881,8 @@ export function nyit(ctx) {
       let rovid = d === 3 ? 'a harmadik csak 5000 Ft' : 'a második féláron', sorok = [];
       if (d === 2 && A.egy && p > A.egy) { sorok = [['1. piercing', ft(A.egy)], ['2. piercing', '+ ' + ft(p - A.egy)]]; rovid = `a 2. piercing csak ${ft(p - A.egy)}`; }
       if (d === 3 && A.egy && A.ketto > A.egy && p > A.ketto) { sorok = [['1. piercing', ft(A.egy)], ['2. piercing', '+ ' + ft(A.ketto - A.egy)], ['3. piercing', '+ ' + ft(p - A.ketto)]]; rovid = `a 3. piercing csak ${ft(p - A.ketto)}`; }
-      return { nev: `${d} piercing`, rovid, garancia: true, kedvezmeny: sorok.length ? kedvezmeny(sorok, p, d, A.egy) : '',
-        csomag: `<p>Bármelyik ${d === 3 ? 'három' : 'két'} piercinget választhatod; ha még nem tudod, melyiket, a szalonban segítünk.</p>` };
+      return { nev: `${d} piercing`, szemely: '1 személyre', rovid, garancia: true, kedvezmeny: sorok.length ? kedvezmeny(sorok, p, d, A.egy) : '',
+        csomag: `<p><b>Egy személyre szól:</b> mind a ${d === 3 ? 'három' : 'két'} piercinget ugyanaz a vendég kapja, a csomag nem osztható meg. Ketten jöttök? Nézd a „2 személynek” csomagokat lejjebb.</p><p>Bármelyik ${d === 3 ? 'három' : 'két'} piercinget választhatod; ha még nem tudod, melyiket, a szalonban segítünk.</p>` };
     }
     if ((m = /szem\S*ynek\s*[-–]\s*(\d)\s*db/i.exec(n))) {
       const d = +m[1], k = d / 2, fo = p / 2;
@@ -906,7 +914,7 @@ export function nyit(ctx) {
     tartalom.innerHTML = osszegzes() + '<div class="toltes">A szabad időpontok betöltése…</div>';
     all.tovabbi = true; $('.ablak').dataset.tovabbi = '1';
     const kesz = () => { all.tovabbi = false; const a = $('.ablak'); if (a) a.dataset.tovabbi = '0'; };
-    let elso;
+    let elso, teljesBent = false;
     try {
       // a tavolabbi napok (21-100.) kesobb jonnek (onMore). Ha ez a resz hibas (2026-10-23: egy Salonic-hiba miatt a naptar csendben csak 3 hetet mutatott),
       // EGYSZER friss keressel ujraprobaljuk; csak ennek hibajanal marad a 3 hetes naptar (mint eddig).
@@ -918,7 +926,7 @@ export function nyit(ctx) {
           adapter.getAvailability(all.placeId, s.serviceId, { ...IDO_OPCIOK, minLeadMinutes: 30, fresh: true }).then(tobb, () => kesz());
           return;
         }
-        kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar();
+        kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); teljesBent = true; } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar();
       };
       const opciok = { ...IDO_OPCIOK, minLeadMinutes: 30, onMore: tobb };
       // Tartalek-keres (2026-10-23, az elotoltes mellett): ha az elso resz TARTALEK_MS alatt nem jon meg (pl. egy beragadt elotoltott vagy lassu keres), egy friss keres
@@ -941,6 +949,9 @@ export function nyit(ctx) {
       clearTimeout(ora);
     } catch (e) { kesz(); if (all.lepes !== 'ido' || all.szolg !== s || lezart) return; return hiba('idopontok', e); }
     if (all.lepes !== 'ido' || all.szolg !== s || lezart) return;
+    // 2026-10-31 (Feri: Debrecen, 3 es 2 piercing: "nem lehet decemberre lapozni"): ha az elotoltes mar bent hagyta a teljes (0-100. nap) listat, az onMore a
+    // vissza-hivas elott lefut es a teljes naptarat rajzolta; az elso resz (0-21. nap) ezt nem irhatja felul (korabban csak 3 het latszott, nyil nelkul).
+    if (teljesBent) return;
     all.slotok = elso; all.slotokKulcs = kulcs; all.slotokT = Date.now();
     naptar();
   }
@@ -978,6 +989,21 @@ export function nyit(ctx) {
         : munkatarsak.length === 1 ? `<div class="alcim">Szakember</div><div class="chipek"><span class="chip valasztott egy" title="${esc(munkatarsak[0][1])}" aria-label="Szakember: ${esc(munkatarsak[0][1])}">${szakemberJel(munkatarsak[0][1])}</span></div>` : '')
       + `<div class="honap-fej"><button class="gomb-ikon" data-honap="${hi > 0 ? honapok[hi - 1] : ''}" ${hi > 0 ? '' : 'disabled style="visibility:hidden"'} aria-label="Előző hónap">‹</button><span>${ev}. ${HONAP[ho - 1]}</span><button class="gomb-ikon" data-honap="${hi < honapok.length - 1 ? honapok[hi + 1] : ''}" ${hi < honapok.length - 1 ? '' : 'disabled style="visibility:hidden"'} aria-label="Következő hónap">›</button></div>`
       + `<div class="racs">${racs}</div>${all.tovabbi ? '<div class="kicsi tovabbi">További napok betöltése…</div>' : ''}<div class="alcim">${esc(napCim(all.nap))}</div><div class="idok">${idok.map((x) => `<button class="ido" data-slot="${x.start_unix}">${sb(x).ido}</button>`).join('')}</div>`;
+    idokLatszon();
+  }
+  // Asztalon (>700 px) ha az idopont-gombok a naptar alatt kilognanak a latott reszbol, a tartalom annyit gorget, hogy az elso ket sor latsszon:
+  // alacsony laptop-kepernyon kulonben csak a naptar latszott, es videken (1-2 nap, mar kijelolve) nem volt mire kattintani (2026-10-29, Feri). Csak lefele gorget.
+  function idokLatszon() {
+    try {
+      if (matchMedia('(max-width: 700px)').matches) return;
+      const el = tartalom.querySelector('.idok');
+      if (!el || !el.firstElementChild) return;
+      const t = tartalom.getBoundingClientRect(), e = el.getBoundingClientRect();
+      const sor = el.firstElementChild.getBoundingClientRect().height + 8;
+      const cimke = el.previousElementSibling && el.previousElementSibling.classList.contains('alcim') ? el.previousElementSibling.getBoundingClientRect().top : e.top;
+      const kell = Math.min(e.top + Math.min(e.height, sor * 2) + 12 - t.bottom, cimke - t.top - 8); // a nap-cimke ne csusszon ki felul
+      if (kell > 0) tartalom.scrollTop += kell;
+    } catch (x) { /* a gorgetes soha nem akaszthatja meg a foglalast */ }
   }
 
   // az adatlap tetejen: melyik szakemberhez szol a foglalas (a kijelolt szakember, vagy a helyszin egyetlen szakembere, kulonben "Barki" - ilyenkor a Salonic

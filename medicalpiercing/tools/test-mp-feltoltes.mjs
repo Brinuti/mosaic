@@ -6,8 +6,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { MP_GADS, akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, apiTorzs, zapierTorzs, kuldes, elesKuldesE, szallitoValaszt, googleIdo, _tokenTorles } from '../lib/meres/google-ads.js';
-import { foglalasErkezes, admin, bemenet, _semaTorles, igazolasErkezes } from '../lib/meres/lanc.js';
+import { KATTINTAS_ABLAK_MP, MP_GADS, akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, apiTorzs, zapierTorzs, kuldes, elesKuldesE, szallitoValaszt, googleIdo, _tokenTorles } from '../lib/meres/google-ads.js';
+import { foglalasErkezes, admin, bemenet, _semaTorles, igazolasErkezes, feltoltes } from '../lib/meres/lanc.js';
 import { onRequest } from '../functions/api/mp-foglalas.js';
 
 // --- D1-utanzat ---
@@ -420,4 +420,41 @@ test('potlas elesben: a mar elkuldott akcio nem megy ki ujra (D1-ellenorzes + or
   assert.equal(t.validateOnly, false);
   assert.ok(t.conversions.every((c) => c.orderId === '12169|555|1791800000'));
   assert.equal(db._s.prepare("SELECT COUNT(*) n FROM mp_feltoltes WHERE mod = 'eles' AND allapot = 'elkuldve'").get().n, 2);
+});
+
+// DECISION #245: az ARNYEK akciok (7834926162 / 7834926165) click-through ablaka 14 nap: regebbi kattintasra nincs feltoltes (EXPIRED_EVENT lenne)
+const NAP = 86400;
+test('#245 konverzio: 13 / 14 napos kattintas megy, 15 napos kihagyva (kattintas_14_napnal_regebbi); ismeretlen kattintas-ido: nincs kapu; csak az ARNYEK akciok', () => {
+  const f = (nap) => ({ kulcs: 'k', letrehozva: MOST, ertek: 24900, kattintas: { tipus: 'gclid', ertek: GCLID }, kattintasIdo: nap === null ? null : MOST - nap * NAP });
+  for (const akcio of ['7834926162', '7834926165']) {
+    assert.ok(konverzio(f(13), akcio, { hozzajarulasHirdetes: true }).konverzio, '13 nap');
+    assert.ok(konverzio(f(14), akcio, { hozzajarulasHirdetes: true }).konverzio, 'pontosan 14 nap meg bent van');
+    assert.equal(konverzio({ ...f(14), kattintasIdo: MOST - 14 * NAP - 1 }, akcio, { hozzajarulasHirdetes: true }).kihagyva, 'kattintas_14_napnal_regebbi', '14 nap + 1 mp');
+    assert.equal(konverzio(f(15), akcio, { hozzajarulasHirdetes: true }).kihagyva, 'kattintas_14_napnal_regebbi', '15 nap');
+    assert.ok(konverzio(f(null), akcio, { hozzajarulasHirdetes: true }).konverzio, 'ismeretlen kattintas-ido: valtozatlan viselkedes');
+  }
+  assert.equal(KATTINTAS_ABLAK_MP, 14 * NAP);
+  assert.ok(konverzio(f(0), '7834926162', { hozzajarulasHirdetes: true }).konverzio, 'friss kattintas');
+  assert.ok(konverzio({ ...f(15), kattintasIdo: MOST + 100 }, '7834926162', { hozzajarulasHirdetes: true }).konverzio, 'a foglalas utani kattintas nem negativ kor: nem ez a kapu dolga');
+  assert.ok(konverzio(f(15), '7834926162', { hozzajarulasHirdetes: false }).kihagyva === 'nincs hirdetesi hozzajarulas', 'a hozzajarulas-kapu elobb');
+});
+test('#245 feltoltes (lanc): 15 napos kattintas -> mindket ARNYEK akcio kihagyva a naploban, Google-hivas nincs, a foglalas sora valtozatlan; 13 napos megy', async () => {
+  for (const [nap, vart] of [[15, 'kihagyva'], [13, 'elfogadva']]) {
+    _semaTorles(); _tokenTorles();
+    const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+    await igazol(env, f);
+    await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST });
+    db._s.prepare('DELETE FROM mp_feltoltes').run();
+    const sorElotte = JSON.stringify(db._s.prepare('SELECT * FROM mp_foglalas').get());
+    db._s.prepare('UPDATE mp_foglalas SET kattintas_ido = ?').run(db._s.prepare('SELECT COALESCE(foglalas_ido, letrehozva) AS t FROM mp_foglalas').get().t - nap * NAP);
+    const sor = db._s.prepare('SELECT * FROM mp_foglalas').get();
+    const uplElotte = f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length;
+    await feltoltes(db, sor, env, 'preview.example', { fetchImpl: f, most: MOST });
+    const ft = db._s.prepare('SELECT akcio_id, allapot, valasz FROM mp_feltoltes ORDER BY akcio_id').all();
+    assert.deepEqual(ft.map((x) => [x.akcio_id, x.allapot]), [['7834926162', vart], ['7834926165', vart]], nap + ' nap');
+    if (nap === 15) { assert.ok(ft.every((x) => x.valasz === 'kattintas_14_napnal_regebbi')); assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, uplElotte, 'nincs uj Google-hivas'); }
+    else assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, uplElotte + 1, '13 nap: megy a feltoltes');
+    assert.equal(JSON.stringify({ ...db._s.prepare('SELECT * FROM mp_foglalas').get(), kattintas_ido: null }), JSON.stringify({ ...JSON.parse(sorElotte), kattintas_ido: null }), 'a foglalas sora nem valtozik');
+    assert.equal(JSON.stringify(db._s.prepare('SELECT * FROM mp_feltoltes').all()).includes(GCLID), false, 'nyers azonosito nincs a naploban');
+  }
 });

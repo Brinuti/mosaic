@@ -81,7 +81,7 @@ const szamjegy = (s) => +String(s).replace(/\D/g, '');
 describe('oldal', () => {
   test('betoltodik, hibak nelkul, kulso kereseket nem kuld (suti-hozzajarulas nelkul)', async () => {
     const { p, ctx, hibak, kulso } = await nyit();
-    assert.match(await p.title(), /Lézeres szőrtelenítés Budapesten/);
+    assert.equal(await p.title(), 'Lézeres szőrtelenítés Budapest – végleges szőrtelenítés garanciával – MOSAIC'); // a Google Ads celoldal-terv (SZ-1, 2026-10-31) szerint
     assert.equal(await p.locator('h1').count(), 1);
     assert.equal(await p.locator('link[rel=canonical]').getAttribute('href'), 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest');
     assert.equal(await p.locator('meta[name=robots]').count(), 0, 'eles oldal: indexelheto (nincs noindex)');
@@ -234,43 +234,43 @@ describe('kalkulator: a legdragabb teruletet teljes aron, a tobbit 50%-on', () =
     await ctx.close();
   });
 
-  test('ha mindent levesz: nincs eredmeny, az osszegsav rejtett; telefonon lepesenkent (testtajanknent) megy, az osszegsav latszik a kijeloleseknel', async () => {
+  test('ha mindent levesz: nincs eredmeny, az osszegsav rejtett; telefonon az osszegsav latszik a kijeloleseknel', async () => {
     const { p, ctx } = await nyit({ mobil: true });
     assert.equal(await p.locator('.sz-sav').isVisible(), true);
     assert.match(await p.textContent('.sz-sav'), /86\s*500/);
-    // telefonon egyszerre csak az aktualis testtaj gombjai latszanak, az ar csak a vegen
-    assert.equal(await p.locator('.sz-csoport.aktiv').count(), 1);
-    assert.equal(await p.locator('.sz-csoport.aktiv .sz-chip').first().isVisible(), true);
-    assert.equal(await p.locator('.sz-csoport:not(.aktiv) .sz-chip').first().isHidden(), true, 'a tobbi lepes rejtett');
-    assert.equal(await p.locator('.szamolo-eredmeny').isHidden(), true, 'az ar a vegen jon');
-    assert.match(await p.textContent('.sz-lepes-jelzo'), /1\. lépés a 6-ból/);
-    for (let i = 0; i < 6; i++) { await p.click('.sz-tovabb'); await p.waitForTimeout(50); } // 6 testtaj utan az ar
-    assert.equal(await p.locator('.szamolo-eredmeny').isVisible(), true);
-    assert.equal(await p.locator('.szamolo-valaszto').isHidden(), true);
-    assert.equal(szamjegy(await p.textContent('.sz-ossz b')), 86500);
-    await p.click('.sz-vissza-gomb'); // vissza a teruletekhez: az utolso (6.) lepes
-    assert.equal(await p.locator('.szamolo-valaszto').isVisible(), true);
-    assert.match(await p.textContent('.sz-lepes-jelzo'), /6\. lépés a 6-ból/);
-    for (let i = 0; i < 5; i++) { await p.click('.sz-lepes-gombok .gomb-korvonal'); await p.waitForTimeout(50); } // vissza az 1. lepesre
-    assert.match(await p.textContent('.sz-lepes-jelzo'), /1\. lépés a 6-ból/);
-    // a lepesek kozott a kijeloles megmarad: levesszuk mindet (az adott testtaj lepeseben), majd az ar-lepesen nincs eredmeny
-    for (const k of ['honalj', 'intim', 'lab']) { // a testtajak sorrendjeben (kar es honalj, intim, lab), hogy csak elore kelljen lepni
-      while (!(await p.locator(`.sz-chip[data-kulcs="${k}"]`).isVisible())) await p.click('.sz-tovabb');
-      await p.click(`.sz-chip[data-kulcs="${k}"]`);
-    }
-    assert.equal(await p.locator('.sz-sav').isHidden(), true);
-    while (await p.locator('.szamolo-eredmeny').isHidden()) await p.click('.sz-tovabb');
+    await uresit(p);
     assert.match(await p.textContent('#szamolo-tartalom'), /Válassz legalább egy területet/);
+    assert.equal(await p.locator('.sz-sav').isHidden(), true);
     await ctx.close();
   });
 
-  test('asztalon nincs lepesenkenti vezerles: minden testtaj es az eredmeny egyszerre latszik', async () => {
-    const { p, ctx } = await nyit();
-    assert.equal(await p.locator('.sz-lepes-gombok').isHidden(), true);
-    assert.equal(await p.locator('.sz-lepes-jelzo').isHidden(), true);
-    assert.equal(await p.locator('.sz-csoport:not(.aktiv) .sz-chip').first().isVisible(), true);
-    assert.equal(await p.locator('.szamolo-eredmeny').isVisible(), true);
+  test('telefonon az osszes testtaj egyszerre, kis bepipalos csempekent latszik (nincs lepes / lenyitas), egymas mellett sorokba tordelve', async () => {
+    const { p, ctx } = await nyit({ mobil: true });
+    const chipek = p.locator('#szamolo-valaszto .sz-chip');
+    const n = await chipek.count();
+    assert.ok(n >= 15, 'sok csempe: ' + n);
+    for (let i = 0; i < n; i++) assert.equal(await chipek.nth(i).isVisible(), true, 'a ' + i + '. csempe latszik');
+    assert.equal(await p.locator('.sz-lepes-gombok, .sz-lepes-jelzo, [data-lepes]').count(), 0, 'nincs lepesenkenti vezerles');
+    // tobb csempe van egy sorban (cimkefelho): kevesebb kulonbozo sor, mint csempe
+    const sorok = await p.$$eval('#szamolo-valaszto .sz-chip', (l) => new Set(l.map((e) => Math.round(e.getBoundingClientRect().top))).size);
+    assert.ok(sorok < n * 0.7, 'a csempek sorokba rendezodnek: ' + sorok + ' sor / ' + n + ' csempe');
+    // a kijeloles azonnal frissiti az alkalmankenti arat
+    await p.click('.sz-chip[data-kulcs="alkar"]');
+    assert.match(await p.textContent('.sz-sav'), /\d/);
     await ctx.close();
+  });
+
+  test('nincs vizszintes gorgetes: telefonon es keskeny asztali ablakban sem', async () => {
+    for (const [mobil, szeles] of [[true, 360], [true, 414], [false, 470], [false, 600]]) {
+      const ctx = await bongeszo.newContext({ viewport: { width: szeles, height: 800 }, ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}) });
+      const p = await ctx.newPage();
+      await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+      await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
+      await p.waitForSelector('.sz-chip');
+      const sw = await p.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+      assert.ok(sw[0] <= sw[1], `nincs vizszintes gorgetes (${mobil ? 'telefon' : 'asztali'} ${szeles}px): ${sw}`);
+      await ctx.close();
+    }
   });
 });
 
@@ -934,7 +934,7 @@ describe('a kilencedik kor: szekciosorrend, kalkulator-jelzesek, egységes gombo
   test('szekciosorrend: mennyibe kerul -> eredmenyek -> 8 alkalom -> garancia -> Zsofi -> orvosi ajanlas (szorbenoves-video) -> velemenyek (a "Mar tudod", az ajandekkartya es a "Neked is jo valasztas" blokk 2026-10-25 ota nincs)', async () => {
     const { p, ctx } = await nyit();
     const sor = await p.$$eval('main > section', (l) => l.map((s) => s.className.split(' ')[0]));
-    assert.deepEqual(sor.slice(0, 8), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi', 'velemenyek']);
+    assert.deepEqual(sor.slice(0, 9), ['hero', 'kulcsszo-szekcio', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi', 'velemenyek']); // kulcsszo-szekcio: a Google Ads celoldal-terv (SZ-1, 2026-10-31)
     assert.deepEqual(sor.slice(-5), ['arlista', 'szamolo', 'gyik', 'foglalas', 'helyszin']);
     await ctx.close();
   });
@@ -967,7 +967,7 @@ describe('a rozsaszin akcios sav nem latszik', () => {
   test('asztalon es telefonon sincs rozsaszin akcios sav a fejlecben; a fejlec alacsonyabb', async () => {
     for (const mobil of [false, true]) {
       const { p, ctx } = await nyit({ mobil });
-      const m = await p.evaluate(() => { const s = document.getElementById('comp-mpv0ganp'); const f = document.getElementById('SITE_HEADER'); return { sav: s ? getComputedStyle(s).display : 'nincs', magas: Math.round(f.getBoundingClientRect().height), szoveg: /Októberi akció/.test(f.innerText) }; });
+      const m = await p.evaluate(() => { const s = document.getElementById('comp-mpv0ganp'); const f = document.getElementById('SITE_HEADER'); return { sav: s ? getComputedStyle(s).display : 'nincs', magas: Math.round(f.getBoundingClientRect().height), szoveg: /Novemberi akció/.test(f.innerText) }; });
       assert.equal(m.sav, 'none', (mobil ? 'mobil' : 'asztal') + ': a sav el van rejtve');
       assert.equal(m.szoveg, false, 'a sav szovege nem latszik');
       assert.ok(m.magas <= 80, (mobil ? 'mobil' : 'asztal') + ': a fejlec magassaga: ' + m.magas);
@@ -1070,7 +1070,9 @@ describe('a tizennegyedik kor: tisztabb arlista, azonnali velemenyek, helyszin-k
 
   test('a Trustindex-keret nem lazy (hozzajarulas utan azonnal toltodik); a helyszin kepe fix magassagu (nem logat a lablecbe)', async () => {
     const forras = fs.readFileSync(path.join(GYOKER, 'assets', 'js', 'lezer-landing.js'), 'utf8');
-    assert.match(forras, /title: 'Google-vélemények \(Trustindex\)', loading: 'eager'/);
+    // a felirat a lezer-landing.js SZ szotaraban van (az angol / ukran oldal sajat szoveget tolt); a keret ettol meg nem lazy
+    assert.match(forras, /title: SZ\.tiCim, loading: 'eager'/);
+    assert.match(forras, /tiCim: 'Google-vélemények \(Trustindex\)'/);
     for (const mobil of [false, true]) {
       const { p, ctx } = await nyit({ mobil });
       await p.locator('.helyszin').scrollIntoViewIfNeeded();

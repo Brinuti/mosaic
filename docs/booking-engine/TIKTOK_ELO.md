@@ -47,3 +47,8 @@ Salonic-levél ──► foglalasEsemenyKuldes / sd / ajandekEsemenyKuldes ─�
 ## Tesztek
 
 `node --test tools/test-tiktok-elo.mjs` (13): kapcsoló / fail-closed, jogosultság üzletáganként, kérés-alak (nincs nyers adat), idempotencia, hibakezelés, a válasz additív mezője, a kliens (`ttq.track`).
+
+## Előnézeti kapcsolók (DECISION #246, 2. lépés)
+- A `wrangler.toml` `[env.preview.vars]` része: `ELO_CSAK_TESZT="1"`, `TIKTOK_ELO_BE="headspa"`, `META_ELO_BE="headspa,pmu"`. Az éles `[vars]`-ban egyik sincs.
+- **Védőháló:** `ELO_CSAK_TESZT=1` mellett a modul **teszt-kód nélkül nem küld** (`kihagyva`), így egy előnézet sosem küldhet az éles pixelre / datasetre. A Test Events kódok (`TIKTOK_ELO_TESZT_KOD`, `META_ELO_TESZT_KOD`) a mérési oldaltól jönnek (az ARNYEK `*_TESZT_KOD` értékei ide nem jók), és a token (`*_ELO_TOKEN`, Secret, Preview) is kell; addig az előnézet semmit nem csinál.
+- Az éles bekapcsolás (`*_ELO_BE` az éles `[vars]`-ban + token) külön lépés és külön Feri-mondat.
