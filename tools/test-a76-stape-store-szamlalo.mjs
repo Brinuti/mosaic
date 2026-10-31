@@ -129,6 +129,6 @@ test('consentJellemzes + utvonalConsentOsszesites (UJ-99): zart halmaz, query / 
     sor('2026-10-30T10:00:00Z', 'https://a76.hu/foglalas-ok/', '1', { ad_storage: 'granted' }), // tol elott
   ];
   const ki = utvonalConsentOsszesites(docs, { tolMs: Date.parse(t) });
-  assert.deepEqual(ki, { '2026-10-30 | /foglalas-ok/ | first_booking_raw=1 | ad_storage=granted': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=0 | ad_storage=denied': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=nincs | ad_storage=granted': 1, '2026-10-30 | egyeb | first_booking_raw=egyeb | ad_storage=granted': 1 });
+  assert.deepEqual(ki, { '2026-10-30 | /foglalas-ok/ | first_booking_raw=1 | nav=nincs | ad_storage=granted': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=0 | nav=nincs | ad_storage=denied': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=nincs | nav=nincs | ad_storage=granted': 1, '2026-10-30 | egyeb | first_booking_raw=egyeb | nav=nincs | ad_storage=granted': 1 });
   assert.ok(!JSON.stringify(ki).match(/price|email|varatlan/));
 });

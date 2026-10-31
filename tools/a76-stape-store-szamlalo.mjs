@@ -120,9 +120,10 @@ export function utvonalConsentOsszesites(docs, { tolMs = 0, mezo = 'first_bookin
     const ms = Date.parse(d && d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue;
     const dd = (d && d.data) || {};
     let ut = 'egyeb'; try { const pn = new URL(String(dd.page_location || '')).pathname; ut = pn === '/foglalas-ok/' || pn === '/foglalas-moricz/' ? pn : 'egyeb'; } catch { /* nincs */ }
-    const v = dd[mezo]; const jel = v === undefined || v === null ? 'nincs' : (['0', '1', 'true', 'false', ''].includes(String(v)) ? (String(v) === '' ? 'ures' : String(v)) : 'egyeb');
+    const jel = kategoria(dd[mezo]); // ugyanaz a zart osztalyozas, mint a keresztNavFirstBooking-ben
+    const nv = dd.a76_nav === undefined || dd.a76_nav === null ? 'nincs' : (NAV_HALMAZ.includes(String(dd.a76_nav).split('|')[0]) ? String(dd.a76_nav).split('|')[0] : 'egyeb');
     const nap = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short' }).format(new Date(ms)); // Budapest-nap
-    const kulcs = `${nap} | ${ut} | ${mezo}=${jel} | ${consentJellemzes(dd.consent_state)}`;
+    const kulcs = `${nap} | ${ut} | ${mezo}=${jel} | nav=${nv} | ${consentJellemzes(dd.consent_state)}`;
     ki[kulcs] = (ki[kulcs] || 0) + 1;
   }
   return ki;
