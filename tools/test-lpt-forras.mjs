@@ -568,16 +568,16 @@ test('D) fizetett erkezes (Google / Meta / TikTok): tisztitott erintes a session
   // hibas azonosito-minta: a TIPUS fizetett jel, az ertek nem megy
   const h = kliens({ search: '?gclid=rovid' }); assert.equal(h.posztok().length, 1); assert.equal(h.posztok()[0].body.forras.kv, undefined); assert.equal(h.posztok()[0].body.forras.kp, 'gclid');
 });
-test('D) NEM fizetett erkezes: organikus / direkt visszateres NEM ir felul fizetettet es nem kuld POST-ot; elso erkezeskor a nem fizetett erintes is tarolodik (direkt / kereso); belso hivatkozo nem valtoztat', () => {
+test('D) NEM fizetett erkezes: organikus / direkt visszateres NEM ir felul fizetettet es csak a napi 1 erintesnaplo-jelzest kuldi (#495; mh_lpt-iras nincs); elso erkezeskor a nem fizetett erintes is tarolodik (direkt / kereso); belso hivatkozo nem valtoztat', () => {
   const fiz = kliens({ search: URL_GOOGLE, referrer: 'https://www.google.com/' });
   const elozo = fiz.ss._m.get('mh_forras');
   // ugyanabban a munkamenetben organikus kereso-erkezes / direkt: a fizetett marad
   for (const [search, referrer] of [['', 'https://www.google.com/'], ['', ''], ['?utm_source=hirlevel&utm_medium=email', ''], ['', 'https://t.co/x']]) {
     const k = kliens({ search, referrer, ss: tarolo({ mh_forras: elozo }), ls: tarolo() });
-    assert.equal(k.ss._m.get('mh_forras'), elozo, `nem ir felul: ${search} / ${referrer}`); assert.equal(k.posztok().length, 0, 'nincs POST');
+    assert.equal(k.ss._m.get('mh_forras'), elozo, `nem ir felul: ${search} / ${referrer}`); assert.deepEqual(k.posztok().map((x) => x.body.organikus === true), [true], 'csak a napi 1 organikus erintesnaplo-jelzes (#495), mh_lpt-iras nincs');
   }
   // elso erkezes, nem fizetett: tarolodik (a cimkehez kell), POST nincs
-  const d = kliens({ search: '', referrer: '' }); assert.deepEqual([sessionTouch(d).rk, sessionTouch(d).kp], ['nincs', undefined]); assert.equal(d.posztok().length, 0);
+  const d = kliens({ search: '', referrer: '' }); assert.deepEqual([sessionTouch(d).rk, sessionTouch(d).kp], ['nincs', undefined]); assert.deepEqual(d.posztok().map((x) => x.body.organikus === true), [true], 'direkt: csak a napi 1 organikus erintesnaplo-jelzes (#495)');
   const s = kliens({ search: '', referrer: 'https://www.bing.com/search?q=x' }); assert.equal(sessionTouch(s).rk, 'search');
   const so = kliens({ search: '', referrer: 'https://www.instagram.com/' }); assert.equal(sessionTouch(so).rk, 'social');
   const eg = kliens({ search: '', referrer: 'https://blog.example.hu/cikk' }); assert.equal(sessionTouch(eg).rk, 'egyeb');
