@@ -28,8 +28,8 @@ test('a hero kepe Zsofi mosolygo, arcos kepe; a head preload es az LCP-elofeltol
   assert.ok(osszes >= 1 && talalat === osszes, `lcp-elofeltoltes.json: ${talalat}/${osszes} bejegyzes mutat az uj kepre`);
 });
 
-test('a fo cim es az ajanlat valtozatlan: Lezeres szortelenites 12 honap garanciaval, 8 alkalomból csak 6-ot fizetsz', () => {
-  assert.match(h, /<h1>Lézeres szőrtelenítés 12 hónap garanciával<\/h1>/);
+test('a fo cim (a Google Ads celoldal-terv SZ-1 szerint, 2026-10-31) es az ajanlat: Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával, 8 alkalomból csak 6-ot fizetsz', () => {
+  assert.match(h, /<h1>Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával<\/h1>/);
   assert.match(h, /<p class="hero-ajanlat">8 alkalomból csak 6-ot fizetsz\.<\/p>/);
 });
 
@@ -49,7 +49,7 @@ test('a "Mar tudod, mit szeretnel?" blokk es az ajandekkartya blokk nincs az old
   assert.ok(!h.includes('Már tudod, mit szeretnél?') && !h.includes('<section class="tudod"'), 'nincs "Mar tudod"');
   assert.ok(!h.includes('<section class="ajk"') && !h.includes('Személyre szabott ajándékkártya!'), 'nincs ajandekkartya-blokk');
   const sorrend = [...h.matchAll(/<section class="([a-z-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(sorrend.slice(0, 7), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi']);
+  assert.deepEqual(sorrend.slice(0, 8), ['hero', 'kulcsszo-szekcio', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi']); // kulcsszo-szekcio: a Google Ads celoldal-terv (SZ-1, 2026-10-31)
 });
 
 test('a "Neked is jo valasztas a lezeres szortelenites?" blokk (cim + harom kartya) nincs az oldalon; az orvosi ajanlas (szorbenoves-video) onallo szekcioban marad', () => {

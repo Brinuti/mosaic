@@ -35,9 +35,9 @@ const SZ = (s) => s.replace(/\s+/g, ' ').replace(/\u00a0/g, ' ').trim();   // sz
 
 // a brief 2. szakasza (szó szerint)
 const BRIEF = {
-  title: 'Hajkamerás hajvizsgálat 4 990 Ft – Budapest | MOSAIC',
+  title: 'Hajvizsgálat Budapest – hajkamerás fejbőr vizsgálat 4 990 Ft – MOSAIC', // a Google Ads celoldal-terv (OX-2, 2026-10-31) szerint
   description: 'Hullik vagy ritkul a hajad? Hajkamerás haj- és fejbőr-állapotfelmérés 4 990 Ft-ért, kezelés nélkül is. Kolosy tér, online foglalás.',
-  h1: 'Hajkamerás haj- és fejbőrvizsgálat 4 990 Ft-ért',
+  h1: 'Hajvizsgálat Budapest – hajkamerás haj- és fejbőr vizsgálat 4 990 Ft-ért', // a Google Ads celoldal-terv (OX-2, 2026-10-31) szerint
   alcim: 'Nézd meg kamerán, mi történik a fejbőrödön – kezelés nélkül is foglalható állapotfelmérés a Kolosy térnél.',
   fo: 'Hajvizsgálatot foglalok – 4 990 Ft',
   masodlagos: 'Első kezelés hajkamerás vizsgálattal – 29 900 Ft',

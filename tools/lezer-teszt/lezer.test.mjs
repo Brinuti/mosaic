@@ -484,7 +484,7 @@ describe('az uj tartalom (visszajelzesek alapjan)', () => {
 
   test('a cim "garanciaval", az alcim a vilag egyik legerosebb lezerrel, alkalmankent fizetes, 4. es 8. ajandek, fenntarto kezelesek orokre felaron', async () => {
     const { p, ctx } = await nyit();
-    assert.equal((await p.textContent('h1')).trim(), 'Lézeres szőrtelenítés 12 hónap garanciával');
+    assert.equal((await p.textContent('h1')).trim(), 'Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával'); // a Google Ads celoldal-terv (SZ-1, 2026-10-31) szerint
     const al = await p.textContent('.hero-al');
     assert.match(al, /világ egyik legerősebb/);
     assert.match(al, /Elysion Pro/);
@@ -934,7 +934,7 @@ describe('a kilencedik kor: szekciosorrend, kalkulator-jelzesek, egységes gombo
   test('szekciosorrend: mennyibe kerul -> eredmenyek -> 8 alkalom -> garancia -> Zsofi -> orvosi ajanlas (szorbenoves-video) -> velemenyek (a "Mar tudod", az ajandekkartya es a "Neked is jo valasztas" blokk 2026-10-25 ota nincs)', async () => {
     const { p, ctx } = await nyit();
     const sor = await p.$$eval('main > section', (l) => l.map((s) => s.className.split(' ')[0]));
-    assert.deepEqual(sor.slice(0, 8), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi', 'velemenyek']);
+    assert.deepEqual(sor.slice(0, 9), ['hero', 'kulcsszo-szekcio', 'gyors-arak', 'eredmenyek', 'program', 'elonyok', 'zsofi', 'orvosi', 'velemenyek']); // kulcsszo-szekcio: a Google Ads celoldal-terv (SZ-1, 2026-10-31)
     assert.deepEqual(sor.slice(-5), ['arlista', 'szamolo', 'gyik', 'foglalas', 'helyszin']);
     await ctx.close();
   });

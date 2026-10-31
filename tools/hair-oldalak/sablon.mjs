@@ -263,6 +263,19 @@ const sticky = (fodrasz) => `<div class="sticky-cta" id="sticky-cta" aria-hidden
   <a class="sticky-masodlagos" href="${foglalo({ staff: fodrasz || undefined, service: KONZULT })}" data-cta="sticky-konzultacio" data-konzult="1" tabindex="-1">Ingyenes<br>konzultáció</a>
 </div>`;
 
+// ---- Google Ads celoldal-valtozat (tools/hair-oldalak/google-oldalak.mjs): a keresett kifejezesek sajat alcimmel (H2) + egy mondattal, lathato, normal szovegkent ----
+// v.kulcsszavak: { cimke, kartyak: [[ikon, H2, mondat], ...] } - 3 kartya: harom oszlop, 4 kartya: negy oszlop (asztalon). A valtozat nelkuli oldalak kimenete nem valtozik.
+const kulcsszoSzekcio = (k) => `<!-- ============ KERESETT KIFEJEZESEK (Google Ads celoldal) ============ -->
+<section class="szekcio halvany kulcsszo-szekcio" aria-label="${esc(k.cimke)}">
+  <div class="tartalom">
+    <ul class="kartya-racs ${k.kartyak.length === 4 ? 'negy' : 'harom'} kicsi-kartyak">
+${k.kartyak.map(([ikon, cim, mondat]) => `      <li class="mini-kartya kulcsszo-kartya">${ik(ikon)}<h2>${cim}</h2><p>${mondat}</p></li>`).join('\n')}
+    </ul>
+  </div>
+</section>
+`;
+const bevezetoSor = (v) => (v.bevezeto ? `<p class="lead hero-bevezeto">${v.bevezeto}</p>\n      ` : '');
+
 // ---- KOZPONTI OLDAL --------------------------------------------------------------------------------------------------------------------------
 function fodraszKartyaKozpont(kulcs) {
   const f = FODRASZOK[kulcs], p = KEPEK.portre[kulcs]();
@@ -291,15 +304,15 @@ ${kepek.map((k, i) => `        <li>${kepTag(k, { lazy: nev === 'hely' || i > 0, 
     </figure>`;
 }
 const heroGaleria = () => lapozGaleria(KEPEK.kozpontHeroGaleria(), { cls: 'hero-kep', nev: 'hero', felirat: 'Valódi MOSAIC-vendégmunkák: lapozható képgaléria', sizes: '(min-width:900px) 45vw, 100vw', cimke: 'Valódi MOSAIC-vendégmunka' });
-export function kozpontOldal() {
+export function kozpontOldal(v = {}) {
   const esetek = ['balayage', 'color', 'tofestes'];
   return `<main class="hl hl-kozpont" id="top" data-landing="hair-general" data-intent="general">
 <!-- ============ HERO ============ -->
 <section class="hero">
   <div class="tartalom hero-racs">
     <div class="hero-szoveg">
-      <h1>Találd meg azt a hajszínt és fazont, ami tényleg jól áll neked</h1>
-      <p class="lead">Balayage, hajfestés és tőfestés személyre szabva. Megbeszéljük, mit szeretnél, megmutatjuk, mi reális a hajadból, és előre látod, mire számíthatsz.</p>
+      <h1>${v.h1 || 'Találd meg azt a hajszínt és fazont, ami tényleg jól áll neked'}</h1>
+      ${bevezetoSor(v)}<p class="lead">Balayage, hajfestés és tőfestés személyre szabva. Megbeszéljük, mit szeretnél, megmutatjuk, mi reális a hajadból, és előre látod, mire számíthatsz.</p>
       <div class="cta-sor">
         ${gomb('Mutasd a szabad időpontokat', foglalo(), { cta: 'hero-idopontok', poz: 'hero' })}
         ${gomb('Ingyenes konzultáció', foglalo({ service: KONZULT }), { fajta: 'korvonal', cta: 'hero-konzultacio', poz: 'hero', extra: ' data-konzult="1"', nyilat: false })}
@@ -315,7 +328,7 @@ export function kozpontOldal() {
   </div>
 </section>
 
-<!-- ============ SZOLGALTATASOK ============ -->
+${v.kulcsszavak ? kulcsszoSzekcio(v.kulcsszavak) + '\n' : ''}<!-- ============ SZOLGALTATASOK ============ -->
 <section class="szekcio" id="szolgaltatasok" aria-labelledby="szolg-cim">
   <div class="tartalom">
     ${szekcioFej('Mit szeretnél?', 'Válaszd ki, miben segíthetünk', 'Csak azt kérdezzük meg, amit még nem tudunk rólad.', 'szolg-cim')}
@@ -388,8 +401,8 @@ function szakteruletKartya(fodrasz, jel) {
     </div>
   </article>`;
 }
-export function fodraszOldal(fodrasz) {
-  const f = FODRASZOK[fodrasz], p = KEPEK.portre[fodrasz]();
+export function fodraszOldal(fodrasz, v = {}) {
+  const f = { ...FODRASZOK[fodrasz], ...(v.fodrasz || {}) }, p = KEPEK.portre[fodrasz]();
   const video = KEPEK.videok[fodrasz];
   const festek = f.festek ? `<section class="szekcio halvany" aria-labelledby="festek-cim">
   <div class="tartalom festek">
@@ -406,8 +419,8 @@ export function fodraszOldal(fodrasz) {
 <section class="hero hero-fodrasz">
   <div class="tartalom hero-racs">
     <div class="hero-szoveg">
-      <h1><span class="csak-asztali">${f.h1}</span><span class="csak-mobil">${f.h1Mobil}</span></h1>
-      <blockquote class="hero-idezet">„${f.idezet}”<cite>${f.teljesNev}, fodrász</cite></blockquote>
+      <h1>${v.h1 || `<span class="csak-asztali">${f.h1}</span><span class="csak-mobil">${f.h1Mobil}</span>`}</h1>
+      ${bevezetoSor(v)}<blockquote class="hero-idezet">„${f.idezet}”<cite>${f.teljesNev}, fodrász</cite></blockquote>
       <ul class="hero-blokkok csak-mobil">${f.blokkok.map((b) => `<li>${ik('pipa')}<span>${b}</span></li>`).join('')}</ul>
       <p class="lead csak-asztali">${f.rovid}</p>
       <div class="cta-sor">
@@ -424,7 +437,7 @@ ${f.kiemelesek.map((t, i) => `        <li>${ik(['gyemant', 'szív', 'level'][i])
   </div>
 </section>
 
-<!-- ============ BEMUTATKOZAS ============ -->
+${v.kulcsszavak ? kulcsszoSzekcio(v.kulcsszavak) + '\n' : ''}<!-- ============ BEMUTATKOZAS ============ -->
 <section class="szekcio" aria-labelledby="bemutat-cim">
   <div class="tartalom bemutat-racs">
     <div class="bemutat">
@@ -449,13 +462,13 @@ ${f.szakteruletek.map((j) => szakteruletKartya(fodrasz, j)).join('\n')}
 </section>
 
 ${galeriaSzekcio(fodrasz, { felc: `${f.nev} munkái`, cim: 'Valódi vendégek, valódi eredmények', lead: `Minden kép ${f.nev} vendégének hajáról készült.`, db: 8 })}
-${arSzekcio(fodrasz, { felc: 'Szolgáltatások és árak', cim: `${f.nev} árlistája`, lead: 'Hajhossz szerint, ugyanazokkal az árakkal, mint a foglalóban.' })}
+${arSzekcio(fodrasz, { felc: 'Szolgáltatások és árak', cim: v.arCim || `${f.nev} árlistája`, lead: 'Hajhossz szerint, ugyanazokkal az árakkal, mint a foglalóban.' + (v.arMegj ? ' ' + v.arMegj : '') })}
 ${velemenyekSzekcio(fodrasz)}
 
 <!-- ============ MIERT ============ -->
 <section class="szekcio" aria-labelledby="miert-cim">
   <div class="tartalom">
-    ${szekcioFej('Miért érdemes?', `Miért válaszd ${f.rag.t}?`, '', 'miert-cim')}
+    ${szekcioFej('Miért érdemes?', v.miertCim || `Miért válaszd ${f.rag.t}?`, v.miertCim ? `Miért válaszd ${f.rag.t}?` : '', 'miert-cim')}
     <ul class="kartya-racs harom kicsi-kartyak">
 ${f.miert.map(([c, sz], i) => `      <li class="mini-kartya">${ik(['chat', 'gyemant', 'level'][i])}<h3>${c}</h3><p>${sz}</p></li>`).join('\n')}
     </ul>

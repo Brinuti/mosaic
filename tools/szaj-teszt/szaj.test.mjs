@@ -117,7 +117,7 @@ describe('/szajtetovalas-budapest: rejtett alternativ landing', () => {
     for (const szeles of [1440, 768, 390]) {
       const { p, ctx, hibak, nincs } = await nyit({ szeles });
       assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
-      assert.equal((await p.textContent('h1')).trim(), 'Természetes szájtetoválás, ami illik az arcodhoz.');
+      assert.equal((await p.textContent('h1')).trim(), 'Természetes szájtetoválás és ajaktetoválás Budapesten'); // a Google Ads celoldal-terv (PMU-2, 2026-10-31) szerint
       // (a nagyito-ablak ures <img>-je kattintasig nem kep: src nelkul kihagyva)
       const torott = await p.$$eval('img[src]', (l) => l.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.currentSrc || i.src));
       assert.deepEqual(torott, [], `torott kepek (${szeles}px)`);
@@ -143,7 +143,8 @@ describe('/szajtetovalas-budapest: minden a szajrol szol', () => {
   test('cim, meta leiras, og: es a szekciok cimei a szajtetovalasra szolnak; a szekciok sorrendje a sminktetovalas-oldalé', async () => {
     const { p, ctx } = await nyit();
     const cim = await p.title();
-    assert.equal(cim, 'Szájtetoválás Budapest – természetes ajaktetoválás | Töreki Melitta, MOSAIC');
+    assert.equal(cim, 'Szájtetoválás és ajaktetoválás Budapest – aquarell ajak – Töreki Melitta, MOSAIC'); // a Google Ads celoldal-terv (PMU-2, 2026-10-31) szerint
+    assert.equal(await p.getAttribute('meta[property="og:title"]', 'content'), cim);
     const leiras = await p.getAttribute('meta[name=description]', 'content');
     assert.match(leiras, /szájtetoválás \(aquarell és rúzs hatású\)/);
     assert.match(leiras, /4–7 hét utáni korrekció az árban, nincs előleg/);
@@ -151,7 +152,7 @@ describe('/szajtetovalas-budapest: minden a szajrol szol', () => {
     assert.match(await p.getAttribute('meta[property="og:image"]', 'content'), /c2eb0f_14edf618439f44d88072604878d0cbd6\.jpg$/, 'az og:image szajas kep');
     const h2 = await p.$$eval('main h2', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim()));
     assert.deepEqual(h2, ['Legközelebbi szabad időpontok', 'Melyik helyzet igaz rád?', 'Hármas garancia, hogy nyugodtan dönthess', 'Az eredményt nézd, ne az ígéretet.', 'Mielőtt foglalsz',
-      'Időpontfoglalás után 24 órán belül felhívlak', 'Árak', 'Mitől nem lesz mű hatású?', 'Így zajlik — és ennyi idővel számolj', 'Hogyan változik a száj gyógyulás közben?', 'Töreki Melitta',
+      'Időpontfoglalás után 24 órán belül felhívlak', 'Ajaktetoválás árak', 'Aquarell ajaktetoválás', 'Mitől nem lesz mű hatású?', 'Így zajlik — és ennyi idővel számolj', 'Hogyan változik a száj gyógyulás közben?', 'Töreki Melitta',
       'Vendégeim tapasztalatai', 'Gyakori kérdések', 'Foglalj időpontot', 'Hol találsz meg?']);
     // a "Melyik helyzet igaz rad?" harom kartyaja szajra ertelmezve
     const kartyak = await p.$$eval('.helyzet h3', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').replace(/\u00ad/g, '').trim()));
@@ -173,7 +174,9 @@ describe('/szajtetovalas-budapest: minden a szajrol szol', () => {
     assert.doesNotMatch(forras, MAS_TERULET, 'a HTML-forrasban (kommenteken kivul)');
     // a /sminktetovalas-budapest szovegei kozul csak a szajra valo maradt: a "sminktetovalas" szo a velemenyeken (szo szerinti idezet) kivul nem szerepel
     const velemenyenKivul = await p.evaluate(() => { const m = document.querySelector('main').cloneNode(true); for (const e of m.querySelectorAll('.velemenyek')) e.remove(); return m.innerText; });
-    assert.doesNotMatch(velemenyenKivul, /sminktetoválás/i);
+    // kivetel: a Google Ads celoldal-terv (PMU-2, 2026-10-31) egyszer kifejezetten kéri az „ajak sminktetoválás” kifejezest
+    assert.equal((velemenyenKivul.match(/ajak sminktetoválás/gi) || []).length, 1, 'az „ajak sminktetoválás” pontosan egyszer');
+    assert.doesNotMatch(velemenyenKivul.replace(/ajak sminktetoválás/gi, ''), /sminktetoválás/i);
     for (const k of ['szájtetoválás', 'ajak', 'rúzs', 'aquarell', 'szájforma', 'száj formáj', 'szájtetoválás']) assert.ok(t.toLowerCase().includes(k.toLowerCase()) || k === 'szájforma' || k === 'száj formáj', 'hianyzik: ' + k);
     await ctx.close();
   });
