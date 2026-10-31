@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { chromium, ujKontextus, salonicIdopontok, nap, hhmm } from './ui-lib.mjs';
 const [AUDIT, KIM, DB = '4', CSAK = ''] = process.argv.slice(2);
 const HOST = 'https://medicalpiercing.salonic.hu', MOTOR = process.env.MP_MOTOR || 'https://www.medicalpiercing.hu';
-const PAR = +(process.env.PAR || 2), HONAP = +(process.env.HONAP || 4);
+const PAR = +(process.env.PAR || 2), HONAP = +(process.env.HONAP || 4), ELOTOLT_MS = +(process.env.ELOTOLT_MS ?? 3000);
 const d = JSON.parse(fs.readFileSync(AUDIT, 'utf8'));
 const helyek = new Map();
 for (const s of d) { if (CSAK && !CSAK.split(',').includes(String(s.hely))) continue; if (!helyek.has(s.hely)) helyek.set(s.hely, []); helyek.get(s.hely).push(s); }
@@ -27,6 +27,7 @@ async function motorIdopontok(page, hely, szolg) {
   if (!(await varj('return !!r.querySelector(`[data-hely="${a}"]`)', hely))) return { ki, hiba: 'nincs helyszin ' + hely };
   await sr('r.querySelector(`[data-hely="${a}"]`).click()', hely);
   if (!(await varj('return !!r.querySelector("[data-szolg]")'))) return { ki, hiba: 'nincs szolgaltatas-lista' };
+  await page.waitForTimeout(ELOTOLT_MS); // 2026-10-31: az eloltoltes kivarasa (a valodi vendeg is a lista olvasasa utan kattint); a gyors kattintas elrejtette a Debrecen 3 piercing hibat
   if (!(await sr('const x=r.querySelector(`[data-szolg="${a}"]`); if(x){x.click();return true}return false', szolg))) return { ki, hiba: 'a szolgaltatas nincs a motor listajaban', nincs: true };
   const van = await varj('const ab=r.querySelector(".ablak"); return ab && ab.dataset.tovabbi==="0" && (r.querySelector("[data-slot]") || r.querySelector("[data-nap]") || r.querySelector(".uzenet"))', null, 60000);
   if (!van) return { ki, hiba: 'az idopontok nem toltodtek be' };

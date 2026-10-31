@@ -118,6 +118,14 @@ A `gyogytornaszomhu` fiókon (a Nyugati téren a legjobban) a Salonic naptár-AP
 
 A mérés egyik napról a másikra ingadozik, és csak ezen a fiókon jelentkezik: az A76 (mindkét helyszín), a Medical Piercing (Budapest), a Mosaic Hair és a Lézer mind az öt lekérési mintával 0 hiányzó időpontot adott. A fiókon a legbiztonságosabb a lekérések egymás utáni (nem párhuzamos) küldése 7 napos ablakokban; ezt a motorba beépíteni külön fejlesztés és Feri döntése.
 
+### 6.5 Medical Piercing: az előtöltött piercing naptára elveszett (2026-10-31, javítva)
+- Tünet (Feri): Debrecenben a 3 és a 2 piercingnél nem lehetett decemberre lapozni (csak az első 3 hét, nyíl nélkül), Kaposváron a 3 piercingre „nincs szabad időpont”. Az 1 piercingnél jó volt.
+- Ok: a motor a lista első két kártyáját előtölti (0–21. és 21–100. nap). Ha a vendég a teljes letöltés után kattintott, az `onMore` a teljes naptárat rajzolta, majd az `idopontLepes` az első 21 nappal felülírta (`motor.js`, javítva: `teljesBent`).
+- Miért maradt ki a 10-27-i méréseken: a mérő azonnal kattintott a szolgáltatásra, az előtöltés még nem volt kész. **Szabály: a motort az előtöltés kivárásával is kell mérni** (`mp.mjs`: `ELOTOLT_MS`, alap 3000).
+- Új gyors teljes ellenőrzés: `mp-gyors.mjs` (minden helyszín × minden szolgáltatás, a motor böngészőben az előtöltés kivárásával, a Salonic naptár-API-val szemben). Eredmény 2026-10-31, a javítás után: 13 helyszín × 18 szolgáltatás = 234/234 egyezik (nap + időpont).
+- Sopron (9067) és Szombathely (14229): a Salonic saját oldalán is 0 szolgáltatás és 0 szabad időpont (a kitelepülési táblázatban van nap). Nem motorhiba: a Salonic-naptárat kell megnyitni.
+- A Gyógytornászom (`elolt`) és a Mosaic motor (`loadSlots`, `slotsFull`) ugyanezt az előtöltést használja, de az érkezési sorrendet védi a kódjuk; a Gyógytornászom/A76 mérés eleve kivárta az előtöltést (3 mp).
+
 ### 6.3 Mérési tanulságok
 - A két oldalt AZONOS időben és azonos beállításnál kell gyűjteni; beállítás-váltás közben készült gyűjtések hamis eltérést adtak.
 - Egyszerre futó kérések ritkíthatják a Salonic naptár-API válaszát (főleg a `gyogytornaszomhu` fiókon): a harmadik, egymás utáni mérés dönt.
