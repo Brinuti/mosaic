@@ -125,3 +125,24 @@ test('B) elonezeti vedohalo: ELO_CSAK_TESZT=1 mellett teszt-kod nelkul NINCS kul
   const r3 = await metaEloKuld(dh, FK(), { env: ENV({ ...K, META_ELO_TESZT_KOD: 'TEST47348', META_ELO_TESZT_KOD_PMU: 'TEST43023' }), fetchImpl: fh, now: () => NOW });
   assert.deepEqual([r3.allapot, fh.hivasok[0].body.test_event_code], ['elkuldve', 'TEST47348']); assert.match(fh.hivasok[0].u, /\/3473839859576758\/events/);
 });
+
+// 01-MERES #167 6541884407 4.(iii): a nem kuldo eredmenyek (nincs_ernyo / kihagyva / halasztva) is nyomot hagynak a meres_meta_elo-ban; a 'ki' allapot nem; a visszateres valtozatlan; ketszer ugyanarra egy sor
+test('B) naplozas: nincs_ernyo / kihagyva / halasztva 1-1 naplosor (naplo: elotag), ismetlesre nem szaporodik; a ki-allapot es a kuldo ag nem naplozik; a naplo-hiba nem dobodik', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d);
+  await erkezesMent(d, ERK({ source_id: ID('n') , g: '' }), NOW); await erkezesMent(d, ERK(), NOW);
+  const dep = { env: ENV(), fetchImpl: f, now: () => NOW };
+  const sorok = () => d.db.prepare("SELECT esemeny_id, uzletag, source_id, allapot, indok, probalkozas FROM meres_meta_elo ORDER BY esemeny_id").all();
+  assert.deepEqual(await metaEloKuld(d, FK(), { env: {}, fetchImpl: f, now: () => NOW }), { allapot: 'ki' }); assert.equal(tablaVan(d, 'meres_meta_elo'), false);
+  assert.equal((await metaEloKuld(d, FK({ jelleg: 'visszajaro', source_entity_id: ID('v') }), dep)).allapot, 'nincs_ernyo');
+  assert.equal((await metaEloKuld(d, FK({ jelleg: 'visszajaro', source_entity_id: ID('v') }), dep)).allapot, 'nincs_ernyo');
+  assert.equal((await metaEloKuld(d, FK({ source_entity_id: ID('n') }), dep)).allapot, 'kihagyva');
+  assert.equal((await metaEloKuld(d, FK(), { ...dep, eloEllenorzes: async () => 'ismeretlen' })).allapot, 'halasztva');
+  const s = sorok(); assert.deepEqual(s.map((x) => x.allapot).sort(), ['halasztva', 'kihagyva', 'nincs_ernyo']);
+  assert.ok(s.every((x) => x.esemeny_id.startsWith('naplo:') && x.probalkozas === 0 && x.uzletag === 'headspa')); assert.equal(f.hivasok.length, 0);
+  // a kuldo ag: a sor a sajat esemeny_id-jan, naplo-sor nem keletkezik hozza
+  const dk = d1(); await beallit(dk); const rk = await metaEloKuld(dk, FK(), { env: ENV(), fetchImpl: hamisFetch(), now: () => NOW, eloEllenorzes: async () => 'aktiv' });
+  assert.equal(rk.allapot, 'elkuldve'); assert.deepEqual(dk.db.prepare("SELECT allapot FROM meres_meta_elo").all().map((x) => x.allapot), ['elkuldve']);
+  // a naplo-hiba nem dobodik (db.prepare dob): a valasz ugyanaz
+  const rossz = { prepare() { throw new Error('db'); }, batch() { throw new Error('db'); } };
+  const rr = await metaEloKuld(rossz, FK(), { env: ENV(), fetchImpl: f, now: () => NOW }); assert.equal(rr.allapot, 'hiba');
+});

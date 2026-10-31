@@ -51,8 +51,26 @@ async function sema(db) {
 const ujraProbalhato = (s, t) => (s.allapot === 'hiba' && s.probalkozas < MAX_PROBA) || (s.allapot === 'folyamatban' && s.probalkozas < MAX_PROBA && t - s.frissitve > ELAKADAS_MP) || s.allapot === 'halasztva';
 const szuk = (x, n = 300) => String(x == null ? '' : x).replace(/[A-Za-z0-9+/_-]{40,}/g, '[x]').slice(0, n);
 
+// 01-MERES #167 6541884407 4.(iii) (ma 18:00): a metaEloKuld eredmenye ne maradjon csendben. Ami NEM hagy sort a meres_meta_elo-ban (nincs_ernyo / kihagyva / halasztva / a hiba-agon keletkezett kivetel), arrol 1 naplosor keszul
+// (esemeny_id = 'naplo:<source_id>:<allapot>', INSERT OR IGNORE: ugyanarra a foglalasra/allapotra egyszer). A 'ki' allapotrol NINCS naplo (alapbol KI: nincs tabla). A naplozas hibaja SOHA nem dobodik, a visszateres valtozatlan.
+const NAPLOZANDO = new Set(['nincs_ernyo', 'kihagyva', 'halasztva', 'hiba']);
+async function eredmenyNaplo(db, fk, r, deps) {
+  try {
+    if (!r || !NAPLOZANDO.has(r.allapot) || (r.allapot === 'hiba' && 'esemeny' in r)) return; // a kuldesi 'hiba' sora mar a tablaban van
+    await sema(db);
+    const t = Math.floor((deps.now ? deps.now() : Date.now()) / 1000);
+    await db.prepare("INSERT OR IGNORE INTO meres_meta_elo (esemeny_id, uzletag, source_id, event_id, allapot, indok, probalkozas, letrehozva, frissitve) VALUES (?1, ?2, ?3, '-', ?4, ?5, 0, ?6, ?6)").bind(`naplo:${fk.source_entity_id}:${r.allapot}`, String(fk.uzletag || ''), String(fk.source_entity_id || ''), r.allapot, szuk(r.indok || '', 200) || null, t).run();
+  } catch (err) { /* a naplo nem akadalyozhatja a foglalast */ }
+}
+
 /** Az elosztas() UTAN hivva (mint a tiktokEloKuld). fk: ugyanaz; deps: { env, fetchImpl, now, eloEllenorzes }. Hiba SOHA nem dobodik. */
 export async function metaEloKuld(db, fk, deps = {}) {
+  const r = await metaEloKuldBelso(db, fk, deps);
+  await eredmenyNaplo(db, fk, r, deps);
+  return r;
+}
+
+async function metaEloKuldBelso(db, fk, deps = {}) {
   try {
     const env = deps.env || {};
     if (!fk || fk.tipus !== 'foglalas' || !metaEloBe(env, fk.uzletag)) return { allapot: 'ki' };
