@@ -306,13 +306,13 @@ const ENTITAS = { 'á': '&aacute;', 'é': '&eacute;', 'ó': '&oacute;', 'ö': '&
 const TOLERANS = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[áéóöőüűíúÁ]/g, (c) => '(?:' + c + '|' + ENTITAS[c] + ')');
 ﻿const AKCIOSAV = new RegExp(TOLERANS('Novemberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!'), 'g');
 // A havi akcio (20% kedvezmeny) honapja a Wixes (klon/) oldalak beegetett szovegeiben is: az oldalak forrasa nem valtozik,
-// a build cserel. Havvaltaskor ezt a listat kell leptetni (a sajat oldalak forrasaiban is). A "Októberben mindenre" a fodrasz-oldal sajat ajanlata.
+// a build cserel. Havvaltaskor ezt a listat kell leptetni (a sajat oldalak forrasaiban is).
 const HONAP_CSERE = [
   [/2026 októberben leadott, de ak(á|&aacute;)r novemberi/g, '2026 novemberben leadott, de ak$1r decemberi'],
   [/(2026 )októberben( v(?:á|&aacute;)s(?:á|&aacute;)rolt)/g, '$1novemberben$2'],
   [/OKT(?:Ó|&Oacute;)BERI/g, 'NOVEMBERI'],
   [/([Oo])kt(?:ó|&oacute;)beri/g, (m, c) => (c === 'O' ? 'N' : 'n') + 'ovemberi'],
-  [/Okt(?:ó|&oacute;)berben(?! mindenre)/g, 'Novemberben'],
+  [/Okt(?:ó|&oacute;)berben/g, 'Novemberben'],
 ];
 const honapCsere = (h) => HONAP_CSERE.reduce((s, [minta, uj]) => s.replace(minta, uj), h);
 const FOGLALAS_GOMB = new RegExp('(<a [^>]*style-mo70g2c7__root[^>]*aria-label=")' + TOLERANS('FOGLALÁS') + '("[^>]*><span class="StylableButton2545352419__container"><span class="StylableButton2545352419__label wixui-button__label" data-testid="stylablebutton-label">)' + TOLERANS('FOGLALÁS') + '(</span>)');
