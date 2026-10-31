@@ -53,7 +53,7 @@ describe('a fejlec-darabok (sajat oldalak)', () => {
     });
   }
 
-  test('az akciosav (Októberi akció ...) linkje ugyanabban az ablakban nyilik (target=_self), nem uj lapon: asztali + mobil fejlec, es a Wixes (klon) oldalakon is', () => {
+  test('az akciosav (Novemberi akció ...) linkje ugyanabban az ablakban nyilik (target=_self), nem uj lapon: asztali + mobil fejlec, es a Wixes (klon) oldalakon is', () => {
     for (const [nev, mobil] of [['asztali', false], ['mobil', true]]) {
       const h = fejlecResz(fejlecAtalakit(FEJLEC[nev], mobil));
       assert.ok(h.includes('<a href="/head-spa-kedvezmeny" target="_self"'), `${nev}: az akciosav linkje _self`);
@@ -149,7 +149,7 @@ describe('a Wixes (klon) oldalak beegetett fejlece / lablece', () => {
 describe('az angol valtozat (<!--mh-nyelv:en-->)', () => {
   for (const [nev, mobil] of [['asztali', false], ['mobil', true]]) {
     test(`${nev}: angol menucimkek, GYIK nelkul, HU jelveny, angol akciosav + lablec; az oldal torzse valtozatlan`, () => {
-      const torzs = '<main><a href="/headspa-ajandekkartya">Ajándékkártya</a> <a href="/idpontfoglalas">FOGLALÁS</a> Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!</main>';
+      const torzs = '<main><a href="/headspa-ajandekkartya">Ajándékkártya</a> <a href="/idpontfoglalas">FOGLALÁS</a> Novemberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!</main>';
       const lap = FEJLEC[nev] + torzs + LABLEC[nev] + ANGOL_JELOLO;
       const uj = fejlecAtalakit(lap, mobil);
       assert.equal(fejlecAtalakit(uj, mobil), uj);
@@ -162,7 +162,7 @@ describe('az angol valtozat (<!--mh-nyelv:en-->)', () => {
       if (!mobil) assert.match(h, /<a [^>]*href="\/"[^>]*hreflang="hu"[^>]*>[\s\S]*?<span>HU<\/span><\/a>/);
       assert.ok(h.includes('October offer!'), 'angol akciosav');
       assert.ok(!/Szőrtelenítés|Fodrászat|Sminktetoválás|Oxigénterápia/.test(h.replace(/href="[^"]*"/g, '')), 'nincs magyar menucimke');
-      assert.ok(uj.includes('<main><a href="/headspa-ajandekkartya">Ajándékkártya</a> <a href="/idpontfoglalas">FOGLALÁS</a> Októberi akció!'), 'az oldal torzse valtozatlan (a fejlecen kivuli hasonlo linkek nem erintettek)');
+      assert.ok(uj.includes('<main><a href="/headspa-ajandekkartya">Ajándékkártya</a> <a href="/idpontfoglalas">FOGLALÁS</a> Novemberi akció!'), 'az oldal torzse valtozatlan (a fejlecen kivuli hasonlo linkek nem erintettek)');
       const lablec = uj.slice(uj.indexOf('<footer id="SITE_FOOTER"'));
       for (const resz of ['Book now', 'Contact &amp; opening hours', 'Monday – Saturday: 8:00 – 20:00', 'Sunday: CLOSED', 'Cookie settings', 'Terms (HU)', 'hreflang="hu"', 'Magyar', 'id="mh-cc-lablec"']) assert.ok(lablec.includes(resz), resz);
     });

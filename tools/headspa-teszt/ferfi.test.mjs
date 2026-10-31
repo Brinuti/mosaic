@@ -251,7 +251,7 @@ describe(`/${NEV}`, () => {
     const szoveg = await p.$eval('#arak', (e) => e.innerText);
     assert.ok(!/„Relax”|„Hair”|"Relax"|"Hair"|Áprilisban|májusi/.test(szoveg), 'nincs kulon Relax / Hair / regi kedvezmeny');
     assert.match(szoveg, /Hajkamerás diagnosztika és konzultáció – igény szerint, kérdés alapján eldöntheted/);
-    assert.match(szoveg, /Októberben 20% kedvezménnyel!/);
+    assert.match(szoveg, /Novemberben 20% kedvezménnyel!/);
     // a csomag-blokk egyezik az arak oldaleval (a kep, a szoveg, az ar)
     const arak = fs.readFileSync(path.join(GYOKER, 'foglalas', 'headspa-arak-budapest.html'), 'utf8').replace(/\r\n/g, '\n');
     const uj = fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8').replace(/\r\n/g, '\n');
