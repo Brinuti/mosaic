@@ -93,17 +93,50 @@ test('B) PMU: a META_ELO_BE=pmu mellett Schedule a PMU pixelre a bongeszos kulcc
   const d2 = d1(); const f2 = hamisFetch(); await beallit(d2);
   assert.equal((await metaEloKuld(d2, FK(), { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f2, now: () => NOW })).allapot, 'ki', 'a HeadSpa a pmu kapcsolotol nem indul'); assert.equal(f2.hivasok.length, 0);
 });
-test('B) PMU: kulcs nelkul (sd-atvetel / hianyzo g / serviceId / startDate), lead-esemeny (nem foglalas), kupon, reschedule: nincs kuldes', async () => {
+test('B) PMU (Feri 10-31 14:25): a bongeszos kulcs hianya NEM blokkol - sd-atvetel / hianyzo g / serviceId / startDate is kuld uuid-alapu event_id-vel; lead-esemeny (nem foglalas), kupon, reschedule: nincs kuldes', async () => {
   const d = d1(); const f = hamisFetch(); await meresSema(d);
   await erkezesMent(d, PMU_ERK({ source_id: ID('n'), g: '' }), NOW); await erkezesMent(d, PMU_ERK({ source_id: ID('m'), bookingUrl: 'https://pmu.salonic.hu/guestData/?placeId=3' }), NOW);
-  const dep = { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f, now: () => NOW };
-  assert.match((await metaEloKuld(d, PMU_FK({ source_entity_id: 'sd_' + 'b'.repeat(24) }), dep)).indok, /kozos/);
-  assert.match((await metaEloKuld(d, PMU_FK({ source_entity_id: ID('n') }), dep)).indok, /kozos/);
-  assert.match((await metaEloKuld(d, PMU_FK({ source_entity_id: ID('m') }), dep)).indok, /kozos/);
+  const dep = { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f, now: () => NOW, eloEllenorzes: async () => 'aktiv' };
+  const U = (n) => '00000000-0000-4000-8000-00000000000' + n;
+  const r1 = await metaEloKuld(d, PMU_FK({ source_entity_id: 'sd_' + 'b'.repeat(24), uuid: U(1) }), dep); assert.equal(r1.allapot, 'elkuldve');
+  assert.equal((await metaEloKuld(d, PMU_FK({ source_entity_id: ID('n'), uuid: U(2) }), dep)).allapot, 'elkuldve');
+  assert.equal((await metaEloKuld(d, PMU_FK({ source_entity_id: ID('m'), uuid: U(3) }), dep)).allapot, 'elkuldve');
+  assert.deepEqual(f.hivasok.map((h) => h.body.data[0].event_id), ['pmu-' + U(1), 'pmu-' + U(2), 'pmu-' + U(3)]);
+  assert.ok(f.hivasok.every((h) => h.body.data[0].event_source_url === HOST + '/pmu-ok'), 'sd_ agon is van event_source_url');
+  const sd = f.hivasok[0].body.data[0].user_data; assert.equal(sd.fbc, undefined); assert.equal(sd.fbp, undefined); assert.ok(sd.em && sd.ph, 'csak hash-elt azonositok');
+  const n0 = f.hivasok.length;
   for (const tipus of ['pmu_foto_lead', 'pmu_visszahivas_lead', 'ajandekkartya']) assert.equal((await metaEloKuld(d, PMU_FK({ tipus, source_entity_id: ID('l') }), dep)).allapot, 'ki', tipus);
   assert.equal((await metaEloKuld(d, PMU_FK({ kupon: true, source_entity_id: ID('k') }), dep)).allapot, 'nincs_ernyo');
   assert.equal((await metaEloKuld(d, PMU_FK({ fixAllapot: { allapot: 'kihagyva' } }), dep)).allapot, 'kihagyva');
-  assert.equal(f.hivasok.length, 0);
+  assert.equal(f.hivasok.length, n0);
+});
+test('B) PMU szabaly (Feri 10-31 14:25): CSAK uj vendeg ingyenes konzultacioja es uj vendeg elso fizetos szolgaltatasa szamit; korrekcio / konzultacio utani fizetos (visszajaro) / fizetos utani fizetos / visszajaro konzultacio / kupon nem', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d);
+  const dep = { env: ENV({ META_ELO_BE: 'pmu' }), fetchImpl: f, now: () => NOW, eloEllenorzes: async () => 'aktiv' };
+  const SD = (c) => 'sd_' + c.repeat(24); const U = (n) => '00000000-0000-4000-8000-00000000001' + n;
+  assert.equal((await metaEloKuld(d, PMU_FK({ source_entity_id: SD('a'), uuid: U(1), jelleg: 'konzultacio', ertek: 0, szolgaltatas: 'Ingyenes konzultacio' }), dep)).allapot, 'elkuldve', 'uj konzultacio: van');
+  assert.equal((await metaEloKuld(d, PMU_FK({ source_entity_id: SD('b'), uuid: U(2), jelleg: 'elso', ertek: 79000, szolgaltatas: 'Tetovalas' }), dep)).allapot, 'elkuldve', 'uj elso fizetos: van');
+  const nincs = [
+    ['korrekcio (akkor is, ha uj vendegnek jelolt)', { jelleg: 'elso', ertek: 0, szolgaltatas: 'Korrekció' }],
+    ['korrekcio visszajaronak jelolve', { jelleg: 'visszajaro', ertek: 0, szolgaltatas: 'Korrekció' }],
+    ['konzultacio utani fizetos (a Salonic visszajaronak jeloli)', { jelleg: 'visszajaro', ertek: 79000, szolgaltatas: 'Tetovalas' }],
+    ['fizetos utani fizetos (visszajaro)', { jelleg: 'visszajaro', ertek: 47000, szolgaltatas: 'Szempilla' }],
+    ['visszajaro ingyenes konzultacio', { jelleg: 'visszajaro', ertek: 0, szolgaltatas: 'Ingyenes konzultacio' }],
+    ['kupon', { jelleg: 'elso', kupon: true, ertek: 0, szolgaltatas: 'Tetovalas' }],
+  ];
+  let i = 0; for (const [nev, o] of nincs) { i++; const r = await metaEloKuld(d, PMU_FK({ source_entity_id: SD(String.fromCharCode(99 + i)), uuid: U(2 + i), ...o }), dep); assert.equal(r.allapot, 'nincs_ernyo', nev); }
+  assert.equal(f.hivasok.length, 2, 'csak a ket szabaly szerinti eset ment ki');
+  assert.deepEqual(f.hivasok.map((h) => h.body.data[0].event_name), ['Schedule', 'Schedule']);
+});
+test('B) PMU: egy Salonic-foglalas legfeljebb 1 Schedule - az mb_ es az sd_ ut ugyanazzal az uuid-dal ugyanazt az event_id-t kepezi, a masodik mar_kuldve; HeadSpa / szor viselkedes valtozatlan (sd_ -> kihagyva)', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d); await erkezesMent(d, PMU_ERK(), NOW);
+  const dep = { env: ENV({ META_ELO_BE: 'pmu,headspa' }), fetchImpl: f, now: () => NOW, eloEllenorzes: async () => 'aktiv' };
+  const uuid = '11111111-2222-3333-4444-555555555555';
+  assert.equal((await metaEloKuld(d, PMU_FK({ uuid }), dep)).allapot, 'elkuldve');
+  assert.equal((await metaEloKuld(d, PMU_FK({ source_entity_id: 'sd_' + 'e'.repeat(24), uuid }), dep)).allapot, 'mar_kuldve');
+  assert.equal((await metaEloKuld(d, PMU_FK({ uuid }), dep)).allapot, 'mar_kuldve');
+  assert.equal(f.hivasok.length, 1); assert.equal(f.hivasok[0].body.data[0].event_id, 'pmu-' + uuid);
+  const rh = await metaEloKuld(d, FK({ source_entity_id: 'sd_' + 'f'.repeat(24) }), dep); assert.equal(rh.allapot, 'kihagyva'); assert.match(rh.indok, /kozos/); assert.equal(f.hivasok.length, 1, 'HeadSpa sd_: valtozatlanul nem kuld');
 });
 
 test('B) elonezeti vedohalo: ELO_CSAK_TESZT=1 mellett teszt-kod nelkul NINCS kuldes (HeadSpa es PMU sem); teszt-koddal megy', async () => {

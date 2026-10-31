@@ -2,7 +2,7 @@
 //   UGYANAZ az eseménynév (Schedule) és ugyanaz a pixel, amire a futó csoportok optimalizálnak; KÖZÖS event_id a böngészős példánnyal (tag 213 kulcsa: a 10/10 egyezés igazolt) → a Meta egy eseménynek veszi, a csoportok célja nem változik.
 //   ÚJ eseménynév / új custom conversion TILOS (újratanulást okozna): ez a modul semmi mást nem küld, csak a `Schedule`-t (HeadSpa: DECISION #240; Mosaic PMU: DECISION #244, a saját PMU pixelre). ALAPBÓL KI: META_ELO_BE=headspa és / vagy pmu ÉS a META_ELO_TOKEN titok (≥ 16 karakter) együtt kapcsolja be. Rollback = a kapcsoló.
 // Nem az ÁRNYÉK-lánc: külön fájl, külön tábla (meres_meta_elo); a vedett platformok.js / elosztas.js / esemeny-modell.js / meta-bongeszo-kulcs.js valtozatlan (csak importaljuk). A qa-nap „nem ÁRNYÉK cél = 0” ellenőrzése érintetlen.
-// Csak HeadSpa FOGLALÁS új vendégnél (az ARNYEK-lánc ernyőeseményének feltétele: visszajáró és kupon soha; az ajándékkártya nem: annak nincs böngészős Schedule-párja). Páros event_id nélkül (a böngészős kulcs nem képezhető) NEM küldünk:
+// Csak HeadSpa FOGLALÁS új vendégnél (az ARNYEK-lánc ernyőeseményének feltétele: visszajáró és kupon soha; az ajándékkártya nem: annak nincs böngészős Schedule-párja). Páros event_id nélkül (a böngészős kulcs nem képezhető) NEM küldünk (KIVÉVE PMU: Feri 2026-10-31 14:25 - ott a Salonic-foglalás uuid-ja az event_id, lásd lent; a PMU-n nincs eventID-s böngészős Schedule):
 // a böngészőben véletlen kulcs van, a szerver külön ID-val duplán számolna. Adat: hash-elt e-mail / telefon / név / external_id + fbc, fbp, IP, user agent (DECISION #202); explicit marketing-elutasításnál (adv === false) semmi; érték / szolgáltatásnév nem megy.
 import { esemenyek, konzultacioTabla } from './esemeny-modell.js';
 import { ARNYEK, ELO_CELOK } from './platformok.js';
@@ -14,6 +14,7 @@ import { metaFbc } from './erkezes.js';
 
 export const ELO_DATASET = ELO_CELOK.meta[0]; // 3473839859576758 (HeadSpa pixel)
 export const ELO_META_ESEMENY = 'Schedule';
+const PMU_OLDAL_ALAP = 'https://www.mosaicheadspa.hu/pmu-ok'; // a PMU koszonooldal (a pmu-ok URL-szabaly oldala): sd_ agon nincs oldal, a CAPI website-esemenyhez event_source_url kell
 // DECISION #244 (Feri 10-27 08:33, UJ-79): a Mosaic PMU is megkapja ugyanezt a szerveres Schedule-t a SAJAT elo pixelere (1019878750660854 = ELO_CELOK.meta[3]; ott van az `pmu-ok` URL-szabalyos Schedule is: Meta eseményszabály, "Manual Event Setup Tool", 2026-07-25). 1 hetig parhuzamosan az URL-szabaly mellett; kapu: szerveres Schedule >= Salonic valos online PMU-foglalas -> URL-szabaly KI (mereso oldal). Uj esemenynev / custom conversion nincs.
 export const ELO_DATASETEK = Object.freeze({ headspa: ELO_CELOK.meta[0], pmu: ELO_CELOK.meta[3] });
 export const ELO_META_UZLETAGOK = Object.freeze(Object.keys(ELO_DATASETEK));
@@ -77,6 +78,8 @@ async function metaEloKuldBelso(db, fk, deps = {}) {
     if (fk.fixAllapot) return { allapot: 'kihagyva', indok: 'reschedule: nincs uj konverzio' };
     // elonezeti kornyezet vedohalo (ELO_CSAK_TESZT=1 a [env.preview.vars]-ban): teszt-kod nelkul NEM kuldunk (kulonben az elonezet az ELO datasetre kuldene)
     if (String(env.ELO_CSAK_TESZT || '') === '1' && !metaEloTesztKod(env, fk.uzletag)) return { allapot: 'kihagyva', indok: `elonezet: csak teszt-kodos kuldes (nincs ${fk.uzletag === 'pmu' ? 'META_ELO_TESZT_KOD_PMU' : 'META_ELO_TESZT_KOD'})` };
+    // PMU biztonsagi halo (Feri 10-31 14:25): a „korrekcio” (0 Ft-os javitas) SOHA nem szamit, akkor sem, ha a Salonic uj vendegnek jelolne
+    if (fk.uzletag === 'pmu' && /korrekci/i.test(String(fk.szolgaltatas || ''))) return { allapot: 'nincs_ernyo', indok: 'korrekcio: nem szamit' };
     const e = esemenyek({ ...fk, ertek: Number.isFinite(Number(fk.ertek)) ? fk.ertek : 0 }, konzultacioTabla(env)).find((x) => x.tipus === 'ernyo');
     if (!e) return { allapot: 'nincs_ernyo' };
     await sema(db);
@@ -90,9 +93,16 @@ async function metaEloKuldBelso(db, fk, deps = {}) {
       }
       return { allapot: 'mar_kuldve', elozo: meglevo.allapot, ...(meglevo.allapot === 'folyamatban' && t - meglevo.frissitve <= ELAKADAS_MP ? { ujraprobal_mp: ELAKADAS_MP - (t - meglevo.frissitve) + 5 } : {}) };
     }
-    const erk = await erkezesOlvas(db, fk.source_entity_id);
-    const eventId = erk ? bongeszoMetaKulcs(erk.bongeszo) : null;
-    if (!eventId) return { allapot: 'kihagyva', indok: 'nincs kozos (bongeszos) event_id: a szerveres peldany duplan szamolna' };
+    const erk0 = await erkezesOlvas(db, fk.source_entity_id);
+    // PMU (Feri 2026-10-31 14:25, #167 6543952570): a PMU-n NINCS eventID-s bongeszos Schedule (csak a pmu-ok URL-szabaly, ami a merge-dzel egyidoben KIKAPCSOL), ezert a szerveres esemeny az egyetlen: event_id = a Salonic-foglalas uuid-ja
+    // (mindket ut - mb_ es sd_ - ugyanazt kepezi, igy a Meta es a salonic_uuid egyedi index is duplan nem szamol); uuid nelkul a bongeszos kulcs, vegso soron a foglalas azonositoja. A bongeszos kulcs hianya PMU-nal NEM blokkol.
+    const pmu = fk.uzletag === 'pmu';
+    const uuidKulcs = pmu && fk.uuid && /^[0-9a-f-]{8,64}$/i.test(String(fk.uuid)) ? `pmu-${String(fk.uuid).toLowerCase()}` : null;
+    const eventId = pmu ? (uuidKulcs || (erk0 ? bongeszoMetaKulcs(erk0.bongeszo) : null) || `pmu-${String(fk.source_entity_id || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 60)}`) : (erk0 ? bongeszoMetaKulcs(erk0.bongeszo) : null);
+    if (!eventId || (pmu && eventId === 'pmu-')) return { allapot: 'kihagyva', indok: 'nincs kozos (bongeszos) event_id: a szerveres peldany duplan szamolna' };
+    // sd_ agon (nincs bongeszo-ero) PMU-nal is menjen: ures erkezes-modell, csak a hash-elt azonositok + a foglalas ideje; a hozzajarulas ott ismeretlen (nincs bongeszo-munkamenet), explicit elutasitas nem lehetseges
+    const erk = erk0 || (pmu ? { attr: {}, bongeszo: {}, hozz: undefined } : null);
+    if (!erk) return { allapot: 'kihagyva', indok: 'nincs kozos (bongeszos) event_id: a szerveres peldany duplan szamolna' };
     if (hozzajarulasTisztit(erk.hozz).adv === false) return { allapot: 'kihagyva', indok: 'explicit marketing-elutasitas' };
     if (deps.eloEllenorzes) {
       let elo; try { elo = await deps.eloEllenorzes(); } catch (err) { elo = 'ismeretlen'; }
@@ -100,7 +110,7 @@ async function metaEloKuldBelso(db, fk, deps = {}) {
       if (elo !== 'aktiv') return { allapot: 'halasztva', indok: 'a foglalas elo allapota nem ellenorizheto', ujraprobal_mp: 180 };
     }
     const hash = await felhasznaloHash(env, fk.vendeg || {});
-    const kerelem = metaEloKerelem({ dataset: ELO_DATASETEK[fk.uzletag], event_id: eventId, ido: fk.ido || erk.ido || t, hash, erk: erk.attr || {}, ip: erk.ip, ua: erk.ua, oldal: fk.oldal || erk.oldal, teszt: metaEloTesztKod(env, fk.uzletag), apiVerzio: env.META_API_VERSION });
+    const kerelem = metaEloKerelem({ dataset: ELO_DATASETEK[fk.uzletag], event_id: eventId, ido: fk.ido || erk.ido || t, hash, erk: erk.attr || {}, ip: erk.ip, ua: erk.ua, oldal: fk.oldal || erk.oldal || (pmu ? PMU_OLDAL_ALAP : undefined), teszt: metaEloTesztKod(env, fk.uzletag), apiVerzio: env.META_API_VERSION });
     const uuid = fk.uuid ? String(fk.uuid).toLowerCase() : null;
     if (!meglevo) {
       const r = await db.prepare("INSERT INTO meres_meta_elo (esemeny_id, uzletag, source_id, event_id, allapot, probalkozas, salonic_uuid, letrehozva, frissitve) VALUES (?1, ?2, ?3, ?4, 'folyamatban', 1, ?5, ?6, ?6) ON CONFLICT DO NOTHING").bind(e.esemeny_id, fk.uzletag, fk.source_entity_id, eventId, uuid, t).run();
