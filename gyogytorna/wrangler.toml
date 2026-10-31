@@ -9,7 +9,7 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 GY_ATTR_NELKUL = "1"        # hozzajarulas nelkuli (24 oras) munkamenet-forras; vesz-kikapcsolas: "0" (Feri dontese, 2026-10-13)
 GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
-GY_ZAP_KULCS_HASH_2 = "7d34e0e8c5127b878a8e24017b800d5f91736f899b762cf0fe774b4a0006d5be"  # Zap-kulcs rotacio: a MASODIK egyszerre ervenyes kulcs SHA-256 hash-e (nem titok); csere utan a regi GY_ZAP_KULCS_HASH torolheto
+# #478 (Feri "mehet", 2026-10-24): a Zap-kulcsrotacio vegleges - a regi kulcs hash-e (GY_ZAP_KULCS_HASH_2) az ELES [vars]-bol torolve; az egyetlen ervenyes eles hash a GY_ZAP_KULCS_HASH (Cloudflare titok). Rollback: a sor visszairasa (regi hash: 7d34e0e8..., lasd a #478 rollback-adatokat). Az elonezeti [env.preview.vars] valtozatlan.
 GY_SAV_KI = "1"             # sutisav KI: dontes nelkul az alapertelmezes "megadott" (Feri dontese, 2026-10-14); vesz-kikapcsolas: "0" (a suti.js-ben is SAV_KI = false)
 # UJ-72 (csere nelkuli potlas az elo "Allapot-ok" 7362127659 akcion; docs/GOOGLE_ELO.md): ALAPBOL KI. GY_GADS_ELO = "dry" | "validate" | "eles" (csak kulon DECISION / Feri mondata), GY_GADS_ELO_TOL = a bongeszos order_id-s cimke elesitesenek unix-ideje. GY_GADS_ELO_BRAID = "be" (alapbol ki): a gbraid / wbraid is, a GY_GADS_BRAID mellett. validate / eles csak a gyogytornaszom.hu hoston. Rollback: a sorok torlese.
 GY_GADS_FELTOLTES = "eles"       # GY-25: ki | dry (csak naplo) | eles (Feri 2026-10-21: MEHET, KIZAROLAG a masodlagos 7858300772 akcioba; kuldo: Worker GOOGLE_ADS_* titkokkal VAGY tools/gfeltoltes-hid.mjs)
