@@ -28,8 +28,8 @@ test('a hero kepe Zsofi mosolygo, arcos kepe; a head preload es az LCP-elofeltol
   assert.ok(osszes >= 1 && talalat === osszes, `lcp-elofeltoltes.json: ${talalat}/${osszes} bejegyzes mutat az uj kepre`);
 });
 
-test('a fo cim (a Google Ads celoldal-terv SZ-1 szerint, 2026-10-31) es az ajanlat: Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával, 8 alkalomból csak 6-ot fizetsz', () => {
-  assert.match(h, /<h1>Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával<\/h1>/);
+test('a fo cim es az ajanlat valtozatlan: Lezeres szortelenites 12 honap garanciaval, 8 alkalomból csak 6-ot fizetsz', () => {
+  assert.match(h, /<h1>Lézeres szőrtelenítés 12 hónap garanciával<\/h1>/);
   assert.match(h, /<p class="hero-ajanlat">8 alkalomból csak 6-ot fizetsz\.<\/p>/);
 });
 

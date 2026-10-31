@@ -306,7 +306,7 @@ ${kepek.map((k, i) => `        <li>${kepTag(k, { lazy: nev === 'hely' || i > 0, 
 const heroGaleria = () => lapozGaleria(KEPEK.kozpontHeroGaleria(), { cls: 'hero-kep', nev: 'hero', felirat: 'Valódi MOSAIC-vendégmunkák: lapozható képgaléria', sizes: '(min-width:900px) 45vw, 100vw', cimke: 'Valódi MOSAIC-vendégmunka' });
 export function kozpontOldal(v = {}) {
   const esetek = ['balayage', 'color', 'tofestes'];
-  return `<main class="hl hl-kozpont" id="top" data-landing="hair-general" data-intent="general">
+  return `<main class="hl hl-kozpont${v.bevezeto ? ' hl-celoldal' : ''}" id="top" data-landing="hair-general" data-intent="general">
 <!-- ============ HERO ============ -->
 <section class="hero">
   <div class="tartalom hero-racs">
@@ -414,7 +414,7 @@ export function fodraszOldal(fodrasz, v = {}) {
     </div>
   </div>
 </section>` : '';
-  return `<main class="hl hl-fodrasz hl-${fodrasz}" id="top" data-landing="hair-${fodrasz}" data-intent="staff" data-staff="${fodrasz}">
+  return `<main class="hl hl-fodrasz hl-${fodrasz}${v.bevezeto ? ' hl-celoldal' : ''}" id="top" data-landing="hair-${fodrasz}" data-intent="staff" data-staff="${fodrasz}">
 <!-- ============ HERO ============ -->
 <section class="hero hero-fodrasz">
   <div class="tartalom hero-racs">

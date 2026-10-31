@@ -415,3 +415,14 @@ main.hl .konzult-videok { display: grid; grid-template-columns: repeat(3, minmax
 main.hl .konzult-videok .vid { max-width: none; }
 main.hl .bemutat-racs { display: grid; gap: 26px; }
 main.hl .bemutat { max-width: 680px; }
+
+/* --- Google Ads celoldalak (hl-celoldal, tools/hair-oldalak/google-oldalak.mjs): telefonon az elso gomb az elso kepernyon (Feri, 2026-10-31) ---
+   rovidebb hero-kep, es a gomb rogton a bevezeto mondat alatt; a tobbi szoveg (alcim, idezet, jelvenyek) a gomb utan, valtozatlanul lathato */
+@media (max-width: 899px) {
+  main.hl.hl-celoldal .hero .hero-kep { aspect-ratio: 3 / 2; }
+  main.hl.hl-celoldal .hero .hero-szoveg > .hero-bevezeto { order: 3; }
+  main.hl.hl-celoldal .hero .hero-szoveg > .cta-sor { order: 4; }
+  main.hl.hl-celoldal .hero .hero-szoveg > .lead:not(.hero-bevezeto),
+  main.hl.hl-celoldal .hero .hero-szoveg > .hero-idezet,
+  main.hl.hl-celoldal .hero .hero-szoveg > .hero-blokkok { order: 5; }
+}
