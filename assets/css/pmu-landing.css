@@ -1002,6 +1002,7 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 }
 
 /* ============ Google Ads celoldal-terv (2026-10-31): a keresett kifejezesek alcimei es mondatai - lathato, normal szoveg ============ */
+/* a fo cim telefonon is 2 sor (Feri, 2026-10-31): a H1 masodik fele alcimkent all alatta */
 .hero-al.hero-alcim { margin-bottom: 0; font-style: italic; color: var(--sotet); }
 .hero-al.hero-alcim + .hero-al { margin-top: 10px; }
 .helyzetek h2.helyzet-felso { font: 500 14px/1.3 var(--test); letter-spacing: .16em; text-transform: uppercase; color: var(--arany); margin-bottom: 8px; }
@@ -1031,4 +1032,9 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   main .helyzetek h2.helyzet-felso { font-size: 12.5px !important; line-height: 1.3; text-align: center; } /* a "main h2 {...!important}" mobil-szabaly (2026-10-04) folott */
   main .technika h2 { font-size: 21px !important; line-height: 1.2; text-align: left; }
   .technika { padding: 16px 18px; }
+}
+
+/* ============ Google Ads celoldal (main.celoldal: /szemoldok-tetovalas-budapest): telefonon az elso gomb az elso kepernyon (Feri, 2026-10-31) ============ */
+@media (max-width: 700px) {
+  main.celoldal .hero-kep.hero-galeria { aspect-ratio: 4 / 3; }
 }

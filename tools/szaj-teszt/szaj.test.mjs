@@ -117,7 +117,8 @@ describe('/szajtetovalas-budapest: rejtett alternativ landing', () => {
     for (const szeles of [1440, 768, 390]) {
       const { p, ctx, hibak, nincs } = await nyit({ szeles });
       assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
-      assert.equal((await p.textContent('h1')).trim(), 'Természetes szájtetoválás és ajaktetoválás Budapesten'); // a Google Ads celoldal-terv (PMU-2, 2026-10-31) szerint
+      assert.equal((await p.textContent('h1')).trim(), 'Természetes szájtetoválás'); // Feri, 2026-10-31: a fo cim telefonon is 2 sor - a regi H1 masodik fele (…ami illik az arcodhoz.) alcimkent all alatta
+      assert.equal((await p.textContent('.hero-alcim')).trim(), '…ami illik az arcodhoz.');
       // (a nagyito-ablak ures <img>-je kattintasig nem kep: src nelkul kihagyva)
       const torott = await p.$$eval('img[src]', (l) => l.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.currentSrc || i.src));
       assert.deepEqual(torott, [], `torott kepek (${szeles}px)`);
@@ -407,7 +408,10 @@ describe('/szajtetovalas-budapest: a hero-video mukodese (a lejatszast a teszt h
     assert.equal(await p.$eval('#szaj-video-ablak', (d) => d.open), true);
     assert.equal(await p.$eval('#szaj-video-keret video', (v) => new URL(v.src).pathname), '/assets/video/szajtetovalas-rita.mp4');
     await p.keyboard.press('Escape');
+    // a dialog 'close' esemenye a bongeszoben aszinkron jon (a billentyu utan): megvarjuk, hogy kiurul-e (legfeljebb 2 s), nem csak azonnal nezzuk
+    await p.waitForFunction(() => !document.querySelector('#szaj-video-ablak video'), null, { timeout: 2000 }).catch(() => {});
     assert.equal(await p.locator('#szaj-video-ablak video').count(), 0);
+    assert.equal(await p.$eval('#szaj-video-ablak', (d) => d.open), false, 'az ablak bezarult');
     await ctx.close();
   });
 });

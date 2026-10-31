@@ -484,7 +484,7 @@ describe('az uj tartalom (visszajelzesek alapjan)', () => {
 
   test('a cim "garanciaval", az alcim a vilag egyik legerosebb lezerrel, alkalmankent fizetes, 4. es 8. ajandek, fenntarto kezelesek orokre felaron', async () => {
     const { p, ctx } = await nyit();
-    assert.equal((await p.textContent('h1')).trim(), 'Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával'); // a Google Ads celoldal-terv (SZ-1, 2026-10-31) szerint
+    assert.equal((await p.textContent('h1')).trim(), 'Lézeres szőrtelenítés 12 hónap garanciával');
     const al = await p.textContent('.hero-al');
     assert.match(al, /világ egyik legerősebb/);
     assert.match(al, /Elysion Pro/);
@@ -826,8 +826,7 @@ describe('a hatodik kor visszajelzesei', () => {
       await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
       await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
       const h1 = await p.$eval('.hero h1', (e) => { const r = e.getBoundingClientRect(); return { sor: Math.round(r.height / parseFloat(getComputedStyle(e).lineHeight)), alja: r.bottom }; });
-      // a Google Ads celoldal-terv (SZ-1, 2026-10-31) hosszabb fo cimet ir elo (Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával): telefonon legfeljebb 3 sor
-      assert.ok(h1.sor >= 2 && h1.sor <= 3, w + ' px: a fo cim 2-3 sor: ' + h1.sor);
+      assert.equal(h1.sor, 2, w + ' px: a fo cim 2 sor');
       const kep = await p.$eval('.hero-kep', (e) => e.getBoundingClientRect().top);
       const ajanlat = await p.$eval('.hero-ajanlat', (e) => e.getBoundingClientRect().top);
       assert.ok(h1.alja <= kep + 1 && kep < ajanlat, w + ' px: cim -> kep -> tobbi szoveg: ' + [h1.alja, kep, ajanlat]);

@@ -98,15 +98,15 @@ const UJ = {
 };
 const MEGLEVO = {
   'sminktetovalas-budapest': {
-    h1: 'Természetes sminktetoválás Budapesten',
+    h1: 'Természetes sminktetoválás', // a regi H1 masodik fele alcim: a fo cim telefonon is 2 sor (Feri, 2026-10-31)
     h2: ['Sminktetoválás árak', 'Szemöldök- és ajaktetoválás'],
     szoveg: ['Szemöldök tetoválás 79 000 Ft, ajaktetoválás 99 000 Ft-tól, a korrekció mindkettőben benne van.', 'Sminktetováló Budapesten, a Kolosy térnél: Töreki Melitta.', '…ami illik az arcformádhoz.'],
   },
   'szajtetovalas-budapest': {
     title: 'Szájtetoválás és ajaktetoválás Budapest – aquarell ajak – Töreki Melitta, MOSAIC',
-    h1: 'Természetes szájtetoválás és ajaktetoválás Budapesten',
+    h1: 'Természetes szájtetoválás',
     h2: ['Ajaktetoválás árak', 'Aquarell ajaktetoválás'],
-    szoveg: ['Ajaktetoválás 99 000 Ft-tól, a 4–7 hét utáni korrekcióval együtt, előleg nélkül.', 'Az aquarell ajak kontúr nélküli, áttetsző színfrissítés.', 'Ajak sminktetoválás'],
+    szoveg: ['Ajaktetoválás 99 000 Ft-tól, a 4–7 hét utáni korrekcióval együtt, előleg nélkül.', 'Az aquarell ajak kontúr nélküli, áttetsző színfrissítés.', 'Ajak sminktetoválás', '…ami illik az arcodhoz.'],
   },
   'oxigenterapia-budapest': {
     title: 'Oxigénes hajkezelés Budapesten – oxigénterápia hajra – MOSAIC',
@@ -116,13 +116,13 @@ const MEGLEVO = {
   },
   'hajvizsgalat-budapest': {
     title: 'Hajvizsgálat Budapest – hajkamerás fejbőr vizsgálat 4 990 Ft – MOSAIC',
-    h1: 'Hajvizsgálat Budapest – hajkamerás haj- és fejbőr vizsgálat 4 990 Ft-ért',
+    h1: 'Hajkamerás haj- és fejbőrvizsgálat', // az ar a hero-ban csak egyszer, a nagy ar-blokkban (Feri, 2026-10-31)
     h2: ['Fejbőr vizsgálat Budapest', 'Hajdiagnosztika'],
     szoveg: ['A fejbőr vizsgálat során hajkamerával, nagyítva nézzük meg a fejbőr állapotát.', 'A hajdiagnosztika után személyre szabott fejbőrápolási javaslatot kapsz.'],
   },
   'lezeres-szortelenites-budapest': {
     title: 'Lézeres szőrtelenítés Budapest – végleges szőrtelenítés garanciával – MOSAIC',
-    h1: 'Végleges lézeres szőrtelenítés Budapesten, 12 hónap garanciával',
+    h1: 'Lézeres szőrtelenítés 12 hónap garanciával',
     h2: ['Lézeres szőrtelenítés árak', 'Dióda lézeres szőrtelenítés', 'Lézeres szőrtelenítés Óbuda és Buda közelében'],
     szoveg: ['Mennyibe kerül?', 'Elysion Pro diódalézer, Crystal Freeze hűtéssel.', 'A Kolosy térnél, a Bécsi út 2. alatt, a 2. és a 3. kerület határán.', 'hónalj', 'teljes láb'],
   },
@@ -202,7 +202,7 @@ describe('az uj oldalak: masolat, indexelheto, sajat canonical, sitemap, meres, 
   test('a szemoldok-celoldal ket-kartyas stilusa sajat osztalyon: a /szajtetovalas-budapest "ar-racs ketto" kartyait nem erinti', () => {
     assert.ok(olvas('foglalas', 'szemoldok-tetovalas-budapest.html').includes('<div class="ar-racs ketto-szemoldok">'));
     assert.ok(!olvas('foglalas', 'szajtetovalas-budapest.html').includes('ketto-szemoldok'));
-    assert.ok(!/\.ar-racs\.ketto[ .{]/.test(olvas('assets/css/pmu-landing.css')), 'a pmu-landing.css nem ad stilust az .ar-racs.ketto osztalynak');
+    assert.ok(!/\.ar-racs\.ketto[ .{]/.test(olvas('assets/css/pmu-landing.css').replace(/\/\*[\s\S]*?\*\//g, '')), 'a pmu-landing.css nem ad stilust az .ar-racs.ketto osztalynak (megjegyzesen kivul)');
   });
   test('a szemoldok-celoldal a beagyazott PMU-foglalot tolti (nem kap launchert), mint a forrasa', () => {
     assert.match(olvas('tools/netlify-build.mjs'), /FOGLALO_OLDALAK = new Set\(\[[^\]]*'szemoldok-tetovalas-budapest\.html'/);
@@ -257,8 +257,8 @@ async function vizsgal(fajl, t, mobil) {
   return { ...eredmeny, hibak };
 }
 
-describe('bongeszoben: a szovegek lathatok, nincs kilogas, nincs JS-hiba (asztali 1366 px + telefon 390 px)', () => {
-  // a bongeszo / dist / helyi szerver csak ehhez a reszhez kell (a statikus ellenorzesek nelkule is futnak)
+describe('bongeszos ellenorzesek (dist/, helyi szerver)', () => {
+  // a bongeszo / dist / helyi szerver csak ehhez a ket reszhez kell (a statikus ellenorzesek nelkule is futnak)
   before(async () => {
     if (!fs.existsSync(path.join(DIST, '_a', 'fodrasz-obuda.html'))) throw new Error('nincs friss dist/: futtasd elobb: node tools/netlify-build.mjs');
     const { fajlUtvonal } = await import(pathToFileURL(path.join(GYOKER, 'tools/serve-dist.mjs')).href);
@@ -278,6 +278,8 @@ describe('bongeszoben: a szovegek lathatok, nincs kilogas, nincs JS-hiba (asztal
     bongeszo = await playwright().chromium.launch({ executablePath: CHROME, headless: true });
   });
   after(async () => { await bongeszo?.close(); szerver?.close(); });
+
+describe('bongeszoben: a szovegek lathatok, nincs kilogas, nincs JS-hiba (asztali 1366 px + telefon 390 px)', () => {
   for (const [fajl, t] of Object.entries({ ...UJ, ...MEGLEVO })) {
     for (const mobil of [false, true]) {
       test(`${fajl} – ${mobil ? 'telefon' : 'asztali'}`, async () => {
@@ -289,4 +291,37 @@ describe('bongeszoben: a szovegek lathatok, nincs kilogas, nincs JS-hiba (asztal
       });
     }
   }
+});
+
+// ======================= telefon: a hero (Feri, 2026-10-31) =======================
+// 1) a fo cim legfeljebb 2 sor mind a 12 oldalon (az intim / ferfi oldal kisebb, arany ajanlat-sora kulon: az is legfeljebb 2 sor);
+// 2) az 5 uj oldalon az elso gomb az elso kepernyon (alja <= 680 px: telefonon a bongeszo sav mellett is latszik).
+describe('telefon (360 / 390 / 412 px): a fo cim legfeljebb 2 sor; az uj oldalakon az elso gomb az elso kepernyon', () => {
+  const UJ_LAPOK = new Set(Object.keys(UJ));
+  for (const fajl of Object.keys({ ...UJ, ...MEGLEVO })) {
+    test(fajl, async () => {
+      for (const w of [360, 390, 412]) {
+        const ctx = await bongeszo.newContext({ viewport: { width: w, height: 844 }, userAgent: UA_MOBIL, isMobile: true, hasTouch: true });
+        const p = await ctx.newPage();
+        await p.route((u) => !/^http:\/\/localhost/.test(u.href), (r) => r.abort());
+        await p.goto(`${bazis}/${fajl}`, { waitUntil: 'load' });
+        await p.evaluate(() => document.fonts.ready);
+        const m = await p.evaluate(() => {
+          const h1 = document.querySelector('main h1');
+          const sorok = (csomopontok) => { const t = new Set(); for (const n of csomopontok) { const rg = document.createRange(); rg.selectNodeContents(n); for (const r of rg.getClientRects()) if (r.width > 1) t.add(Math.round(r.top)); } return t.size; };
+          const ajanlat = h1.querySelector('.in-h1-ajanlat, .fl-h1-ajanlat');
+          const fo = [...h1.childNodes].filter((n) => n !== ajanlat);
+          const hero = h1.closest('section');
+          const lathato = (e) => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0; };
+          const gomb = [...hero.querySelectorAll('a.gomb, button.gomb, .hero-cta a')].filter(lathato).sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
+          return { fo: sorok(fo), ajanlat: ajanlat ? sorok([ajanlat]) : 0, gombAlja: gomb ? Math.round(gomb.getBoundingClientRect().bottom + scrollY) : null };
+        });
+        await ctx.close();
+        assert.ok(m.fo >= 1 && m.fo <= 2, `${w} px: a fo cim ${m.fo} sor`);
+        assert.ok(m.ajanlat <= 2, `${w} px: az ajanlat-sor ${m.ajanlat} sor`);
+        if (UJ_LAPOK.has(fajl)) assert.ok(m.gombAlja && m.gombAlja <= 680, `${w} px: az elso gomb alja ${m.gombAlja} px (> 680)`);
+      }
+    });
+  }
+});
 });

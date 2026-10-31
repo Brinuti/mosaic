@@ -73,3 +73,15 @@ Megjegyzés (nem blokkoló, régi hiba): a `szajtetovalas-landing.css` 38. sorá
   `tools/test-foglalo-atkotes.mjs` 20/20, `tools/ujrastilus-teszt/oxigen-hajvizsgalat.test.mjs` 29/29, `tools/lezer-teszt/tartalom.test.mjs` 6/6, `tools/lezer-teszt/lezer.test.mjs` 86/87 (az 1 FAIL – Trustindex „Failed to fetch” konzolhiba – a `main`-en is ugyanígy bukik), `tools/test-sminktetovalas-oldal.mjs` 2/2, `tools/szaj-teszt/szaj.test.mjs` 22/22
   (a terv szerinti új cím / H1 / H2 / „ajak sminktetoválás” miatt frissítve; a videós részteszt 4 futásból egyszer időzítés miatt elbukott, egyedül futtatva zöld).
 - Build (`node tools/netlify-build.mjs`): az 5 új oldal foglaló-linkjei asztalon és mobilon is azonosak a forrásoldaléval (a `/hajfestes-budapest`-ről csak a kivett póthaj-gomb hiányzik).
+
+## Utómunka (2026-10-31 délután, Feri visszajelzései) – külön PR, mérést nem érint
+
+1. **A meglévő oldalak H1-e** nem a terv kulcsszavas változata (Feri kérdésére, döntés a fejlesztői oldalon): a terv saját diagnózisa szerint a sminktetoválás (relevancia) és a
+   lézeres oldal (várható CTR) gyenge összetevőjét a hirdetésszöveg adja, nem a céloldal H1-e; a „Budapest” már a title-ben és az új alcímekben is benne van; a Meta-forgalom
+   is ezeket az oldalakat látja. A title, az új H2-k és mondatok maradnak. Az 5 új (csak Google Ads-forgalmú) oldal kulcsszavas H1-e marad.
+2. **Telefonon a fő cím legfeljebb 2 sor** mind a 12 oldalon (sminktetoválás / szájtetoválás: „Természetes sminktetoválás / szájtetoválás” + alatta alcím „…ami illik az
+   arcformádhoz / arcodhoz.”; férfi oldal: az arany ajánlat-sor telefonon kisebb, 2 sor).
+3. **Az új oldalakon telefonon az első gomb az első képernyőn** (alja ≤ 680 px 360 / 390 / 412 px-en): rövidebb hero-kép, a gomb rögtön a bevezető alatt
+   (`hl-celoldal` / `main.celoldal`; a meglévő oldalakon nincs hatása).
+4. **Hajvizsgálat:** az ár a hero-ban csak egyszer (a nagy ár-blokkban); a H1 és a fő gomb ár nélkül; a H1 tördelése „Hajkamerás / haj- és fejbőrvizsgálat” (a megtört-sor szabály szerint).
+Teszt: a céloldal-teszt új mobil-része (2 sor + első gomb) 56/56; hajvizsgálat 29/29; száj 22/22 (a videós részteszt Esc utáni ellenőrzése megvárja az aszinkron bezárást).

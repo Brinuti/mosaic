@@ -28,6 +28,7 @@
 /* --- hero --- */
 .fl-h1-ajanlat { display: block; margin-top: 14px; font: 500 .62em/1.14 var(--cim); color: var(--arany); letter-spacing: -.01em; }
 .fl-h1-ajanlat b { font-weight: 500; }
+@media (max-width: 700px) { .fl-h1-ajanlat { font-size: .56em; } } /* telefonon az ajanlat-sor is 2 sor (Feri, 2026-10-31) */
 .fl-hero .hero-al { margin: 16px 0 18px; max-width: 560px; }
 .fl-hero .hero-al b { font-weight: 500; }
 /* a harom jelveny EGYMAS MELLETT (asztalon sorban, mobilon harom egyenlo oszlop, kozepre igazitva) */

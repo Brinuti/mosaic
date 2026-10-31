@@ -28,9 +28,11 @@ export const CELOLDALAK = {
     title: 'Szemöldök tetoválás Budapest – púderes és hibrid szemöldök – Töreki Melitta, MOSAIC',
     leiras: 'Szemöldök tetoválás Budapesten, a Kolosy térnél: púderes (powder brows) és hibrid szemöldök Töreki Melittánál. 79 000 Ft, a 4–7 hét utáni korrekció az árban, nincs előleg.',
     cserek: [
-      // H1 + a H1 alatti bekezdes (a forras „…ami illik az arcformádhoz” alcime helyett)
-      ['        <h1>Természetes sminktetoválás Budapesten</h1>\n        <p class="hero-al hero-alcim">…ami illik az arcformádhoz.</p>',
+      // H1 + a H1 alatti bekezdes (az uj, csak Google Ads-forgalmu oldalon a kulcsszavas H1 marad)
+      ['        <h1>Természetes sminktetoválás</h1>\n        <p class="hero-al hero-alcim">…ami illik az arcformádhoz.</p>',
         '        <h1>Természetes szemöldök tetoválás Budapesten</h1>\n        <p class="hero-al hero-bevezeto">Szemöldök tetoválás Budapesten Töreki Melittánál, a Kolosy térnél (Bécsi út 2.). Púderes vagy hibrid szemöldök – a szemöldök tetoválás ára 79&nbsp;000&nbsp;Ft, a korrekció az árban van. Szombaton is van időpont.</p>'],
+      // mobilon az elso gomb az elso kepernyon (Feri, 2026-10-31): a celoldal-osztaly (assets/css/pmu-landing.css)
+      ['<main id="top">', '<main id="top" class="celoldal">'],
       // Ajak- / szemhej-blokkok: kimaradnak a masolatbol (mas tema - az ajaknak sajat oldala van)
       ['<span>Szemöldök 79 000 Ft-tól<small class="tenyek-al">Ajak 99 000 Ft-tól</small></span>', '<span>Szemöldök 79 000 Ft-tól</span>'],
       ['    <h2 class="kozepre helyzet-felso">Szemöldök- és ajaktetoválás</h2>\n', ''],
@@ -60,6 +62,8 @@ export const CELOLDALAK = {
     title: 'Hajhullás kezelés Budapest – hajkamerás vizsgálat és oxigénes hajkezelés – MOSAIC',
     leiras: null, // a terv nem ad uj meta leirast: a forrase marad (hajhullas ellen, hajkamera, nincs kotelezo berlet)
     cserek: [
+      // mobilon az elso gomb az elso kepernyon (Feri, 2026-10-31): a celoldal-osztaly (assets/css/oxigen-landing.css)
+      ['<main id="top">', '<main id="top" class="celoldal">'],
       // H1 + a H1 alatti bekezdes (a forras OX-1-es alcime helyett)
       ['<h1>Működő oxigénterápia hajhullás és gyulladás ellen</h1>', '<h1>Hajhullás kezelés Budapesten</h1>'],
       ['      <h2 class="hero-alcim">Oxigénes hajkezelés Budapesten</h2>\n',

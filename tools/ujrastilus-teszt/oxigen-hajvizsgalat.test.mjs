@@ -37,9 +37,9 @@ const SZ = (s) => s.replace(/\s+/g, ' ').replace(/\u00a0/g, ' ').trim();   // sz
 const BRIEF = {
   title: 'Hajvizsgálat Budapest – hajkamerás fejbőr vizsgálat 4 990 Ft – MOSAIC', // a Google Ads celoldal-terv (OX-2, 2026-10-31) szerint
   description: 'Hullik vagy ritkul a hajad? Hajkamerás haj- és fejbőr-állapotfelmérés 4 990 Ft-ért, kezelés nélkül is. Kolosy tér, online foglalás.',
-  h1: 'Hajvizsgálat Budapest – hajkamerás haj- és fejbőr vizsgálat 4 990 Ft-ért', // a Google Ads celoldal-terv (OX-2, 2026-10-31) szerint
+  h1: 'Hajkamerás haj- és fejbőrvizsgálat', // Feri, 2026-10-31: az ar a hero-ban csak egyszer (a nagy ar-blokkban)
   alcim: 'Nézd meg kamerán, mi történik a fejbőrödön – kezelés nélkül is foglalható állapotfelmérés a Kolosy térnél.',
-  fo: 'Hajvizsgálatot foglalok – 4 990 Ft',
+  fo: 'Hajvizsgálatot foglalok', // Feri, 2026-10-31: az ar a hero-ban csak egyszer
   masodlagos: 'Első kezelés hajkamerás vizsgálattal – 29 900 Ft',
   doboz: 'Ez állapotfelmérés, nem orvosi diagnózis. Hirtelen, foltos vagy nagy mértékű hajhullásnál, illetve diagnosztizált vagy gyulladt bőrbetegségnél először fordulj orvoshoz.',
 };
