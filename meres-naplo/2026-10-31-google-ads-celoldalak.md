@@ -58,6 +58,11 @@ A review (külön ügynök, csak olvasott) a következőket jelezte; mind javít
 6. A „november 30-ig” mondat a terv szövege; 12-01-re emlékeztető (Noel kedvezményének és a Salonic-pillanatképnek az ellenőrzése).
 7. A céloldal-teszt statikus része a böngésző nélkül is fut (a böngésző-hook a böngészős `describe`-ban).
 
+## Független review (2. kör, `e4328a77`): PASS with notes
+
+A hat javítás a fájlokban ellenőrizve; a 7 meglévő oldalon nincs terven kívüli változás, a foglalást nem érinti, nincs rejtett szöveg, a `suti.js` változása indokolt és minimális.
+Megjegyzés (nem blokkoló, régi hiba): a `szajtetovalas-landing.css` 38. sorában le nem zárt `@media` – külön feladat; a `pmu-landing.css` megjegyzése ennek megfelelően pontosítva (csak megjegyzés-változás).
+
 ## Bizonyíték (2026-10-31)
 
 - `node tools/hair-oldalak.mjs --ellenoriz`: 7 oldal egyezik (a meglévő 4 fodrász-oldal bájtra változatlan).

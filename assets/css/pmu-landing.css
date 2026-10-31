@@ -1013,7 +1013,8 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 .technika p { margin: 0; color: var(--szoveg); }
 .szakember-adatok .szakember-hely { margin: 10px 0 0; font-size: 15px; color: var(--halk); }
 /* a szemoldok-celoldal (/szemoldok-tetovalas-budapest): ket helyzet-kartya es ket ar-kartya, asztalon fekvo elrendezes. SAJAT osztaly (ketto-szemoldok):
-   a /szajtetovalas-budapest "ar-racs ketto" kartyait nem erinti (azok a szajtetovalas-landing.css-bol jonnek) */
+   a /szajtetovalas-budapest "ar-racs ketto" kartyait nem erinti. (Megjegyzes: a szajtetovalas-landing.css hasonlo .ar-racs.ketto szabalyai a 38. sorban le nem zart
+   @media (max-width: 700px) miatt ma nem ervenyesulnek - regi hiba, kulon feladat; a szajoldal arracsa igy az alap 5 oszlopos racs.) */
 @media (min-width: 1101px) {
   .helyzet-racs.ketto-szemoldok { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 860px; margin-left: auto; margin-right: auto; }
 }
