@@ -914,7 +914,7 @@ export function nyit(ctx) {
     tartalom.innerHTML = osszegzes() + '<div class="toltes">A szabad időpontok betöltése…</div>';
     all.tovabbi = true; $('.ablak').dataset.tovabbi = '1';
     const kesz = () => { all.tovabbi = false; const a = $('.ablak'); if (a) a.dataset.tovabbi = '0'; };
-    let elso;
+    let elso, teljesBent = false;
     try {
       // a tavolabbi napok (21-100.) kesobb jonnek (onMore). Ha ez a resz hibas (2026-10-23: egy Salonic-hiba miatt a naptar csendben csak 3 hetet mutatott),
       // EGYSZER friss keressel ujraprobaljuk; csak ennek hibajanal marad a 3 hetes naptar (mint eddig).
@@ -926,7 +926,7 @@ export function nyit(ctx) {
           adapter.getAvailability(all.placeId, s.serviceId, { ...IDO_OPCIOK, minLeadMinutes: 30, fresh: true }).then(tobb, () => kesz());
           return;
         }
-        kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar();
+        kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); teljesBent = true; } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar();
       };
       const opciok = { ...IDO_OPCIOK, minLeadMinutes: 30, onMore: tobb };
       // Tartalek-keres (2026-10-23, az elotoltes mellett): ha az elso resz TARTALEK_MS alatt nem jon meg (pl. egy beragadt elotoltott vagy lassu keres), egy friss keres
@@ -949,6 +949,9 @@ export function nyit(ctx) {
       clearTimeout(ora);
     } catch (e) { kesz(); if (all.lepes !== 'ido' || all.szolg !== s || lezart) return; return hiba('idopontok', e); }
     if (all.lepes !== 'ido' || all.szolg !== s || lezart) return;
+    // 2026-10-31 (Feri: Debrecen, 3 es 2 piercing: "nem lehet decemberre lapozni"): ha az elotoltes mar bent hagyta a teljes (0-100. nap) listat, az onMore a
+    // vissza-hivas elott lefut es a teljes naptarat rajzolta; az elso resz (0-21. nap) ezt nem irhatja felul (korabban csak 3 het latszott, nyil nelkul).
+    if (teljesBent) return;
     all.slotok = elso; all.slotokKulcs = kulcs; all.slotokT = Date.now();
     naptar();
   }
