@@ -68,14 +68,14 @@
 .el-lepesek h3 { font-size: 18px; margin-bottom: 4px; text-wrap: balance; }
 .el-lepesek p { font-size: 15px; line-height: 1.45; color: #33423f; }
 
-/* ---- mit lehet varni ---- */
-.el-varni-racs { display: grid; gap: 24px; align-items: center; }
+/* ---- hany alkalom ---- */
+.el-varni-racs { display: grid; gap: 22px; align-items: center; }
 .el-varni-szoveg h2 { text-align: center; }
-.el-varni-szoveg > .lead { text-align: center; font-size: 17px; margin: 10px auto 20px; max-width: 34em; color: #3a4a47; }
-.el-varni-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.el-varni-lista li { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--vonal); border-left: 4px solid var(--arany); border-radius: 14px; padding: 15px 16px; box-shadow: var(--arnyek); }
-.el-varni-lista p { font-size: 15.5px; line-height: 1.5; color: #2f3e3b; }
-.el-varni-lista b { color: var(--sotet); font-weight: 600; }
+.el-varni-szoveg > .lead { text-align: center; font-size: 17px; margin: 10px auto 18px; max-width: 34em; color: #3a4a47; }
+.el-varni-csempek { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.el-varni-csempek li { display: grid; gap: 3px; background: #fff; border: 1px solid var(--vonal); border-left: 4px solid var(--arany); border-radius: 14px; padding: 13px 16px; box-shadow: var(--arnyek); }
+.el-varni-csempek b { font: 500 26px/1.1 var(--cim); color: var(--sotet); }
+.el-varni-csempek span { font-size: 14.5px; line-height: 1.4; color: #33423f; }
 .el-varni-kep { margin: 0; }
 .el-varni-kep img { display: block; width: 100%; height: auto; max-width: 420px; margin: 0 auto; aspect-ratio: 1; object-fit: cover; border-radius: 20px; box-shadow: 0 18px 40px rgba(60, 40, 20, .14); }
 
@@ -112,23 +112,15 @@
 .el-szakember .gomb { margin-top: 6px; }
 
 
-/* ---- a lezer (Dermway I) ---- */
-.el-gep-racs { display: grid; gap: 22px; align-items: center; max-width: 1100px; margin: 0 auto; }
-.el-gep-kep { margin: 0; background: linear-gradient(160deg, #f4f5f1, #e6e9e1); border-radius: 20px; padding: 18px; box-shadow: var(--arnyek); }
-.el-gep-kep img { display: block; width: 100%; height: auto; max-width: 460px; margin: 0 auto; }
-.el-gep-kep figcaption { text-align: center; font-size: 13px; color: var(--halk); margin-top: 6px; }
-.el-gep-magyarazat { background: #fff; border-left: 4px solid var(--arany); border-radius: 0 14px 14px 0; padding: 14px 16px; font-size: 15.5px; line-height: 1.5; box-shadow: var(--arnyek); margin-bottom: 14px; }
-.el-gep-magyarazat b { color: var(--sotet); font-weight: 600; }
-.el-gep-elonyok { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.el-gep-elonyok li { display: flex; gap: 13px; align-items: flex-start; background: #fff; border: 1px solid var(--vonal); border-radius: 14px; padding: 12px 14px; box-shadow: var(--arnyek); }
-.el-gep-elonyok .ikon-kor { width: 38px; height: 38px; }
-.el-gep-elonyok .ikon-kor svg { width: 18px; height: 18px; }
-.el-gep-elonyok h3 { font-size: 16.5px; margin-bottom: 2px; }
-.el-gep-elonyok p { font-size: 14.5px; line-height: 1.45; color: #33423f; }
-.el-gep-adatok { list-style: none; margin: 22px auto 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 760px; }
-.el-gep-adatok li { background: var(--sotet); color: #fff; border-radius: 14px; padding: 12px 10px; text-align: center; }
-.el-gep-adatok b { display: block; font: 500 17px/1.2 var(--cim); color: #f1e2b4; }
-.el-gep-adatok small { display: block; font-size: 12px; opacity: .85; margin-top: 2px; }
+/* ---- a lezer (Dermway I): kompakt, nagyobb kepekkel ---- */
+.el-gep-racs { display: grid; gap: 18px; align-items: center; max-width: 1100px; margin: 0 auto; }
+.el-gep-kepek { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 6px; background: linear-gradient(160deg, #f4f5f1, #e6e9e1); border-radius: 20px; padding: 14px; box-shadow: var(--arnyek); }
+.el-gep-kepek img { display: block; width: 100%; height: auto; }
+.el-gep-szoveg h2 { text-align: center; }
+.el-gep-nev { margin: 6px 0 12px; text-align: center; font: 600 12px/1.2 var(--test); letter-spacing: .16em; text-transform: uppercase; color: var(--arany); }
+.el-gep-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.el-gep-lista li { background: #fff; border: 1px solid var(--vonal); border-radius: 12px; padding: 9px 13px; font-size: 14px; line-height: 1.4; color: #33423f; box-shadow: var(--arnyek); }
+.el-gep-lista b { color: var(--sotet); font-weight: 600; }
 
 /* ---- foglalas: ketfele jelentkezes + beagyazott naptar ---- */
 .el-valaszto { display: grid; gap: 12px; max-width: 900px; margin: 0 auto; }
@@ -153,9 +145,8 @@
 .el-szakember-gomb .gomb { white-space: normal; text-align: center; }
 
 @media (min-width: 760px) {
-  .el-gep-racs { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
-  .el-gep-kep { position: sticky; top: 100px; }
-  .el-gep-adatok { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .el-gep-racs { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; }
+  .el-gep-szoveg h2, .el-gep-nev { text-align: left; }
   .el-valaszto { grid-template-columns: 1fr 1fr; gap: 18px; }
   .el-foglalo-doboz iframe { height: 700px; }
   .el-oldal .el-szakember-blokk .szakember-racs { grid-template-columns: minmax(380px, 1fr) minmax(0, 520px); min-height: 460px; }
@@ -240,6 +231,7 @@
   .el-lepesek li::before { left: 50%; top: 20px; transform: translateX(-50%); width: 42px; height: 42px; }
   .el-varni-racs { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 52px; }
   .el-varni-szoveg h2, .el-varni-szoveg > .lead { text-align: left; margin-left: 0; }
+  .el-varni-csempek { grid-template-columns: 1fr; }
   .el-ar-racs { grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .el-ar-kartya { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 18px 22px; }
   .el-ar-kartya h3 { margin: 14px 0 8px; font-size: 18px; }

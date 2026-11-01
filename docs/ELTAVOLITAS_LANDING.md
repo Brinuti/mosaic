@@ -59,3 +59,17 @@ Az oldal csak új fájlokból áll: a PR visszavonása (revert) vagy a `foglalas
 - **A lézer:** Dermway I Q-kapcsolt Nd:YAG (iSkin Kft. adatlap: 1064 nm + 532 nm, 8 ns, 1000 mJ, 1–10 Hz, levegő- és vízhűtés). A gyártó nincs megnevezve, a CE-jelölés / orvostechnikai besorolás az adatlapon nem szerepel: ezt a szalonnak kell igazolnia, mielőtt a szövegbe biztonsági állítás kerül. A gép képe a forgalmazó (iSkin) termékképe, **ideiglenes**: saját fotóra cserélendő (vagy engedély kell hozzá).
 - **A szövegben Feri állításai** (nem én igazoltam): „általában 1–3 alkalom”, „már egy alkalom után is szembetűnő változás”, „kíméletes, steril, minimális kellemetlenséggel jár”, „utána újra tetoválható”.
 - Melitta-blokk: a /sminktetovalas-budapest szakember-blokkja (WULOP 2026 1. hely, Milano 2025 3. hely, 5 év), eltávolítás-szöveggel.
+
+
+## 4. kör (Feri, 2026-11-01): minden foglalás naptárba, a foglaló két szűk módosítása
+- A Salonicban (Melitta, place 14585) megjelent a **„Tetoválás eltávolítás”** szolgáltatás: **491949**, 20 000 Ft, 30 perc. Az oldal mindkét kártyája (ingyenes konzultáció, eltávolító kezelés) a beágyazott `/foglalo-pmu` naptárba nyílik
+  (`?beagyazva=1&kerdes=kihagy&kezeles=konzultacio` / `…&kezeles=491949`); az „eltávolító kezelés → űrlap” ág megszűnt, a fotóküldő űrlap csak nem kötelező, előzetes fotóküldés.
+- **`assets/js/foglalo-pmu.js` (foglalási folyamat, Feri kérésére: „az időpontfoglalást javítsd”), két additív, szűk hatókörű módosítás:**
+  1. `?kerdes=kihagy`: a „Volt már sminktetoválásod?” kérdés kimarad **csak** az ingyenes konzultációnál és a „…eltávolít…” nevű szolgáltatásnál (`kerdesKihagy()`); minden más szolgáltatásnál (a paraméter mellett is) a kérdés változatlanul megmarad. Időpont után egyenesen az adatok; a vissza gomb az időpont-választásra visz.
+     (A korábbi szabály – „a kérdést senki nem ugorhatja át” – az eltávolítás-oldalról érkezőkre nem érvényes: nekik van régi sminktetoválásuk, az „igen” válasz fotófeltöltésre, nem foglalásra vitt volna.)
+  2. `LEGKORABBI['491949']`: az eltávolítás **2026-11-09-től (Europe/Budapest 00:00) foglalható**; a szűrés a szabad időpontok betöltésénél történik (`szabadKezdesek`), minden más szolgáltatás változatlan.
+     Éles ellenőrzés (Salonic-adatokkal): az eltávolítás első szabad napja nov. 10.; nov. 9. előtt nincs engedélyezett nap. FIGYELEM: ez csak a mi foglalónk szűrése; ha a Salonic saját foglalási oldalán közvetlenül foglalnak, azt a Salonic beállítása korlátozza.
+- A kérdés kimaradása a „Kérdés” lépést is érinti a haladás-sávban (a sáv 4 lépést mutat, a 3. kimarad): kozmetikai, nem hiba.
+- **Mérés:** a 491949 szolgáltatás új a PMU-leképezésben (`SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json`, ismeretlen PMU-ár → HOLD, DECISION #195/3): a mérési oldalnak fel kell vennie, különben az eltávolítás-foglalás konverziója tartásba kerül.
+- Gép-szakasz: „Az egyik piacvezető lézer, amellyel dolgozom” (Feri szövege, a „piacvezető” állítást nem tudtam igazolni: az iSkin-adatlap sem a gyártót, sem piaci pozíciót nem említ), két forgalmazói termékkép (ideiglenes).
+- „Hány alkalom kell?”: 1–3 alkalom; **„kb. 1–3 hónap a gyógyulással együtt (alkalmanként nagyjából 4–6 hét)”: a 4–6 hetes köz a piaci gyakorlatból származó becslés, Melittának meg kell erősítenie.**

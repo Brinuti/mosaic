@@ -20,36 +20,27 @@
     const cel = $(g.getAttribute('data-gorget'));
     if (!cel) return;
     e.preventDefault();
-    if (g.dataset.valaszt) valaszt(g.dataset.valaszt, true);
+    if (g.dataset.valaszt) valaszt(g.dataset.valaszt);
     cel.scrollIntoView({ behavior: csokkentett ? 'auto' : 'smooth', block: 'start' });
     const fok = cel.querySelector('h2, h3') || cel;
     if (!fok.hasAttribute('tabindex')) fok.setAttribute('tabindex', '-1');
     try { fok.focus({ preventScroll: true }); } catch (hiba) { /* nem fokuszalhato */ }
   });
 
-  // --- 1b) foglalas: ketfele jelentkezes (ingyenes konzultacio / eltavolito kezeles) ---
-  // A naptar a MEGLEVO /foglalo-pmu foglalo (beagyazva, valtoztatas nelkul): a keret magassagat a foglalo jelzi (postMessage), mint a /sminktetovalas-budapest oldalon.
-  // Konzultacio: a Salonic "Ingyenes konzultacio" szolgaltatasa (?kezeles=konzultacio). Eltavolito kezeles: amig nincs sajat Salonic-szolgaltatasa, a #foglalas[data-kezeles-kulcs] ures,
-  // ilyenkor a jelentkezes az alatta levo urlapon megy (visszahivas); ha a kulcs ki van toltve (pl. "eltavolitas"), a naptar abba a szolgaltatasba nyilik.
+  // --- 1b) foglalas: ketfele jelentkezes (ingyenes konzultacio / eltavolito kezeles), MINDKETTO a naptarba nyilik ---
+  // A naptar a MEGLEVO /foglalo-pmu foglalo (beagyazva): a keret magassagat a foglalo jelzi (postMessage), mint a /sminktetovalas-budapest oldalon.
+  // Konzultacio: a Salonic "Ingyenes konzultacio" szolgaltatasa (?kezeles=konzultacio); eltavolito kezeles: a Salonic "Tetovalas eltavolitas" (#foglalas[data-kezeles-kulcs] = a szolgaltatas azonositoja).
+  // A "kerdes=kihagy" jelzesre a foglalo nem kerdezi meg, volt-e mar sminktetovalasod (az eltavolitasra jelentkezoknek van): idopont utan egyenesen az adatok.
   const foglSzekcio = $('foglalas');
   const fKeret = $('el-foglalo');
   const kerBox = $('el-foglalo-doboz');
   let utolso = '';
-  function valaszt(mit, gorgetes) {
+  function valaszt(mit) {
     if (!foglSzekcio) return;
-    const kulcs = (foglSzekcio.dataset.kezelesKulcs || '').trim();
     for (const b of foglSzekcio.querySelectorAll('[data-valaszt]')) b.setAttribute('aria-pressed', b.dataset.valaszt === mit ? 'true' : 'false');
-    const celUrlap = $('el-cel');
-    if (mit === 'kezeles' && !kulcs) {
-      kerBox.hidden = true;
-      if (celUrlap) celUrlap.value = 'kezeles';
-      if (!gorgetes) $('foto-urlap').scrollIntoView({ behavior: csokkentett ? 'auto' : 'smooth', block: 'start' });
-      else setTimeout(() => $('foto-urlap').scrollIntoView({ behavior: csokkentett ? 'auto' : 'smooth', block: 'start' }), 60);
-      return;
-    }
-    if (celUrlap && mit === 'konzultacio') celUrlap.value = 'foto';
-    const kez = mit === 'kezeles' ? kulcs : 'konzultacio';
-    if (utolso !== kez) { fKeret.src = '/foglalo-pmu?beagyazva=1&kezeles=' + encodeURIComponent(kez); utolso = kez; }
+    const kez = mit === 'kezeles' ? (foglSzekcio.dataset.kezelesKulcs || '').trim() : 'konzultacio';
+    if (!kez) return;
+    if (utolso !== kez) { fKeret.src = '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=' + encodeURIComponent(kez); utolso = kez; }
     kerBox.hidden = false;
   }
   addEventListener('message', (e) => {
@@ -57,7 +48,7 @@
     if (e.data.magassag) fKeret.style.height = e.data.magassag + 'px';
   });
   if (foglSzekcio) {
-    for (const b of foglSzekcio.querySelectorAll('.el-valaszt')) b.addEventListener('click', () => valaszt(b.dataset.valaszt, false));
+    for (const b of foglSzekcio.querySelectorAll('.el-valaszt')) b.addEventListener('click', () => valaszt(b.dataset.valaszt));
   }
 
   // --- 2) video ---
@@ -207,7 +198,7 @@
       if (!(s && typeof s.engedely === 'function' && s.engedely('ana'))) return;
       (window.dataLayer = window.dataLayer || []).push({
         event: 'eltavolitas_foto_lead', business: 'pmu', lead_type: 'removal_photo', source_page: '/' + OLDAL, event_id: id,
-        foto_db: Math.max(0, Math.min(MAX_FOTO, fotok.length)), terulet: TERULET_KOD[terulet] || 'egyeb',
+        foto_db: Math.max(1, Math.min(MAX_FOTO, fotok.length)), terulet: TERULET_KOD[terulet] || 'egyeb',
       });
     } catch (e) { /* a meres hibaja nem akadalyozhatja a kuldest */ }
   };
@@ -220,8 +211,7 @@
     if (folyamatban) { hiba('kuld', 'Egy pillanat, a fotók feldolgozása még tart. Próbáld újra pár másodperc múlva.'); return; }
     let elso = null;
     // a fokusz a lathato sorrend szerinti elso hibas mezore kerul: foto, terulet, nev, telefon, email, hozzajarulas
-    const cel = $('el-cel') ? $('el-cel').value : 'foto';
-    if (!fotok.length && cel === 'foto') { hiba('foto', 'Kérlek, tölts fel legalább egy fotót, vagy válaszd az „Eltávolító kezelésre jelentkezem” lehetőséget.'); elso = $('el-foto-input'); }
+    if (!fotok.length) { hiba('foto', 'Kérlek, tölts fel legalább egy fotót.'); elso = $('el-foto-input'); }
     else hiba('foto', '');
     for (const mezo of ['terulet', 'nev', 'telefon', 'email']) {
       const jo = SZABALY[mezo](mezoErtek(mezo));
@@ -242,7 +232,7 @@
     adat.set('nev', mezoErtek('nev').trim());
     adat.set('telefon', mezoErtek('telefon').trim());
     adat.set('email', mezoErtek('email').trim());
-    adat.set('kezeles', cel === 'kezeles' ? 'Sminktetoválás eltávolítás – eltávolító kezelésre jelentkezik – ' + terulet : 'Sminktetoválás eltávolítás – előre küldött fotó (konzultációhoz) – ' + terulet);
+    adat.set('kezeles', 'Sminktetoválás eltávolítás – előre küldött fotó – ' + terulet);
     adat.set('idopont', '');
     adat.set('oldal', OLDAL);
     fotok.forEach((f, i) => adat.set('foto' + (i + 1), f.blob, 'foto' + (i + 1) + '.jpg'));
