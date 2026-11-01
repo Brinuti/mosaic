@@ -39,6 +39,16 @@ A teszt a süti-hozzájárulást elfogadottnak tekinti (a saját tárolóba írj
 
 **Foglalási jegyzettömb** (`/api/foglalas-esemeny`): a szkriptek soha nem írhatnak a valódi jegyzettömbbe (a próbafoglalás ne kerüljön az „N perce foglaltak utoljára” sorba): az írás (POST) a `tilt.mjs` `esemenyIras` szabálya szerint tiltott, a szkriptek helyben megválaszolják; a `reteg-proba.mjs` a végpontot teljesen mockolja (olvasás és írás a naplóba). Szándékos vizsgálathoz (előnézeti KV-névtér): `MERES_ESEMENY_IRAS=1`.
 
+## Google kattintás-azonosítók átadása: `gclid-atadas-proba.mjs`
+
+A `gclid` / `gbraid` / `wbraid` útja a hirdetési céloldaltól a foglalón át a (szimulált) köszönőoldalig, a 4 üzletág belépési pontjain (lézer, oxigén 466147 / 466110, fodrász, PMU), **foglalás nélkül**, kimenő mérés és minden POST tiltva (`tilt.mjs`). Élő oldalon csak olvas; új, még nem élő oldalhoz `--dist <mappa>` (a helyi dist az éles hostnév alatt).
+
+```
+node tools/meres-proba/gclid-atadas-proba.mjs --forgatokonyv mind|lezer,oxigen1,... [--oldal /utvonal] [--dist <abszolut dist>] [--mobil 1] [--lepesek a,b,c,d,e,f,g,h] [--sutik nincs-dontes|elfogad|elutasit] --out naplo.json [--md eredmeny.md]
+```
+
+Leírás, lépések, a mai eredmény és az ismert rések (R1–R4): [GCLID_ATADAS_PROBA.md](../../docs/booking-engine/GCLID_ATADAS_PROBA.md).
+
 ## Meta-pixel oldalankénti ellenőrzése: `pixel-proba.mjs`
 
 Minden oldalon `?fbclid=TESZTPIXEL` paraméterrel betölti az oldalt, és oldalanként megmondja: melyik pixel-azonosító indult (és hányszor: `fbq.getState().pixels`),
