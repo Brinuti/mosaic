@@ -47,5 +47,5 @@ Név, e-mail, telefon: csak a foglaláshoz. A `tick` az utolsó nap (nov. 30.) u
 
 ## Döntések és nyitott pontok
 - Érkezés a saját idősáv előtt 30 perccel (döntés, 2026-11-01). Ha az elsődleges és a tartalék vendég is megjelenik, mindkettőt megszúrjuk (döntés).
-- Személyi igazolványt nem kérünk. A nyilatkozatot a szalon e-mailben küldi (nem része a foglalónak; a levelek és az oldal ezt jelzik).
+- Személyi igazolványt nem kérünk. A nyilatkozat (Salonic „Kezelési űrlap”, a modellnapra igazítva) a visszaigazoló levélben jön, és az „A foglalásod” oldalon fogadja el a vendég: részletek és jóváhagyásra váró kérdések a `docs/MODELLNAP_NYILATKOZAT.md`-ben.
 - **Nyitott:** az ajak- és orrpiercing pontos típusa, a rook füle és az ékszerfotók (a tulajdonos később adja meg); késés szabálya nincs rögzítve; nincs SMS; nincs mérőkód / eseménykövetés a foglalón (külön jóváhagyás kell).
