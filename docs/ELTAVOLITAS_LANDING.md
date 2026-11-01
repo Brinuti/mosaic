@@ -32,7 +32,7 @@ Ez eltávolítás-leadnél is megy (a szöveg általános, nem sminktetoválás-
   GTM-címke és platform-leképezés **nincs** rá: ez külön mérési DECISION és külső fiók-változtatás (Feri külön kérése).
 
 ## Indexelés
-Az első verzió `noindex, nofollow`, nincs sitemap-bejegyzés, nincs rá link az oldalról (hirdetésből / közvetlenül linkelhető).
+Az első verzió `noindex, nofollow`, nincs sitemap-bejegyzés; 2026-11-01 (5. kör) óta a közös menüből (Sminktetoválás › Tetoválás eltávolítás) link vezet rá (a keresők nem indexelik: `noindex, nofollow`).
 Indexelhetővé tétel: a `<meta name="robots">` sor törlése + bejegyzés a `tools/wix-sitemap/pages-sitemap.xml`-be + (Feri döntésével) belső link a `/sminktetovalas-budapest` oldalról.
 
 ## Feri által megerősítendő (az oldalon most a javasolt érték áll)
@@ -85,7 +85,7 @@ Az oldal saját fájljai (új fájlok) törölhetők / a PR-ok visszavonhatók, 
 
 - 2. előtte–utána pár (A): az „utána” kép (`utana-a.jpg`) az eredeti fotóból függőlegesen tükrözve és az „előtte” kép szögére forgatva (Feri kérésére; a kép tartalma nem változott, csak tükrözés + forgatás, külső szolgáltatás nélkül): az „előtte” és az „utána” kép a vendég két különböző oldalát mutatta (jobb / bal szemöldök), így a szemöldök és a szemüveg állása (homlok balra, a szemöldök kb. 17–20°-ban dől, szemüveg a szemöldöktől jobbra, szíj függőleges) egyezik az „előtte” képével. A többi pár nem tükrözött.
 
-- **A „Küldj előre fotót” blokk kikerült** (Feri, 2026-11-01): az oldalon nincs fotóküldő űrlap, nincs `eltavolitas_foto_lead` dataLayer-esemény, a `pmu-proba-foto` levelet innen nem küldjük (a fenti Zapier-lánc innen nem indul). Az oldal egyetlen konverziója a naptárba foglalás (ingyenes konzultáció / eltávolító kezelés).
+- **A „Küldj előre fotót” blokk kikerült** (Feri, 2026-11-01): az oldalon nincs fotóküldő űrlap, nincs `eltavolitas_foto_lead` dataLayer-esemény, a `pmu-proba-foto` levelet innen nem küldjük (a fenti Zapier-lánc innen nem indul). Az oldal egyetlen konverziója a naptárba foglalás (ingyenes konzultáció / eltávolító kezelés). **(Az 5. kör óta: az eltávolításra jelentkezők „van régi tetoválásom” választ adnak → fotós út → NEM konverzió, lásd `docs/FOTOS_FOGLALAS.md` 4/b.)**
   A fotókérés a foglaló-átalakítás része lesz (fotó + foglalás), lásd a Feri-nek küldött javaslatot; addig az eltávolítás-oldalról fotó nélkül lehet foglalni.
 
 

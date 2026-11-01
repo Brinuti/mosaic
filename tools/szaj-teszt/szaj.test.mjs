@@ -463,6 +463,11 @@ describe('/szajtetovalas-budapest: foglalas (PMU-foglalo, szajra elo-szukitve) e
     await p.click('.ar-kartya[data-salonic="ajak-ruzs"] a');
     await p.waitForFunction(() => document.getElementById('foglalo').src.includes('kezeles=ajak-ruzs'));
     const keret2 = p.frames().find((f) => f.url().includes('kezeles=ajak-ruzs'));
+    // 2026-11-01 (Feri): a foglalo az idopont ELOTT megkerdezi, volt-e mar (itt: szaj)tetovalasa; "nem, ez lesz az elso" -> idopont-nezet
+    await keret2.waitForSelector('[data-nezet="kerdes"]:not([hidden])');
+    assert.equal(await keret2.$eval('#kerdes-cim', (e) => e.textContent), 'Volt már szájtetoválásod?');
+    await keret2.check('input[name=elozmeny][value=elso]', { force: true });
+    await keret2.click('#kerdes-tovabb');
     await keret2.waitForSelector('#ido-kezeles', { state: 'visible' });
     assert.match(await keret2.$eval('#ido-kezeles', (e) => e.innerText.replace(/\s+/g, ' ')), /Ajaktetoválás – Rúzs hatású/);
     await ctx.close();

@@ -60,15 +60,17 @@ function arlistaFomenu(h, mobil) {
 // --- FOGLALAS: a menusor jobb szelen (Feri, 2026-11-01: "a foglalas gomb jobb oldalt legyen, az Arlista, a GYIK es a Kapcsolat utan") ---
 // A Wix-sorrend: ... Arlista, FOGLALAS, GYIK, Kapcsolat. Az atalakitas a FOGLALAS <li>-t a Kapcsolat <li> UTAN teszi (asztali + mobil; az angol oldalon is, ahol a GYIK nincs). A stilus
 // (arany gomb) a href-re kotott (nem a helyzetre), ezert a CSS nem valtozik. Ismetelhetetlen-biztos: ha a FOGLALAS mar a Kapcsolat utan van, nem csinal semmit.
-const ASZTALI_LI = (href) => new RegExp('<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item"(?:(?!<\\/li>)[\\s\\S])*?href="' + href + '"(?:(?!<\\/li>)[\\s\\S])*?<\\/li>');
-const MOBIL_LI = (href) => new RegExp('<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-[A-Za-z0-9-]+"(?:(?!<\\/li>)[\\s\\S])*?href="' + href + '"(?:(?!<\\/li>)[\\s\\S])*?<\\/li>');
+// (a minta egy RegExp-forras: href vagy felirat; a Wixes oldalakon a Kapcsolat href-je "/" + data-anchor, ezert a feliratra is illesztunk)
+const ASZTALI_LI = (minta) => new RegExp('<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item"(?:(?!<\\/li>)[\\s\\S])*?' + minta + '(?:(?!<\\/li>)[\\s\\S])*?<\\/li>');
+const MOBIL_LI = (minta) => new RegExp('<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-[A-Za-z0-9-]+"(?:(?!<\\/li>)[\\s\\S])*?' + minta + '(?:(?!<\\/li>)[\\s\\S])*?<\\/li>');
 function foglalasJobbra(h, mobil) {
   const li = mobil ? MOBIL_LI : ASZTALI_LI;
-  const fogl = h.match(li('\\/idpontfoglalas'));
-  const kapcs = h.match(li('\\/kapcsolat'));
+  const fogl = h.match(li('href="\\/idpontfoglalas"'));
+  const kapcsMinta = mobil ? 'wixui-vertical-menu__item-label">Kapcsolat<\\/a>' : 'wixui-horizontal-menu__item-label">Kapcsolat<\\/span>';
+  const kapcs = h.match(li(kapcsMinta));
   if (!fogl || !kapcs || kapcs.index < fogl.index) return h;   // nincs mit / a FOGLALAS mar a Kapcsolat utan van
   const nelkule = h.replace(fogl[0], '');
-  const k2 = nelkule.match(li('\\/kapcsolat'));
+  const k2 = nelkule.match(li(kapcsMinta));
   return nelkule.slice(0, k2.index + k2[0].length) + fogl[0] + nelkule.slice(k2.index + k2[0].length);
 }
 
@@ -283,7 +285,7 @@ export function fejlecAtalakit(html, mobil, angol = html.includes(NYELV_EN)) {
     h = parosFomenu(h, mobil);
     h = arlistaFomenu(h, mobil);
     h = foglalasJobbra(h, mobil);
-    h = sminkLenyilo(h, mobil);
+    if (!angol) h = sminkLenyilo(h, mobil);   // az angol menuben a magyar oldalra mutato pont elmarad (mint a GYIK)
     h = nyelvJelveny(h, angol, mobil);
     if (mobil) h = ajandekNyitva(h);
     return angol ? angolMenu(h, mobil) : h;

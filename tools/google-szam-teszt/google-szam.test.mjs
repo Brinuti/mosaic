@@ -30,7 +30,7 @@ describe('a forrasban nincsenek regi, beegetett szamok', () => {
   test('a build felteszi a google-szam.js-t a sajat oldalakra, ahol a szam szerepel; a PMU-specifikus foglalo oldalakat kihagyja', () => {
     const b = fs.readFileSync(path.join(GYOKER, 'tools', 'netlify-build.mjs'), 'utf8');
     assert.match(b, /google-szam\.js/);
-    assert.match(b, /GV_KIHAGY = \/\^\(foglalo-pmu\|pmu-ok\|pmu-vh\)\\\.html\$\//);
+    assert.match(b, /GV_KIHAGY = \/\^\(foglalo-pmu\|pmu-ok\|pmu-vh\|pmu-foto-ok\)\\\.html\$\//);  // + a fotos foglalas koszonooldala (2026-11-01)
     assert.match(b, /SAJAT_OLDALAK\.has\(f\) && GV_MINTA\.test\(h\)/);
   });
 });
