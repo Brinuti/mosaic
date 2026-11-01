@@ -233,16 +233,19 @@
     $('lepesjelzo').hidden = !l;
     $('logo').hidden = !!l;
     if (!l) return;
-    const sorok = {
+    // ?kerdes=kihagy (konzultacio / eltavolitas): nincs "Kerdes" lepes, igy nem is lehet ra visszalepni (az "igen" valasz fotofeltoltesre vinne)
+    const kihagy = l[0] === 'fo' && kerdesKihagy();
+    const sorok = kihagy ? ['Kezelés', 'Időpont', 'Adatok'] : {
       fo: ['Kezelés', 'Időpont', 'Kérdés', 'Adatok'],
       foto: ['Fotó', 'Elérhetőség', 'Kész'],
       c: ['Telefon', 'Kérdés', 'Időpont', 'Elérhetőség'],
     }[l[0]];
-    const hol = l[1];
+    const hol = kihagy && l[1] === 3 ? 2 : l[1];
+    const nezetek = kihagy ? ['szolg', 'ido', 'adatok'] : LEPES_NEZET[l[0]];
     $('lepesjelzo').replaceChildren(...sorok.map((t, i) => {
       const li = elem('li', { class: i < hol ? 'kesz' : i === hol ? 'most' : '', 'aria-current': i === hol ? 'step' : false });
       const bel = [elem('i', { szoveg: i < hol ? '✓' : String(i + 1) }), elem('span', { szoveg: t })];
-      const cel = LEPES_NEZET[l[0]][i];
+      const cel = nezetek[i];
       if (i < hol && cel) li.append(elem('button', { type: 'button', class: 'lepes-gomb', 'aria-label': t + ': vissza erre a lépésre', onclick: () => ugrik(cel) }, ...bel));
       else li.append(...bel);
       return li;
@@ -460,7 +463,7 @@
   function slotValaszt(ts) {
     allapot.slot = ts;
     pmuLepes('slot', undefined, { serviceId: allapot.kezeles && allapot.kezeles.id });
-    // a kerdest senki nem ugorhatja at (a szemelyes konzultacio sem): regi PMU-val elobb foto kell
+    // a kerdest senki nem ugorhatja at (a szemelyes konzultacio sem): regi PMU-val elobb foto kell - KIVEVE az eltavolitas-landing ?kerdes=kihagy hivasat (konzultacio / eltavolitas, lasd kerdesKihagy)
     allapot.kerdesCel = 'adatok';
     if (kerdesKihagy()) { allapot.elozmeny = 'elso'; allapot.kerdesValasz = 'elso'; ugrik('adatok'); return; }
     ugrik('kerdes');
