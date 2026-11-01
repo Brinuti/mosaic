@@ -76,6 +76,7 @@
 .el-varni-csempek li { display: grid; gap: 3px; background: #fff; border: 1px solid var(--vonal); border-left: 4px solid var(--arany); border-radius: 14px; padding: 13px 16px; box-shadow: var(--arnyek); }
 .el-varni-csempek b { font: 500 26px/1.1 var(--cim); color: var(--sotet); }
 .el-varni-csempek span { font-size: 14.5px; line-height: 1.4; color: #33423f; }
+.el-varni-megj { margin: 14px 2px 0; font-size: 13.5px; line-height: 1.5; color: #4a5a57; }
 .el-varni-kep { margin: 0; }
 .el-varni-kep img { display: block; width: 100%; height: auto; max-width: 420px; margin: 0 auto; aspect-ratio: 1; object-fit: cover; border-radius: 20px; box-shadow: 0 18px 40px rgba(60, 40, 20, .14); }
 
@@ -249,4 +250,33 @@
 }
 @media (min-width: 1000px) {
   .el-kartyak li { padding: 18px 20px; }
+}
+
+/* --- az "Igy nez ki az eltavolitas" kepei: kattintasra nagyban, nagyithato (assets/js/eltavolitas-landing.js, 4. resz) --- */
+.el-kep[data-nagyit] { cursor: zoom-in; -webkit-tap-highlight-color: transparent; }
+.el-kep[data-nagyit]:focus-visible { outline: 3px solid var(--arany); outline-offset: 3px; border-radius: 12px; }
+.el-nagyit-jel { position: absolute; right: 8px; bottom: 8px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, .94); color: var(--sotet); display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0, 0, 0, .22); pointer-events: none; }
+.el-nagyit-jel svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+dialog.el-nagy { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100vh; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: #0b1414; color: #fff; overflow: hidden; overscroll-behavior: contain; }
+dialog.el-nagy:not([open]) { display: none; }
+dialog.el-nagy::backdrop { background: #0b1414; }
+.el-nagy-szint { position: absolute; inset: 56px 0 84px; display: grid; place-items: center; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: zoom-in; }
+.el-nagy-szint[data-nagyitva="1"] { cursor: grab; }
+.el-nagy-szint[data-huz="1"] { cursor: grabbing; }
+.el-nagy-kep { display: block; width: auto; height: auto; max-width: 100vw; max-height: calc(100vh - 152px); max-height: calc(100dvh - 152px); border-radius: 6px; transform-origin: 50% 50%; will-change: transform; -webkit-user-drag: none; pointer-events: none; }
+.el-nagy-fej { position: absolute; left: 0; right: 0; top: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 18px; gap: 12px; }
+.el-nagy-felirat { margin: 0; font: 500 15px/1.2 var(--test); letter-spacing: .02em; color: #fff; }
+.el-nagy-alj { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding-bottom: env(safe-area-inset-bottom, 0); }
+.el-nagy-gombok { display: flex; align-items: center; gap: 8px; }
+.el-nagy-gomb { width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .94); color: #183033; font: 500 24px/1 var(--test); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.el-nagy-gomb:disabled { opacity: .35; cursor: default; }
+.el-nagy-gomb:focus-visible { outline: 3px solid var(--arany-v, #d3b77e); outline-offset: 2px; }
+.el-nagy-gomb.el-nagy-egy { width: auto; min-width: 52px; padding: 0 12px; border-radius: 22px; font-size: 15px; font-weight: 600; }
+.el-nagy-tipp { margin: 0; font-size: 12.5px; line-height: 1.2; color: rgba(255, 255, 255, .72); }
+@media (max-width: 599px) {
+  .el-nagy-tipp { font-size: 12px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .el-nagy-kep { transition: transform .12s ease-out; }
+  .el-nagy-kep[data-gesztus="1"] { transition: none; }
 }

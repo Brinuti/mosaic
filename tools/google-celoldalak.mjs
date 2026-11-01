@@ -43,6 +43,8 @@ export const CELOLDALAK = {
       [/\n      <article class="ar-kartya" data-salonic="(?:ajak-aquarell|ajak-ruzs|szemhej)">[\s\S]*?<\/article>/g, '', 3],
       // a sminktetovalas-eltavolitas hivatkozasok (2026-11-01; <!--eltav--> ... <!--/eltav--> jelolt blokkok) a kulcsszavas Google Ads-oldalra nem kerulnek (az oldal valtozatlan)
       [/[ ]*<!--eltav-->\n[\s\S]*?<!--\/eltav-->\n/g, '', 5],
+      // a "Van mar sminktetovalasom" kartya piros figyelmezteto sora (2026-11-01, Feri: a fo oldalrol levettuk, hogy kisebb legyen a harom doboz); a Google Ads-oldal valtozatlan: ide a generator visszateszi
+      ['<h3>Van már smink&shy;tetoválásom</h3>\n', '<h3>Van már smink&shy;tetoválásom</h3>\n          <p class="figyelmeztet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg>Ha régebbi sminktetoválásod van, kérlek, ne foglalj időpontot azonnal: előbb küldj egy fotót, hogy a számodra megfelelő megoldással segíthessek.</p>\n'],
       // Irasmod: a cimekben „szemöldök tetoválás” (kulon), a szovegben egyszer „szemöldöktetoválás” (egybe)
       ['<h3>Ez lenne az első szemöldök&shy;tetoválásom</h3>', '<h3>Ez lenne az első szemöldök tetoválásom</h3>'],
       ['természetes, gyógyult sminktetoválások – a saját munkáim.', 'természetes, gyógyult szemöldöktetoválások – a saját munkáim.'],

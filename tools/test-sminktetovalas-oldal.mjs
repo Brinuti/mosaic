@@ -52,3 +52,14 @@ test('a Google Ads szemöldök-céloldal (a fő oldal generált másolata) vált
   const masolat = fs.readFileSync(path.join(ROOT, 'foglalas/szemoldok-tetovalas-budapest.html'), 'utf8');
   assert.ok(!/<!--eltav-->|eltavolitas-budapest|eltavolit/i.test(masolat));
 });
+
+test('a "Van már sminktetoválásom" kártyáról a piros figyelmeztető sor lekerült (Feri, 2026-11-01: kisebb a három doboz); a fotós gomb marad; a Google Ads másolat és a szájtetoválás-oldal változatlan', () => {
+  const kartya = oldal.slice(oldal.indexOf('<h3>Van már smink&shy;tetoválásom</h3>'), oldal.indexOf('data-cta="helyzet-regi"') + 120);
+  assert.ok(kartya.length > 100 && /data-foglalo="lepes=foto"/.test(kartya), 'a "Fotót küldök" gomb megmaradt');
+  assert.ok(!/ne foglalj időpontot azonnal|class="figyelmeztet"/.test(oldal), 'a fo oldalon nincs figyelmezteto sor');
+  assert.match(oldal, /<p class="eltav-megjegyzes">/, 'a kartyan az eltavolitas-megjegyzes marad');
+  const masolat = fs.readFileSync(path.join(ROOT, 'foglalas/szemoldok-tetovalas-budapest.html'), 'utf8');
+  assert.match(masolat, /<p class="figyelmeztet">.*Ha régebbi sminktetoválásod van, kérlek, ne foglalj időpontot azonnal/, 'a Google Ads-oldal valtozatlan (a generator visszateszi)');
+  const szaj = fs.readFileSync(path.join(ROOT, 'foglalas/szajtetovalas-budapest.html'), 'utf8');
+  assert.match(szaj, /ne foglalj időpontot azonnal/, 'a szajtetovalas-oldalhoz nem nyultunk');
+});
