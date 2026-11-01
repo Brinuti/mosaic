@@ -494,7 +494,7 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 <script src="/assets/js/suti.js"></script>
 <link rel="stylesheet" href="/assets/css/uj-fooldal.css">
 <link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat || sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}${sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-sajat.css">' : ''}
-<link rel="stylesheet" href="/assets/css/uj-egyseges.css">${opciok.b2 ? '\n<link rel="stylesheet" href="/assets/css/uj-b.css">' : ''}
+<link rel="stylesheet" href="/assets/css/uj-egyseges.css">${opciok.b2 ? '\n<link rel="stylesheet" href="/assets/css/uj-b.css">' : ''}${(opciok.css || []).map((n) => `\n<link rel="stylesheet" href="/assets/css/${n}.css">`).join('')}
 </head>
 <body class="belso ${cimke}${landolo ? ' oldal-landolo' : ''}${opciok.b2 ? ' oldal-b2' : ''}">
 <a class="ugras" href="#fo">Ugrás a tartalomra</a>
@@ -525,7 +525,7 @@ ${partial(ROOT, lablecResz, horgony)}
 </dialog>
 ${(kat && kat.nagyito) || opciok.nagyito ? '<!--#ekszer-nagyito-->\n' : ''}
 <script src="/assets/js/uj-fooldal.js" defer></script>
-<script src="/assets/js/uj-oldalak.js" defer></script>
+<script src="/assets/js/uj-oldalak.js" defer></script>${(opciok.js || []).map((n) => `\n<script src="/assets/js/${n}.js" defer></script>`).join('')}
 </body>
 </html>
 `;

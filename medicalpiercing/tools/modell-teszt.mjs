@@ -1,6 +1,5 @@
 // A modellkereso napok foglalorendszerenek tesztje (D1 helyett node:sqlite): beosztas, foglalas, versenyhelyzet, lemondas, varolista, levelek, API, "A foglalasod" oldal.
 // Futtatas: node tools/modell-teszt.mjs
-import { DatabaseSync } from 'node:sqlite';
 import { savok, sav, NAPOK, TIPUSOK, kezdesEpoch, erkezesIdo, elerhetoseg } from '../lib/modell/beosztas.js';
 import * as T from '../lib/modell/tarolo.js';
 import { level } from '../lib/modell/levelek.js';
@@ -10,20 +9,7 @@ let ok = 0, rossz = 0;
 const ellenorzes = (feltetel, uzenet, reszlet) => { if (feltetel) ok += 1; else { rossz += 1; console.error('HIBA:', uzenet, reszlet === undefined ? '' : JSON.stringify(reszlet)); } };
 const egyenlo = (a, b, uzenet) => ellenorzes(JSON.stringify(a) === JSON.stringify(b), uzenet, { kapott: a, vart: b });
 
-// ---- D1-szimulacio ---------------------------------------------------------------------------------------------------------------------------------
-function d1() {
-  const sq = new DatabaseSync(':memory:');
-  const elokeszit = (sql) => {
-    const o = { args: [], bind(...a) { o.args = a; return o; },
-      async run() { const r = sq.prepare(sql).run(...o.args); return { success: true, meta: { changes: Number(r.changes) } }; },
-      async all() { return { results: sq.prepare(sql).all(...o.args).map((x) => ({ ...x })) }; },
-      async first() { const r = sq.prepare(sql).get(...o.args); return r ? { ...r } : null; },
-      _sync() { const r = sq.prepare(sql).run(...o.args); return { success: true, meta: { changes: Number(r.changes) } }; } };
-    return o;
-  };
-  return { prepare: elokeszit, sq,
-    async batch(lista) { sq.exec('BEGIN'); try { const r = lista.map((x) => x._sync()); sq.exec('COMMIT'); return r; } catch (e) { sq.exec('ROLLBACK'); throw e; } } };
-}
+import { d1 } from './modell-d1.mjs';
 
 const E = (n) => `vendeg${n}@example.hu`;
 const TEL = (n) => `0630${String(1000000 + n)}`;
@@ -150,6 +136,20 @@ const tartOrr1 = savok('2026-11-25').find((s) => s.tipus === 'orr' && s.szerep =
   egyenlo((await db.prepare(`SELECT COUNT(*) AS db FROM modell_foglalas WHERE allapot = 'felszabadult'`).first()).db, 3, 'allapot: felszabadult');
 }
 
+// ---- 3a. adattorles
+{
+  const db = d1();
+  const f = await T.foglal(db, { ...ADAT(1), nap: '2026-11-25', tipus: 'orr', ido: orr1.ido, most: MOST });
+  await T.varolistaFelvesz(db, { ...ADAT(2), tipus: 'rook', nap: '2026-11-30', most: MOST });
+  const ELOTTE = kezdesEpoch('2026-11-30', '23:59') + T.ADAT_MEGORZES_NAP * 86400 - 60;
+  egyenlo(await T.adatTorles(db, ELOTTE), 0, 'adattorles: a megorzesi ido letelte elott nem torol');
+  ellenorzes(!!(await T.foglalasLekerdez(db, f.id)), 'adattorles elott a foglalas megvan');
+  const tobb = await T.adatTorles(db, ELOTTE + 120);
+  ellenorzes(tobb >= 3, 'adattorles: a megorzesi ido utan torol (foglalas, uzenet, varolista)', tobb);
+  egyenlo(await T.foglalasLekerdez(db, f.id), null, 'adattorles utan a foglalas nincs meg');
+  egyenlo((await db.prepare('SELECT COUNT(*) AS db FROM modell_varolista').first()).db, 0, 'adattorles: a varolista is ures');
+}
+
 // ---- 3b. megszolitas ----------------------------------------------------------------------------------------------------------------------------------
 egyenlo([T.szolitas({ nev: 'Kovács Anna', kereszt: 'Anna' }), T.szolitas({ nev: 'Kovács Anna' })], ['Anna', 'Kovács Anna'], 'megszolitas: keresztnev, hiaya eseten a teljes nev');
 {
@@ -248,6 +248,13 @@ egyenlo([T.szolitas({ nev: 'Kovács Anna', kereszt: 'Anna' }), T.szolitas({ nev:
   // csapda (honeypot)
   v = await api(post('https://www.medicalpiercing.hu/api/modell/foglal', { ...jo, csapda: 'bot' }), envBe, { most: MOST });
   ellenorzes((await v.json()).ok === true && (await db.prepare(`SELECT COUNT(*) AS db FROM modell_foglalas WHERE kornyezet = 'eles'`).first()).db === 1, 'a csapda-mezo: csendben elnyelve, nem keletkezik foglalas');
+  // tartalek hely: csak tudomasulvetellel
+  const tartSav = savok('2026-11-25').find((s) => s.tipus === 'koldok' && s.szerep === 'tartalek' && s.elsodlegesIdo === jo.ido);
+  v = await api(post('https://www.medicalpiercing.hu/api/modell/foglal', { ...jo, ido: tartSav.ido, vezeteknev: 'Tartalék', keresztnev: 'Tamás', email: 'tartalek@example.hu', telefon: '06301110011' }), envBe, { most: MOST });
+  j = await v.json();
+  ellenorzes(v.status === 400 && j.hiba === 'hianyzo_tartalek_tudomas', 'tartalek hely tudomasulvetel nelkul nem foglalhato', j);
+  v = await api(post('https://www.medicalpiercing.hu/api/modell/foglal', { ...jo, ido: tartSav.ido, vezeteknev: 'Tartalék', keresztnev: 'Tamás', email: 'tartalek@example.hu', telefon: '06301110011', tartalek: true }), envBe, { most: MOST });
+  ellenorzes(v.status === 200, 'tartalek hely tudomasulvetellel foglalhato (az elsodleges mar foglalt)', await v.clone().json());
   // foglalt sav
   v = await api(post('https://www.medicalpiercing.hu/api/modell/foglal', { ...jo, email: 'masik@example.hu', telefon: '06201234567' }), envBe, { most: MOST });
   egyenlo(v.status, 409, 'foglalt sav: 409');

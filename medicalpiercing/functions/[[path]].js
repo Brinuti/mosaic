@@ -38,7 +38,7 @@ const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
 const TILTO_ROBOTS = 'User-agent: *\nDisallow: /\n';
 // Rejtett lapok: az eles domainen is noindex (a lap meta robots-a mellett fejlecben is). Az uj oldalak elesitese utan (lib/uj-eles.js) a rejtett
 // a regi Wix-klon (/regi/<eredeti utvonal>) es a link-index (/uj-oldalak); elotte az uj stilusu tukor (/uj/<eredeti utvonal>, /uj-fooldal)
-const REJTETT_LAPOK = new Set(['/uj-fooldal', '/uj-oldalak']);
+const REJTETT_LAPOK = new Set(['/uj-fooldal', '/uj-oldalak', '/modellnap']);   // /modellnap: a modellkereso napok foglaloja (lib/modell/), rejtett, nincs a sitemapben
 const REJTETT_ELOTAG = UJ_ELES ? /^\/regi(\/|$)/ : /^\/uj(\/|$)/;
 // a B-valtozatok (/b/<ut>: a konverzios kepernyotervek szerint, a tulajdonos kerese 2026-10-16) rejtettek: link nem mutat rajuk, a keresok nem indexelik
 const B_ELOTAG = /^\/b(\/|$)/;

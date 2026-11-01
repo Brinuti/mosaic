@@ -7,6 +7,7 @@ export const AKTIV = ['aktiv', 'tartva'];                 // ezek foglalnak hely
 export const TARTAS_PERC = 30;                             // a varolistas ajanlat ennyi ideig tartott
 export const MAX_AKTIV_IP_NAPONTA = 5;                     // egy IP-rol naponta legfeljebb ennyi foglalas
 export const MAX_PROBA = 5;                                // egy level kuldesenek probalkozasai
+export const ADAT_MEGORZES_NAP = 30;                       // a szemelyes adatokat az utolso nap (nov. 30.) utan ennyi napig orizzuk, utana toroljuk (az urlapon is igy irjuk)
 
 export const SEMA = [
   `CREATE TABLE IF NOT EXISTS modell_foglalas (
@@ -230,6 +231,16 @@ export async function megerositetlenek(db, korny, most, oraval) {
   const { results } = await db.prepare(`SELECT * FROM modell_foglalas WHERE kornyezet = ?1 AND allapot = 'aktiv' AND megerositve IS NULL AND letrehozva <= ?2`).bind(korny, most - 24 * 3600).all();
   let db_ = 0;
   for (const f of results || []) if (kezdesEpoch(f.nap, f.ido) - oraval * 3600 <= most && (await felszabadit(db, f.id, most))) db_ += 1;
+  return db_;
+}
+
+/** Az utolso nap utan ADAT_MEGORZES_NAP nappal torli az osszes foglalast, uzenetet es varolista-sort (szemelyes adat: nev, e-mail, telefon). Visszaad: torolt sorok szama, vagy 0, ha meg nem jart le. */
+export async function adatTorles(db, most = Math.floor(Date.now() / 1000)) {
+  await sema(db);
+  const utolso = NAPOK[NAPOK.length - 1].datum;
+  if (most < kezdesEpoch(utolso, '23:59') + ADAT_MEGORZES_NAP * 86400) return 0;
+  let db_ = 0;
+  for (const t of ['modell_uzenet', 'modell_foglalas', 'modell_varolista']) db_ += Number((await db.prepare(`DELETE FROM ${t}`).run())?.meta?.changes || 0);
   return db_;
 }
 

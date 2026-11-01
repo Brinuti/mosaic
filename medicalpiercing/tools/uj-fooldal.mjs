@@ -229,7 +229,7 @@ function elesFej(ROOT, ut, html) {
   }
   const cim = idezojel((/<title>([\s\S]*?)<\/title>/.exec(ki) || [])[1] || 'Medical Piercing');
   const leiras = (/<meta name="description" content="([^"]*)"/.exec(ki) || [])[1] || '';
-  const sajat = (ut === '/404' || ut === '/visszajelzes' || bValtozat) ? /* a vendeglevelekbol elerheto urlap: nem kell a keresobe */ ['<meta name="robots" content="noindex,nofollow">']
+  const sajat = (ut === '/404' || ut === '/visszajelzes' || ut === '/modellnap' || bValtozat) ? /* a vendeglevelekbol elerheto urlap: nem kell a keresobe */ ['<meta name="robots" content="noindex,nofollow">']
     : [`<link rel="canonical" href="${DOMAIN}${ut}">`, `<meta property="og:title" content="${cim}">`, `<meta property="og:description" content="${leiras}">`,
       `<meta property="og:url" content="${DOMAIN}${ut}">`, '<meta property="og:site_name" content="Medical Piercing">', '<meta property="og:type" content="website">'];
   return ki.replace(/(<meta name="viewport"[^>]*>\n?)/, (m) => `${m}${sajat.join('\n')}\n`);
@@ -305,7 +305,7 @@ export function ujOldalak(ROOT, DIST) {
       const fo = osszerak(ROOT, forras.slice(m[0].length));
       const horgony = new Set([...fo.matchAll(/\sid="([a-z]+)"/g)].map((x) => x[1]));
       const adat = { ut: '/' + nev, kulcs: nev, cim: meta.cim, leiras: meta.leiras, tipus: 'oldal', szekciok: [] };
-      oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, horgony, landolo: !!meta.landolo, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
+      oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, horgony, landolo: !!meta.landolo, fejlec: meta.fejlec, akciosav: meta.akciosav, lablec: meta.lablec, css: meta.css, js: meta.js, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
       jegyzek.push({ ut: adat.ut, cim: meta.cim, tipus: 'oldal', uj: TUKOR_ELO + adat.ut });
       db++;
     }

@@ -1,9 +1,9 @@
 // A modellkereso napok (ingyenes piercing, oktatasi gyakorlonap) vegpontjai: JSON API (/api/modell/*), a foglalas oldala (/mf/<kod>), a level-kuldes es az idozitett teendok.
 // Kapcsolo: MODELL_FOGLALAS ("be" = eles foglalas; alapbol KI a vegleges inditasig). Az elonezeti cimeken (*.pages.dev) a foglalas mindig megy, de a sorok "elonezet" kornyezetuek,
 // nem foglalnak helyet az eles savokbol, es level SOHA nem megy ki. MODELL_FELSZABADITAS = "be": a 12 oraval a szuras elott sem megerositett foglalas felszabadul (alapbol ki).
-import { nevTisztit, emailTisztit, telefonTisztit, szabad, foglal, foglalasLekerdez, megerosit, lemond, ajanlatElfogad, varolistaFelvesz, lejartAjanlatok, megerositetlenek, beallitas, osszesites, sema, MAX_PROBA, szolitas } from './tarolo.js';
-import { level, ALAP } from './levelek.js';
-import { NAPOK, TIPUSOK, nap as napKeres, tipus as tipusKeres, erkezesIdo, HELYSZIN } from './beosztas.js';
+import { nevTisztit, emailTisztit, telefonTisztit, szabad, foglal, foglalasLekerdez, megerosit, lemond, ajanlatElfogad, varolistaFelvesz, lejartAjanlatok, megerositetlenek, beallitas, osszesites, sema, adatTorles, MAX_PROBA, szolitas } from './tarolo.js';
+import { level } from './levelek.js';
+import { NAPOK, TIPUSOK, nap as napKeres, tipus as tipusKeres, sav as savKeres, erkezesIdo, HELYSZIN } from './beosztas.js';
 
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
 export const kornyezet = (url) => (ELES_HOST.test(new URL(url).hostname) ? 'eles' : 'elonezet');
@@ -76,7 +76,8 @@ export async function tick(db, env, korny, kuld, most = Math.floor(Date.now() / 
   await sema(db);
   const lejart = await lejartAjanlatok(db, korny, most);
   const felszabaditva = String(env.MODELL_FELSZABADITAS || '').toLowerCase() === 'be' ? await megerositetlenek(db, korny, most, 12) : 0;
-  return { lejart, felszabaditva, ...(await kuldEsedekes(db, korny, kuld, most)) };
+  const torolve = await adatTorles(db, most);   // 30 nappal a rendezveny utan: minden szemelyes adat torlese
+  return { lejart, felszabaditva, torolve, ...(await kuldEsedekes(db, korny, kuld, most)) };
 }
 
 /** A latogatok kerese nyitja meg: legfeljebb 5 percenkent lefuttatja a tick-et (az eles kornyezetben, ha van SMTP). Nincs kulso utemezo: a kampany forgalma hajtja. */
@@ -111,6 +112,7 @@ export async function api(request, env, { waitUntil, most = Math.floor(Date.now(
     if (!t) return json({ ok: false, hiba: 'hibas_keres' }, 400);
     if (t.csapda) return json({ ok: true, id: 'x'.repeat(20) });   // robot: csendben elnyeljuk
     if (t.elfogad !== true || t.elmult18 !== true) return json({ ok: false, hiba: 'hianyzo_hozzajarulas' }, 400);
+    if (savKeres(String(t.nap || ''), String(t.tipus || ''), String(t.ido || ''))?.szerep === 'tartalek' && t.tartalek !== true) return json({ ok: false, hiba: 'hianyzo_tartalek_tudomas' }, 400);   // a tartalek helyet csak a kockazat tudomasulvetelevel lehet foglalni
     const r = await foglal(db, { korny, nap: String(t.nap || ''), tipus: String(t.tipus || ''), ido: String(t.ido || ''), ...nevMezok(t), email: t.email, telefon: t.telefon, ipHash: await ipHash(request, env), forras: String(t.forras || '').slice(0, 60) || null, most });
     if (!r.ok) return json(r, r.hiba === 'foglalt' || r.hiba === 'nincs_elsodleges' || r.hiba === 'mar_van' ? 409 : r.hiba === 'tul_sok' ? 429 : 400);
     hatterben(kuldesre());
@@ -194,11 +196,12 @@ var e=document.querySelector('[data-elso]');if(e){e.focus();}})();</script>`;
 }
 function oldalKeret(cim, torzs) {
   return `<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${h(cim)}</title>
-<style>body{margin:0;background:#f6ebe4;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#454659}main{max-width:620px;margin:0 auto;padding:22px 16px 40px}.logo{display:block;margin:6px auto 14px;width:220px;max-width:70%}
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/plus-jakarta-sans-latin.woff2">
+<style>@font-face{font-family:"Plus Jakarta Sans";font-weight:400 800;font-display:swap;src:url(/assets/fonts/plus-jakarta-sans-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:"Plus Jakarta Sans";font-weight:400 800;font-display:swap;src:url(/assets/fonts/plus-jakarta-sans-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}body{margin:0;background:#f6ebe4;font:16px/1.6 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#454659}main{max-width:620px;margin:0 auto;padding:22px 16px 40px}.logo{display:block;margin:6px auto 14px;width:220px;max-width:70%}
 .doboz{background:#fff;border-radius:22px;padding:24px 22px;box-shadow:0 12px 34px rgba(90,70,66,.10)}h1{margin:0 0 10px;font-size:1.5rem;line-height:1.25;color:#2f3044}p{margin:10px 0}a{color:#b0463b}.jo{color:#2f7a4d;font-weight:700}.rossz{color:#b0463b;font-weight:700}
 .adat{margin:16px 0;padding:6px 16px;border:1px solid #ecdcd4;border-radius:14px;background:#fffaf7}.adat div{padding:8px 0;border-bottom:1px solid #f1e6e0}.adat div:last-child{border-bottom:0}.adat dt{font:700 .72rem/1.2 inherit;letter-spacing:.08em;text-transform:uppercase;color:#8a8b9c}.adat dd{margin:3px 0 0;overflow-wrap:anywhere}
 .gombok{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.gomb{font:700 1rem/1.2 inherit;padding:.9em 1.6em;border:2px solid #d7aba8;border-radius:999px;background:#d7aba8;color:#fff;cursor:pointer}.gomb.ures{background:#fff;color:#b0463b;border-color:#e3c4bf}.gomb:disabled{opacity:.5}.lab{margin-top:18px;font-size:.88rem;color:#8a8b9c;text-align:center}</style></head>
-<body><main><a href="${ALAP}"><img class="logo" src="${ALAP}/assets/levelek/kep/logo.png" alt="Medical Piercing"></a><div class="doboz">${torzs}</div></main></body></html>`;
+<body><main><a href="/"><img class="logo" src="/assets/img/uj-logo.webp" width="327" height="97" alt="Medical Piercing"></a><div class="doboz">${torzs}</div></main></body></html>`;
 }
 
 export { NAPOK, TIPUSOK };

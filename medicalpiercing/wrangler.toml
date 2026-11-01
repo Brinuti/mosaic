@@ -16,6 +16,11 @@ SMTP_PORT = "465"
 SMTP_USER = "medicalpiercing.hu@gmail.com"
 MAIL_TO = "medicalpiercing.hu@gmail.com"
 
+# Modellkereso napok (docs/MODELLNAP.md): az ELES foglalas alapbol KI; "be" = nyitva (valodi vendegeknek mennek levelek: csak a tulajdonos kifejezett kerese utan). Az elonezeten mindig megy, de level nem.
+MODELL_FOGLALAS = "ki"
+# "be": a szuras elott 12 orara sem megerositett foglalas felszabadul (alap: ki)
+MODELL_FELSZABADITAS = "ki"
+
 # Foglalas-meres (docs/MERES_GOOGLE_ARNYEK.md): sajat D1, a Mosaic adatbazisaitol kulon. A fiok D1-kerete (10)
 # betelt, ezert az elonezet ugyanezt az adatbazist hasznalja: a sorok "kornyezet" oszlopa (eles / elonezet)
 # valasztja szet (ugyanaz a kotes mindket kornyezetben, [env.preview] blokk nelkul), es elonezetrol a kod soha nem tolt fel elesben (csak validate_only / dryrun).

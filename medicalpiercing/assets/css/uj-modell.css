@@ -1,0 +1,151 @@
+/* A modellkereso napok oldala (/modellnap, uj-oldalak/sajat/modellnap.html) + a foglalo (assets/js/uj-modell.js). Alap: uj-fooldal / uj-kategoria / uj-sajat / uj-egyseges;
+   itt csak az oldal egyedi elemei. SZINEK: a fooldal palettaja (--rose, --beige, --navy, --mut, --line). Utolsokent toltodik. */
+
+/* --- Hos --- */
+.mn-datumok{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 14px}
+.mn-datumok .akcio-jel{display:inline-block;margin:0}
+.mn-hely{color:var(--mut);font-size:.9rem;font-weight:600}
+.mn-szabad{margin:14px 0 0;font-weight:700;color:var(--navy)}
+.mn-szabad:empty{display:none}
+.mn-szabad b{color:var(--rose-i)}
+.mn-chipek{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.mn-chipek li{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-size:.86rem;font-weight:600}
+.mn-chipek .ik{width:16px;height:16px;color:var(--rose-i);flex:none}
+
+/* --- Harom lepes --- */
+.mn-lepesek{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:0;padding:0;list-style:none}
+.mn-lepesek li{display:flex;gap:16px;align-items:flex-start;padding:22px;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
+.mn-lepesek b{display:block;color:var(--navy);font-size:1.02rem;line-height:1.3}
+.mn-lepesek p{margin:6px 0 0;color:var(--mut);font-size:.92rem;line-height:1.55}
+.mn-szam{display:inline-grid;place-items:center;flex:none;width:34px;height:34px;border-radius:50%;background:var(--rose);color:#fff;font-weight:800;font-size:.95rem}
+
+/* --- Miert ingyenes --- */
+.mn-vigyazunk{align-self:stretch;padding:24px;border-radius:22px;background:var(--navy);color:#fff}
+.mn-vigyazunk h3{margin:0 0 14px;font-size:1.15rem;color:#fff}
+.mn-vigyazunk ul{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.mn-vigyazunk li{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;line-height:1.45}
+.mn-vigyazunk .ik{width:20px;height:20px;flex:none;margin-top:1px;color:var(--rose)}
+
+/* --- Foglalo --- */
+.mn-foglalo{scroll-margin-top:calc(var(--fej) + 12px)}
+.mn-doboz{max-width:860px;margin-inline:auto;padding:28px;background:#fff;border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh)}
+.mn-doboz[hidden],.mn-doboz [hidden]{display:none!important}
+.mn-zarva{margin:0;padding:16px 18px;border-radius:var(--r-m);background:var(--beige);color:var(--navy)}
+.mn-betoltes{margin:0;color:var(--mut);text-align:center}
+.mn-urlap{display:flex;flex-direction:column;gap:26px}
+.mn-lepes{margin:0;padding:0;border:0;min-width:0}
+.mn-lepes:disabled{opacity:.45}
+.mn-lepes legend{display:flex;align-items:center;gap:12px;padding:0;margin-bottom:14px;color:var(--navy);font-size:1.1rem;font-weight:800;line-height:1.3}
+.mn-elonezet{margin:0 0 14px;padding:10px 12px;border-radius:12px;background:#fff7e6;color:#7a5a12}
+.mn-megjegyzes{margin:12px 0 0;color:var(--mut);font-size:.88rem;line-height:1.5}
+.mn-erkezes{margin:14px 0 0;padding:12px 14px;border-radius:var(--r-m);background:var(--beige-l);border:1px solid var(--line);color:var(--navy);font-size:.95rem}
+
+/* a valasztokartyak: a rádiógomb rejtett, a cimke a kartya */
+.mn-tipusok{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.mn-napok{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.mn-tipus,.mn-nap{position:relative;display:flex;flex-direction:column;gap:3px;padding:14px;border:2px solid var(--line);border-radius:var(--r-m);background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s}
+.mn-tipus input,.mn-nap input,.mn-ido input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.mn-tipus-nev,.mn-nap-nev{color:var(--navy);font-weight:800;font-size:1rem;line-height:1.25}
+.mn-tipus small,.mn-nap small{color:var(--mut);font-size:.8rem;line-height:1.3}
+.mn-tipus:hover,.mn-nap:hover{border-color:var(--rose)}
+.mn-tipus:has(input:checked),.mn-nap:has(input:checked){border-color:var(--rose-i);background:var(--beige-l);box-shadow:0 0 0 3px rgba(215,171,168,.32)}
+.mn-tipus:has(input:focus-visible),.mn-nap:has(input:focus-visible),.mn-ido:has(input:focus-visible){outline:3px solid var(--navy);outline-offset:2px}
+.mn-tipus.betelt small,.mn-nap.betelt small{color:var(--rose-i);font-weight:700}
+
+.mn-idok{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-top:14px}
+.mn-idok:empty{display:none}
+.mn-ido{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;padding:8px 6px;border:2px solid var(--line);border-radius:14px;background:#fff;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.mn-ido b{color:var(--navy);font-size:1.05rem}
+.mn-ido small{color:var(--mut);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.mn-ido:hover{border-color:var(--rose)}
+.mn-ido:has(input:checked){border-color:var(--rose-i);background:var(--beige-l);box-shadow:0 0 0 3px rgba(215,171,168,.32)}
+.mn-ido:has(input:checked) b{color:var(--rose-i)}
+.mn-ido.tartalek{border-style:dashed}
+.mn-betelt{margin-top:14px;padding:16px;border-radius:var(--r-m);background:var(--beige);color:var(--navy)}
+.mn-betelt p{margin:0 0 12px;line-height:1.5}
+
+/* adatok */
+.mn-mezok{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mn-mezok label{display:flex;flex-direction:column;gap:6px;color:var(--navy);font-size:.9rem;font-weight:700}
+.mn-mezok input{width:100%;box-sizing:border-box;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:inherit;font-size:16px;font-weight:500}
+.mn-mezok input:focus{outline:3px solid rgba(215,171,168,.5);border-color:var(--rose-i)}
+.mn-mezok input[aria-invalid="true"]{border-color:#c0392b}
+.mn-csapda{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+.mn-hozzajarulas{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.mn-pipa{display:flex;gap:12px;align-items:flex-start;color:var(--ink);font-size:.92rem;line-height:1.5;cursor:pointer}
+.mn-pipa input{flex:none;width:22px;height:22px;margin:1px 0 0;accent-color:var(--rose-i)}
+.mn-pipa a{color:var(--rose-i);font-weight:700}
+.mn-hiba{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:#fdecea;color:#8a2a20;font-weight:600;font-size:.92rem}
+.mn-kuldes{margin-top:18px;width:100%;justify-content:center}
+.mn-kuldes:disabled{opacity:.6;cursor:wait}
+
+/* kesz */
+.mn-kesz{text-align:center}
+.mn-kesz-jel{display:inline-grid;place-items:center;width:58px;height:58px;margin:0 0 6px;border-radius:50%;background:var(--rose);color:#fff}
+.mn-kesz-jel .ik{width:30px;height:30px}
+.mn-kesz h3{margin:0 0 8px;color:var(--navy);font-size:1.45rem}
+.mn-adat{display:grid;gap:0;margin:18px auto;max-width:460px;padding:6px 16px;border:1px solid var(--line);border-radius:14px;background:var(--beige-l);text-align:left}
+.mn-adat div{padding:9px 0;border-bottom:1px solid var(--line)}
+.mn-adat div:last-child{border-bottom:0}
+.mn-adat dt{color:var(--mut);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.mn-adat dd{margin:3px 0 0;color:var(--navy);overflow-wrap:anywhere}
+
+/* --- A nap menete --- */
+.mn-menet{counter-reset:menet;display:grid;gap:12px;max-width:760px;margin:0 auto;padding:0;list-style:none}
+.mn-menet li{counter-increment:menet;position:relative;padding:18px 20px 18px 70px;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
+.mn-menet li::before{content:counter(menet);position:absolute;left:18px;top:16px;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--rose);color:#fff;font-weight:800}
+.mn-menet b{color:var(--navy)}
+.mn-menet p{margin:4px 0 0;color:var(--mut);font-size:.93rem;line-height:1.55}
+.mn-menet a{color:var(--rose-i);font-weight:700}
+
+/* --- GYIK --- */
+.mn-gyik{display:grid;gap:10px;max-width:820px;margin:0 auto}
+.mn-gyik details{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
+.mn-gyik summary{position:relative;padding:16px 48px 16px 20px;color:var(--navy);font-weight:700;line-height:1.4;cursor:pointer;list-style:none}
+.mn-gyik summary::-webkit-details-marker{display:none}
+.mn-gyik summary::after{content:"+";position:absolute;right:20px;top:50%;transform:translateY(-50%);color:var(--rose-i);font-size:1.5rem;font-weight:600}
+.mn-gyik details[open] summary::after{content:"–"}
+.mn-gyik details p{margin:0;padding:0 20px 18px;color:var(--mut);font-size:.95rem;line-height:1.6}
+.mn-gyik details a{color:var(--rose-i);font-weight:700}
+
+/* --- Zaro felhivas --- */
+.mn-zaro-doboz{padding:34px 28px;border-radius:var(--r-l);background:linear-gradient(120deg,var(--navy) 0,#3a3b4d 100%);color:#fff;text-align:center}
+.mn-zaro-doboz h2{margin:0 0 8px;color:#fff}
+.mn-zaro-doboz p{margin:0 auto 6px;max-width:560px;color:#e9e3df}
+.mn-zaro-doboz .gombsor{justify-content:center;margin-top:16px}
+
+/* --- Ragados gomb (mobil) --- */
+.mn-ragados{display:none}
+
+@media (max-width:1000px){
+  .mn-lepesek{grid-template-columns:minmax(0,1fr)}
+  .mn-tipusok{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  /* a mobil hos sorrendje (a .kat-hos-b a sajat elemeit rendezi: cim, kep, bevezeto, gombok, ertekeles): az oldal elemei beillesztve */
+  .mn-hos.kat-hos-b .hos-cim{order:1}
+  .mn-hos.kat-hos-b .mn-datumok{order:2;margin:0}
+  .mn-hos.kat-hos-b .hos-kep{order:3}
+  .mn-hos.kat-hos-b .hos-bevezeto{order:4}
+  .mn-hos.kat-hos-b .hos-szoveg .gombsor{order:5}
+  .mn-hos.kat-hos-b .mn-szabad{order:6;margin:0}
+  .mn-hos.kat-hos-b .mn-chipek{order:7;margin:0}
+  .mn-hos.kat-hos-b .hos-ertek-sav{order:8}
+  .mn-doboz{padding:18px 16px}
+  .mn-tipusok{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mn-mezok{grid-template-columns:minmax(0,1fr)}
+  .mn-idok{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mn-datumok{justify-content:center}
+  .mn-chipek{justify-content:center}
+  .mn-szabad{text-align:center}
+  .mn-menet li{padding:16px 16px 16px 62px}
+  .mn-menet li::before{left:14px;top:14px}
+  .mn-zaro-doboz{padding:26px 18px}
+  .mn-ragados{position:fixed;left:0;right:0;bottom:0;z-index:40;display:block;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(90,70,66,.12)}
+  .mn-ragados[hidden]{display:none}
+  .mn-ragados .gomb{display:flex;justify-content:center;width:100%}
+  body.oldal-sajat:has(.mn-ragados:not([hidden])){padding-bottom:78px}
+}
+@media (prefers-reduced-motion:reduce){
+  .mn-tipus,.mn-nap,.mn-ido{transition:none}
+}
