@@ -86,6 +86,14 @@ describe('statikus', () => {
     assert.match(r, /Külön konzultációra csak akkor jöjj, ha még nem biztos/);
     assert.ok(!/(elvégezni az eltávolítást|egy alkalommal eltávolít)/i.test(r + HTML.replace(/<[^>]+>/g, ' ')), 'nem sugallunk egy alkalmas teljes eltavolitast (1–3 alkalom)');
   });
+  test('az "Amit vallalok" blokk (Feri, 2026-11-01) torolve; a "Mikor nem vallalom" marad; a nem-igeret megjegyzes a "Hany alkalom kell?" reszben van; a GYIK nem hivatkozik a torolt blokkra', () => {
+    const tiszta = HTML.replace(/<!--[\s\S]*?-->/g, '');
+    assert.ok(!/Amit vállalok|id="vallalasok"|class="garancia|garancia-kartya|\d\. vállalás/.test(tiszta), 'az "Amit vallalok" blokk nem lehet az oldalon');
+    assert.match(tiszta, /Mikor nem vállalom a kezelést\?/);
+    const varni = tiszta.slice(tiszta.indexOf('id="el-varni-cim"'), tiszta.indexOf('id="el-ar-cim"'));
+    assert.match(varni, /class="el-varni-megj"[^>]*>[^<]*Teljes eltűnést, hegmentességet vagy pontos alkalomszámot nem ígérek/);
+    assert.ok(!/Az oldalon leírt vállalásaim/.test(tiszta), 'a GYIK nem hivatkozhat a torolt vallalasokra');
+  });
   test('a kepek EXIF-mentesek (nincs helyadat / eszkozadat)', () => {
     for (const f of fs.readdirSync(path.join(GYOKER, 'assets/img/eltavolitas')).filter((x) => x.endsWith('.jpg'))) {
       const b = fs.readFileSync(path.join(GYOKER, 'assets/img/eltavolitas', f));
@@ -211,6 +219,196 @@ describe('bongeszos', () => {
     await lap.click('#el-fo-gomb');
     await lap.waitForFunction(() => document.getElementById('foglalas').getBoundingClientRect().top < 300);
     assert.equal(lap.url(), url0);
+    await ctx.close();
+  });
+
+  // ---------- kepek nagyban, nagyithatoan (Feri, 2026-11-01) ----------
+  const nagyNyit = async (lap, n = 0) => {
+    await lap.locator('.el-galeria .el-kep').nth(n).scrollIntoViewIfNeeded();
+    await lap.locator('.el-galeria .el-kep').nth(n).click();
+    await lap.waitForSelector('dialog.el-nagy[open]');
+  };
+  const nagyitas = (lap) => lap.evaluate(() => parseFloat(document.querySelector('.el-nagy-kep').dataset.nagyitas));
+  const felirat = (lap) => lap.evaluate(() => document.querySelector('.el-nagy-felirat').textContent);
+  const kepCel = (lap) => lap.evaluate(() => { const r = document.querySelector('.el-nagy-kep').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; });
+
+  test('asztal: a 6 kep kattintasra nagyban nyilik (nyitas, lapozas, Esc, fokusz-visszaadas, billentyuzet); a bongeszo hatterben nem gorget; nincs POST, nincs dataLayer-esemeny', async () => {
+    const { ctx, lap, hibak, posztok } = await nezet(false);
+    assert.equal(await lap.locator('.el-galeria .el-kep[role=button][tabindex="0"]').count(), 6);
+    const dl0 = await lap.evaluate(() => (window.dataLayer || []).length);
+    await nagyNyit(lap, 0);
+    assert.match(await lap.getAttribute('.el-nagy-kep', 'src'), /elotte-c-v2\.jpg$/);
+    assert.equal(await felirat(lap), 'Előtte · 1 / 6');
+    // a nagy nezet tenyleg nagyobb, mint a kis kep (asztalon legalabb 450 px magas)
+    const meret = await kepCel(lap);
+    assert.ok(meret.h >= 450, 'a nagy kep legalabb 450 px magas asztalon: ' + meret.h);
+    assert.equal(await lap.evaluate(() => document.documentElement.style.overflow), 'hidden', 'a hatter nem gorget');
+    // lapozas nyillal
+    await lap.keyboard.press('ArrowRight');
+    assert.equal(await felirat(lap), 'Közvetlenül utána · 2 / 6');
+    assert.match(await lap.getAttribute('.el-nagy-kep', 'src'), /utana-c-v2\.jpg$/);
+    await lap.keyboard.press('ArrowLeft');
+    assert.equal(await felirat(lap), 'Előtte · 1 / 6');
+    await lap.keyboard.press('ArrowLeft'); // korbe: az utolso
+    assert.equal(await felirat(lap), 'Közvetlenül utána · 6 / 6');
+    // Esc zar, a fokusz a megnyitott kepre kerul vissza
+    await lap.keyboard.press('Escape');
+    await lap.waitForFunction(() => !document.querySelector('dialog.el-nagy[open]'));
+    await lap.waitForFunction(() => document.documentElement.style.overflow === '', null, { timeout: 2000 }); // a 'close' esemeny aszinkron erkezik
+    assert.equal(await lap.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-nagyit')), '0', 'a fokusz a megnyitott kepre kerul vissza');
+    // billentyuzet: Enter nyit, szokoz a felengedesre nyit (es nem zarja be azonnal)
+    await lap.keyboard.press('Enter');
+    await lap.waitForSelector('dialog.el-nagy[open]');
+    await lap.keyboard.press('Escape');
+    await lap.waitForFunction(() => !document.querySelector('dialog.el-nagy[open]'));
+    await lap.keyboard.press('Space');
+    await lap.waitForSelector('dialog.el-nagy[open]');
+    await lap.waitForTimeout(150);
+    assert.equal(await lap.isVisible('dialog.el-nagy[open]'), true, 'a szokoz felengedese nem zarhatja be');
+    // a nagyitas gomb zar-gombjara kattintas is zar
+    await lap.click('dialog.el-nagy .el-nagy-fej button');
+    await lap.waitForFunction(() => !document.querySelector('dialog.el-nagy[open]'));
+    assert.equal(await lap.evaluate(() => (window.dataLayer || []).length), dl0, 'a nagyito nem hoz letre dataLayer-esemenyt');
+    assert.equal(posztok.length, 0);
+    assert.deepEqual(hibak, []);
+    await ctx.close();
+  });
+
+  test('asztal: gorgetessel, + / - / 100% gombokkal, kattintassal nagyit; huzassal mozgathato, a kep nem hagyja el a kepernyot; hatterre kattintas zar', async () => {
+    const { ctx, lap } = await nezet(false);
+    await nagyNyit(lap, 2);
+    assert.equal(await nagyitas(lap), 1);
+    assert.equal(await lap.isDisabled('[aria-label="Kicsinyítés"]'), true, '1x-en a kicsinyites tiltott');
+    let c = await kepCel(lap);
+    await lap.mouse.move(c.x, c.y);
+    await lap.mouse.wheel(0, -500);
+    await lap.waitForFunction(() => parseFloat(document.querySelector('.el-nagy-kep').dataset.nagyitas) > 1.5);
+    const g = await nagyitas(lap);
+    assert.ok(g > 1.5 && g <= 4, 'gorgetes: ' + g);
+    // + gomb, majd maximum
+    for (let i = 0; i < 6; i++) await lap.click('[aria-label="Nagyítás"]', { force: true }).catch(() => {});
+    assert.ok(Math.abs((await nagyitas(lap)) - 4) < 0.01, 'a nagyitas plafonja 4x');
+    assert.equal(await lap.isDisabled('[aria-label="Nagyítás"]'), true);
+    // huzas: a kep jobbra huzva sem hagyhatja el a keretet (a bal szele nem johet a stage bal szele moge)
+    c = await kepCel(lap);
+    const stage = await lap.evaluate(() => { const r = document.querySelector('.el-nagy-szint').getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom }; });
+    await lap.mouse.move(c.x, c.y); await lap.mouse.down(); await lap.mouse.move(c.x + 900, c.y + 900, { steps: 8 }); await lap.mouse.up();
+    let r = await lap.evaluate(() => { const k = document.querySelector('.el-nagy-kep').getBoundingClientRect(); return { l: k.left, r: k.right, t: k.top, b: k.bottom }; });
+    assert.ok(r.l <= stage.l + 1 && r.t <= stage.t + 1, 'a kep bal / felso szele nem johet beljebb a keretnel: ' + JSON.stringify({ r, stage }));
+    assert.equal(await lap.isVisible('dialog.el-nagy[open]'), true, 'a huzas nem zar');
+    // 100% gomb
+    await lap.click('.el-nagy-egy');
+    assert.equal(await nagyitas(lap), 1);
+    await lap.waitForTimeout(260); // a 0.12 s-os atmenet utan olvassuk a kep helyet
+    // kattintas a kepre: nagyit; ujabb kattintas: visszaall
+    c = await kepCel(lap);
+    await lap.mouse.click(c.x, c.y);
+    assert.ok(Math.abs((await nagyitas(lap)) - 2.5) < 0.01, 'kattintas = 2.5x');
+    await lap.waitForTimeout(260);
+    c = await kepCel(lap);
+    await lap.mouse.click(Math.min(c.x, stage.r - 40), Math.min(c.y, stage.b - 40));
+    assert.equal(await nagyitas(lap), 1, 'masodik kattintas visszaall');
+    // billentyuzet: + / - / 0
+    await lap.keyboard.press('+');
+    assert.ok((await nagyitas(lap)) > 1.4);
+    await lap.keyboard.press('0');
+    assert.equal(await nagyitas(lap), 1);
+    // a kepen kivuli hatterre kattintas zar
+    await lap.mouse.click(60, 400);
+    await lap.waitForFunction(() => !document.querySelector('dialog.el-nagy[open]'));
+    await ctx.close();
+  });
+
+  test('mobil: koppintasra nagyban nyilik (teljes szelesseg); csipes, dupla koppintas, huzas, vizszintes huzas = lapozas; a kep nem hagyja el a kepernyot', async () => {
+    const { ctx, lap, hibak } = await nezet(true);
+    await lap.addStyleTag({ content: 'html{scroll-behavior:auto !important}' });
+    const koppint = async (sel) => { const r = await lap.evaluate((s) => { const e = document.querySelector(s).getBoundingClientRect(); return { x: e.left + e.width / 2, y: e.top + e.height / 2 }; }, sel); await lap.touchscreen.tap(r.x, r.y); };
+    const cdp = await ctx.newCDPSession(lap);
+    const erint = (tipus, pontok) => cdp.send('Input.dispatchTouchEvent', { type: tipus, touchPoints: pontok });
+    await lap.locator('.el-galeria .el-kep').first().scrollIntoViewIfNeeded();
+    await lap.locator('.el-galeria .el-kep').first().tap();
+    await lap.waitForSelector('dialog.el-nagy[open]');
+    let c = await kepCel(lap);
+    assert.ok(c.w >= 380, 'mobilon a nagy kep a teljes szelesseget kitolti: ' + c.w);
+    assert.ok(c.w > 2 * 150, 'a nagy kep jelentosen nagyobb, mint a kis csempe');
+    // csipes: ket ujj eltavolodik
+    await erint('touchStart', [{ x: c.x - 40, y: c.y, id: 1 }, { x: c.x + 40, y: c.y, id: 2 }]);
+    for (let i = 1; i <= 8; i++) await erint('touchMove', [{ x: c.x - 40 - i * 15, y: c.y, id: 1 }, { x: c.x + 40 + i * 15, y: c.y, id: 2 }]);
+    await erint('touchEnd', []);
+    const cs = await nagyitas(lap);
+    assert.ok(cs > 2, 'a csipes nagyit: ' + cs);
+    // huzas nagyitott kepen: mozgatja, de a kep a kereten belul marad (a stage-et mindig kitolti)
+    c = await kepCel(lap);
+    await erint('touchStart', [{ x: 200, y: 400, id: 1 }]);
+    for (let i = 1; i <= 8; i++) await erint('touchMove', [{ x: 200 + i * 40, y: 400 + i * 30, id: 1 }]);
+    await erint('touchEnd', []);
+    const kereten = await lap.evaluate(() => { const k = document.querySelector('.el-nagy-kep').getBoundingClientRect(); const s = document.querySelector('.el-nagy-szint').getBoundingClientRect(); return k.left <= s.left + 1 && k.right >= s.right - 1 && k.top <= s.top + 1 && k.bottom >= s.bottom - 1; });
+    assert.equal(kereten, true, 'nagyitva a kep kitolti a keretet');
+    assert.equal(await lap.isVisible('dialog.el-nagy[open]'), true, 'a huzas nem zar');
+    assert.equal(await felirat(lap), 'Előtte · 1 / 6', 'nagyitva a vizszintes huzas nem lapoz');
+    await lap.waitForTimeout(600); // a gyors, szintetikus huzas "fling"-je lecsengjen (a Chrome az elso koppintast egy futo fling leallitasara hasznalja)
+    // 100% gomb, majd dupla koppintas a kepen: 2.5x, ujabb dupla koppintas: vissza
+    await koppint('.el-nagy-egy');
+    assert.equal(await nagyitas(lap), 1);
+    await lap.waitForTimeout(260);
+    c = await kepCel(lap);
+    await lap.touchscreen.tap(c.x, c.y); await lap.touchscreen.tap(c.x, c.y);
+    assert.ok(Math.abs((await nagyitas(lap)) - 2.5) < 0.01, 'dupla koppintas = 2.5x');
+    await lap.waitForTimeout(400);
+    await lap.touchscreen.tap(c.x, c.y); await lap.touchscreen.tap(c.x, c.y);
+    assert.equal(await nagyitas(lap), 1, 'masodik dupla koppintas visszaall');
+    // vizszintes huzas (nem nagyitott): lapoz, balra = kovetkezo
+    await lap.waitForTimeout(500);
+    c = await kepCel(lap);
+    await erint('touchStart', [{ x: c.x + 100, y: c.y, id: 1 }]);
+    for (let i = 1; i <= 6; i++) await erint('touchMove', [{ x: c.x + 100 - i * 35, y: c.y + 4, id: 1 }]);
+    await erint('touchEnd', []);
+    assert.equal(await felirat(lap), 'Közvetlenül utána · 2 / 6');
+    await lap.waitForTimeout(600); // a szintetikus huzas lecsengese utan koppintunk
+    // lapozo gombok, zar gomb
+    await koppint('[aria-label="Előző kép"]');
+    assert.equal(await felirat(lap), 'Előtte · 1 / 6');
+    await koppint('dialog.el-nagy .el-nagy-fej button');
+    await lap.waitForFunction(() => !document.querySelector('dialog.el-nagy[open]'));
+    const vizsz = await lap.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    assert.ok(vizsz <= 1, 'nincs vizszintes kilogas a nagyito utan: ' + vizsz);
+    assert.deepEqual(hibak, []);
+    await ctx.close();
+  });
+
+  test('mobil: a kartya-valasztas (ingyenes konzultacio / eltavolito kezeles) utan az oldal a naptarhoz ugrik; a hero gomb is oda visz, ha a szekcio tetejerol nem latszana', async () => {
+    const { ctx, lap } = await nezet(true);
+    await lap.route('**/foglalo-pmu**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>foglalo</p>' }));
+    await lap.addStyleTag({ content: 'html{scroll-behavior:auto !important}' });
+    const vh = 844;
+    const dobozTop = () => lap.evaluate(() => document.getElementById('el-foglalo-doboz').getBoundingClientRect().top);
+    const megall = async () => { let elozo = -1; for (let i = 0; i < 40; i++) { const y = await lap.evaluate(() => Math.round(scrollY)); if (y === elozo) return; elozo = y; await lap.waitForTimeout(80); } };
+    // a) a szekcio tetejen allunk, a ket kartya latszik: kartya-koppintas -> a naptar a kepernyo felso 60%-aban
+    await lap.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('foglalas').scrollIntoView(); });
+    await lap.tap('.el-valaszt[data-valaszt=konzultacio]');
+    await lap.waitForFunction(() => !document.getElementById('el-foglalo-doboz').hidden);
+    await megall();
+    let top = await dobozTop();
+    assert.ok(top >= 0 && top < vh * 0.6, 'konzultacio-kartya utan a naptar teteje latszik: ' + top);
+    // b) az eltavolito kezelest valasztva ugyanez (a kartyak fole gorgetve, majd valasztas)
+    await lap.evaluate(() => document.getElementById('foglalas').scrollIntoView());
+    await lap.tap('.el-valaszt[data-valaszt=kezeles]');
+    await lap.waitForFunction(() => document.getElementById('el-foglalo').getAttribute('src').endsWith('kezeles=491949'));
+    await megall();
+    top = await dobozTop();
+    assert.ok(top >= 0 && top < vh * 0.6, 'kezeles-kartya utan a naptar teteje latszik: ' + top);
+    // c) ha a naptar mar latszik, nem ugrik (nincs felesleges mozgas)
+    const y0 = await lap.evaluate(() => scrollY);
+    await lap.evaluate(() => document.querySelector('.el-valaszt[data-valaszt=kezeles]').click());
+    await lap.waitForTimeout(400);
+    assert.equal(await lap.evaluate(() => scrollY), y0, 'latszo naptarnal nincs gorgetes');
+    // d) a hero gombja: a naptar mobilon a kepernyo also 40%-aba esne a szekcio-tetoről -> kozvetlenul a naptarra visz
+    await lap.evaluate(() => scrollTo(0, 0));
+    await lap.waitForTimeout(100);
+    await lap.tap('#el-fo-gomb');
+    await megall();
+    top = await dobozTop();
+    assert.ok(top >= 0 && top < vh * 0.6, 'hero gomb utan a naptar teteje latszik: ' + top);
     await ctx.close();
   });
 });
