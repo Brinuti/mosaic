@@ -137,13 +137,16 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
     assert.deepEqual(await e.lepesek(), ['Kezelés', 'Fotó', 'Időpont', 'Adatok']);
     assert.equal(await e.aktualisLepes(), 'Fotó');
     assert.equal(await e.lap.isDisabled('#foto-tovabb'), true, 'foto nelkul nem lehet tovabb');
-    assert.match(await e.lap.locator('#foto-szoveg').innerText(), /november 9/);
+    const fotoSzoveg = await e.lap.locator('#foto-szoveg').innerText();
+    assert.match(fotoSzoveg, /Feltöltés után választhatsz időpontot\./);
+    assert.ok(!/november 9|nov\. ?9/i.test(fotoSzoveg), 'a fotó-lépésben nincs kiírva a nov. 9. (Feri, 2026-11-01): a naptár magától mutatja');
     await fotoFel(e);
     assert.match(await e.lap.locator('#foto-tovabb').innerText(), /Tovább az időpontokhoz/i);
     await e.lap.click('#foto-tovabb');
     await e.var_('ido');
     assert.deepEqual(await e.napok(), [9, 10], 'minden szolgaltatasra (a konzultaciora is) csak nov. 9-tol');
-    assert.match(await e.lap.locator('#ido-kezeles').innerText(), /legkorábbi időpont: november 9/i);
+    const idoSzoveg = await e.lap.locator('#ido-kezeles').innerText();
+    assert.ok(!/november 9|nov\. ?9|legkorábbi időpont/i.test(idoSzoveg), 'az időpont-lépésben sincs kiírva a nov. 9. (a szűrés működik, a kiírás nincs)');
     assert.equal(await e.aktualisLepes(), 'Időpont');
     await e.slot();
     assert.deepEqual(await e.nezet(), ['foto-adatok']);
@@ -162,7 +165,7 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
     assert.equal(e.posztok.length, 1, 'egyetlen level');
     const t = e.lead(e.posztok[0]);
     assert.match(t, /name="form-name"\r\n\r\npmu-proba-foto/);
-    assert.match(t, /name="ag"\r\n\r\nB – régi PMU van · FOGLALÁSSAL/);
+    assert.match(t, /name="ag"\r\n\r\nB – régi PMU van · FOGLALÁSSAL \(fotós előszűrés\)\r\n/, 'az ag mezőben nincs nov. 9. kiírás');
     assert.match(t, /name="kezeles"\r\n\r\nSzemélyes konzultáció · FOGLALÁSSAL/);
     assert.match(t, /name="idopont"\r\n\r\n[^\r]*2026\. november 9[^\r]*a Salonicban/);
     assert.match(t, /name="foto1"; filename="foto1\.jpg"/);

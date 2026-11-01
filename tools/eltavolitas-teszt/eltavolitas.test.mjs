@@ -86,6 +86,11 @@ describe('statikus', () => {
     assert.match(r, /Külön konzultációra csak akkor jöjj, ha még nem biztos/);
     assert.ok(!/(elvégezni az eltávolítást|egy alkalommal eltávolít)/i.test(r + HTML.replace(/<[^>]+>/g, ' ')), 'nem sugallunk egy alkalmas teljes eltavolitast (1–3 alkalom)');
   });
+  test('az oldal latszo szovegeben nincs "november 9" (Feri, 2026-11-01: a naptar magatol mutatja, mikortol lehet idopontot valasztani)', () => {
+    const szoveg = HTML.replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ');
+    assert.ok(!/november\s*9|nov\.\s*9/i.test(szoveg), 'nov. 9. kiiras az oldalon');
+    assert.match(szoveg, /A szabad napokat a naptárban látod\./, 'a kezeles-kartya mondata megmaradt (nov. 9. nelkul)');
+  });
   test('az "Amit vallalok" blokk (Feri, 2026-11-01) torolve; a "Mikor nem vallalom" marad; a nem-igeret megjegyzes a "Hany alkalom kell?" reszben van; a GYIK nem hivatkozik a torolt blokkra', () => {
     const tiszta = HTML.replace(/<!--[\s\S]*?-->/g, '');
     assert.ok(!/Amit vállalok|id="vallalasok"|class="garancia|garancia-kartya|\d\. vállalás/.test(tiszta), 'az "Amit vallalok" blokk nem lehet az oldalon');
