@@ -202,3 +202,16 @@ test('B) naplozas: nincs_ernyo / kihagyva / halasztva 1-1 naplosor (naplo: elota
   const rossz = { prepare() { throw new Error('db'); }, batch() { throw new Error('db'); } };
   const rr = await metaEloKuld(rossz, FK(), { env: ENV(), fetchImpl: f, now: () => NOW }); assert.equal(rr.allapot, 'hiba');
 });
+
+// UJ-105 (01-MERES #167 6553591298): a nincs_ernyo naplosor indoka elkulonuli: kupon / visszajaro / egyeb; a viselkedes (allapot) valtozatlan
+test('C) nincs_ernyo naplosor indok: kupon (DECISION #194) / visszajaro / egyeb', async () => {
+  const d = d1(); const f = hamisFetch(); await meresSema(d);
+  const dep = { env: ENV(), fetchImpl: f, now: () => NOW };
+  const r1 = await metaEloKuld(d, FK({ kupon: true, source_entity_id: ID('k') }), dep);
+  const r2 = await metaEloKuld(d, FK({ jelleg: 'visszajaro', source_entity_id: ID('v') }), dep);
+  const r3 = await metaEloKuld(d, FK({ kupon: true, jelleg: 'visszajaro', source_entity_id: ID('kv') }), dep);
+  assert.deepEqual([r1.allapot, r2.allapot, r3.allapot], ['nincs_ernyo', 'nincs_ernyo', 'nincs_ernyo']);
+  const ind = (id) => d.db.prepare('SELECT indok FROM meres_meta_elo WHERE esemeny_id = ?').get(`naplo:${id}:nincs_ernyo`).indok;
+  assert.equal(ind(ID('k')), 'kupon (DECISION #194)'); assert.equal(ind(ID('v')), 'visszajaro'); assert.equal(ind(ID('kv')), 'kupon (DECISION #194)');
+  assert.equal(f.hivasok.length, 0);
+});
