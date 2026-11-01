@@ -131,7 +131,9 @@ MERES_VID_BE = "1"
 # UJ-98 (01-MERES #167 6539251724): a HeadSpa (DECISION #240) ide kerul: META_ELO_BE = "headspa,pmu" - a HeadSpa szerveres Schedule az ELO HeadSpa-datasetre (3473839859576758), KOZOS event_id-vel, teszt-kod NELKUL. ROLLBACK: "pmu"-ra visszairni (vagy a sor torlese) + deploy.
 # SZORTELENITES (Elysion-pixel 643342342027957; Feri 2026-10-31 16:51, #167 6545661338, PR #570 kod): "szor" a kapcsolo-listaba, a HeadSpa #553 24H visszameres (11-01 09:43) PASS utan, a Meta elysion-ok Schedule URL-szabaly INACTIVE-ra allitasaval EGYIDEJUEG (kulonben dupla). ROLLBACK: "szor" kivetele + deploy; az URL-szabaly vissza.
 # SZOR IDEIGLENES KIVETEL (01-MERES #167 6556444617/6556731534): a Meta elysion-ok URL-szabaly 13:00 Bp-ig nem lett INACTIVE-ra allitva -> a szerveres Szor-Schedule dupla szamolast nyitna. VISSZAKAPCSOLAS: "headspa,pmu,szor" + deploy, a Meta elysion-ok URL-szabaly INACTIVE-ra allitasaval EGYIDEJUEG (Feri kifejezett mondata / kattintasa).
-META_ELO_BE = "headspa,pmu"
+# HEADSPA SZERVERES SCHEDULE IDEIGLENES VISSZAVETELE (01-MERES #167 6562752622, (B) ut; ELOKESZITETT, csak Feri kulon "mehet"-jevel mergelheto): a bongeszos Schedule a Meta "success" URL-szabalybol jon, event_id NELKUL,
+# ezert a szerveres (successfogla-... event_id) mellett nem dedupolodik -> lehetseges dupla szamolas. VISSZAKAPCSOLAS (rollback e PR-nak): "headspa,pmu" + deploy.
+META_ELO_BE = "pmu"
 # PMU FOTOS FOGLALAS: PII-MENTES JELZES (Feri 2026-11-01, #588): a pmu-proba-foto urlap fogadasakor HMAC(telefon)+ido a D1 pmu_fotos_jel tablaba (KULCS_DB); a Salonic-foglalas (sd es motoros ut) telefon-HMAC-je egyezeseire
 # [jelzes-1h, jelzes+7nap] SEMMILYEN platform-esemeny nem megy (cellak 'kihagyva', indok: fotos_foglalas). ROLLBACK: a kovetkezo sor torlese (vagy "0") + deploy; a tabla ures marad / nem hasznalt.
 PMU_FOTOS_JEL = "1"
