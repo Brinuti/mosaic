@@ -1,8 +1,9 @@
 // A modellkereso napok (ingyenes piercing, oktatasi gyakorlonap) vegpontjai: JSON API (/api/modell/*), a foglalas oldala (/mf/<kod>), a level-kuldes es az idozitett teendok.
 // Kapcsolo: MODELL_FOGLALAS ("be" = eles foglalas; alapbol KI a vegleges inditasig). Az elonezeti cimeken (*.pages.dev) a foglalas mindig megy, de a sorok "elonezet" kornyezetuek,
 // nem foglalnak helyet az eles savokbol, es level SOHA nem megy ki. MODELL_FELSZABADITAS = "be": a 12 oraval a szuras elott sem megerositett foglalas felszabadul (alapbol ki).
-import { nevTisztit, emailTisztit, telefonTisztit, szabad, foglal, foglalasLekerdez, megerosit, lemond, ajanlatElfogad, varolistaFelvesz, lejartAjanlatok, megerositetlenek, beallitas, osszesites, sema, adatTorles, MAX_PROBA, szolitas } from './tarolo.js';
+import { nevTisztit, emailTisztit, telefonTisztit, szabad, foglal, foglalasLekerdez, megerosit, lemond, ajanlatElfogad, varolistaFelvesz, lejartAjanlatok, megerositetlenek, beallitas, osszesites, sema, adatTorles, nyilatkozatElfogad, MAX_PROBA, szolitas } from './tarolo.js';
 import { level } from './levelek.js';
+import { SZOVEG as NYIL_SZOVEG, CIM as NYIL_CIM, ALCIM as NYIL_ALCIM } from './nyilatkozat.js';
 import { NAPOK, TIPUSOK, nap as napKeres, tipus as tipusKeres, sav as savKeres, erkezesIdo, HELYSZIN } from './beosztas.js';
 
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
@@ -136,9 +137,10 @@ export async function api(request, env, { waitUntil, most = Math.floor(Date.now(
     const t = await torzOlvas(request);
     if (!t) return json({ ok: false, hiba: 'hibas_keres' }, 400);
     const id = String(t.id || '');
-    const r = t.akcio === 'megerosit' ? await megerosit(db, id, most) : t.akcio === 'lemond' ? await lemond(db, id, most) : t.akcio === 'elfogad' ? await ajanlatElfogad(db, id, most) : { ok: false, hiba: 'ismeretlen_akcio' };
+    const r = t.akcio === 'megerosit' ? await megerosit(db, id, most) : t.akcio === 'lemond' ? await lemond(db, id, most) : t.akcio === 'elfogad' ? await ajanlatElfogad(db, id, most)
+      : t.akcio === 'nyilatkozat' ? (t.elfogad === true ? await nyilatkozatElfogad(db, id, { most, ipHash: await ipHash(request, env) }) : { ok: false, hiba: 'hianyzo_hozzajarulas' }) : { ok: false, hiba: 'ismeretlen_akcio' };
     if (r.ok) hatterben(kuldesre());
-    return json(r.ok ? { ok: true, foglalas: nyilvanos(r.foglalas) } : { ok: false, hiba: r.hiba, foglalas: r.foglalas ? nyilvanos(r.foglalas) : undefined }, r.ok ? 200 : r.hiba === 'nincs' ? 404 : 409);
+    return json(r.ok ? { ok: true, foglalas: nyilvanos(r.foglalas) } : { ok: false, hiba: r.hiba, foglalas: r.foglalas ? nyilvanos(r.foglalas) : undefined }, r.ok ? 200 : r.hiba === 'nincs' ? 404 : r.hiba === 'hianyzo_hozzajarulas' ? 400 : 409);
   }
   // kulcsos: tick, admin, level-minta
   if (['tick', 'admin', 'level-minta'].includes(akcio)) {
@@ -160,7 +162,7 @@ export async function api(request, env, { waitUntil, most = Math.floor(Date.now(
 
 /** A foglalas nyilvanos adatai (a kod a kulcs): keresztnev, a sav, az allapot; e-mail / telefon nem megy ki. */
 function nyilvanos(f) {
-  return { id: f.id, keresztnev: szolitas(f), nap: f.nap, tipus: f.tipus, ido: f.ido, erkezes: erkezesIdo(f.ido), allapot: f.allapot, megerositve: !!f.megerositve, tartva_eddig: f.tartva_eddig || null };
+  return { id: f.id, keresztnev: szolitas(f), nap: f.nap, tipus: f.tipus, ido: f.ido, erkezes: erkezesIdo(f.ido), allapot: f.allapot, megerositve: !!f.megerositve, nyilatkozat: !!f.nyilatkozat_ido, tartva_eddig: f.tartva_eddig || null };
 }
 
 // ---- "A foglalasod" oldal (/mf/<kod>) ----------------------------------------------------------------------------------------------------------------------
@@ -179,7 +181,7 @@ export async function foglalasOldal(request, env, { most = Math.floor(Date.now()
   let torzs;
   if (f.allapot === 'aktiv') {
     torzs = `<h1>${h(szolitas(f))}, a foglalásod rendben van</h1>${f.megerositve ? '<p class="jo">✓ Megerősítetted, hogy jössz. Köszönjük!</p>' : '<p>Kérjük, egy kattintással jelezd, hogy biztosan jössz.</p>'}${adat}
-<div class="gombok">${f.megerositve ? '' : `<button class="gomb" data-akcio="megerosit"${url.searchParams.get('ott') ? ' data-elso="1"' : ''}>Ott leszek ✓</button>`}<button class="gomb ures" data-akcio="lemond">Lemondom</button></div>`;
+<div class="gombok">${f.megerositve ? '' : `<button class="gomb" data-akcio="megerosit"${url.searchParams.get('ott') ? ' data-elso="1"' : ''}>Ott leszek ✓</button>`}<button class="gomb ures" data-akcio="lemond">Lemondom</button></div>${nyilatkozatOldal(f, !!url.searchParams.get('nyil'))}`;
   } else if (f.allapot === 'tartva' && f.tartva_eddig > most) {
     const perc = Math.max(1, Math.ceil((f.tartva_eddig - most) / 60));
     torzs = `<h1>Felszabadult egy hely!</h1><p>A várólistán voltál. Ez a hely <b>még kb. ${perc} percig a tiéd</b>: ha el tudsz jönni, fogadd el.</p>${adat}<div class="gombok"><button class="gomb" data-akcio="elfogad">Elfogadom a helyet ✓</button><button class="gomb ures" data-akcio="lemond">Nem kérem</button></div>`;
@@ -189,10 +191,20 @@ export async function foglalasOldal(request, env, { most = Math.floor(Date.now()
     torzs = `<h1>Ez a foglalás már nem él</h1><p>${f.allapot === 'felszabadult' ? 'A foglalás felszabadult, mert nem érkezett megerősítés.' : 'A foglalást lemondták.'} Ha még van szabad hely, <a href="/modellnap">itt</a> újra foglalhatsz.</p>`;
   }
   const script = !torzs.includes('data-akcio="') ? '' : `<script>(function(){var kod=${JSON.stringify(f.id)};var u=document.getElementById('uzenet');function uz(t,jo){u.className=jo?'jo':'rossz';u.textContent=t;}
-document.querySelectorAll('[data-akcio]').forEach(function(b){b.addEventListener('click',function(){var a=b.getAttribute('data-akcio');if(a==='lemond'&&!confirm('Biztosan lemondod a helyed?'))return;b.disabled=true;
-fetch('/api/modell/muvelet',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:kod,akcio:a})}).then(function(r){return r.json()}).then(function(j){if(j.ok){location.reload();}else{b.disabled=false;uz(j.hiba==='lejart'?'Az ajánlat lejárt.':'Nem sikerült. Hívj minket: +36 1 901 7444.',false);}}).catch(function(){b.disabled=false;uz('Nincs kapcsolat. Próbáld újra, vagy hívj minket: +36 1 901 7444.',false);});});});
+document.querySelectorAll('[data-akcio]').forEach(function(b){b.addEventListener('click',function(){var a=b.getAttribute('data-akcio');if(a==='lemond'&&!confirm('Biztosan lemondod a helyed?'))return;if(a==='nyilatkozat'){var pp=document.getElementById('nyil-pipa');if(!pp||!pp.checked){uz('Jelöld be, hogy elolvastad és elfogadod a nyilatkozatot.',false);return;}}b.disabled=true;
+fetch('/api/modell/muvelet',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:kod,akcio:a,elfogad:true})}).then(function(r){return r.json()}).then(function(j){if(j.ok){location.reload();}else{b.disabled=false;uz(j.hiba==='lejart'?'Az ajánlat lejárt.':'Nem sikerült. Hívj minket: +36 1 901 7444.',false);}}).catch(function(){b.disabled=false;uz('Nincs kapcsolat. Próbáld újra, vagy hívj minket: +36 1 901 7444.',false);});});});
 var e=document.querySelector('[data-elso]');if(e){e.focus();}})();</script>`;
   return new Response(oldalKeret('A foglalásod – Medical Piercing', `${torzs}<p id="uzenet" role="status"></p><p class="lab">Kérdésed van? Hívj: <a href="tel:+3619017444">+36 1 901 7444</a> vagy írj: <a href="mailto:${HELYSZIN.email}">${HELYSZIN.email}</a></p>${script}`), { headers: fejlec });
+}
+/** A nyilatkozat resze az "A foglalasod" oldalon: elfogadva -> pipa + datum; kulonben a szoveg + pipa + gomb (a level gombja ?nyil=1-gyel nyitva hozza). */
+function nyilatkozatOldal(f, nyitva) {
+  const szoveg = `<div class="nyil-szoveg"><h3>${h(NYIL_CIM)}</h3><p class="alcim">${h(NYIL_ALCIM)}</p>${NYIL_SZOVEG.map((x) => (x.t === 'h' ? `<h3>${h(x.s)}</h3>` : `<p>${h(x.s)}</p>`)).join('')}</div>`;
+  const fej = '<h2 id="nyilatkozat">Nyilatkozat</h2>';
+  if (f.nyilatkozat_ido) {
+    const datum = new Date(f.nyilatkozat_ido * 1000).toLocaleDateString('hu-HU', { timeZone: 'Europe/Budapest', year: 'numeric', month: 'long', day: 'numeric' });
+    return `${fej}<p class="jo">✓ A nyilatkozatot elfogadtad (${h(datum)}). Köszönjük!</p><details class="nyil"><summary>A nyilatkozat szövege</summary>${szoveg}</details>`;
+  }
+  return `${fej}<p>Kérjük, olvasd el a nyilatkozatot, és fogadd el.</p><details class="nyil"${nyitva ? ' open' : ''}><summary>A nyilatkozat szövege</summary>${szoveg}</details><label class="pipa"><input type="checkbox" id="nyil-pipa"><span>Elolvastam, megértettem és elfogadom a nyilatkozatot.</span></label><div class="gombok"><button class="gomb" data-akcio="nyilatkozat">Nyilatkozat elfogadása</button></div>`;
 }
 function oldalKeret(cim, torzs) {
   return `<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${h(cim)}</title>
@@ -200,6 +212,7 @@ function oldalKeret(cim, torzs) {
 <style>@font-face{font-family:"Plus Jakarta Sans";font-weight:400 800;font-display:swap;src:url(/assets/fonts/plus-jakarta-sans-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:"Plus Jakarta Sans";font-weight:400 800;font-display:swap;src:url(/assets/fonts/plus-jakarta-sans-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}body{margin:0;background:#f6ebe4;font:16px/1.6 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#454659}main{max-width:620px;margin:0 auto;padding:22px 16px 40px}.logo{display:block;margin:6px auto 14px;width:220px;max-width:70%}
 .doboz{background:#fff;border-radius:22px;padding:24px 22px;box-shadow:0 12px 34px rgba(90,70,66,.10)}h1{margin:0 0 10px;font-size:1.5rem;line-height:1.25;color:#2f3044}p{margin:10px 0}a{color:#b0463b}.jo{color:#2f7a4d;font-weight:700}.rossz{color:#b0463b;font-weight:700}
 .adat{margin:16px 0;padding:6px 16px;border:1px solid #ecdcd4;border-radius:14px;background:#fffaf7}.adat div{padding:8px 0;border-bottom:1px solid #f1e6e0}.adat div:last-child{border-bottom:0}.adat dt{font:700 .72rem/1.2 inherit;letter-spacing:.08em;text-transform:uppercase;color:#8a8b9c}.adat dd{margin:3px 0 0;overflow-wrap:anywhere}
+h2{margin:26px 0 6px;font-size:1.15rem;line-height:1.3;color:#2f3044}.nyil{margin:10px 0}.nyil summary{cursor:pointer;font-weight:700;color:#2f3044}.nyil-szoveg{margin-top:10px;padding:12px 14px;border:1px solid #ecdcd4;border-radius:12px;background:#fffaf7;font-size:.88rem;line-height:1.55}.nyil-szoveg h3{margin:12px 0 4px;font-size:.95rem;color:#2f3044}.nyil-szoveg p{margin:6px 0}.nyil-szoveg .alcim{color:#8a8b9c;font-size:.82rem}.pipa{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.pipa input{flex:none;width:22px;height:22px;margin:2px 0 0;accent-color:#b98782}
 .gombok{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.gomb{font:700 1rem/1.2 inherit;padding:.9em 1.6em;border:2px solid #d7aba8;border-radius:999px;background:#d7aba8;color:#fff;cursor:pointer}.gomb.ures{background:#fff;color:#b0463b;border-color:#e3c4bf}.gomb:disabled{opacity:.5}.lab{margin-top:18px;font-size:.88rem;color:#8a8b9c;text-align:center}</style></head>
 <body><main><a href="/"><img class="logo" src="/assets/img/uj-logo.webp" width="327" height="97" alt="Medical Piercing"></a><div class="doboz">${torzs}</div></main></body></html>`;
 }

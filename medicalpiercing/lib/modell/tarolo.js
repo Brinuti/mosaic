@@ -1,6 +1,7 @@
 // A modellkereso napok foglalasainak tarolasa (Cloudflare D1: MP_MERES_DB, "mp-meres"; a fiok D1-kerete betelt, ezert a mar meglevo, MP sajat adatbazis; a tablak
 // "modell_" eloteggel kulonulnek, a sorok "kornyezet" oszlopa (eles / elonezet) valasztja szet az eles es az elonezeti foglalasokat). A tablakat az elso hasznalatkor
 // hozza letre (CREATE TABLE IF NOT EXISTS, mint a lib/meres/lanc.js). Nincs benne HTTP / level: csak adat es szabalyok (tesztelheto; tools/modell-teszt.mjs).
+import { VERZIO as NYILATKOZAT_VERZIO } from './nyilatkozat.js';
 import { NAPOK, TIPUSOK, ERKEZES_ELOTT_PERC, nap as napKeres, tipus as tipusKeres, sav as savKeres, elsodlegesPar, elerhetoseg, kezdesEpoch, savKulcs } from './beosztas.js';
 
 export const AKTIV = ['aktiv', 'tartva'];                 // ezek foglalnak helyet
@@ -26,6 +27,8 @@ export const SEMA = [
     id TEXT PRIMARY KEY, kornyezet TEXT NOT NULL, tipus TEXT NOT NULL, nap TEXT, nev TEXT NOT NULL, kereszt TEXT, email TEXT NOT NULL, telefon TEXT NOT NULL,
     letrehozva INTEGER NOT NULL, allapot TEXT NOT NULL DEFAULT 'var', ajanlat_id TEXT)`,
   'CREATE TABLE IF NOT EXISTS modell_beallitas (kulcs TEXT PRIMARY KEY, ertek TEXT)',
+  // a nyilatkozat elfogadasa (lib/modell/nyilatkozat.js): melyik szoveg-verziot mikor fogadta el a vendeg (kulon tabla: a meglevo tablat nem kell modositani)
+  'CREATE TABLE IF NOT EXISTS modell_nyilatkozat (foglalas_id TEXT PRIMARY KEY, elfogadva INTEGER NOT NULL, verzio TEXT NOT NULL, ip_hash TEXT)',
 ];
 const kesz = new WeakSet();
 export async function sema(db) {
@@ -115,7 +118,17 @@ export function uzenetTerv({ id, korny, nap, ido, most }) {
 export async function foglalasLekerdez(db, id) {
   await sema(db);
   if (!/^[a-z0-9]{12,40}$/.test(String(id || ''))) return null;
-  return (await db.prepare('SELECT * FROM modell_foglalas WHERE id = ?1').bind(id).first()) || null;
+  return (await db.prepare('SELECT f.*, n.elfogadva AS nyilatkozat_ido, n.verzio AS nyilatkozat_verzio FROM modell_foglalas f LEFT JOIN modell_nyilatkozat n ON n.foglalas_id = f.id WHERE f.id = ?1').bind(id).first()) || null;
+}
+
+/** A nyilatkozat elfogadasa (csak aktiv foglalasra; ketszer ugyanaz: az elso elfogadas ideje marad). Visszaad: { ok, foglalas } | { ok: false, hiba: 'nincs' | 'nem_aktiv' }. */
+export async function nyilatkozatElfogad(db, id, { most = Math.floor(Date.now() / 1000), ipHash = null } = {}) {
+  await sema(db);
+  const f = await foglalasLekerdez(db, id);
+  if (!f) return { ok: false, hiba: 'nincs' };
+  if (f.allapot !== 'aktiv') return { ok: false, hiba: 'nem_aktiv', foglalas: f };
+  await db.prepare('INSERT OR IGNORE INTO modell_nyilatkozat (foglalas_id, elfogadva, verzio, ip_hash) VALUES (?1, ?2, ?3, ?4)').bind(id, most, NYILATKOZAT_VERZIO, ipHash).run();
+  return { ok: true, foglalas: await foglalasLekerdez(db, id) };
 }
 
 /** A foglalas megerositese ("Ott leszek"). Csak aktiv foglalasra. */
@@ -240,7 +253,7 @@ export async function adatTorles(db, most = Math.floor(Date.now() / 1000)) {
   const utolso = NAPOK[NAPOK.length - 1].datum;
   if (most < kezdesEpoch(utolso, '23:59') + ADAT_MEGORZES_NAP * 86400) return 0;
   let db_ = 0;
-  for (const t of ['modell_uzenet', 'modell_foglalas', 'modell_varolista']) db_ += Number((await db.prepare(`DELETE FROM ${t}`).run())?.meta?.changes || 0);
+  for (const t of ['modell_uzenet', 'modell_nyilatkozat', 'modell_foglalas', 'modell_varolista']) db_ += Number((await db.prepare(`DELETE FROM ${t}`).run())?.meta?.changes || 0);
   return db_;
 }
 
@@ -253,8 +266,9 @@ export async function osszesites(db, korny) {
   const allapot = (await db.prepare('SELECT allapot, COUNT(*) AS db FROM modell_foglalas WHERE kornyezet = ?1 GROUP BY allapot').bind(korny).all()).results || [];
   const savonkent = (await db.prepare(`SELECT nap, tipus, COUNT(*) AS db, SUM(megerositve IS NOT NULL) AS megerositett FROM modell_foglalas WHERE kornyezet = ?1 AND allapot IN ('aktiv', 'tartva') GROUP BY nap, tipus ORDER BY nap, tipus`).bind(korny).all()).results || [];
   const varolista = (await db.prepare('SELECT allapot, COUNT(*) AS db FROM modell_varolista WHERE kornyezet = ?1 GROUP BY allapot').bind(korny).all()).results || [];
+  const nyilatkozat = (await db.prepare(`SELECT COUNT(*) AS aktiv, SUM(n.foglalas_id IS NOT NULL) AS elfogadott FROM modell_foglalas f LEFT JOIN modell_nyilatkozat n ON n.foglalas_id = f.id WHERE f.kornyezet = ?1 AND f.allapot = 'aktiv'`).bind(korny).first()) || { aktiv: 0, elfogadott: 0 };
   const uzenetek = (await db.prepare('SELECT tipus, allapot, COUNT(*) AS db FROM modell_uzenet WHERE kornyezet = ?1 GROUP BY tipus, allapot').bind(korny).all()).results || [];
-  return { allapot, savonkent, varolista, uzenetek };
+  return { allapot, savonkent, varolista, uzenetek, nyilatkozat };
 }
 
 export { NAPOK, TIPUSOK, ERKEZES_ELOTT_PERC, savKulcs };

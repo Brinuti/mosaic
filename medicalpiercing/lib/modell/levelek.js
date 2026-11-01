@@ -1,5 +1,6 @@
 // A modellkereso napok levelei (visszaigazolas, megerosito kerelem, emlekezteto, lemondas, felszabadulas, varolistas ajanlat). Tiszta fuggvenyek: a foglalas sorabol keszul a level
 // (a kuldeskor: az aktualis allapot szerint). A kartya sorai egymas alatt (cimke felul, ertek alatta), mint a lifecycle-levelekben: nagy betumeretnel sem esik szet.
+import { SZOVEG as NYIL_SZOVEG, CIM as NYIL_CIM, ALCIM as NYIL_ALCIM, szovegKent as nyilSzovegKent } from './nyilatkozat.js';
 import { nap as napKeres, tipus as tipusKeres, erkezesIdo, HELYSZIN } from './beosztas.js';
 
 export const ALAP = 'https://www.medicalpiercing.hu';
@@ -44,10 +45,20 @@ const reszletek = (f, d) => kartya([
 const mitErdemesTudni = () => alcim('Mit érdemes tudnod?') + lista([
   'Ez egy <b>oktatási gyakorlónap (workshop)</b>: vidéki piercereink Kovács Richárd felügyelete mellett gyakorolnak, te vagy a modell. A szúrás a szokásos steril eszközökkel és G23 titánium ékszerrel történik.',
   'A gyakorlónapra 18 év feletti jelentkezőket várunk. A szúrásról fotó- és videófelvétel készül.',
-  'A <b>nyilatkozatot e-mailben küldjük el</b> neked, külön levélben. Ha bizonytalan vagy abban, hogy a piercing neked való-e, előtte írj vagy hívj minket.',
+  'Ha bizonytalan vagy abban, hogy a piercing neked való-e, előtte írj vagy hívj minket.',
   'Gyakorlónapon előfordulhat, hogy néhány percet várnod kell. Köszönjük a türelmedet!',
   'A szúrás után az ingyenes kontroll időpontját az oldalunkon online is lefoglalhatod.',
 ]);
+
+// A nyilatkozat (lib/modell/nyilatkozat.js): a visszaigazolo levelben a teljes szoveg + "elfogadom" gomb (/mf/<kod>), az emlekeztetokben csak a gomb, ha meg nincs elfogadva.
+const nyilatkozatDoboz = () => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;background:${SZIN.kartya};border:1px solid ${SZIN.vonal};border-radius:14px"><tr><td style="padding:14px 18px">`
+  + `<p style="margin:0 0 4px;font:700 15px/1.4 Arial,Helvetica,sans-serif;color:${SZIN.sotet}">${h(NYIL_CIM)}</p><p style="margin:0 0 10px;font:13px/1.5 Arial,Helvetica,sans-serif;color:${SZIN.halvany}">${h(NYIL_ALCIM)}</p>`
+  + NYIL_SZOVEG.map((x) => (x.t === 'h' ? `<p style="margin:12px 0 4px;font:700 14px/1.45 Arial,Helvetica,sans-serif;color:${SZIN.sotet}">${h(x.s)}</p>` : `<p style="margin:6px 0;font:14px/1.55 Arial,Helvetica,sans-serif;color:${SZIN.szoveg}">${h(x.s)}</p>`)).join('')
+  + '</td></tr></table>';
+const nyilLink = (link) => `${link}?nyil=1#nyilatkozat`;
+const nyilatkozatBlokk = (f, link) => (f.nyilatkozat_ido ? p('✓ A nyilatkozatot elfogadtad. Köszönjük!')
+  : alcim('Nyilatkozat') + p('Kérjük, olvasd el az alábbi nyilatkozatot, és fogadd el egy kattintással.') + nyilatkozatDoboz() + `<p style="margin:14px 0 6px">${gomb('Nyilatkozat elfogadása', nyilLink(link))}</p>`);
+const nyilatkozatEmlekezteto = (f, link) => (f.nyilatkozat_ido ? '' : p('A nyilatkozatot még nem fogadtad el. Kérjük, tedd meg egy kattintással:') + `<p style="margin:6px 0">${gomb('Nyilatkozat elfogadása', nyilLink(link))}</p>`);
 
 /** @returns {{targy:string, html:string, szoveg:string}} */
 export function level(tipus, f, { alap = ALAP } = {}) {
@@ -67,8 +78,9 @@ export function level(tipus, f, { alap = ALAP } = {}) {
           + reszletek(f, d)
           + `<p style="margin:18px 0 6px">${gomb('Ott leszek ✓', ottLink)}${gomb('Lemondom', link, false)}</p>`
           + p('Kérjük, a megerősítő gombbal jelezd, hogy biztosan jössz – ha mégsem tudsz, a lemondás egy kattintás, és más megkaphatja a helyed.')
+          + nyilatkozatBlokk(f, link)
           + mitErdemesTudni()),
-        szoveg: szoveg([`Megvan a helyed${d.kereszt ? ', ' + d.kereszt : ''}!`, ...reszSzoveg, '', `Megerősítés (Ott leszek): ${ottLink}`, `Lemondás / részletek: ${link}`]),
+        szoveg: szoveg([`Megvan a helyed${d.kereszt ? ', ' + d.kereszt : ''}!`, ...reszSzoveg, '', `Megerősítés (Ott leszek): ${ottLink}`, `Lemondás / részletek: ${link}`, ...(f.nyilatkozat_ido ? [] : ['', 'NYILATKOZAT', nyilSzovegKent(), `Nyilatkozat elfogadása: ${nyilLink(link)}`])]),
       };
     }
     case 'm48': {
@@ -79,8 +91,9 @@ export function level(tipus, f, { alap = ALAP } = {}) {
           cim('Számíthatunk rád?')
           + p(`Két nap múlva (${h(d.nap)}) várunk a piercing gyakorlónapon. Kérjük, egy kattintással jelezd, hogy jössz – így a helyed biztos, és ha mégsem tudsz, más kaphat esélyt.`)
           + reszletek(f, d)
-          + `<p style="margin:18px 0 6px">${gomb('Ott leszek ✓', ottLink)}${gomb('Lemondom', link, false)}</p>`),
-        szoveg: szoveg(['Számíthatunk rád?', ...reszSzoveg, '', `Ott leszek: ${ottLink}`, `Lemondás: ${link}`]),
+          + `<p style="margin:18px 0 6px">${gomb('Ott leszek ✓', ottLink)}${gomb('Lemondom', link, false)}</p>`
+          + nyilatkozatEmlekezteto(f, link)),
+        szoveg: szoveg(['Számíthatunk rád?', ...reszSzoveg, '', `Ott leszek: ${ottLink}`, `Lemondás: ${link}`, ...(f.nyilatkozat_ido ? [] : ['', `A nyilatkozatot még nem fogadtad el: ${nyilLink(link)}`])]),
       };
     }
     case 'm24': {
@@ -92,8 +105,9 @@ export function level(tipus, f, { alap = ALAP } = {}) {
           cim(megerositett ? 'Holnap találkozunk!' : 'Holnap várunk: jössz?')
           + p(megerositett ? `Holnap ${h(d.nap)}: érkezz <b>${h(d.erkezes)}-re</b>.` : 'Holnapra szól az időpontod, de még nem erősítetted meg. Kérjük, jelezd egy kattintással, hogy jössz – ha mégsem tudsz, a lemondás is egy kattintás.')
           + reszletek(f, d)
-          + `<p style="margin:18px 0 6px">${megerositett ? gomb('Részletek / lemondás', link, false) : gomb('Ott leszek ✓', ottLink) + gomb('Lemondom', link, false)}</p>`),
-        szoveg: szoveg([megerositett ? 'Holnap találkozunk!' : 'Holnap várunk: jössz?', ...reszSzoveg, '', megerositett ? `Részletek / lemondás: ${link}` : `Ott leszek: ${ottLink}`]),
+          + `<p style="margin:18px 0 6px">${megerositett ? gomb('Részletek / lemondás', link, false) : gomb('Ott leszek ✓', ottLink) + gomb('Lemondom', link, false)}</p>`
+          + nyilatkozatEmlekezteto(f, link)),
+        szoveg: szoveg([megerositett ? 'Holnap találkozunk!' : 'Holnap várunk: jössz?', ...reszSzoveg, '', megerositett ? `Részletek / lemondás: ${link}` : `Ott leszek: ${ottLink}`, ...(f.nyilatkozat_ido ? [] : ['', `A nyilatkozatot még nem fogadtad el: ${nyilLink(link)}`])]),
       };
     }
     case 'lemondas': {

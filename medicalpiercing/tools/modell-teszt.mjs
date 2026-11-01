@@ -3,6 +3,7 @@
 import { savok, sav, NAPOK, TIPUSOK, kezdesEpoch, erkezesIdo, elerhetoseg } from '../lib/modell/beosztas.js';
 import * as T from '../lib/modell/tarolo.js';
 import { level } from '../lib/modell/levelek.js';
+import { SZOVEG, VERZIO } from '../lib/modell/nyilatkozat.js';
 import { api, foglalasOldal, kuldEsedekes, tick } from '../lib/modell/vegpont.js';
 
 let ok = 0, rossz = 0;
@@ -160,12 +161,36 @@ const tartOrr1 = savok('2026-11-25').find((s) => s.tipus === 'orr' && s.szerep =
   egyenlo((await db.prepare('SELECT COUNT(*) AS db FROM modell_varolista').first()).db, 0, 'adattorles: a varolista is ures');
 }
 
+// ---- 3c. nyilatkozat (a Salonic "Kezelesi urlap" szovege, a modellnapra igazitva)
+{
+  ellenorzes(!/migrén|shenmen|slim|klimax/i.test(SZOVEG.map((x) => x.s).join(' ')), 'a nyilatkozat nem nevezi meg a migren / shenmen / slim / klimax piercingeket (a modellnap mas piercingekrol szol)');
+  ellenorzes(/szemöldök/i.test(SZOVEG[0].s) && /rook/i.test(SZOVEG[0].s), 'a nyilatkozat az 5 modellnapi piercingre vonatkozik');
+  ellenorzes(SZOVEG.some((x) => /fotó- és videófelvétel készül/.test(x.s)) && SZOVEG.some((x) => /Kovács Richárd/.test(x.s)), 'a nyilatkozat kimondja a fotó- és videófelvételt es a felugyeletet');
+  ellenorzes(!/aláírás/i.test(SZOVEG.map((x) => x.s).join(' ')), 'a nyilatkozat nem kér aláírást (elfogadás van)');
+  const db = d1();
+  const f = await T.foglal(db, { ...ADAT(1), nap: '2026-11-25', tipus: 'orr', ido: orr1.ido, most: MOST });
+  egyenlo((await T.foglalasLekerdez(db, f.id)).nyilatkozat_ido, null, 'nyilatkozat: elfogadas elott nincs');
+  egyenlo((await T.nyilatkozatElfogad(db, 'nemletezoazonosito1234')).hiba, 'nincs', 'nyilatkozat: ismeretlen foglalas');
+  const e1 = await T.nyilatkozatElfogad(db, f.id, { most: MOST + 50, ipHash: 'x' });
+  ellenorzes(e1.ok && e1.foglalas.nyilatkozat_ido === MOST + 50 && e1.foglalas.nyilatkozat_verzio === VERZIO, 'nyilatkozat: elfogadva, idovel es verzioval', e1.foglalas);
+  const e2 = await T.nyilatkozatElfogad(db, f.id, { most: MOST + 999 });
+  egyenlo(e2.foglalas.nyilatkozat_ido, MOST + 50, 'nyilatkozat: masodszor nem irja felul az elso elfogadas idejet');
+  const og = await T.osszesites(db, 'eles');
+  egyenlo([og.nyilatkozat.aktiv, og.nyilatkozat.elfogadott], [1, 1], 'osszesites: 1 aktiv, 1 elfogadott nyilatkozat');
+  const g = await T.foglal(db, { ...ADAT(2), nap: '2026-11-25', tipus: 'orr', ido: orr2.ido, most: MOST });
+  await T.lemond(db, g.id, MOST + 1);
+  egyenlo((await T.nyilatkozatElfogad(db, g.id)).hiba, 'nem_aktiv', 'nyilatkozat: lemondott foglalasra nem fogadhato el');
+  // adattorles: a nyilatkozat-sorok is torlodnek
+  await T.adatTorles(db, kezdesEpoch('2026-11-30', '23:59') + T.ADAT_MEGORZES_NAP * 86400 + 60);
+  egyenlo((await db.prepare('SELECT COUNT(*) AS db FROM modell_nyilatkozat').first()).db, 0, 'adattorles: a nyilatkozat-sorok is torlodnek');
+}
+
 // ---- 3b. megszolitas ----------------------------------------------------------------------------------------------------------------------------------
 egyenlo([T.szolitas({ nev: 'Kovács Anna', kereszt: 'Anna' }), T.szolitas({ nev: 'Kovács Anna' })], ['Anna', 'Kovács Anna'], 'megszolitas: keresztnev, hiaya eseten a teljes nev');
 {
   const l = level('t0', { id: 'abcdefghij1234567890', nap: '2026-11-25', tipus: 'orr', ido: '10:24', nev: 'Kovács Anna', kereszt: 'Anna', megerositve: null });
   ellenorzes(l.html.includes('Megvan a helyed, Anna!') && l.szoveg.startsWith('Megvan a helyed, Anna!'), 'a level a keresztnevvel szolit meg', l.szoveg.slice(0, 80));
-  ellenorzes(!/Kovács/.test(l.szoveg), 'a level nem a vezeteknevvel szolit meg');
+  ellenorzes(!/Kovács Anna|Szia Kovács/.test(l.szoveg) && !/Megvan a helyed, Kovács/.test(l.html), 'a level nem a vezeteknevvel szolit meg');
 }
 
 // ---- 4. levelek ---------------------------------------------------------------------------------------------------------------------------------------
@@ -182,7 +207,10 @@ egyenlo([T.szolitas({ nev: 'Kovács Anna', kereszt: 'Anna' }), T.szolitas({ nev:
   ellenorzes(t0.html.includes('09:54') && t0.html.includes('10:24'), 't0: erkezes (09:54) es a szuras ideje (10:24)', t0.szoveg);
   ellenorzes(!/vizsga|kiserlet|k[ií]s[eé]rlet|kísérlet/i.test(t0.html + t0.szoveg), 't0: nem vizsga / kiserlet (a tulajdonos kerese)');
   ellenorzes(/Kov[aá]cs Rich[aá]rd/.test(t0.html), 't0: Kovacs Richard felugyelete');
-  ellenorzes(/nyilatkozat/i.test(t0.html) && /e-mailben/.test(t0.html), 't0: a nyilatkozatot e-mailben kuldjuk');
+  ellenorzes(/nem minősül orvosi tevékenységnek/.test(t0.html) && /Nyilatkozat elfogadása/.test(t0.html) && t0.html.includes('?nyil=1#nyilatkozat'), 't0: a teljes nyilatkozat + az elfogadas gombja benne van');
+  ellenorzes(!/külön levélben/.test(t0.html + t0.szoveg), 't0: nincs "kulon levelben" igeret (a nyilatkozat ugyanabban a levelben van)');
+  ellenorzes(/Nyilatkozat elfogadása/.test(level('m48', f).html) && /Nyilatkozat elfogadása/.test(level('m24', f).html), 'm48 / m24: emlekezteto a nyilatkozatrol, ha meg nincs elfogadva');
+  ellenorzes(!/Nyilatkozat elfogadása/.test(level('m48', { ...f, nyilatkozat_ido: 1 }).html) && /elfogadtad/.test(level('t0', { ...f, nyilatkozat_ido: 1 }).html), 'elfogadott nyilatkozatnal nincs emlekezteto, a t0 igazolja'  );
   for (const tp of ['t0', 'm48', 'm24', 'lemondas', 'felszabadult', 'felajanlas']) for (const mg of [false, true]) { const lv = level(tp, { ...f, megerositve: mg ? 1 : null, tartva_eddig: MOST + 1800 }); ellenorzes(!/személyi|szemelyi/i.test(lv.html + lv.szoveg + lv.targy), `${tp}${mg ? ' (megerositett)' : ''}: nem kerunk szemelyi igazolvanyt`); }
   ellenorzes(/fotó- és videófelvétel készül/.test(t0.html), 't0: a fotó- és videófelvétel készülését jelzi (a tulajdonos pontosítása)');
 }
@@ -280,6 +308,17 @@ egyenlo([T.szolitas({ nev: 'Kovács Anna', kereszt: 'Anna' }), T.szolitas({ nev:
   // muvelet: megerosit, lemond
   j = await (await api(post('https://www.medicalpiercing.hu/api/modell/muvelet', { id: eles, akcio: 'megerosit' }), envBe, { most: MOST })).json();
   ellenorzes(j.ok && j.foglalas.megerositve === true, 'muvelet: megerosit', j);
+  // nyilatkozat: elfogadas nelkul 400, elfogadassal ok; az "A foglalasod" oldal mutatja
+  v = await foglalasOldal(kerj(`https://www.medicalpiercing.hu/mf/${eles}?nyil=1`), envBe, { most: MOST });
+  const oldal1 = await v.text();
+  ellenorzes(oldal1.includes('id="nyilatkozat"') && oldal1.includes('data-akcio="nyilatkozat"') && oldal1.includes('nem minősül orvosi tevékenységnek') && /<details class="nyil" open>/.test(oldal1), 'foglalasi oldal: a nyilatkozat szovege es az elfogadas gombja latszik (?nyil=1: nyitva)');
+  v = await api(post('https://www.medicalpiercing.hu/api/modell/muvelet', { id: eles, akcio: 'nyilatkozat' }), envBe, { most: MOST });
+  egyenlo(v.status, 400, 'nyilatkozat elfogadas nelkul (elfogad != true): 400');
+  j = await (await api(post('https://www.medicalpiercing.hu/api/modell/muvelet', { id: eles, akcio: 'nyilatkozat', elfogad: true }), envBe, { most: MOST })).json();
+  ellenorzes(j.ok && j.foglalas.nyilatkozat === true, 'nyilatkozat API: elfogadva', j);
+  v = await foglalasOldal(kerj(`https://www.medicalpiercing.hu/mf/${eles}`), envBe, { most: MOST });
+  const oldal2 = await v.text();
+  ellenorzes(/A nyilatkozatot elfogadtad/.test(oldal2) && !oldal2.includes('data-akcio="nyilatkozat"'), 'foglalasi oldal: elfogadott nyilatkozat -> pipa, nincs ujra gomb');
   // varolista
   j = await (await api(post('https://www.medicalpiercing.hu/api/modell/varolista', { tipus: 'orr', nev: 'Várakozó Vera', email: 'vera@example.hu', telefon: '+36301112233', elfogad: true }), envBe, { most: MOST })).json();
   ellenorzes(j.ok, 'varolista API', j);
