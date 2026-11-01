@@ -177,6 +177,7 @@ describe('FOGLALAS jobbra + Sminktetovalas legordulo (2026-11-01)', () => {
       assert.ok(!/Tetoválás eltávolítás|sminktetovalas-eltavolitas-budapest/.test(h), mod + ': nincs magyar eltavolitas-pont az angol menuben');
       assert.ok(!/aria-label="(Toggle )?Sminktetoválás"/.test(h), mod + ': nincs magyar aria-label');
       const c = cimek(h, mobil);
+      assert.ok(c.length >= 8, mod + ': az angol menu pontjai kiolvashatok (' + c.length + ')');
       assert.equal(c[c.length - 1], c.find((l) => /FOGLAL|BOOK|RESERV/i.test(l)), mod + ': a foglalas gomb az angol menu utolso eleme: ' + c.join(' | '));
     }
   });

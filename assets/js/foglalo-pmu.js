@@ -331,6 +331,7 @@
     utvonal.length = (e.data.idx || 0) + 1; utvonal[utvonal.length - 1] = nev;
     mutat(nev);
     if (BELEPES[nev] && !/^(adatok|koszonjuk)$|kesz$/.test(nev)) BELEPES[nev]();
+    else if (nev === 'adatok' && fotosAdatlapHiba()) BELEPES.adatok();   // a bongeszo-elozmenyben maradt regi (nem fotos) adatlap nem hasznalhato fotos vendegnek
   });
   addEventListener('popstate', (e) => {
     if (RETEG) return; // a retegben a lepeseket a reteg elozmenyei vezerlik
@@ -338,6 +339,7 @@
     mutat(NEZETEK.includes(nev) ? nev : 'kezdo');
     // a listak ujrarajzolasa (az adatok megmaradnak); az adatlapot nem toltjuk ujra
     if (BELEPES[nev] && !/^(adatok|koszonjuk)$|kesz$/.test(nev)) BELEPES[nev]();
+    else if (nev === 'adatok' && fotosAdatlapHiba()) BELEPES.adatok();   // a bongeszo-elozmenyben maradt regi (nem fotos) adatlap nem hasznalhato fotos vendegnek
   });
   $('vissza').addEventListener('click', () => ugrik(ELOZO[aktualis] ? ELOZO[aktualis]() : 'kezdo'));
   document.addEventListener('click', (e) => {
@@ -347,6 +349,8 @@
     ugrik(g.dataset.ugrik);
   });
   const BELEPES = {};
+  // fotos vendegnek az adatlap-keretnek fotos keretnek kell lennie (BELEPES.adatok jeloli: data-fotos=1) es a foto el kell hogy legyen kuldve; kulonben ujra kell epiteni
+  const fotosAdatlapHiba = () => { if (!fotosUt()) return false; const k = $('salonic'); return fotoKell() || !k || k.dataset.fotos !== '1'; };
   // az aktualis nezet CSERELESE (nem uj elozmeny-bejegyzes): a bongeszo vissza gombja ne ugorjon vissza a mar elkuldott fotos nezetre
   function csere(nev) {
     if (RETEG) { utvonal[utvonal.length - 1] = nev; mutat(nev, false); } else { history.replaceState({ nezet: nev }, '', '#' + nev); mutat(nev); }
@@ -580,6 +584,12 @@
   for (const r of document.querySelectorAll('input[name=elozmeny]')) r.addEventListener('change', () => { allapot.elozmeny = r.value; $('kerdes-tovabb').disabled = false; });
   $('kerdes-tovabb').addEventListener('click', () => {
     allapot.kerdesValasz = allapot.elozmeny;
+    if (fotosUt()) {   // fotos lett: a korabbi (nem fotos) idopont, Salonic-keret es kontextus nem maradhat
+      if (allapot.slot && allapot.slot < FOTOS_LEGKORABBI) allapot.slot = null;
+      const regiKeret = $('salonic');
+      if (regiKeret && regiKeret.dataset.fotos !== '1') regiKeret.replaceWith(elem('iframe', { id: 'salonic', title: 'Foglalás véglegesítése' }));
+      try { sessionStorage.removeItem('mhBookingCtx'); } catch (e) { /* privat mod */ }
+    }
     if (allapot.elozmeny === 'elso') ugrik(allapot.kerdesCel || 'ido');
     else {
       allapot.ag = allapot.elozmeny === 'van' ? 'B' : 'D';
@@ -591,6 +601,7 @@
   // --- 4. adatok: a Salonic adatlapja beagyazva ---------------------------------------
   BELEPES.adatok = () => {
     foAgra();
+    if (fotosUt() && allapot.slot && allapot.slot < FOTOS_LEGKORABBI) allapot.slot = null;   // regi (nov. 9. elotti, nem fotos) idopont fotos vendegnek nem marad
     if (!allapot.slot) { ugrik('ido'); return; }
     if (!allapot.kerdesValasz) { ugrik('kerdes'); return; }
     if (fotoKell()) { ugrik('foto-adatok'); return; }   // fotos vendeg: elobb a foto + az elerhetoseg (levelben Melittanak), csak utana a Salonic-adatlap
@@ -613,7 +624,7 @@
     // mindig uj keret: igy a betoltes nem kerul a bongeszo elozmenyei koze, es a vissza gomb
     // nem a Salonic belso oldalaira lep vissza
     const regi = $('salonic');
-    const keret = elem('iframe', { id: 'salonic', title: 'Foglalás véglegesítése', src: keretUrl, style: 'visibility:hidden' });
+    const keret = elem('iframe', { id: 'salonic', title: 'Foglalás véglegesítése', src: keretUrl, style: 'visibility:hidden', 'data-fotos': fotosFogl ? '1' : '0' });
     // a "Nem jelenik meg az urlap?" tartalek-link csak akkor latszik, ha 8 mp alatt sem toltott be
     const tartalek = $('salonic-link').closest('p');
     tartalek.hidden = true;
@@ -848,6 +859,7 @@
   }
   BELEPES['foto-adatok'] = () => {
     const fogl = fotosUt();
+    if (fogl && allapot.slot && allapot.slot < FOTOS_LEGKORABBI) allapot.slot = null;
     if (fogl && !allapot.slot) { ugrik('ido'); return; }
     if (fogl && allapot.fotoKuldve) { csere('adatok'); return; }
     $('foto-adatok-szoveg').textContent = fogl ? 'A fotó alapján felveszem veled a kapcsolatot. A foglalást a következő lépésben véglegesíted.' : 'A fotó alapján felveszem veled a kapcsolatot.';

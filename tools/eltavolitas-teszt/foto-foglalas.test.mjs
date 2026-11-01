@@ -74,8 +74,10 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
       if (u.startsWith('https://mosaic-pmu.salonic.hu/employees/')) return r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'text/html' }, body: SZOLG_HTML });
       if (u.startsWith('https://api.salonic.hu/calendar/getAvailableTimes')) {
         const sorszam = ++apiHivas;
-        if (opt.elsoKeso && sorszam === 1) await new Promise((ok) => setTimeout(ok, opt.elsoKeso));   // az elso (nem fotos) valasz KESVE erkezik
-        return r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify(sorszam === 1 && opt.elsoSlotok ? opt.elsoSlotok : opt.slotok || SLOTOK) });
+        if (opt.kapu && sorszam === 1) await opt.kapu.varj;   // az elso (nem fotos) valasz addig vár, amig a MASODIK lekeres teljesult (determinisztikus: nem idozites)
+        await r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify(opt.slotok || SLOTOK) });
+        if (opt.kapu && sorszam === 2) opt.kapu.enged();
+        return undefined;
       }
       if (u.startsWith('https://mosaic-pmu.salonic.hu/guestData/')) { sz.adatlap.push(u); return r.fulfill({ status: 200, headers: { 'content-type': 'text/html' }, body: '<p>salonic adatlap</p>' }); }
       if (!u.startsWith(bazis)) return r.abort();
@@ -399,15 +401,16 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
   });
 
   test('B8: a kesve erkezo, nem fotos idopont-valasz nem szivarog at a fotos nezetbe (megjelenitesi szuro)', async () => {
-    const e = await fo('/foglalo-pmu?beagyazva=1&kezeles=471160', { elsoKeso: 1800 });
-    await e.var_('kerdes'); await e.valasz('elso');          // az elso (nem fotos) lekeres elindul, de lassan jon vissza
+    let enged; const kapu = { varj: new Promise((ok) => { enged = ok; }), enged: () => enged() };
+    const e = await fo('/foglalo-pmu?beagyazva=1&kezeles=471160', { kapu });
+    await e.var_('kerdes'); await e.valasz('elso');          // az elso (nem fotos) lekeres elindul, de a valasza addig nem jon meg, amig a masodik le nem fut
     await e.lap.waitForTimeout(150);
     await e.vissza();                                         // vissza a kerdesre, atvaltas "van"-ra
     await e.var_('kerdes');
     await e.lap.locator('input[name=elozmeny][value=van]').check({ force: true }); await e.lap.click('#kerdes-tovabb');
     await e.var_('foto'); await fotoFel(e); await e.lap.click('#foto-tovabb'); await e.var_('ido');
     await e.lap.waitForSelector('.nnap.szabad');
-    await e.lap.waitForTimeout(2300);                         // a kesve erkezo, szuretlen valasz is megerkezett
+    await e.lap.waitForTimeout(1500);                         // a kesve erkezo, szuretlen valasz is megerkezett (a masodik lekeres teljesulese utan engedtuk el)
     assert.deepEqual(await e.napok(), [9, 10], 'a kesve nem fotos valasz (8. nap) nem jelenhet meg');
     await e.ctx.close();
   });
@@ -445,6 +448,7 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
     await e.lap.evaluate((bazisUrl) => { window.mhKeretbenOldal = (h) => { window.__keretHivas = h; }; sessionStorage.setItem('mh_pmu_foglalas', JSON.stringify({ ts: 1790000000, perc: 30, nev: 'x', ar: 'Ingyenes', tipus: 'konz', fotos: true })); const f = document.createElement('iframe'); f.id = 'k'; f.src = '/pmu-ok?bookingUrl=' + encodeURIComponent('https://mosaic-pmu.salonic.hu/guestData/?placeId=14585&serviceId=471160&startDate=1790000000'); document.body.append(f); }, bazis);
     await e.lap.waitForTimeout(1200);
     const keret = e.lap.frames().find((f) => f.url().includes('/pmu-ok'));
+    assert.ok(keret, 'a keretben a /pmu-ok betoltott');
     assert.equal(new URL(keret.url()).pathname, '/pmu-ok', 'keretben a fo-ablakos tartalek nem aktivalodik');
     assert.equal(new URL(e.lap.url()).pathname, '/kapcsolat', 'a fo-ablak nem navigalt');
     assert.match(await e.lap.evaluate(() => window.__keretHivas || ''), /\/pmu-ok\?bookingUrl=/, 'a szulo mhKeretbenOldal-ja kapja meg a keretbeli /pmu-ok-ot (ez dolgozik)');
@@ -454,6 +458,47 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
     assert.equal(await n.lap.locator('#kosz-cim').innerText(), 'Sikeres foglalás!');
     assert.match(await n.lap.locator('#kosz-lepesek').innerText(), /fotódat/);
     await n.ctx.close();
+  });
+
+  test('A-1/elozmeny: a bongeszo-elozmenyben maradt regi, NEM fotos adatlap (back=mb_ + nov. 9. elotti idopont) fotos allapotban nem hasznalhato', async () => {
+    const e = await fo('/foglalo-pmu?beagyazva=1&kezeles=471160');
+    await e.var_('kerdes'); await e.valasz('elso'); await e.var_('ido');
+    await e.slot();                                           // nov. 8. (a nov. 9. elotti nap) -> nem fotos adatlap
+    await e.var_('adatok');
+    assert.match(await e.lap.getAttribute('#salonic', 'src'), /back=mb_/);
+    await e.vissza(); await e.vissza();                       // adatlap -> idopont -> kerdes (a regi adatlap-bejegyzes az elozmenyben marad)
+    assert.deepEqual(await e.nezet(), ['kerdes']);
+    await e.valasz('van'); await e.var_('foto'); await fotoFel(e);   // a foto NEM megy el
+    await e.lap.click('#foto-tovabb'); await e.var_('ido');
+    assert.deepEqual(await e.napok(), [9, 10]);
+    for (let i = 0; i < 6; i++) {                             // bongeszo vissza: foto -> kerdes -> ido -> adatok ...
+      await e.lap.goBack().catch(() => null); await e.lap.waitForTimeout(450);
+      const nz = await e.nezet();
+      const src = await e.lap.evaluate(() => { const k = document.getElementById('salonic'); return k && k.hasAttribute('src') ? k.getAttribute('src') : null; });
+      if (nz[0] === 'adatok') {
+        assert.ok(src === null || (!/back=/.test(src) && Number(new URL(src).searchParams.get('startDate')) >= Date.UTC(2026, 10, 8, 23, 0, 0) / 1000), 'a lathato adatlap nem a regi nem fotos keret: ' + src);
+        assert.deepEqual(await e.lepesek(), ['Kezelés', 'Fotó', 'Időpont', 'Adatok']);
+      }
+    }
+    const veg = await e.lap.evaluate(() => { const k = document.getElementById('salonic'); return k && k.hasAttribute('src') ? k.getAttribute('src') : null; });
+    assert.ok(veg === null || !/back=/.test(veg), 'a veg-allapotban sincs nem fotos Salonic-keret: ' + veg);
+    assert.equal(e.posztok.length, 0, 'foto nem ment el');
+    await e.ctx.close();
+  });
+
+  test('a telefonos visszahivas lead tartos fotos jelzes mellett sem kap FOGLALASSAL jelolest, foglalassal = 0', async () => {
+    const e = await fo('/foglalo-pmu?beagyazva=1&lepes=visszahivas');
+    await e.lap.evaluate(() => sessionStorage.setItem('mh_pmu_fotos', '1'));
+    await e.lap.reload({ waitUntil: 'load' });
+    await e.var_('c-info');
+    await e.lap.click('#c-info-tovabb'); await e.var_('kerdes');
+    await e.valasz('van'); await e.var_('foto'); await fotoFel(e); await e.lap.click('#foto-tovabb'); await e.var_('foto-adatok');
+    await adatok(e); await e.lap.click('#foto-kuld'); await e.var_('foto-kesz');
+    assert.equal(e.posztok.length, 1);
+    assert.ok(!/FOGLALÁSSAL/.test(e.lead(e.posztok[0])), 'telefonos lead nem FOGLALASSAL');
+    const lead = (await e.esemenyek()).find((x) => x.event === 'pmu_foto_lead');
+    assert.ok(lead && lead.foglalassal === 0, JSON.stringify(lead));
+    await e.ctx.close();
   });
 
   test('a Tetoválás eltávolítás (491949) a nem fotos vendegnek is csak nov. 9-tol (a regi biztonsagi szabaly marad); fotosnak is', async () => {
