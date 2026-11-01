@@ -15,3 +15,5 @@ Változás: csak új fájlok (oldal, CSS, JS, képek, videó, teszt, doksi). Mé
 - Zapier-lánc (csak olvasás): `weboldal-pmu-visszahivas-to-sheet-oktober` + `melitta-pmu-oktober-sms` engedélyezve; a lead-levelünk a trigger-lekérdezésre illeszkedik és a Zap minden mezőjét értelmezi; módosítás nincs.
 
 - Feri visszajelzése után (2026-11-01, 2. kör): új felépítés (hero egy kártyában ár + cím, Google-értékelés a gombok alatt, a videó alatta; 3 előtte–utána pár egyforma képmérettel; formázott, középre igazított árak; a sminktetoválás-oldalak garancia-, GYIK- és helyszín-blokkja újrahasznosítva; slim ragadós sáv ~55 px). Tesztek: 21/21.
+
+- 3. kör (Feri): kettős konverzió (ingyenes konzultáció / eltávolító kezelés), a Dermway I lézer bemutatása, Melitta-blokk a /sminktetovalas-budapest oldalról. A konzultáció a MEGLEVŐ beágyazott /foglalo-pmu foglalót nyitja (nincs módosított foglaló-kód); új belépési pont a PMU-konzultáció foglaláshoz (mérést érint: a mérési oldal döntse el az eltávolítás-forrás megkülönböztetését). Tesztek: 22/22.

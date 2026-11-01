@@ -48,3 +48,14 @@ Indexelhetővé tétel: a `<meta name="robots">` sor törlése + bejegyzés a `t
 
 ## Visszavonás
 Az oldal csak új fájlokból áll: a PR visszavonása (revert) vagy a `foglalas/sminktetovalas-eltavolitas-budapest.html` törlése mindent visszaállít, más oldalt nem érint.
+
+
+## 2026-11-01, 3. kör (Feri): kettős konverzió, a lézer, Melitta
+- **Nem fotóval kezdünk.** A két konverzió: (1) **ingyenes konzultáció** foglalása, (2) **eltávolító kezelés** foglalása; a fotó mindkettőnél előre, nem kötelezően küldhető (ha küld, Melitta felhívja, és elmondja, milyen eredmény várható).
+- **Naptár:** a `#foglalas` szakasz két választókártyát ad; a konzultáció a MEGLEVŐ `/foglalo-pmu` foglalót nyitja beágyazva (`?beagyazva=1&kezeles=konzultacio`, a Salonic „Ingyenes konzultáció”, 471160, 30 perc, Melitta), a foglalót és a `foglalo-pmu.js`-t NEM módosítottam.
+  A kezelés-foglaláshoz jelenleg **nincs Salonic-szolgáltatás** (a 2026-10-03-i döntés: az eltávolítás csak fotó alapján megy). Amíg nincs, a „Eltávolító kezelés” kártya a lenti űrlapra visz (visszahívás). Ha a Salonicban létrejön a szolgáltatás
+  (a nevében szerepeljen az „eltávolítás”), elég a `<section id="foglalas" data-kezeles-kulcs="">` attribútumot kitölteni (pl. `eltavolitas`): a kártya a naptárat nyitja abba a szolgáltatásba.
+- **Mérés:** a beágyazott foglaló ugyanaz, mint a PMU-oldalakon, így az innen érkező konzultáció-foglalások a meglévő PMU-foglalási eseményeket adják (új esemény nincs). Ez új belépési pont egy élő konverzióhoz: a mérési oldal döntse el, megkülönböztetik-e az eltávolítás-forrást. A foglaló forrás-paramétere (`forras=`) csak a meglévő két oldalt ismeri, ezért a foglaló saját levelei (fotó / visszahívás) az eltávolítás-oldalról nem külön forrást mutatnak.
+- **A lézer:** Dermway I Q-kapcsolt Nd:YAG (iSkin Kft. adatlap: 1064 nm + 532 nm, 8 ns, 1000 mJ, 1–10 Hz, levegő- és vízhűtés). A gyártó nincs megnevezve, a CE-jelölés / orvostechnikai besorolás az adatlapon nem szerepel: ezt a szalonnak kell igazolnia, mielőtt a szövegbe biztonsági állítás kerül. A gép képe a forgalmazó (iSkin) termékképe, **ideiglenes**: saját fotóra cserélendő (vagy engedély kell hozzá).
+- **A szövegben Feri állításai** (nem én igazoltam): „általában 1–3 alkalom”, „már egy alkalom után is szembetűnő változás”, „kíméletes, steril, minimális kellemetlenséggel jár”, „utána újra tetoválható”.
+- Melitta-blokk: a /sminktetovalas-budapest szakember-blokkja (WULOP 2026 1. hely, Milano 2025 3. hely, 5 év), eltávolítás-szöveggel.
