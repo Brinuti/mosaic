@@ -33,3 +33,22 @@ test('a jelolo business=pmu, es a fejlec / Info-ablak / lablec ezzel a foglalora
     assert.ok(hrefek(h).includes('/foglalo-motor?business=pmu'), fajl + ': a foglalo-gomb business=pmu');
   }
 });
+
+// 2026-11-01 (Feri): a /sminktetovalas-budapest oldalon tobb helyen jelezzuk, hogy a regi sminktetovalas eltavolitasa is foglalhato - "plusz", nem ujdonsagkent
+test('a sminktetoválás-eltávolítás több helyen szerepel (hero, "van már" kártya, árak, GYIK, foglalás), sima mondatokban, mérés (data-cta) és "ÚJ" jelzés nélkül', () => {
+  const blokkok = [...oldal.matchAll(/<!--eltav-->\n([\s\S]*?)<!--\/eltav-->\n/g)].map((m) => m[1]);
+  assert.equal(blokkok.length, 5, 'hero, helyzet-kartya, arak, GYIK, foglalas');
+  for (const b of blokkok) {
+    assert.match(b, /href="\/sminktetovalas-eltavolitas-budapest"/);
+    assert.ok(!/data-cta=/.test(b), 'az uj linkeken nincs data-cta (nem keletkezik uj meresi esemeny)');
+    assert.ok(!/\bÚJ\b|újdonság|újonnan|most már/i.test(b.replace(/<[^>]+>/g, ' ')), 'nem ujdonsagkent kezeljuk');
+    assert.ok(!/garant|nyom nélkül|100\s?%|véglegesen/i.test(b.replace(/<[^>]+>/g, ' ')), 'nincs eredmenyigeret');
+  }
+  assert.ok(fs.existsSync(path.join(ROOT, 'foglalas/sminktetovalas-eltavolitas-budapest.html')), 'a celoldal letezik');
+  assert.match(blokkok.join('\n'), /20&nbsp;000&nbsp;Ft/);
+});
+
+test('a Google Ads szemöldök-céloldal (a fő oldal generált másolata) változatlan: nincs rajta eltávolítás-jelölés', () => {
+  const masolat = fs.readFileSync(path.join(ROOT, 'foglalas/szemoldok-tetovalas-budapest.html'), 'utf8');
+  assert.ok(!/<!--eltav-->|eltavolitas-budapest|eltavolit/i.test(masolat));
+});

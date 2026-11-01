@@ -586,7 +586,8 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .hero-al { order: 3; font-size: var(--b2); margin: 14px 0 14px; }
   .szakember-mini { order: 4; gap: 12px; margin-bottom: 16px; }
   .cta-blokk { order: 5; }
-  .bizalom { order: 6; margin-top: 14px; justify-content: center; }
+  .eltav-hero { order: 6; }
+  .bizalom { order: 7; margin-top: 14px; justify-content: center; }
   .szakember-mini .avatar { width: 54px; height: 54px; }
   .dij-sor { white-space: nowrap; font-size: var(--b4); gap: 5px; margin-top: 4px; }
   .dij-sor b { font-size: var(--b4); }
@@ -1037,4 +1038,22 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 /* ============ Google Ads celoldal (main.celoldal: /szemoldok-tetovalas-budapest): telefonon az elso gomb az elso kepernyon (Feri, 2026-10-31) ============ */
 @media (max-width: 700px) {
   main.celoldal .hero-kep.hero-galeria { aspect-ratio: 4 / 3; }
+}
+
+/* sminktetovalas-eltavolitas hivatkozasok (Feri, 2026-11-01): halk, "plusz" jelzesek tobb helyen, nem ujdonsagkent */
+.eltav-hero { margin: -8px 0 18px; font-size: 14px; color: var(--halk); }
+.eltav-hero a, .eltav-megjegyzes a, .eltav-foglalas a { color: var(--sotet); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.eltav-megjegyzes { font-size: 12.5px; line-height: 1.45; margin: 8px 0 0; color: var(--halk); }
+.eltav-sor { margin-top: 18px; background: #fff; border: 1px solid #e7eae3; border-radius: 14px; box-shadow: var(--arnyek); padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.eltav-sor h3 { font-size: 17px; margin: 0 0 3px; }
+.eltav-sor p { margin: 0; font-size: 14px; color: var(--halk); }
+.eltav-sor .gomb { flex: none; }
+.eltav-foglalas { margin: 18px 0 0; text-align: center; font-size: 14px; color: var(--halk); position: relative; z-index: 1; }
+.foglalas .eltav-foglalas { color: rgba(255, 255, 255, .82); }
+.foglalas .eltav-foglalas a { color: #e9d9a8; }
+.gyik-racs details p a { color: var(--sotet); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 700px) {
+  .eltav-hero { margin: 10px 0 0; text-align: center; font-size: var(--b4); }
+  .eltav-sor { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px 16px; }
+  .eltav-sor .gomb { width: 100%; box-sizing: border-box; }
 }
