@@ -39,7 +39,7 @@ Indexelhetővé tétel: a `<meta name="robots">` sor törlése + bejegyzés a `t
 1. Árak: fotós előszűrés díjmentes; teljes szemöldök 20 000 Ft/alkalom; részleges / korrekció 15 000 Ft-tól; ajak, szájkontúr 20 000 Ft-tól.
 2. „1 munkanapon belül válaszolok”: tartható-e, és ki válaszol (a levelet a szokásos `pmu-proba-foto` címzett kapja).
 3. Hétfő–péntek nyitvatartás (a szombat megerősítésig nincs kiírva: `<!--mh-nyitvatartas:hetkoznap-->`).
-4. A kép-párosítás: a „előtte / közvetlenül utána” pár a két legutóbbi (kék-szürke → halványabb) szemöldökkép; a másik két kép csak „az első alkalom során” címkét kapja.
+4. A kép-párosítás (2026-11-01, Feri kérésére átrendezve): három valódi, egy vendéghez tartozó „előtte → közvetlenül utána” pár (A, B, C), mind a két kép egy vendégről, 1–2 perc különbséggel, a bőr / a szemöldök állapota alapján sorba téve; a párokon belül a képek az arcok irányát egyeztetve elforgatva, egyforma 4:5 méretben. Feri a két „kezelés közben” képet egy vendégnek vélte; nagyítva két különböző vendég, ezért nem azokból készült pár. Kérlek, Melitta erősítse meg a három pár előtte/utána sorrendjét.
 5. A „garancia” szó nincs használva; a három vállalás (előszűrés, átlátható ár, szakmai stop) jogi átnézése javasolt, mielőtt hirdetés indul.
 6. A „Mikor nem vállalom?” lista (ellenjavallatok) és a GYIK szakmai tartalmát Melittának jóvá kell hagynia; az adatkezelési hozzájárulás egészségi állapotra utaló adatról szól, és (a meglévő mintát követve) az ÁSZF-re hivatkozik – külön adatkezelési tájékoztató / jogi átnézés javasolt. Az is ellenőrizendő, ki végezhet Magyarországon lézeres tetoválás-eltávolítást.
 7. A fejléc „Foglalás” gombja a PMU-foglalóra visz (új sminktetoválás), nem eltávolításra – az eltávolítás online nem foglalható.

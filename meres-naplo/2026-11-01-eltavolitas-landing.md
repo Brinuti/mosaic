@@ -13,3 +13,5 @@ Változás: csak új fájlok (oldal, CSS, JS, képek, videó, teszt, doksi). Mé
 
 - Független review (2026-11-01, PR #579): első kör FAIL (B1: hiányzó method="post"; B2: a Zapier-lánc / SMS nincs dokumentálva) – mindkettő javítva; a megjegyzések közül javítva: kockázatos szövegek (alt, „alakul ki”, „kell halványítani”), a ragadós sáv ikonja és rejtett fókusza, aria-invalid / aria-describedby, a fókusz sorrendje, a fotófeldolgozás sorba állítása és zárolása, ImageBitmap.close(), `celoldal` osztály törölve. Nyitva (Feri / Melitta): lásd docs/ELTAVOLITAS_LANDING.md „megerősítendő” 1–9.
 - Zapier-lánc (csak olvasás): `weboldal-pmu-visszahivas-to-sheet-oktober` + `melitta-pmu-oktober-sms` engedélyezve; a lead-levelünk a trigger-lekérdezésre illeszkedik és a Zap minden mezőjét értelmezi; módosítás nincs.
+
+- Feri visszajelzése után (2026-11-01, 2. kör): új felépítés (hero egy kártyában ár + cím, Google-értékelés a gombok alatt, a videó alatta; 3 előtte–utána pár egyforma képmérettel; formázott, középre igazított árak; a sminktetoválás-oldalak garancia-, GYIK- és helyszín-blokkja újrahasznosítva; slim ragadós sáv ~55 px). Tesztek: 21/21.
