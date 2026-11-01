@@ -86,7 +86,7 @@ async function metaEloKuldBelso(db, fk, deps = {}) {
   try {
     const env = deps.env || {};
     if (!fk || fk.tipus !== 'foglalas' || !metaEloBe(env, fk.uzletag)) return { allapot: 'ki' };
-    if (fk.fixAllapot) return { allapot: 'kihagyva', indok: 'reschedule: nincs uj konverzio' };
+    if (fk.fixAllapot) return { allapot: 'kihagyva', indok: fk.fixAllapot.fotos ? 'fotos_foglalas: nem konverzio' : 'reschedule: nincs uj konverzio' };
     // elonezeti kornyezet vedohalo (ELO_CSAK_TESZT=1 a [env.preview.vars]-ban): teszt-kod nelkul NEM kuldunk (kulonben az elonezet az ELO datasetre kuldene)
     if (String(env.ELO_CSAK_TESZT || '') === '1' && !metaEloTesztKod(env, fk.uzletag)) return { allapot: 'kihagyva', indok: `elonezet: csak teszt-kodos kuldes (nincs ${fk.uzletag === 'pmu' ? 'META_ELO_TESZT_KOD_PMU' : fk.uzletag === 'szor' ? 'META_ELO_TESZT_KOD_SZOR' : 'META_ELO_TESZT_KOD'})` };
     // PMU biztonsagi halo (Feri 10-31 14:25): a „korrekcio” (0 Ft-os javitas) SOHA nem szamit, akkor sem, ha a Salonic uj vendegnek jelolne
