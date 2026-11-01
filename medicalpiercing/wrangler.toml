@@ -16,8 +16,8 @@ SMTP_PORT = "465"
 SMTP_USER = "medicalpiercing.hu@gmail.com"
 MAIL_TO = "medicalpiercing.hu@gmail.com"
 
-# Modellkereso napok (docs/MODELLNAP.md): az ELES foglalas alapbol KI; "be" = nyitva (valodi vendegeknek mennek levelek: csak a tulajdonos kifejezett kerese utan). Az elonezeten mindig megy, de level nem.
-MODELL_FOGLALAS = "ki"
+# Modellkereso napok (docs/MODELLNAP.md): "be" = az ELES foglalas nyitva (a tulajdonos kerese, 2026-11-01); "ki" = zarva. Valodi vendegeknek mennek levelek. Az elonezeten mindig megy, de level nem. A nap utan (nov. 30.) allitsd "ki"-re.
+MODELL_FOGLALAS = "be"
 # "be": a szuras elott 12 orara sem megerositett foglalas felszabadul (alap: ki)
 MODELL_FELSZABADITAS = "ki"
 

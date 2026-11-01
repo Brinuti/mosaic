@@ -43,8 +43,8 @@ const reszletek = (f, d) => kartya([
 
 const mitErdemesTudni = () => alcim('Mit érdemes tudnod?') + lista([
   'Ez egy <b>oktatási gyakorlónap (workshop)</b>: vidéki piercereink Kovács Richárd felügyelete mellett gyakorolnak, te vagy a modell. A szúrás a szokásos steril eszközökkel és G23 titánium ékszerrel történik.',
-  'Hozd magaddal a <b>személyi igazolványodat</b> (csak 18 év felett tudunk szúrni).',
-  'Szúrás előtt rövid egészségi kérdőívet és beleegyező nyilatkozatot töltesz ki a helyszínen; ha bizonytalan vagy (pl. terhesség, vérhígító, gyulladt terület), előtte írj vagy hívj minket.',
+  'A gyakorlónapra 18 év feletti jelentkezőket várunk.',
+  'A <b>nyilatkozatot e-mailben küldjük el</b> neked, külön levélben. Ha bizonytalan vagy abban, hogy a piercing neked való-e, előtte írj vagy hívj minket.',
   'Gyakorlónapon előfordulhat, hogy néhány percet várnod kell. Köszönjük a türelmedet!',
   'A szúrás után az ingyenes kontroll időpontját az oldalunkon online is lefoglalhatod.',
 ]);
@@ -88,9 +88,9 @@ export function level(tipus, f, { alap = ALAP } = {}) {
       const targy = megerositett ? `Holnap találkozunk! Ingyenes piercing, ${d.rovid}, ${d.ido}` : `Utolsó kérés: erősítsd meg a holnapi időpontodat (${d.ido})`;
       return {
         targy,
-        html: keret(targy, megerositett ? `Érkezés: ${d.erkezes}. Hozd a személyid.` : 'Egy kattintás, hogy számíthassunk rád.',
+        html: keret(targy, megerositett ? `Érkezés: ${d.erkezes}.` : 'Egy kattintás, hogy számíthassunk rád.',
           cim(megerositett ? 'Holnap találkozunk!' : 'Holnap várunk: jössz?')
-          + p(megerositett ? `Holnap ${h(d.nap)}: érkezz <b>${h(d.erkezes)}-re</b>, és hozd a személyi igazolványodat.` : 'Holnapra szól az időpontod, de még nem erősítetted meg. Kérjük, jelezd egy kattintással, hogy jössz – ha mégsem tudsz, a lemondás is egy kattintás.')
+          + p(megerositett ? `Holnap ${h(d.nap)}: érkezz <b>${h(d.erkezes)}-re</b>.` : 'Holnapra szól az időpontod, de még nem erősítetted meg. Kérjük, jelezd egy kattintással, hogy jössz – ha mégsem tudsz, a lemondás is egy kattintás.')
           + reszletek(f, d)
           + `<p style="margin:18px 0 6px">${megerositett ? gomb('Részletek / lemondás', link, false) : gomb('Ott leszek ✓', ottLink) + gomb('Lemondom', link, false)}</p>`),
         szoveg: szoveg([megerositett ? 'Holnap találkozunk!' : 'Holnap várunk: jössz?', ...reszSzoveg, '', megerositett ? `Részletek / lemondás: ${link}` : `Ott leszek: ${ottLink}`]),
