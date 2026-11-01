@@ -203,10 +203,10 @@ export async function elosztas(db, fk, deps = {}) {
 }
 // DECISION #202 / 4. pont: nyers vendegadat SEHOVA (D1-naplo se): a kimeno kerelemben a hash megy, a NAPLOZOTT torzsben a hash-ertekek ("[hash]") es a nyers IP maszkoltak (a mezo megleten latszik, melyik adat ment ki).
 // A nev-hash (fn / ln) szotar-tamadassal trivialisan visszafejtheto, ezert nem marad a naploban. A gclid / fbc / fbp / ttclid / ttp NEM vendegadat (technikai azonosito): valtozatlan (a google_proba a naplobol valaszt gclid-et).
-const HASH_KULCSOK = new Set(['em', 'ph', 'fn', 'ln', 'ct', 'zp', 'country', 'external_id', 'email', 'phone', 'first_name', 'last_name', 'user_id', 'hashed_email', 'hashed_phone', 'hashed_phone_number', 'sha256_email_address', 'sha256_phone_number', 'sha256_first_name', 'sha256_last_name', 'sha256_street']);
+const HASH_KULCSOK = new Set(['em', 'ph', 'fn', 'ln', 'ct', 'zp', 'country', 'external_id', 'email', 'phone', 'first_name', 'last_name', 'user_id', 'hashed_email', 'hashed_phone', 'hashed_phone_number', 'sha256_email_address', 'sha256_phone_number', 'sha256_first_name', 'sha256_last_name', 'sha256_street', 'hashed_first_name', 'hashed_last_name', 'postal_code']);
 const maszkErtek = (x) => (typeof x === 'string' && x !== '' ? '[hash]' : x); // melyseg-vedelem: a HASH_KULCSOK alatt MINDEN nem ures szoveg maszkolt (ma csak hash jon ide; egy jovobeli hiba nyers erteket ne tudjon a D1-be vinni)
 // MERES_NAPLO_TELJES=1 (csak elonezet, sajat teszt-IP / teszt-vendeg): az IP es az e-mail / telefon hash a naploban valodi (a teszt ezt nezi), de a nev / varos / iranyitoszam hash (szotar-tamadassal visszafejtheto) ott sem marad.
-const NEV_HASH_KULCSOK = new Set(['fn', 'ln', 'ct', 'zp', 'first_name', 'last_name', 'sha256_first_name', 'sha256_last_name', 'sha256_street']);
+const NEV_HASH_KULCSOK = new Set(['fn', 'ln', 'ct', 'zp', 'first_name', 'last_name', 'sha256_first_name', 'sha256_last_name', 'sha256_street', 'hashed_first_name', 'hashed_last_name', 'postal_code']);
 export function maszkolt(body, teljes = false) { // a naplozott kerelemben a nyers IP es a hash-ertekek maszkoltak (a kuldott kerelemben valodi)
   const s = JSON.stringify(body, (k, v) => {
     if (!teljes && (k === 'client_ip_address' || k === 'ip' || k === 'ip_address' || k === 'user_ip_address')) return maszkIp(v);

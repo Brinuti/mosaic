@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
-import { emailGoogleNormal, hashEmailGoogle, hmacSha256Hex, iranyitoszamNormal, nevReszek, sha256hex, varosNormal } from '../netlify/lib/meres/hash.js';
+import { emailGoogleNormal, hashEmailGoogle, hmacSha256Hex, iranyitoszamNormal, nevReszek, nevReszekGoogle, sha256hex, varosNormal } from '../netlify/lib/meres/hash.js';
 import { felhasznaloHash } from '../netlify/lib/meres/felhasznalo-hash.js';
 import { nevEmailbol, vendegNev } from '../netlify/lib/meres/vendeg-nev.js';
 import { esemenyek } from '../netlify/lib/meres/esemeny-modell.js';
@@ -64,6 +64,7 @@ test('hmacSha256Hex = node:crypto HMAC; felhasznaloHash: minden mezo a FUGGETLEN
   assert.deepEqual(x, {
     em: h('teszt.claude@example.com'), ph_meta: h('36300000001'), ph_e164: h('+36300000001'), ext: h('teszt.claude@example.com'),
     em_ads: h('teszt.claude@example.com'), em_ga4: h('teszt.claude@example.com'), fn: h('anna'), ln: h('kovács'), ct: h('budapest'), zp: h('1051'), country: h('hu'),
+    fn_g: h('anna'), ln_g: h('kovács'), orszag_kod: 'HU', postal: '1051',
     uid: crypto.createHmac('sha256', KULCS).update('v1|ga4uid|teszt.claude@example.com').digest('hex').slice(0, 32),
   });
   assert.equal((await felhasznaloHash({}, VENDEG)).uid, null, 'GUEST_HMAC_KEY_V1 nelkul nincs user_id');
@@ -169,14 +170,61 @@ test('Google (Zapier-torzs): hashed_email (Ads-normalizalt) / hashed_phone_numbe
   const gmail = await ctxEpit({ vendeg: { ...VENDEG, email: 'Jane.Doe+x@Gmail.com' } }); const [alap] = esemenyek(gmail.fk);
   const c = googleKerelem(alap, gmail, {}).body;
   assert.deepEqual([c.hashed_email, c.hashed_phone_number], [h('janedoe@gmail.com'), h('+36300000001')]);
-  assert.deepEqual(c.user_identifiers, [{ hashed_email: h('janedoe@gmail.com') }, { hashed_phone_number: h('+36300000001') }]);
+  const AI = { hashed_first_name: h('anna'), hashed_last_name: h('kovács'), country_code: 'HU' }; // address_info (2026-10-20): a vendeg neve "Kovács Anna", iranyitoszam nincs (motoros ag)
+  assert.deepEqual(c.user_identifiers, [{ hashed_email: h('janedoe@gmail.com') }, { hashed_phone_number: h('+36300000001') }, { address_info: AI }]);
+  assert.deepEqual([c.hashed_first_name, c.hashed_last_name, c.country_code, c.postal_code], [AI.hashed_first_name, AI.hashed_last_name, 'HU', undefined]);
   assert.deepEqual([c.user_ip_address, c.user_agent], ['203.0.113.7', 'Mozilla/5.0 TESZT']);
   assert.deepEqual(Object.keys(c).filter((k) => ['gclid', 'wbraid', 'gbraid'].includes(k)), ['gclid'], 'egy kattintasazonosito');
-  assert.ok(!Object.keys(c).some((k) => /name|city|zip|nev/i.test(k)), 'Google fele nev / cim nem megy');
+  assert.ok(!Object.keys(c).some((k) => /^(first_name|last_name|nev|city|street|zip|sha256_)/i.test(k)), 'nyers nev / varos / utca nem megy, csak a hashed_first_name / hashed_last_name / country_code (+ postal_code, ha ismert)');
+  assert.ok(!JSON.stringify(c).match(/Kov[aá]cs|Anna/), 'nyers nev sehol a torzsben');
   const sd = { ...gmail, ip: null, ua: null }; const cs = googleKerelem(alap, sd, {}).body; assert.deepEqual([cs.user_ip_address, cs.user_agent], [undefined, undefined]); assert.ok(cs.hashed_email);
   const elut = await ctxEpit({}, { ana: false, adv: false }); const ce = googleKerelem(esemenyek(elut.fk)[0], elut, {}).body;
   assert.deepEqual([ce.hashed_email, ce.hashed_phone_number, ce.user_identifiers, ce.user_ip_address, ce.user_agent, ce.ad_user_data], [undefined, undefined, undefined, undefined, undefined, 'DENIED']);
-  const nincsTel = await ctxEpit({ vendeg: { ...VENDEG, telefon: '' } }); assert.deepEqual(googleKerelem(esemenyek(nincsTel.fk)[0], nincsTel, {}).body.user_identifiers, [{ hashed_email: h('teszt.claude@example.com') }]);
+  assert.deepEqual([ce.hashed_first_name, ce.hashed_last_name, ce.country_code, ce.postal_code], [undefined, undefined, undefined, undefined], 'elutasito dontesnel az address_info is kimarad');
+  const nincsTel = await ctxEpit({ vendeg: { ...VENDEG, telefon: '' } }); assert.deepEqual(googleKerelem(esemenyek(nincsTel.fk)[0], nincsTel, {}).body.user_identifiers, [{ hashed_email: h('teszt.claude@example.com') }, { address_info: AI }]);
+});
+test('Google address_info (2026-10-20): Google-normalizalt nev (kisbetu, kotojel marad), country_code HU, postal_code NYERSEN ha ismert; egy nev / nev nelkul / kulfoldi szam / MERES_GAZDAGITAS=0: nincs address_info; a naplozott torzsben a nev-hash es az iranyitoszam maszkolt', async () => {
+  // nev-normalizalas: a Google a kotojelet megtartja (a Meta-fele nevReszek kiveszi)
+  assert.deepEqual(nevReszekGoogle('Dr. Kovács-Nagy Anna'), { fn: 'anna', ln: 'kovács-nagy' });
+  assert.deepEqual(nevReszek('Dr. Kovács-Nagy Anna'), { fn: 'anna', ln: 'kovácsnagy' }, 'a Meta-fele normalizalas valtozatlan');
+  assert.deepEqual(nevReszekGoogle('Anna Kovács', 'keresztnev_elol'), { fn: 'anna', ln: 'kovács' });
+  assert.deepEqual(nevReszekGoogle('Kovács Anna Mária'), { fn: 'anna', ln: 'kovács' }, 'a koztes nevek kimaradnak');
+  assert.deepEqual(nevReszekGoogle('  O\'Brien   Zoltán. '), { fn: 'zoltán', ln: "o'brien" });
+  assert.equal(nevReszekGoogle(''), null); assert.equal(nevReszekGoogle(null), null); assert.equal(nevReszekGoogle('Dr.'), null); assert.deepEqual(nevReszekGoogle('Anna'), { fn: 'anna', ln: null });
+  // ajandekkartya-vasarlas: van iranyitoszam (Stripe PI metadata) -> postal_code nyersen
+  const ctxKartya = async (vendeg, env = {}) => { const k = await ctxEpit({ vendeg }); k.hash = await felhasznaloHash(env, vendeg); return k; };
+  const v1 = { ...VENDEG, nev: 'Kovács-Nagy Anna', iranyitoszam: '1051', varos: 'Budapest' };
+  const k1 = await ctxKartya(v1); const [al] = esemenyek(k1.fk); const b1 = googleKerelem(al, k1, {}).body;
+  const AI1 = { hashed_first_name: h('anna'), hashed_last_name: h('kovács-nagy'), country_code: 'HU', postal_code: '1051' };
+  assert.deepEqual(b1.user_identifiers[b1.user_identifiers.length - 1], { address_info: AI1 });
+  assert.deepEqual([b1.hashed_first_name, b1.hashed_last_name, b1.country_code, b1.postal_code], [AI1.hashed_first_name, AI1.hashed_last_name, 'HU', '1051']);
+  assert.match(b1.hashed_first_name, /^[0-9a-f]{64}$/); assert.match(b1.hashed_last_name, /^[0-9a-f]{64}$/);
+  assert.ok(b1.user_identifiers.length <= 5, 'max. 5 azonosito');
+  assert.ok(!JSON.stringify(b1).match(/Kov[aá]cs|Anna|Budapest/), 'nyers nev / varos sehol');
+  // naplozott torzs: nev-hash + iranyitoszam maszkolt (az address_info belsejeben is), a country_code lathato
+  for (const teljes of [false, true]) {
+    const m = maszkolt(b1, teljes); const ai = m.user_identifiers[m.user_identifiers.length - 1].address_info;
+    assert.deepEqual([m.hashed_first_name, m.hashed_last_name, m.postal_code, ai.hashed_first_name, ai.hashed_last_name, ai.postal_code], ['[hash]', '[hash]', '[hash]', '[hash]', '[hash]', '[hash]'], 'teljes=' + teljes);
+    assert.deepEqual([m.country_code, ai.country_code], ['HU', 'HU']);
+    assert.ok(!JSON.stringify(m).includes(b1.hashed_first_name) && !JSON.stringify(m).includes('1051'), 'a naploban nincs nev-hash / iranyitoszam');
+  }
+  // tipografiai aposztrof / kotojel egysegesitve; 40 karakternel hosszabb token (kotojelekkel) = nem nev
+  assert.deepEqual(nevReszekGoogle('O\u2019Brien Zolt\u00e1n'), nevReszekGoogle("O'Brien Zolt\u00e1n")); assert.deepEqual(nevReszekGoogle('Kov\u00e1cs\u2013Nagy Anna'), { fn: 'anna', ln: 'kov\u00e1cs-nagy' });
+  assert.equal(nevReszekGoogle('Kov\u00e1cs ' + 'a-'.repeat(25) + 'b'), null);
+  // iranyitoszam: csak pontosan 4 szamjegy megy ki nyersen
+  for (const rossz of ['10511', '105', 'AB1 2CD', '1 0 5 1x', '']) { const k = await ctxKartya({ ...v1, iranyitoszam: rossz }); const b = googleKerelem(esemenyek(k.fk)[0], k, {}).body; assert.equal(b.postal_code, undefined, rossz); assert.ok(b.hashed_first_name, 'a nev-hash igy is megy'); }
+  { const k = await ctxKartya({ ...v1, iranyitoszam: '1 051' }); assert.equal(googleKerelem(esemenyek(k.fk)[0], k, {}).body.postal_code, '1051', 'szokoz / kotojel normalizalva'); }
+  // zart kulcslista a nevvel + iranyitoszammal epult torzsre (uj kulcs csak szandekosan kerulhet be)
+  assert.deepEqual(Object.keys(b1).sort(), ['ad_personalization', 'ad_user_data', 'conversion_action_id', 'conversion_date_time', 'country_code', 'currency', 'gclid', 'hashed_email', 'hashed_first_name', 'hashed_last_name', 'hashed_phone_number', 'order_id', 'postal_code', 'user_agent', 'user_identifiers', 'user_ip_address', 'value'].sort());
+  // reszleges dontes (analitika igen, hirdetes nem): az address_info pontosan akkor van, amikor a hashed_email is (ugyanaz a hozzajarulas-szabaly)
+  for (const hozz of [{ ana: true, adv: false }, { ana: false, adv: true }, { ana: true, adv: true }, { ana: false, adv: false }]) { const k = await ctxEpit({ vendeg: { ...v1 } }, hozz); k.hash = await felhasznaloHash({}, v1); const b = googleKerelem(esemenyek(k.fk)[0], k, {}).body; assert.equal(!!(b.user_identifiers || []).some((x) => x.address_info), !!b.hashed_email, JSON.stringify(hozz)); assert.equal(b.hashed_first_name !== undefined, b.hashed_email !== undefined, JSON.stringify(hozz)); }
+  // egy nev / nev nelkul / kulfoldi telefon / kapcsolo: nincs address_info (a tobbi mezo megy)
+  const nincs = (b) => assert.deepEqual([b.hashed_first_name, b.hashed_last_name, b.country_code, b.postal_code, (b.user_identifiers || []).some((x) => x.address_info)], [undefined, undefined, undefined, undefined, false]);
+  for (const v of [{ ...v1, nev: 'Anna' }, { ...v1, nev: '' }, { ...v1, nev: null }, { ...v1, telefon: '+44 20 7946 0958' }]) { const k = await ctxKartya(v); const b = googleKerelem(esemenyek(k.fk)[0], k, {}).body; nincs(b); assert.ok(b.hashed_email, 'az e-mail megy'); }
+  const ki = googleKerelem(al, k1, { MERES_GAZDAGITAS: '0' }).body; nincs(ki); assert.equal(ki.hashed_email, undefined, 'MERES_GAZDAGITAS=0: semmilyen bovitett hash nem megy');
+  // iranyitoszam nelkul (motor): address_info postal_code nelkul
+  const k2 = await ctxKartya({ ...VENDEG, nev: 'Kovács Anna' }); const b2 = googleKerelem(esemenyek(k2.fk)[0], k2, {}).body;
+  assert.deepEqual(b2.user_identifiers[b2.user_identifiers.length - 1], { address_info: { hashed_first_name: h('anna'), hashed_last_name: h('kovács'), country_code: 'HU' } }); assert.equal(b2.postal_code, undefined);
 });
 test('GA4: user_id (HMAC) + user_data (SHA-256 e-mail, E.164 telefon); nev / cim nincs; elutasito dontes: nincs; a validacios hiba utan a tartalek (regi) torzs megy', async () => {
   const ctx = await ctxEpit(); const alap = esemenyek(ctx.fk)[0]; const k = ga4Kerelem(alap, ctx, ENV);
