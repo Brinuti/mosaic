@@ -201,7 +201,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
           logo: b(document.querySelector('#comp-m3znboq3')).right, ikon: b(document.querySelector('#comp-m7q6eklh')), nyelv: b(document.querySelector('#comp-m7jcfhgp')), vizsz: document.documentElement.scrollWidth - innerWidth };
       });
       assert.equal(r.n, 11, r.cimek.join(','));
-      assert.deepEqual(r.cimek.slice(-4), ['Árlista', 'FOGLALÁS', 'GYIK', 'Kapcsolat'], 'az Árlista a FOGLALÁS előtt');
+      assert.deepEqual(r.cimek.slice(-4), ['Árlista', 'GYIK', 'Kapcsolat', 'FOGLALÁS'], 'a FOGLALÁS a menüsor jobb szélén, az Árlista, a GYIK és a Kapcsolat után');
       assert.deepEqual(r.cimek.slice(0, 3), ['Head Spa', 'Páros Head Spa', 'Szőrtelenítés']);
       assert.equal(r.sorok, 1);
       assert.ok(r.utolso <= r.ikon.left - 4, `a menu vege (${Math.round(r.utolso)}) az "i" elott van (${Math.round(r.ikon.left)})`);

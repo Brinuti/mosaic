@@ -57,6 +57,51 @@ function arlistaFomenu(h, mobil) {
   return h.replace(mobil ? MOBIL_FOGLALAS : ASZTALI_FOGLALAS, (m) => (mobil ? mobilArlista() : asztaliArlista()) + m);
 }
 
+// --- FOGLALAS: a menusor jobb szelen (Feri, 2026-11-01: "a foglalas gomb jobb oldalt legyen, az Arlista, a GYIK es a Kapcsolat utan") ---
+// A Wix-sorrend: ... Arlista, FOGLALAS, GYIK, Kapcsolat. Az atalakitas a FOGLALAS <li>-t a Kapcsolat <li> UTAN teszi (asztali + mobil; az angol oldalon is, ahol a GYIK nincs). A stilus
+// (arany gomb) a href-re kotott (nem a helyzetre), ezert a CSS nem valtozik. Ismetelhetetlen-biztos: ha a FOGLALAS mar a Kapcsolat utan van, nem csinal semmit.
+const ASZTALI_LI = (href) => new RegExp('<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item"(?:(?!<\\/li>)[\\s\\S])*?href="' + href + '"(?:(?!<\\/li>)[\\s\\S])*?<\\/li>');
+const MOBIL_LI = (href) => new RegExp('<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-[A-Za-z0-9-]+"(?:(?!<\\/li>)[\\s\\S])*?href="' + href + '"(?:(?!<\\/li>)[\\s\\S])*?<\\/li>');
+function foglalasJobbra(h, mobil) {
+  const li = mobil ? MOBIL_LI : ASZTALI_LI;
+  const fogl = h.match(li('\\/idpontfoglalas'));
+  const kapcs = h.match(li('\\/kapcsolat'));
+  if (!fogl || !kapcs || kapcs.index < fogl.index) return h;   // nincs mit / a FOGLALAS mar a Kapcsolat utan van
+  const nelkule = h.replace(fogl[0], '');
+  const k2 = nelkule.match(li('\\/kapcsolat'));
+  return nelkule.slice(0, k2.index + k2[0].length) + fogl[0] + nelkule.slice(k2.index + k2[0].length);
+}
+
+// --- "Tetovalas eltavolitas" a Sminktetovalas lenyiloben (Feri, 2026-11-01: "tedd be a menube is"). A Sminktetovalas pont tovabbra is a /sminktetovalas-budapest oldalra visz;
+// a lenyilo ket elemet ad: Sminktetovalas + Tetovalas eltavolitas. Ugyanaz a markup, mint a Fodraszat lenyiloje (asztali: submenu815198092; mobil: expandable). Ismetelhetetlen-biztos.
+const ELTAV = '/sminktetovalas-eltavolitas-budapest';
+const ELTAV_CIM = 'Tetoválás eltávolítás';
+const ASZTALI_SMINK = /<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item" data-testid="menuItemDepth0" data-item-depth="0" data-is-current="(true|false)" aria-current="(?:true|false)"><div class="itemShared2352141355__rootContainer"><a data-item-label="true" data-testid="linkElement" href="\/sminktetovalas-budapest" target="_self" class="([^"]*)" tabindex="0"><div class="itemDepth02233374943__container"><span class="itemDepth02233374943__label wixui-horizontal-menu__item-label">Sminktetoválás<\/span><\/div><\/a><\/div><\/li>/;
+const asztaliAlmenu = (href, cim) =>
+  '<li class="itemDepth12472627565__itemWrapper" data-testid="menuItemDepth1" data-item-depth="1" data-is-current="false" aria-current="false"><div class="itemShared2352141355__rootContainer">' +
+  '<a data-item-label="true" data-testid="linkElement" href="' + href + '" target="_self" class="itemDepth12472627565__root submenu815198092__menuItem itemShared2352141355__menuItem" tabindex="0">' +
+  '<div class="itemDepth12472627565__container"><span class="itemDepth12472627565__label">' + cim + '</span></div></a></div></li>';
+function sminkLenyilo(h, mobil) {
+  if (h.includes('href="' + ELTAV + '"')) return h;   // mar atalakitott
+  if (!mobil) {
+    return h.replace(ASZTALI_SMINK, (m, aktiv, osztaly) =>
+      '<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item" data-testid="menuItemDepth0" data-item-depth="0" data-is-current="' + aktiv + '" aria-current="' + aktiv + '">' +
+      '<div class="itemShared2352141355__rootContainer itemShared2352141355--isRow"><a data-item-label="true" data-testid="linkElement" href="/sminktetovalas-budapest" target="_self" class="' + osztaly + '" aria-expanded="false" aria-haspopup="true" tabindex="0">' +
+      '<div class="itemDepth02233374943__container"><span class="itemDepth02233374943__label wixui-horizontal-menu__item-label">Sminktetoválás</span></div></a>' +
+      '<div class="itemShared2352141355__accessibilityIconWrapper itemShared2352141355--isTopLevel"><button tabindex="0" class="itemShared2352141355__accessibilityIcon" aria-label="Toggle Sminktetoválás"><svg width="0" height="0" viewBox="0 0 0 0" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M8 10.5L16 1.86193L14.7387 0.5L8 7.77613L1.26133 0.499999L-5.95321e-08 1.86193L8 10.5Z"></path></svg></button></div></div>' +
+      '<div class="itemDepth02233374943__positionBox itemDepth02233374943--isColumn" role="group" aria-label="Sminktetoválás" data-testid="positionBox"><div class="submenu815198092__root StylableHorizontalMenu3372578893__columnsLayout itemDepth02233374943__animationBox">' +
+      '<div class="itemDepth02233374943__alignBox submenu815198092__pageWrapper submenu815198092__overrideWidth"><ul class="itemDepth02233374943__list submenu815198092__listWrapper" style="--horizontalSpacing:var(--style-mtfgjr81-horizontalSpacing)">' +
+      asztaliAlmenu('/sminktetovalas-budapest', 'Sminktetoválás') + asztaliAlmenu(ELTAV, ELTAV_CIM) + '</ul></div></div></div></li>');
+  }
+  return h.replace(/<li (data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-(\d+)")((?: aria-current="page")?) class="([^"]*)"><div data-testid="itemWrapper" class="keDKhi"><span data-testid="linkWrapper" class="j945c8"><a data-testid="linkElement" href="\/sminktetovalas-budapest" target="_self" class="G7GdaI wixui-vertical-menu__item-label">Sminktetoválás<\/a><\/span><\/div><\/li>/,
+    (m, id, szam, akt, osztaly) => {
+      const gyerek = (n, href, cim) => '<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-' + szam + '-' + n + '" class="FWN1UT GrMktH jieHoL wixui-vertical-menu__item"><div data-testid="itemWrapper" class="keDKhi"><span data-testid="linkWrapper" class="j945c8"><a data-testid="linkElement" href="' + href + '" target="_self" class="G7GdaI wixui-vertical-menu__item-label">' + cim + '</a></span></div></li>';
+      return '<li ' + id + akt + ' class="' + osztaly.replace(/\bWIf5uD\b/, 'WIf5uD Hp2waC') + '"><div data-testid="itemWrapper" class="keDKhi"><span data-testid="linkWrapper" class="j945c8"><a data-testid="linkElement" href="/sminktetovalas-budapest" target="_self" class="G7GdaI wixui-vertical-menu__item-label">Sminktetoválás</a></span>' +
+        '<button aria-expanded="false" aria-haspopup="true" aria-label="Sminktetoválás" class="NUCS6n" data-testid="expandablemenu-toggle"><div class="jIDNF8 wixui-vertical-menu__arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9.2828 4.89817"><path d="M4.64116,4.89817a.5001.5001,0,0,1-.34277-.13574L.15727.86448A.50018.50018,0,0,1,.84282.136L4.64116,3.71165,8.44.136a.50018.50018,0,0,1,.68555.72852L4.98393,4.76243A.5001.5001,0,0,1,4.64116,4.89817Z"></path></svg></div></button></div>' +
+        '<ul class="tFexI9 wixui-vertical-menu__submenu">' + gyerek(0, '/sminktetovalas-budapest', 'Sminktetoválás') + gyerek(1, ELTAV, ELTAV_CIM) + '</ul></li>';
+    });
+}
+
 // A Fodraszat lenyilobol a "Fodraszat Arak" pont kikerul (a tulajdonos kerese, 2026-10-09: nem mukodik; a regi Wixes oldal #comp-m5p3vmyh horgonya az ujratervezett
 // fodrasz-oldalakon nincs meg). Az arlistak az oldalakon (#arak-szekcio) es a /arlista oldalon vannak. Mobilon es asztalon is; az angol menube is ez kerul at.
 const FODRASZ_ARAK_ALMENU = /<li(?:(?!<li|<\/li>)[\s\S])*?href="\/noi-fodrasz-budapest-balayage-hajfestes#comp-m5p3vmyh"(?:(?!<\/li>)[\s\S])*?<\/li>/;
@@ -237,6 +282,8 @@ export function fejlecAtalakit(html, mobil, angol = html.includes(NYELV_EN)) {
     h = akciosavSajatAblak(h);
     h = parosFomenu(h, mobil);
     h = arlistaFomenu(h, mobil);
+    h = foglalasJobbra(h, mobil);
+    h = sminkLenyilo(h, mobil);
     h = nyelvJelveny(h, angol, mobil);
     if (mobil) h = ajandekNyitva(h);
     return angol ? angolMenu(h, mobil) : h;

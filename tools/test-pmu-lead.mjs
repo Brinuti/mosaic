@@ -29,11 +29,12 @@ test('a PM3 szakasz megvan, a segedfuggveny kiolvashato', () => {
 test('foto: hozzajarulassal pontosan 1 esemeny, zart mezokkel, szemelyes adat nelkul', () => {
   const { pmuLead, dl } = vilag();
   const id = pmuLead.ujAzonosito();
+  // foglalassal (2026-11-01): 1 = a vendeg a fotos eloszuro utan a naptarban foglal is (fotos foglalas, NEM konverzio); alapertek 0
   pmuLead('foto', { id, ag: 'D', fotoDb: 3, idopontKert: true, nev: 'Teszt Elek', email: 'x@y.hu', telefon: '06201234567' });
   assert.equal(dl().length, 1);
   const e = dl()[0];
-  assert.deepEqual(Object.keys(e).sort(), ['ag', 'business', 'event', 'event_id', 'foto_db', 'idopont_kert', 'lead_type', 'source_page'].sort());
-  assert.deepEqual({ ...e }, { event: 'pmu_foto_lead', business: 'pmu', lead_type: 'foto', source_page: '/foglalo-pmu', event_id: id, ag: 'D', foto_db: 3, idopont_kert: 1 });
+  assert.deepEqual(Object.keys(e).sort(), ['ag', 'business', 'event', 'event_id', 'foglalassal', 'foto_db', 'idopont_kert', 'lead_type', 'source_page'].sort());
+  assert.deepEqual({ ...e }, { event: 'pmu_foto_lead', business: 'pmu', lead_type: 'foto', source_page: '/foglalo-pmu', event_id: id, ag: 'D', foto_db: 3, idopont_kert: 1, foglalassal: 0 });
   // a PII-minta az event_id nelkuli ertekeken fut (a veletlen hex azonosito szamjegy-sorozata fals talalat lenne); az event_id-t kulon regex ellenorzi
   assert.equal(TILTOTT.test(JSON.stringify(Object.entries(e).filter(([k]) => k !== 'event_id').map(([, v]) => v))), false, JSON.stringify(e));
   assert.match(e.event_id, /^pl_[a-z0-9]{8,24}$/);

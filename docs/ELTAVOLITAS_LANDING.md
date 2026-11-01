@@ -62,6 +62,7 @@ Az oldal saját fájljai (új fájlok) törölhetők / a PR-ok visszavonhatók, 
 
 
 ## 4. kör (Feri, 2026-11-01): minden foglalás naptárba, a foglaló két szűk módosítása
+> **Felülírva az 5. körben (lásd lent és `docs/FOTOS_FOGLALAS.md`):** a `?kerdes=kihagy` / `kerdesKihagy()` megszűnt; a foglaló mindenkitől megkérdezi, volt-e régi sminktetoválása, és a fotósoknak minden szolgáltatásra csak nov. 9-től ad időpontot. A `LEGKORABBI['491949']` marad.
 - A Salonicban (Melitta, place 14585) megjelent a **„Tetoválás eltávolítás”** szolgáltatás: **491949**, 20 000 Ft, 30 perc. Az oldal mindkét kártyája (ingyenes konzultáció, eltávolító kezelés) a beágyazott `/foglalo-pmu` naptárba nyílik
   (`?beagyazva=1&kerdes=kihagy&kezeles=konzultacio` / `…&kezeles=491949`); az „eltávolító kezelés → űrlap” ág megszűnt, a fotóküldő űrlap csak nem kötelező, előzetes fotóküldés.
 - **`assets/js/foglalo-pmu.js` (foglalási folyamat, Feri kérésére: „az időpontfoglalást javítsd”), két additív, szűk hatókörű módosítás:**
@@ -86,3 +87,11 @@ Az oldal saját fájljai (új fájlok) törölhetők / a PR-ok visszavonhatók, 
 
 - **A „Küldj előre fotót” blokk kikerült** (Feri, 2026-11-01): az oldalon nincs fotóküldő űrlap, nincs `eltavolitas_foto_lead` dataLayer-esemény, a `pmu-proba-foto` levelet innen nem küldjük (a fenti Zapier-lánc innen nem indul). Az oldal egyetlen konverziója a naptárba foglalás (ingyenes konzultáció / eltávolító kezelés).
   A fotókérés a foglaló-átalakítás része lesz (fotó + foglalás), lásd a Feri-nek küldött javaslatot; addig az eltávolítás-oldalról fotó nélkül lehet foglalni.
+
+
+## 5. kör (Feri, 2026-11-01): fotós előszűrés + foglalás, menü, „Hogyan zajlik?”, képek verziózása
+- **Foglaló** (minden PMU-belépési pont, nem csak ez az oldal): minden szolgáltatásnál a „Volt már sminktetoválásod?” kérdés az időpont ELŐTT; akinek van: kötelező fotó → időpont csak 2026-11-09-től → elérhetőség + fotó-levél (`FOGLALÁSSAL` jelöléssel) → Salonic. **Aki fotóval foglal, nem konverzió** (külön köszönőoldal `/pmu-foto-ok`, jelölések, mérési teendők): a teljes, pontos leírás a `docs/FOTOS_FOGLALAS.md`-ben van (a mérési ablaknak szánt szöveggel együtt).
+- **Menü (közös fejléc, minden oldal):** a FOGLALÁS gomb a menüsor jobb szélén (Árlista · GYIK · Kapcsolat után, asztali + mobil); a Sminktetoválás pont legördülő: „Sminktetoválás” + „Tetoválás eltávolítás” (`tools/fejlec-menu.mjs`: `foglalasJobbra`, `sminkLenyilo`). Az eltávolítás-oldal továbbra is `noindex, nofollow` (a menüből elérhető, a keresők nem indexelik).
+- **„Hogyan zajlik?”**: 3 lépés (választás + fotó, időpont, „jössz, és kezdhetjük”); a szöveg: érdemes már az első találkozón eltávolítani, mert a kezelés a konzultációt is magában foglalja; külön konzultációra csak az jöjjön, aki még nem biztos az első alkalmas eltávolításban (Feri szavai).
+- **Képek**: a galéria képei `-v2` fájlnevet kaptak. Ok: a Cloudflare a képeket `cache-control: public, max-age=31536000` (1 év) fejléccel adja, ezért az azonos néven cserélt `utana-a.jpg` a korábban már látogatóknak (Feri böngészője is) a régi, tükrözetlen változatot mutatta. A 2. pár „utána” képe (flip + forgatás) a repóban jó volt; a `-v2` név miatt mindenki az újat kapja. **Szabály: kép cseréjekor új fájlnevet kell adni.**
+

@@ -57,13 +57,29 @@ describe('statikus', () => {
     const { oldalUzletag } = await import(pathToFileURL(path.join(GYOKER, 'tools/foglalo-atkotes.mjs')).href);
     assert.equal(oldalUzletag(NEV), 'pmu');
   });
-  test('a foglalo-motor modositasa szuk hatokoru: kerdes-kihagyas csak konzultaciora / eltavolitasra, legkorabbi idopont csak a 491949 szolgaltatasra (2026-11-09)', () => {
+  test('az eltavolitas-oldal nem hasznal kerdes-kihagyast (a foglalo mindenkitol megkerdezi, volt-e sminktetovalasa); a 491949 legkorabbi idopontja marad (2026-11-09)', () => {
     const motor = fs.readFileSync(path.join(GYOKER, 'assets/js/foglalo-pmu.js'), 'utf8');
-    assert.match(motor, /const KERDES_KIHAGY = new URLSearchParams\(location\.search\)\.get\('kerdes'\) === 'kihagy';/);
-    assert.match(motor, /const kerdesKihagy = \(\) => KERDES_KIHAGY && !!allapot\.kezeles && \(allapot\.kezeles\.egyeb \|\| \/elt\[aá\]vol\[ií\]t\/i\.test/);
+    const landing = fs.readFileSync(path.join(GYOKER, 'assets/js/eltavolitas-landing.js'), 'utf8');
+    assert.ok(!/kerdesKihagy|KERDES_KIHAGY/.test(motor), 'a kerdes-kihagyas megszunt');
+    assert.ok(!/kerdes=kihagy['&]/.test(landing + HTML), 'a landing nem kuldi a kerdes=kihagy jelzest');
     assert.match(motor, /const LEGKORABBI = \{ '491949': Date\.UTC\(2026, 10, 8, 23, 0, 0\) \/ 1000 \};/);
     assert.equal(Date.UTC(2026, 10, 8, 23, 0, 0), Date.parse('2026-11-09T00:00:00+01:00'), '2026-11-09 00:00 Europe/Budapest');
     assert.equal(new Date('2026-11-09T12:00:00Z').getUTCDay(), 1, 'november 9. hetfo');
+  });
+  test('a galeria kepei verziozott fajlnevuek (-v2): a Cloudflare 1 evre gyorsitotarazza a kepeket, azonos nevvel a csere nem latszana', () => {
+    for (const n of ['elotte-a', 'elotte-b', 'elotte-c', 'utana-a', 'utana-b', 'utana-c']) {
+      assert.ok(HTML.includes('/assets/img/eltavolitas/' + n + '-v2.jpg'), n + '-v2.jpg hivatkozas hianyzik');
+      assert.ok(!HTML.includes('/assets/img/eltavolitas/' + n + '.jpg'), 'a regi nev (' + n + '.jpg) nem maradhat');
+    }
+  });
+  test('a "Hogyan zajlik?" szakasz 3 lepes, az elso talalkozon mar az eltavolitast emliti, a fotot es a nov. 9-et', () => {
+    const r = HTML.slice(HTML.indexOf('id="el-lepes-cim"'), HTML.indexOf('<!-- ============ 5. HANY ALKALOM'));
+    assert.equal((r.match(/<li>/g) || []).length, 3);
+    assert.match(r, /feltöltöd a fotód/);
+    assert.match(r, /november 9/);
+    assert.match(r, /az első találkozón/i);
+    assert.match(r, /a kezelés a konzultációt is magában foglalja/);
+    assert.match(r, /Külön konzultációra csak akkor jöjj, ha még nem biztos/);
   });
   test('a kepek EXIF-mentesek (nincs helyadat / eszkozadat)', () => {
     for (const f of fs.readdirSync(path.join(GYOKER, 'assets/img/eltavolitas')).filter((x) => x.endsWith('.jpg'))) {
@@ -155,71 +171,19 @@ describe('bongeszos', () => {
     });
   }
 
-  test('foglalas: mindket kartya (konzultacio, eltavolito kezeles) a beagyazott naptarat nyitja, kerdes nelkul; a hero gombja a konzultaciot valasztja', async () => {
+  test('foglalas: mindket kartya (konzultacio, eltavolito kezeles) a beagyazott foglalot nyitja; a hero gombja a konzultaciot valasztja', async () => {
     const { ctx, lap } = await nezet(false);
     await lap.route('**/foglalo-pmu**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>foglalo</p>' }));
     assert.equal(await lap.isHidden('#el-foglalo-doboz'), true);
     await lap.click('#el-fo-gomb');
     await lap.waitForFunction(() => !document.getElementById('el-foglalo-doboz').hidden);
-    assert.equal(await lap.getAttribute('#el-foglalo', 'src'), '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=konzultacio');
+    assert.equal(await lap.getAttribute('#el-foglalo', 'src'), '/foglalo-pmu?beagyazva=1&kezeles=konzultacio');
     await lap.click('.el-valaszt[data-valaszt=kezeles]');
     await lap.waitForFunction(() => document.getElementById('el-foglalo').getAttribute('src').endsWith('kezeles=491949'));
-    assert.equal(await lap.getAttribute('#el-foglalo', 'src'), '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=491949');
+    assert.equal(await lap.getAttribute('#el-foglalo', 'src'), '/foglalo-pmu?beagyazva=1&kezeles=491949');
     assert.equal(await lap.getAttribute('.el-valaszt[data-valaszt=kezeles]', 'aria-pressed'), 'true');
     assert.equal(await lap.isVisible('#el-foglalo-doboz'), true);
     await ctx.close();
-  });
-
-  // ---- a foglalo-motor viselkedese (mockolt Salonic, rogzitett ora: 2026-11-01) ----
-  const SZOLG_HTML = '<div>' + [
-    ['471160', 'Ingyenes konzultáció', '', 30], ['471153', 'Szemöldök tetoválás - Hibrid - 99.000 Ft helyett most', '79000', 90], ['491949', 'Tetoválás eltávolítás', '20000', 30],
-  ].map(([id, nev, ar, perc]) => `<input data-id="${id}" data-name="${nev}" data-price="${ar}" data-duration="${perc}">`).join('') + '</div>';
-  const idopont = (iso) => Date.parse(iso) / 1000;
-  const SLOTOK = { status: 'success', data: { blocks: { 0: { a: { slots: {
-    elott: { timestamp: idopont('2026-11-08T22:59:59Z') }, hatar: { timestamp: idopont('2026-11-08T23:00:00Z') }, kesobb: { timestamp: idopont('2026-11-10T09:00:00Z') },
-  } } } } } };
-  const motor = async (url) => {
-    const ctx = await bongeszo.newContext({ viewport: { width: 900, height: 1100 } });
-    const lap = await ctx.newPage();
-    await lap.clock.setFixedTime(new Date('2026-11-01T12:00:00Z'));
-    await lap.route(/^(?!http:\/\/localhost)/, (r) => {
-      const u = r.request().url(); const cors = { 'access-control-allow-origin': '*' };
-      if (u.startsWith('https://mosaic-pmu.salonic.hu/employees/')) return r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'text/html' }, body: SZOLG_HTML });
-      if (u.startsWith('https://api.salonic.hu/calendar/getAvailableTimes')) return r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify(SLOTOK) });
-      return r.abort();
-    });
-    await lap.goto(bazis + url, { waitUntil: 'load' });
-    await lap.waitForSelector('.nnap:not(.ures)', { timeout: 15000 });
-    const napok = () => lap.evaluate(() => [...document.querySelectorAll('.nnap:not([disabled]):not(.ures)')].map((e) => parseInt(e.textContent, 10)));
-    const nezet = () => lap.evaluate(() => [...document.querySelectorAll('[data-nezet]')].filter((e) => !e.hidden && getComputedStyle(e).display !== 'none').map((e) => e.dataset.nezet));
-    const slot = async () => { await lap.getByRole('button', { name: /^\d\d:\d\d$/ }).first().click(); await lap.waitForTimeout(400); };
-    return { ctx, lap, napok, nezet, slot };
-  };
-  test('motor: a Tetoválás eltávolítás (491949) csak 2026-11-09 00:00-tól foglalható (22:59:59Z kimarad, 23:00:00Z bent), a konzultáció mindent lát; időpont után adatok, vissza = időpont', async () => {
-    const e = await motor('/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=491949');
-    assert.deepEqual(await e.napok(), [9, 10]);
-    await e.slot();
-    assert.deepEqual(await e.nezet(), ['adatok']);
-    assert.equal(await e.lap.locator('#lepesjelzo li').count(), 3, 'kihagyáskor 3 lépés (nincs Kérdés)');
-    assert.ok(!(await e.lap.locator('#lepesjelzo').innerText()).includes('Kérdés'));
-    await e.lap.locator('button[aria-label*="issza"], #vissza, .vissza').first().click();
-    await e.lap.waitForTimeout(400);
-    assert.deepEqual(await e.nezet(), ['ido']);
-    await e.ctx.close();
-    const k = await motor('/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=konzultacio');
-    assert.deepEqual(await k.napok(), [8, 9, 10], 'a konzultációra nincs korlát');
-    await k.slot();
-    assert.deepEqual(await k.nezet(), ['adatok']);
-    await k.ctx.close();
-  });
-  test('motor: a kérdés marad, ha nincs ?kerdes=kihagy, vagy ha a szolgáltatás sminktetoválás (471153)', async () => {
-    for (const url of ['/foglalo-pmu?beagyazva=1&kezeles=konzultacio', '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=471153', '/foglalo-pmu?beagyazva=1&kezeles=491949']) {
-      const e = await motor(url);
-      await e.slot();
-      assert.deepEqual(await e.nezet(), ['kerdes'], url);
-      assert.equal(await e.lap.locator('#lepesjelzo li').count(), 4, url + ': 4 lépés');
-      await e.ctx.close();
-    }
   });
 
   test('mobil: a ragados sav a hero utan latszik, az urlapnal elrejtozik; asztalon nincs', async () => {
