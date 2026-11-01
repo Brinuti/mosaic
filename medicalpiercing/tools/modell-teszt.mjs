@@ -40,6 +40,16 @@ const MOST = Math.floor(Date.UTC(2026, 10, 1, 9, 0, 0) / 1000);   // 2026. nov. 
   egyenlo(el[0].tipusok.orr.length, 3, 'az orrnal az elsodleges mellett a tartalek is latszik (egy foglalt par)');
 }
 
+// ---- 1b. az oldal idopont-tablazata egyezik a beosztassal
+{
+  const fs = await import('node:fs');
+  const html = fs.readFileSync(new URL('../uj-oldalak/sajat/modellnap.html', import.meta.url), 'utf8');
+  const tablabol = [...html.matchAll(/class="mn-ora" data-tipus="([a-z]+)" data-nap="([\d-]+)" data-ido="([\d:]+)"/g)].map((m) => `${m[2]}|${m[1]}|${m[3]}`).sort();
+  const beosztasbol = NAPOK.flatMap((n) => savok(n.datum).filter((s) => s.szerep === 'elsodleges').map((s) => `${s.datum}|${s.tipus}|${s.ido}`)).sort();
+  egyenlo(tablabol, beosztasbol, 'a /modellnap idopont-tablazata pontosan a beosztas elsodleges savjai');
+  for (const t of TIPUSOK) ellenorzes(html.includes(`#i-mn-${t.kulcs}`) && html.includes(`<symbol id="i-mn-${t.kulcs}"`), `${t.kulcs}: az ikon letezik es hasznalva van`);
+}
+
 // ---- 2. tarolo: foglalas, ketszeres foglalas, tartalek, versenyhelyzet -----------------------------------------------------------------------------
 const elsoOrr = savok('2026-11-25').filter((s) => s.tipus === 'orr' && s.szerep === 'elsodleges');
 const [orr1, orr2] = elsoOrr;
@@ -174,7 +184,7 @@ egyenlo([T.szolitas({ nev: 'Kovács Anna', kereszt: 'Anna' }), T.szolitas({ nev:
   ellenorzes(/Kov[aá]cs Rich[aá]rd/.test(t0.html), 't0: Kovacs Richard felugyelete');
   ellenorzes(/nyilatkozat/i.test(t0.html) && /e-mailben/.test(t0.html), 't0: a nyilatkozatot e-mailben kuldjuk');
   for (const tp of ['t0', 'm48', 'm24', 'lemondas', 'felszabadult', 'felajanlas']) for (const mg of [false, true]) { const lv = level(tp, { ...f, megerositve: mg ? 1 : null, tartva_eddig: MOST + 1800 }); ellenorzes(!/személyi|szemelyi/i.test(lv.html + lv.szoveg + lv.targy), `${tp}${mg ? ' (megerositett)' : ''}: nem kerunk szemelyi igazolvanyt`); }
-  ellenorzes(!/fotó|fotoz|videó/i.test(t0.html.replace(/fotó(t|k)? (nem|sem)/gi, '')) || /nem k[eé]sz[ií]t/i.test(t0.html), 't0: ha szo van fotorol, akkor csak a tiltasrol');
+  ellenorzes(/fotó- és videófelvétel készül/.test(t0.html), 't0: a fotó- és videófelvétel készülését jelzi (a tulajdonos pontosítása)');
 }
 
 // ---- 5. level-kuldes (kuldEsedekes) ------------------------------------------------------------------------------------------------------------------

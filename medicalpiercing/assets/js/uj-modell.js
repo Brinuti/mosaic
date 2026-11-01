@@ -38,6 +38,7 @@
   var kuldGomb = q('[data-mn-kuldes]');
   var keszEl = q('[data-mn-kesz]');
   var heroSzabad = document.querySelector('[data-mn-szabad]');
+  var oraGombok = Array.prototype.slice.call(document.querySelectorAll('.mn-ora'));
   var ragados = document.querySelector('[data-mn-ragados]');
 
   var adat = null;                 // a /api/modell/szabad valasza
@@ -66,10 +67,19 @@
     // fo: a valos (elsodleges) helyek; a tartalek helyek kulon jelzese
     if (heroSzabad) {
       if (!adat.nyitva) { heroSzabad.textContent = 'A foglalás hamarosan indul.'; }
-      else if (adat.szabadFo > 0) { heroSzabad.textContent = ''; heroSzabad.appendChild(document.createTextNode('Még ')); heroSzabad.appendChild(el('b', '', adat.szabadFo + ' szabad hely')); heroSzabad.appendChild(document.createTextNode(' a(z) ' + adat.fo + '-ből.')); }
+      else if (adat.szabadFo > 0) { heroSzabad.textContent = ''; heroSzabad.appendChild(document.createTextNode('Még ')); heroSzabad.appendChild(el('b', '', adat.szabadFo + ' szabad hely')); heroSzabad.appendChild(document.createTextNode('.')); }
       else if (adat.szabadTartalek > 0) { heroSzabad.textContent = 'Az első helyek betelt, tartalék helyre még lehet jelentkezni.'; }
       else { heroSzabad.textContent = 'Minden hely betelt, de feliratkozhatsz a várólistára.'; }
     }
+    // az idopont-tablazat: a foglalt idopontok athuzva; zarva (nincs nyitott foglalas) nem kattinthato
+    oraGombok.forEach(function (g) {
+      var sav = (nap(g.getAttribute('data-nap')) || { tipusok: {} }).tipusok[g.getAttribute('data-tipus')] || [];
+      var s = sav.filter(function (x) { return x.szerep === 'elsodleges' && x.ido === g.getAttribute('data-ido'); })[0];
+      var foglalt = !!(s && !s.szabad);
+      g.classList.toggle('foglalt', foglalt);
+      g.disabled = foglalt || !adat.nyitva;
+      g.title = foglalt ? 'Ez az időpont már foglalt' : '';
+    });
     qa('[data-mn-tipus-szabad]').forEach(function (s) {
       var t = s.getAttribute('data-mn-tipus-szabad'), db = szabadDb(t), l = s.closest('label');
       s.textContent = db > 0 ? db + ' szabad' : 'betelt · várólista';
@@ -146,6 +156,21 @@
     ki.mod = 'varolista'; ki.ido = ''; ki.szerep = '';
     tartalekPipa.hidden = true; lepes3.disabled = false; kuldFelirat(); hibaMutat('');
     lepes3.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // a tablazat idopontjara kattintva a foglaloban mar ki van valasztva a piercing, a nap es az idopont
+  oraGombok.forEach(function (g) {
+    g.addEventListener('click', function () {
+      if (!adat || g.disabled) return;
+      var t = q('input[name="tipus"][value="' + g.getAttribute('data-tipus') + '"]');
+      var n = q('input[name="nap"][value="' + g.getAttribute('data-nap') + '"]');
+      if (!t || !n) return;
+      t.checked = true; t.dispatchEvent(new Event('change', { bubbles: true }));
+      n.checked = true; n.dispatchEvent(new Event('change', { bubbles: true }));
+      var r = qa('input[name="ido"]').filter(function (x) { return x.value === g.getAttribute('data-ido'); })[0];
+      if (r) { r.checked = true; idoValaszt(r); }
+      gyoker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
 
   function ertek(nev) { var i = urlap.elements[nev]; return i ? String(i.value || '').trim() : ''; }

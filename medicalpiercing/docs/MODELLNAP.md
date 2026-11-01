@@ -2,7 +2,7 @@
 
 A tulajdonos kérése (2026-11-01): **2026. nov. 25. (szerda, 2 piercer)** és **nov. 30. (hétfő, 3 piercer)**, budapesti szalon (1137 Budapest, Újpesti rakpart 7., 5. em. 25.).
 A modell ingyen kap piercinget és ékszert (az ékszert megtartja). Ez **oktatási gyakorlónap (workshop), nem vizsga**: vidéki piercerek gyakorolnak **Kovács Richárd felügyelete mellett**.
-Öt típus: szemöldök, orr, ajak, köldök, rook. A gyakorlás 10:00-kor indul. Rólunk nem készül fotó / videó. Az ingyenes kontroll a megszokott módon online foglalható.
+Öt típus: szemöldök, orr, ajak, köldök, rook. A gyakorlás 10:00-kor indul. **A szúrásról fotó- és videófelvétel készül** (a tulajdonos pontosítása, 2026-11-01); az oldal, a GYIK, a foglaló pipája és a visszaigazoló levél ezt kimondja, a felhasználási hozzájárulás a szalon e-mailes nyilatkozatába tartozik. Az ingyenes kontroll a megszokott módon online foglalható.
 
 ## Mi van benne
 | Mi | Hol |
