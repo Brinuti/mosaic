@@ -93,11 +93,12 @@ try {
     await page.getByRole('button', { name: /IDŐPONTOT FOGLALOK/i }).first().click().catch(async () => { await page.locator('text=/IDŐPONTOT FOGLALOK/i').first().click(); });
     await page.waitForSelector('#kezelesek .kezeles', { timeout: 30000 });
     const kez = page.locator('#kezelesek .kezeles'); const kezValasztott = E.pmuKezeles ? kez.first() : kez.last(); const kezSzoveg = ((await kezValasztott.textContent()) || '').replace(/\s+/g, ' ').trim().slice(0, 100); await kezValasztott.click(); lepes('PMU: kezeles = ' + kezSzoveg);
+    // 2026-11-01 (FOTOS_FOGLALAS.md): a foglalo sorrendje kezeles -> KERDES -> idopont -> Salonic-adatlap ("nem, ez lesz az elso" = nem fotos ut)
+    await page.locator('input[name=elozmeny][value=elso]').waitFor({ timeout: 30000 }); await page.locator('input[name=elozmeny][value=elso]').check(); await page.locator('#kerdes-tovabb').click();
     await page.waitForSelector('.nnap.szabad', { timeout: 45000 });
     const napok = page.locator('.nnap.szabad'); await napok.nth((await napok.count()) - 1).click(); await page.waitForTimeout(600);
     const idok = page.locator('.idogomb'); const db = await idok.count(); const ido = (await idok.nth(db - 1).textContent()).trim(); await idok.nth(db - 1).click();
     lepes('PMU: idopont valasztva', { ido });
-    await page.locator('input[name=elozmeny][value=elso]').check(); await page.locator('#kerdes-tovabb').click();
     await page.waitForSelector('iframe#salonic', { timeout: 30000 }); await page.waitForTimeout(4500);
   } else {
     await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
