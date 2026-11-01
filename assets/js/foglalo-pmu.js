@@ -219,8 +219,6 @@
   // fotos ut: a foglalo fo agaban (nem a telefonos visszahivasnal) a vendegnek van / nem biztos benne, hogy van regi sminktetovalasa
   // (a mar elkuldott foto utan a munkamenet fotos MARAD: a valasz atvaltasa / kezelesvaltas nem nyit konverzios utat)
   const fotosUt = () => allapot.kerdesCel !== 'c-ido' && (allapot.fotoKuldve || (!!allapot.kerdesValasz && allapot.kerdesValasz !== 'elso'));
-  // a nov. 9-i kezdet utan a "legkorabbi idopont: november 9." szovegek nem jelennek meg
-  const megNov9 = () => Date.now() / 1000 < FOTOS_LEGKORABBI;
   // a kinalt kezdesek fotos vendegnek MINDIG >= nov. 9. (kesve erkezo / elavult valasz ellen is: a megjelenitesnel is szurunk)
   const kezdesekLatszik = () => (fotosUt() ? allapot.kezdesek.filter((ts) => ts >= FOTOS_LEGKORABBI) : allapot.kezdesek);
   // a foto feltoltese + elkuldese meg hianyzik (a vendeg ezutan kaphat idopontot / mehet az adatlapra)
@@ -504,7 +502,7 @@
     if (!allapot.kerdesValasz) { ugrik('kerdes'); return; }   // idopontot csak a kerdes (es regi sminktetovalasnal a foto) utan kinalunk
     if (fotoKell() && !allapot.fotok.length) { ugrik('foto'); return; }
     const friss = typeof uzenet === 'string';
-    $('ido-kezeles').replaceChildren(kezelesFejlec(), ...(fotosUt() && megNov9() ? [elem('p', { class: 'halk kicsi', style: 'margin:8px 0 0', szoveg: 'A legkorábbi időpont: november 9.' })] : []));
+    $('ido-kezeles').replaceChildren(kezelesFejlec());
     hibaDoboz($('ido-uzenet'), friss ? uzenet : '');
     $('nap-idok').replaceChildren();
     $('naptar').replaceChildren(elem('div', { class: 'betolt', style: 'grid-column:1/-1', szoveg: 'Szabad napok betöltése…' }));
@@ -785,7 +783,7 @@
     const sz = (t) => (TERULET ? t.replace(/sminktetoválás/g, TERULET.szo) : t); // ?terulet=ajak: "szajtetovalas"
     $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítek.' : sz(matchMedia('(hover: none) and (pointer: coarse)').matches ? 'Fotózd le a jelenlegi sminktetoválásodat' : 'Tölts fel fotót a jelenlegi sminktetoválásodról');
     $('foto-szoveg').replaceChildren(d ? 'Ránézek, és megírom, hogy első kezelés vagy korrekció szükséges-e.'
-      : elem('b', { szoveg: fogl ? 'A fotó kötelező: ez alapján tudom előre, mit lehet és érdemes tenni. Feltöltés után választhatsz időpontot' + (megNov9() ? ' (fotóval jelentkezőknek november 9-től)' : '') + '.' : 'Fotó nélkül nem tudok segíteni: a fotó kötelező. Csak a fotó alapján tudom megmondani, mit lehet és érdemes tenni.' }));
+      : elem('b', { szoveg: fogl ? 'A fotó kötelező: ez alapján tudom előre, mit lehet és érdemes tenni. Feltöltés után választhatsz időpontot.' : 'Fotó nélkül nem tudok segíteni: a fotó kötelező. Csak a fotó alapján tudom megmondani, mit lehet és érdemes tenni.' }));
     $('foto-osszegzes').replaceChildren(fogl ? (allapot.kezeles ? kezelesFejlec() : '') : allapot.slot && allapot.kezeles
       ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Választott (preferált) időpont' }), elem('div', { class: 'sor' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: allapot.kezeles.cim + (allapot.kezeles.valtozat ? ' – ' + allapot.kezeles.valtozat : '') }))))
@@ -891,7 +889,7 @@
     const fogl = fotosUt();   // fotos foglalas: a vendeg a levelezes utan a Salonic adatlapjan foglal is (NEM konverzio)
     const adat = new FormData();
     adat.set('form-name', 'pmu-proba-foto');
-    adat.set('ag', (allapot.ag === 'D' ? 'D – nem biztos, volt-e PMU' : 'B – régi PMU van') + (fogl ? ' · FOGLALÁSSAL (fotós előszűrés, időpont nov. 9-től)' : ''));
+    adat.set('ag', (allapot.ag === 'D' ? 'D – nem biztos, volt-e PMU' : 'B – régi PMU van') + (fogl ? ' · FOGLALÁSSAL (fotós előszűrés)' : ''));
     adat.set('nev', ertek('foto-adatok', 'nev'));
     adat.set('telefon', ertek('foto-adatok', 'telefon'));
     adat.set('email', ertek('foto-adatok', 'email'));
