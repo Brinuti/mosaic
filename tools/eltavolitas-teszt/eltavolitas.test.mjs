@@ -80,7 +80,7 @@ describe('statikus', () => {
     assert.match(r, /az első találkozón elkezdeni az eltávolítást/i);
     assert.match(r, /a kezelés a konzultációt is magában foglalja/);
     assert.match(r, /Külön konzultációra csak akkor jöjj, ha még nem biztos/);
-    assert.ok(!/már az első találkozón (el is távolíthatjuk|elvégezni az eltávolítást)/.test(r + HTML), 'nem sugallunk egy alkalmas teljes eltavolitast (1–3 alkalom)');
+    assert.ok(!/(el is távolíthatjuk|elvégezni az eltávolítást|egy alkalommal eltávolít)/i.test(r + HTML.replace(/<[^>]+>/g, ' ')), 'nem sugallunk egy alkalmas teljes eltavolitast (1–3 alkalom)');
   });
   test('a kepek EXIF-mentesek (nincs helyadat / eszkozadat)', () => {
     for (const f of fs.readdirSync(path.join(GYOKER, 'assets/img/eltavolitas')).filter((x) => x.endsWith('.jpg'))) {

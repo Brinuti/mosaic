@@ -10,16 +10,18 @@
   // ott - mint eddig - lefut a meres (suti.js); a /foglalo-pmu foglalon (es a landingbe agyazva) nem
   // FOTOS FOGLALAS (Feri, 2026-11-01): ha a fotos vendeg a Salonic utan (kitort a keretbol / uj lapon nyitotta) a FO ABLAKBAN mégis a /pmu-ok-ra kerul, a meres (suti.js) betoltese ELOTT
   // atiranyitjuk a /pmu-foto-ok-ra (nem konverzio). Egyezes: a foglalo altal elmentett fotos jelzes (sessionStorage mh_pmu_foglalas.fotos) ES a bookingUrl startDate-je azonos az idopontjaval.
-  var mhFotosAtir = false;
-  try {
-    if (/^\/pmu-ok\/?$/.test(location.pathname) && window.top === window.self) {
-      var mhF = JSON.parse(sessionStorage.getItem('mh_pmu_foglalas') || 'null');
-      var mhB = new URL(new URLSearchParams(location.search).get('bookingUrl') || '');
-      mhFotosAtir = !!(mhF && mhF.fotos && String(mhF.ts) === mhB.searchParams.get('startDate'));
-    }
-  } catch (e) { /* nincs jelzes: a szokasos ut */ }
-  if (mhFotosAtir) location.replace('/pmu-foto-ok');
-  else if (/^\/pmu-(ok|vh)\/?$/.test(location.pathname)) { document.title = 'Foglalásod megérkezett!'; document.write('<script src="/assets/js/suti.js"><\/script>'); }
+  (function () {
+    var fotosAtir = false;
+    try {
+      if (/^\/pmu-ok\/?$/.test(location.pathname) && window.top === window.self) {
+        var f = JSON.parse(sessionStorage.getItem('mh_pmu_foglalas') || 'null');
+        var bu = new URL(new URLSearchParams(location.search).get('bookingUrl') || '');
+        fotosAtir = !!(f && f.fotos && String(f.ts) === bu.searchParams.get('startDate'));
+      }
+    } catch (e) { /* nincs jelzes: a szokasos ut */ }
+    if (fotosAtir) location.replace('/pmu-foto-ok');
+    else if (/^\/pmu-(ok|vh)\/?$/.test(location.pathname)) { document.title = 'Foglalásod megérkezett!'; document.write('<script src="/assets/js/suti.js"><\/script>'); }
+  })();
 </script>
 <link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
 <link rel="stylesheet" href="/assets/css/wix-google-fonts.css">

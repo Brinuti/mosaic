@@ -165,7 +165,7 @@ describe('FOGLALAS jobbra + Sminktetovalas legordulo (2026-11-01)', () => {
         const c = cimek(h, mobil).filter((s) => !/^(Betti|Noel|Evelin)$/.test(s));
         assert.deepEqual(c.slice(-4), ['Árlista', 'GYIK', 'Kapcsolat', 'FOGLALÁS'], c.join(' | '));
         assert.equal(db(h, 'href="/sminktetovalas-eltavolitas-budapest"'), 1, 'pontosan egy eltavolitas-link');
-        assert.equal(db(h, 'href="/sminktetovalas-budapest"'), mobil ? 2 : 2, 'a Sminktetovalas szulo + az almenu elso eleme');
+        assert.equal(db(h, 'href="/sminktetovalas-budapest"'), 2, 'a Sminktetovalas szulo + az almenu elso eleme');
         assert.ok(h.includes('Tetoválás eltávolítás'));
       });
     }
@@ -176,6 +176,8 @@ describe('FOGLALAS jobbra + Sminktetovalas legordulo (2026-11-01)', () => {
       const h = fejlecResz(forras);
       assert.ok(!/Tetoválás eltávolítás|sminktetovalas-eltavolitas-budapest/.test(h), mod + ': nincs magyar eltavolitas-pont az angol menuben');
       assert.ok(!/aria-label="(Toggle )?Sminktetoválás"/.test(h), mod + ': nincs magyar aria-label');
+      const c = cimek(h, mobil);
+      assert.equal(c[c.length - 1], c.find((l) => /FOGLAL|BOOK|RESERV/i.test(l)), mod + ': a foglalas gomb az angol menu utolso eleme: ' + c.join(' | '));
     }
   });
 });
