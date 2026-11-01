@@ -27,6 +27,9 @@ describe('statikus', () => {
       assert.ok(!fs.readFileSync(path.join(GYOKER, 'tools/wix-sitemap', f), 'utf8').includes(NEV), f + ': a noindex oldal nem lehet a sitemapban');
     }
   });
+  test('az urlap method="post" (JS nelkul sem kerul szemelyes adat az URL-be / a GA4 page_location-be)', () => {
+    assert.match(HTML, /<form id="el-urlap" method="post" novalidate>/);
+  });
   test('nincs href="#..." link, nincs data-cta, nincs merokod', () => {
     assert.ok(!/href="#/.test(HTML), 'href="#..." talalat');
     assert.ok(!/data-cta=/.test(HTML), 'data-cta talalat');
@@ -207,9 +210,66 @@ describe('bongeszos', () => {
     await ctx.close();
   });
 
+  test('urlap: a szerverhiba (HTTP 500) hibauzenetet ad, az urlap marad, a masodik probalkozas sikerul', async () => {
+    const { ctx, lap, posztok } = await nezet(true);
+    let valasz = 500;
+    await lap.unroute('**/*');
+    await lap.route('**/*', (r) => { const k = r.request(); if (new URL(k.url()).origin !== bazis) return r.abort(); if (k.method() === 'POST') { posztok.push(k); return r.fulfill({ status: valasz, body: valasz === 200 ? 'ok' : 'hiba' }); } return r.continue(); });
+    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/kozben-a.jpg')]);
+    await lap.waitForSelector('.el-mini');
+    await lap.selectOption('#el-terulet', 'szemöldök');
+    await lap.fill('#el-nev', 'Teszt Elek'); await lap.fill('#el-telefon', '06 30 111 2222'); await lap.fill('#el-email', 'teszt@example.com');
+    await lap.check('#el-hozzajarul');
+    await lap.click('#el-kuld');
+    await lap.waitForFunction(() => document.getElementById('el-h-kuld').textContent.length > 10);
+    assert.equal(await lap.isHidden('#el-kesz'), true);
+    assert.equal(await lap.isVisible('#el-urlap'), true);
+    assert.equal(await lap.getAttribute('#el-kuld', 'aria-disabled'), null);
+    assert.equal(await lap.locator('.el-mini').count(), 1, 'a fotok megmaradnak az ujraprobalkozashoz');
+    valasz = 200;
+    await lap.click('#el-kuld');
+    await lap.waitForSelector('#el-kesz:not([hidden])');
+    assert.equal(posztok.length, 2);
+    await ctx.close();
+  });
+
+  test('urlap: legfeljebb 5 foto (a 6. nem kerul be, a figyelmeztetes marad), a torles mukodik, es kozben a hibak aria-invalid-ot kapnak', async () => {
+    const { ctx, lap } = await nezet(true);
+    const kepek = ['kozben-a.jpg', 'kozben-b.jpg', 'elotte-c.jpg', 'utana-c.jpg', 'video-poszter.jpg', 'kozben-a.jpg'].map((f) => path.join(GYOKER, 'assets/img/eltavolitas', f));
+    await lap.setInputFiles('#el-foto-input', kepek);
+    await lap.waitForFunction(() => document.querySelectorAll('.el-mini').length === 5);
+    assert.match(await lap.textContent('#el-h-foto'), /Legfeljebb 5/);
+    await lap.click('.el-mini button');
+    assert.equal(await lap.locator('.el-mini').count(), 4);
+    await lap.click('#el-kuld');
+    assert.equal(await lap.getAttribute('#el-nev', 'aria-invalid'), 'true');
+    assert.equal(await lap.getAttribute('#el-terulet', 'aria-invalid'), 'true');
+    assert.equal(await lap.evaluate(() => document.activeElement.id), 'el-terulet', 'az elso hibas mezo (foto megvan) a terulet');
+    await lap.fill('#el-nev', 'Teszt Elek');
+    assert.equal(await lap.getAttribute('#el-nev', 'aria-invalid'), null);
+    await ctx.close();
+  });
+
+  test('JS nelkul az urlap POST-ot kuld a sajat cimre, az adat nem kerul az URL-be', async () => {
+    const ctx = await bongeszo.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
+    const lap = await ctx.newPage();
+    const kerelmek = [];
+    await lap.route('**/*', (r) => { const k = r.request(); if (new URL(k.url()).origin !== bazis) return r.abort(); if (k.method() === 'POST') { kerelmek.push({ m: k.method(), u: k.url() }); return r.fulfill({ status: 200, contentType: 'text/html', body: '<p>ok</p>' }); } return r.continue(); });
+    await lap.goto(bazis + '/' + NEV, { waitUntil: 'load' });
+    await lap.fill('#el-nev', 'Teszt Elek'); await lap.fill('#el-telefon', '06 30 111 2222'); await lap.fill('#el-email', 'teszt@example.com');
+    // Enter a mezoben = az urlap bekuldese JS nelkul (a gombkattintas-varakozas ritkan 30 mp-et allt, ez nem fugg tole)
+    await Promise.all([lap.waitForRequest((k) => k.method() === 'POST', { timeout: 15000 }), lap.press('#el-email', 'Enter')]);
+    assert.equal(kerelmek.length, 1);
+    assert.equal(kerelmek[0].m, 'POST');
+    assert.ok(!new URL(kerelmek[0].u).search, 'az URL-ben nem lehet lekerdezes-resz: ' + kerelmek[0].u);
+    assert.ok(!/Teszt|example|111/.test(lap.url()), 'szemelyes adat az URL-ben');
+    await ctx.close();
+  });
+
   test('mobil: a ragados sav a hero utan latszik, az urlapnal elrejtozik; asztalon nincs', async () => {
     const { ctx, lap } = await nezet(true);
     assert.equal(await lap.getAttribute('#el-sav', 'data-lathato'), '0');
+    assert.equal(await lap.evaluate(() => getComputedStyle(document.getElementById('el-sav')).visibility), 'hidden', 'rejtett allapotban nem fokuszalhato');
     await lap.evaluate(() => window.scrollTo(0, 1400));
     await lap.waitForFunction(() => document.getElementById('el-sav').dataset.lathato === '1');
     await lap.evaluate(() => document.getElementById('foto-urlap').scrollIntoView());

@@ -15,7 +15,15 @@ teszt: `tools/eltavolitas-teszt/eltavolitas.test.mjs`.
 Az oldal saját kis űrlapja (név, telefon, e-mail, terület, 1–5 fotó, hozzájárulás) a MEGLÉVŐ `pmu-proba-foto` űrlap-levélre megy (`POST /`, `netlify/lib/levelek.js`),
 ugyanúgy, ahogy a `/foglalo-pmu` fotóküldése. A levélben az „Ág”, a „Kezelés / terület” és a „Beküldve innen” mező **eltávolítás-jelölést** kap
 (`Eltávolítás – lézeres, fotó alapján`, `Sminktetoválás eltávolítás – <terület> (fotó alapján)`, `sminktetovalas-eltavolitas-budapest`), így Melitta a levélből látja, mi ez.
-A fotókat a böngésző 1600 px-re kicsinyíti, a CRM / külső eszköz nem kap fotót.
+A fotókat a böngésző 1600 px-re kicsinyíti. Az űrlap `method="post"` (JS nélkül sem kerül személyes adat az URL-be / a GA4 `page_location`-be).
+
+**Mi indul el a levélből (meglévő Zapier-lánc, ezt a PR nem módosítja; csak olvasva ellenőriztem, 2026-11-01):**
+`weboldal-pmu-visszahivas-to-sheet-oktober` (Gmail-trigger: `from:mosaicheadspa@gmail.com subject:Sminktetoválás (visszahívást OR fotó)`) →
+sor a „Melitta - PMU - Ajánlatkérések” táblázat „Október” munkalapján (Szolgáltatás: „PMU – weboldal, fotót küldött”; az Üzenet oszlopban a „Kezelés: Sminktetoválás eltávolítás – <terület> (fotó alapján)” és az „Oldal: sminktetovalas-eltavolitas-budapest”),
+a fotók a Drive „Mosaic PMU – weboldali vendégfotók” mappa vendégenkénti almappájába, majd `melitta-pmu-oktober-sms` → **automatikus SMS a vendég telefonszámára**:
+„Szia! Lattam a jelentkezesed, hamarosan hivlak. Mentsd el a szamom, hogy tudd, en kereslek: 06707753965 - Melitta”.
+Ez eltávolítás-leadnél is megy (a szöveg általános, nem sminktetoválás-specifikus); az űrlap a telefonmezőnél jelzi: „rövid, automatikus visszaigazoló SMS is érkezhet”.
+A Zap `Ág`-értéket nem dolgoz fel, minden általunk küldött mező (Név, Telefonszám, Kezelés / terület, E-mail, Fotó n, Beküldve innen) a meglévő mezőnevekkel megy.
 
 ## Mérés (a mérési oldal dolga; ez a PR nem kapcsol be konverziót)
 - Az oldal nem tölt mérőkódot, nincs `data-cta`. A `suti.js` PIXEL-listái nem változtak.
@@ -33,6 +41,10 @@ Indexelhetővé tétel: a `<meta name="robots">` sor törlése + bejegyzés a `t
 3. Hétfő–péntek nyitvatartás (a szombat megerősítésig nincs kiírva: `<!--mh-nyitvatartas:hetkoznap-->`).
 4. A kép-párosítás: a „előtte / közvetlenül utána” pár a két legutóbbi (kék-szürke → halványabb) szemöldökkép; a másik két kép csak „az első alkalom során” címkét kapja.
 5. A „garancia” szó nincs használva; a három vállalás (előszűrés, átlátható ár, szakmai stop) jogi átnézése javasolt, mielőtt hirdetés indul.
+6. A „Mikor nem vállalom?” lista (ellenjavallatok) és a GYIK szakmai tartalmát Melittának jóvá kell hagynia; az adatkezelési hozzájárulás egészségi állapotra utaló adatról szól, és (a meglévő mintát követve) az ÁSZF-re hivatkozik – külön adatkezelési tájékoztató / jogi átnézés javasolt. Az is ellenőrizendő, ki végezhet Magyarországon lézeres tetoválás-eltávolítást.
+7. A fejléc „Foglalás” gombja a PMU-foglalóra visz (új sminktetoválás), nem eltávolításra – az eltávolítás online nem foglalható.
+8. A meglévő Zapier-lánc az „Október” munkalapra ír (a munkalap neve a hónapváltás után maradt): ezt Feri / a mérési oldal tudja, a PR nem nyúl hozzá.
+9. A `suti.js`-ben az `ana` hozzájárulás alapból engedélyezett (DECISION #170), ezért az `eltavolitas_foto_lead` alapértelmezetten bekerül a dataLayerbe; érdemes megnézni, hogy a GTM-ben nincs-e „minden esemény” trigger. (A GTM és a GA4 a `suti.js`-en át ezen az oldalon is betöltődik, mint minden oldalon; Meta-pixel nincs.)
 
 ## Visszavonás
 Az oldal csak új fájlokból áll: a PR visszavonása (revert) vagy a `foglalas/sminktetovalas-eltavolitas-budapest.html` törlése mindent visszaállít, más oldalt nem érint.

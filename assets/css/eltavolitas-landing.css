@@ -114,6 +114,7 @@
 .el-mezo input:focus, .el-mezo select:focus { outline: 2px solid var(--arany); outline-offset: 1px; }
 .el-mezo.el-rossz input, .el-mezo.el-rossz select { border-color: var(--hiba); }
 .el-hiba { color: var(--hiba); font-size: 13.5px; min-height: 0; }
+.el-seg { font-size: 13px; color: var(--halk); line-height: 1.4; }
 .el-fotozona { border: 2px dashed #bfc6b8; border-radius: 14px; padding: 16px; text-align: center; background: #fafbf8; }
 .el-fotozona p { font-size: 14px; color: var(--halk); margin-top: 8px; }
 .el-fotozona input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
@@ -142,8 +143,9 @@
 .el-hely .gomb { margin-top: 14px; }
 
 /* ---- ragados alsó sav (mobil) ---- */
-.el-sav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; gap: 10px; align-items: center; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(246, 247, 243, .97); border-top: 1px solid var(--vonal); box-shadow: 0 -6px 18px rgba(40, 30, 20, .08); transform: translateY(110%); transition: transform .25s; }
-.el-sav[data-lathato="1"] { transform: none; }
+.el-sav svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.el-sav { visibility: hidden; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; gap: 10px; align-items: center; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(246, 247, 243, .97); border-top: 1px solid var(--vonal); box-shadow: 0 -6px 18px rgba(40, 30, 20, .08); transform: translateY(110%); transition: transform .25s, visibility 0s .25s; }
+.el-sav[data-lathato="1"] { visibility: visible; transform: none; transition: transform .25s, visibility 0s; }
 .el-sav .gomb { flex: 1; white-space: normal; text-align: center; padding: 12px 14px; font-size: 14.5px; }
 .el-sav .gomb-korvonal { flex: none; padding: 12px 16px; background: #fff; }
 .el-sav small { display: block; font-size: 11.5px; font-weight: 400; opacity: .9; letter-spacing: 0; text-transform: none; margin-top: 2px; }

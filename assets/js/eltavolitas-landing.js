@@ -83,6 +83,9 @@
     if (h) h.textContent = szoveg || '';
     const m = $('el-m-' + mezo);
     if (m) m.classList.toggle('el-rossz', !!szoveg);
+    const mezoElem = { foto: 'el-foto-input', terulet: 'el-terulet', nev: 'el-nev', telefon: 'el-telefon', email: 'el-email', hozzajarul: 'el-hozzajarul' }[mezo];
+    const e = mezoElem && $(mezoElem);
+    if (e) { if (szoveg) e.setAttribute('aria-invalid', 'true'); else e.removeAttribute('aria-invalid'); }
   };
 
   const rajzol = () => {
@@ -101,7 +104,6 @@
       return d;
     }));
     szam.textContent = fotok.length ? fotok.length + ' fotó kiválasztva (legfeljebb ' + MAX_FOTO + ')' : 'Még nincs kiválasztott fotó.';
-    if (fotok.length) hiba('foto', '');
   };
 
   // a telefonos fotok tobb MB-osak: 1600 px-re kicsinyitjuk (az EXIF / helyadat igy sem megy tovabb)
@@ -112,25 +114,32 @@
     v.width = Math.round(kep.width * arany);
     v.height = Math.round(kep.height * arany);
     v.getContext('2d').drawImage(kep, 0, 0, v.width, v.height);
+    if (typeof kep.close === 'function') kep.close();
     return new Promise((ok, nem) => v.toBlob((b) => (b ? ok(b) : nem(new Error('toBlob'))), 'image/jpeg', 0.82));
   };
 
-  $('el-foto-input').addEventListener('change', async (e) => {
-    hiba('foto', '');
+  // a kicsinyites sorban fut (nincs egyszerre ket feldolgozas, igy nem lehet 5 foto folott sem lepni), es kuldes kozben jelzi, hogy meg tart
+  let sor = Promise.resolve();
+  let folyamatban = 0;
+  $('el-foto-input').addEventListener('change', (e) => {
     const vannak = [...e.target.files];
-    const hely = MAX_FOTO - fotok.length;
-    let rossz = 0;
-    for (const f of vannak.slice(0, Math.max(0, hely))) {
-      try {
-        if (!/^image\//.test(f.type) && !/\.(jpe?g|png|heic|heif|webp)$/i.test(f.name)) throw new Error('nem kep');
-        const b = await kicsinyit(f);
-        fotok.push({ blob: b, url: URL.createObjectURL(b) });
-      } catch (err) { rossz++; }
-    }
-    if (rossz) hiba('foto', 'A kép feltöltése nem sikerült' + (vannak.length > 1 ? ' (' + rossz + ' képnél)' : '') + '. Kérlek, próbálj másik képet (JPG vagy PNG).');
-    else if (vannak.length > hely) hiba('foto', 'Legfeljebb ' + MAX_FOTO + ' fotót küldhetsz.');
     e.target.value = '';
-    rajzol();
+    folyamatban++;
+    szam.textContent = 'Fotók feldolgozása…';
+    sor = sor.then(async () => {
+      hiba('foto', '');
+      const hely = MAX_FOTO - fotok.length;
+      let rossz = 0;
+      for (const f of vannak.slice(0, Math.max(0, hely))) {
+        try {
+          if (!/^image\//.test(f.type) && !/\.(jpe?g|png|heic|heif|webp)$/i.test(f.name)) throw new Error('nem kep');
+          const b = await kicsinyit(f);
+          fotok.push({ blob: b, url: URL.createObjectURL(b) });
+        } catch (err) { rossz++; }
+      }
+      if (rossz) hiba('foto', 'A kép feltöltése nem sikerült' + (vannak.length > 1 ? ' (' + rossz + ' képnél)' : '') + '. Kérlek, próbálj másik képet (JPG vagy PNG).');
+      else if (vannak.length > hely) hiba('foto', 'Legfeljebb ' + MAX_FOTO + ' fotót küldhetsz.');
+    }).catch((err) => console.error(err)).finally(() => { folyamatban--; rajzol(); });
   });
 
   const SZABALY = {
@@ -174,15 +183,17 @@
     e.preventDefault();
     if (kuld.getAttribute('aria-disabled') === 'true') return;
     hiba('kuld', '');
+    if (folyamatban) { hiba('kuld', 'Egy pillanat, a fotók feldolgozása még tart. Próbáld újra pár másodperc múlva.'); return; }
     let elso = null;
+    // a fokusz a lathato sorrend szerinti elso hibas mezore kerul: foto, terulet, nev, telefon, email, hozzajarulas
+    if (!fotok.length) { hiba('foto', 'Kérlek, tölts fel legalább egy fotót: fotó nélkül nem tudok segíteni.'); elso = $('el-foto-input'); }
     for (const mezo of ['terulet', 'nev', 'telefon', 'email']) {
       const jo = SZABALY[mezo](mezoErtek(mezo));
       hiba(mezo, jo ? '' : UZENET[mezo]);
       if (!jo && !elso) elso = $('el-' + mezo);
     }
-    if (!fotok.length) { hiba('foto', 'Kérlek, tölts fel legalább egy fotót: fotó nélkül nem tudok segíteni.'); if (!elso) elso = $('el-foto-input'); }
     const hozzajarul = $('el-hozzajarul').checked;
-    $('el-h-hozzajarul').textContent = hozzajarul ? '' : 'Kérlek, fogadd el az adatkezelést, hogy a fotóidat megnézhessem.';
+    hiba('hozzajarul', hozzajarul ? '' : 'Kérlek, fogadd el az adatkezelést, hogy a fotóidat megnézhessem.');
     if (!hozzajarul && !elso) elso = $('el-hozzajarul');
     if (elso || !hozzajarul) { if (elso) elso.focus(); return; }
 

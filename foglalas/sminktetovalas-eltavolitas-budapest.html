@@ -46,7 +46,7 @@
 <main id="top">
 
 <!-- ============ 1. HERO ============ -->
-<section class="el-hero celoldal" aria-labelledby="el-h1">
+<section class="el-hero" aria-labelledby="el-h1">
   <div class="tartalom el-hero-racs">
     <div>
       <p class="felcim">Szemöldök és ajak</p>
@@ -87,7 +87,7 @@
       <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c4-8 14-8 18 0M5 17c4-5 10-5 14 0"/></svg></span><div><h3>Túl sötét vagy túl vastag lett</h3><p>A forma vagy a szín erősebb, mint amit szerettél volna.</p></div></li>
       <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.500"/><path d="M12 7.500a4.500 4.500 0 000 9"/></svg></span><div><h3>Kékes, szürkés vagy vöröses lett</h3><p>Az évek alatt elváltozott a pigment színe.</p></div></li>
       <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16M9 4l-2 16M17 4l-2 16"/></svg></span><div><h3>Aszimmetrikus vagy elavult a forma</h3><p>A két oldal nem egyforma, vagy már nem illik hozzád.</p></div></li>
-      <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19l4-1 10-10-3-3L6 15zM13 6l3 3"/></svg></span><div><h3>Tiszta lapot szeretnél</h3><p>Új sminktetoválás előtt először a régit kell halványítani.</p></div></li>
+      <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19l4-1 10-10-3-3L6 15zM13 6l3 3"/></svg></span><div><h3>Tiszta lapot szeretnél</h3><p>Új sminktetoválás előtt sokszor érdemes először a régit halványítani.</p></div></li>
       <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-4 6-5 9-3 3-2 6-1 9 3-3 4-6 5-9 5s-6-1-9-5z"/></svg></span><div><h3>Nem tetszik az ajak- vagy szájkontúr</h3><p>Elmosódott, aszimmetrikus vagy túl éles lett a vonal.</p></div></li>
     </ul>
     <p class="el-kozepre-gomb"><button type="button" class="gomb gomb-korvonal" data-gorget="foto-urlap">Megnézetem a saját esetemet</button></p>
@@ -120,7 +120,7 @@
     <div class="el-kiemel">
       <p>A pigment lézerrel <b>fokozatosan halványodik, több alkalom alatt</b>. Sokszor az a reális cél, hogy a régi forma már ne zavarjon, vagy új munka alapja lehessen. <b>Teljes eltűnés nem minden esetben lehetséges.</b></p>
       <p>Az eredmény a pigment színétől és mélységétől, a bőrtípustól, a korábbi kezelésektől és az utóápolástól is függ. Az alkalmak számát csak fotó alapján, sávként tudom megbecsülni, fix számot nem ígérek.</p>
-      <p>A kezelés után közvetlenül kipirosodhat a bőr; a halványodás a következő hetekben alakul ki.</p>
+      <p>A kezelés után közvetlenül kipirosodhat a bőr; a halványodás a következő hetekben válhat láthatóvá, egyénenként eltérő mértékben.</p>
     </div>
   </div>
 </section>
@@ -137,9 +137,9 @@
       <figure class="el-par">
         <div class="el-par-kepek">
           <figure><img src="/assets/img/eltavolitas/elotte-c.jpg" width="800" height="1000" alt="Kék-szürke, vastag szemöldök-sminktetoválás az első lézeres kezelés előtt" loading="lazy"><span class="el-cimke">Előtte</span></figure>
-          <figure><img src="/assets/img/eltavolitas/utana-c.jpg" width="800" height="1000" alt="Ugyanaz a szemöldök közvetlenül az első lézeres kezelés után: a pigment már halványabb" loading="lazy"><span class="el-cimke">Közvetlenül utána</span></figure>
+          <figure><img src="/assets/img/eltavolitas/utana-c.jpg" width="800" height="1000" alt="Ugyanaz a szemöldök közvetlenül az első lézeres kezelés után" loading="lazy"><span class="el-cimke">Közvetlenül utána</span></figure>
         </div>
-        <figcaption class="el-kepalatt">Az 1. alkalom előtt és közvetlenül a lézerezés után. Ez nem a végeredmény: a halványodás a következő hetekben alakul ki, és az eredmény egyénenként eltér.</figcaption>
+        <figcaption class="el-kepalatt">Az 1. alkalom előtt és közvetlenül a lézerezés után. Ez nem a végeredmény: a halványodás a következő hetekben válhat láthatóvá, egyénenként eltérő mértékben.</figcaption>
       </figure>
       <div class="el-egyek">
         <figure class="el-egy"><img src="/assets/img/eltavolitas/kozben-a.jpg" width="800" height="1000" alt="Vendég lézervédő szemüvegben az első eltávolító kezelés során" loading="lazy"></figure>
@@ -255,47 +255,48 @@
           <li>Szemből, közelről és oldalról is</li>
           <li>Szemöldöknél mindkét oldal látszódjon, ajaknál a teljes kontúr</li>
         </ul>
-        <form id="el-urlap" novalidate>
+        <form id="el-urlap" method="post" novalidate>
           <div class="el-bot" aria-hidden="true"><label>Ne töltsd ki <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label></div>
           <div class="el-mezo" id="el-m-foto">
             <span class="el-cimkesor" id="el-foto-cimke">Fotók (legalább 1, legfeljebb 5)</span>
             <div class="el-fotozona">
-              <input type="file" id="el-foto-input" accept="image/*" multiple aria-labelledby="el-foto-cimke">
+              <input type="file" id="el-foto-input" accept="image/*" multiple aria-labelledby="el-foto-cimke" aria-describedby="el-h-foto">
               <label for="el-foto-input" class="gomb gomb-korvonal">Fotók kiválasztása</label>
               <p id="el-foto-szam">Még nincs kiválasztott fotó.</p>
               <div class="el-miniek" id="el-miniek"></div>
             </div>
-            <span class="el-hiba" id="el-h-foto" role="alert"></span>
+            <span class="el-hiba" id="el-h-foto" aria-live="polite"></span>
           </div>
           <div class="el-mezo" id="el-m-terulet">
             <label for="el-terulet">Melyik területről van szó?</label>
-            <select id="el-terulet" name="terulet" required>
+            <select id="el-terulet" name="terulet" required aria-describedby="el-h-terulet">
               <option value="">Válassz…</option>
               <option value="szemöldök">Szemöldök</option>
               <option value="ajak, szájkontúr">Ajak, szájkontúr</option>
               <option value="egyéb vagy nem tudom">Egyéb / nem tudom</option>
             </select>
-            <span class="el-hiba" id="el-h-terulet" role="alert"></span>
+            <span class="el-hiba" id="el-h-terulet" aria-live="polite"></span>
           </div>
           <div class="el-mezo" id="el-m-nev">
             <label for="el-nev">Neved</label>
-            <input type="text" id="el-nev" name="nev" autocomplete="name" required>
-            <span class="el-hiba" id="el-h-nev" role="alert"></span>
+            <input type="text" id="el-nev" name="nev" autocomplete="name" required aria-describedby="el-h-nev">
+            <span class="el-hiba" id="el-h-nev" aria-live="polite"></span>
           </div>
           <div class="el-mezo" id="el-m-telefon">
             <label for="el-telefon">Telefonszámod</label>
-            <input type="tel" id="el-telefon" name="telefon" autocomplete="tel" inputmode="tel" required>
-            <span class="el-hiba" id="el-h-telefon" role="alert"></span>
+            <input type="tel" id="el-telefon" name="telefon" autocomplete="tel" inputmode="tel" required aria-describedby="el-seg-telefon el-h-telefon">
+            <span class="el-seg" id="el-seg-telefon">Erre a számra rövid, automatikus visszaigazoló SMS is érkezhet.</span>
+            <span class="el-hiba" id="el-h-telefon" aria-live="polite"></span>
           </div>
           <div class="el-mezo" id="el-m-email">
             <label for="el-email">E-mail címed</label>
-            <input type="email" id="el-email" name="email" autocomplete="email" required>
-            <span class="el-hiba" id="el-h-email" role="alert"></span>
+            <input type="email" id="el-email" name="email" autocomplete="email" required aria-describedby="el-h-email">
+            <span class="el-hiba" id="el-h-email" aria-live="polite"></span>
           </div>
-          <label class="el-jelolo"><input type="checkbox" id="el-hozzajarul"><span>Hozzájárulok, hogy a feltöltött fotóimat és az adataimat – amelyek az egészségi állapotomra utalhatnak – a MOSAIC kizárólag az eltávolítás megbeszéléséhez kezelje (<a href="/aszf" target="_blank" rel="noopener">ÁSZF</a>). A fotókat nem teszik közzé.</span></label>
-          <span class="el-hiba" id="el-h-hozzajarul" role="alert"></span>
+          <label class="el-jelolo"><input type="checkbox" id="el-hozzajarul" aria-describedby="el-h-hozzajarul"><span>Hozzájárulok, hogy a feltöltött fotóimat és az adataimat – amelyek az egészségi állapotomra utalhatnak – a MOSAIC kizárólag az eltávolítás megbeszéléséhez kezelje (<a href="/aszf" target="_blank" rel="noopener">ÁSZF</a>). A fotókat nem teszik közzé.</span></label>
+          <span class="el-hiba" id="el-h-hozzajarul" aria-live="polite"></span>
           <button type="submit" class="gomb gomb-sotet gomb-nagy el-kuld" id="el-kuld">Elküldöm a fotókat</button>
-          <p class="el-hiba el-kuld-hiba" id="el-h-kuld" role="alert"></p>
+          <p class="el-hiba el-kuld-hiba" id="el-h-kuld" aria-live="polite"></p>
         </form>
         <p class="el-hivas-sor">Inkább beszélnél valakivel? <a href="tel:+36202474444">06 20 247 4444</a></p>
       </div>
