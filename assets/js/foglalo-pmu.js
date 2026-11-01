@@ -317,8 +317,11 @@
     if (BEAGYAZVA) jelez({ nezet: nev, uj, idx: utvonal.length - 1 });
     ment();
   }
+  // a bongeszo-elozmenybol (popstate / reteg-uzenet) inditott nezetbelepes kozbeni atiranyitasok CSEREK, nem uj bejegyzesek: igy a vissza-gomb nem akad be egy erzekelhetetlenul atiranyitott bejegyzesnel
+  let tortenetbol = false;
   function ugrik(nev) {
     if (nev === aktualis) return;
+    if (tortenetbol) { csere(nev); return; }
     if (RETEG) { utvonal.push(nev); mutat(nev, true); BELEPES[nev] && BELEPES[nev](); return; } // a reteg rak ra elozmeny-bejegyzest
     history.pushState({ nezet: nev }, '', '#' + nev);
     mutat(nev);
@@ -330,16 +333,22 @@
     const nev = NEZETEK.includes(e.data.mhPmuNezet) ? e.data.mhPmuNezet : 'kezdo';
     utvonal.length = (e.data.idx || 0) + 1; utvonal[utvonal.length - 1] = nev;
     mutat(nev);
-    if (BELEPES[nev] && !/^(adatok|koszonjuk)$|kesz$/.test(nev)) BELEPES[nev]();
-    else if (nev === 'adatok' && fotosAdatlapHiba()) BELEPES.adatok();   // a bongeszo-elozmenyben maradt regi (nem fotos) adatlap nem hasznalhato fotos vendegnek
+    tortenetbol = true;
+    try {
+      if (BELEPES[nev] && !/^(adatok|koszonjuk)$|kesz$/.test(nev)) BELEPES[nev]();
+      else if (nev === 'adatok') adatlapEllenor();   // a bongeszo-elozmenyben maradt regi (nem fotos / ures) adatlap nem hasznalhato
+    } finally { tortenetbol = false; }
   });
   addEventListener('popstate', (e) => {
     if (RETEG) return; // a retegben a lepeseket a reteg elozmenyei vezerlik
     const nev = (e.state && e.state.nezet) || 'kezdo';
     mutat(NEZETEK.includes(nev) ? nev : 'kezdo');
     // a listak ujrarajzolasa (az adatok megmaradnak); az adatlapot nem toltjuk ujra
-    if (BELEPES[nev] && !/^(adatok|koszonjuk)$|kesz$/.test(nev)) BELEPES[nev]();
-    else if (nev === 'adatok' && fotosAdatlapHiba()) BELEPES.adatok();   // a bongeszo-elozmenyben maradt regi (nem fotos) adatlap nem hasznalhato fotos vendegnek
+    tortenetbol = true;
+    try {
+      if (BELEPES[nev] && !/^(adatok|koszonjuk)$|kesz$/.test(nev)) BELEPES[nev]();
+      else if (nev === 'adatok') adatlapEllenor();   // a bongeszo-elozmenyben maradt regi (nem fotos / ures) adatlap nem hasznalhato
+    } finally { tortenetbol = false; }
   });
   $('vissza').addEventListener('click', () => ugrik(ELOZO[aktualis] ? ELOZO[aktualis]() : 'kezdo'));
   document.addEventListener('click', (e) => {
@@ -350,6 +359,13 @@
   });
   const BELEPES = {};
   // fotos vendegnek az adatlap-keretnek fotos keretnek kell lennie (BELEPES.adatok jeloli: data-fotos=1) es a foto el kell hogy legyen kuldve; kulonben ujra kell epiteni
+  // az adatlap-nezetre visszalepve: a telefonos ag allapota nem maradhat (foAgra), fotos vendegnek a keretnek fotos keretnek kell lennie, es mindig kell keret (src)
+  function adatlapEllenor() {
+    foAgra();
+    if (!(fotosAdatlapHiba() || !$('salonic').hasAttribute('src'))) return;
+    if (fotosUt() && allapot.slot && allapot.slot < FOTOS_LEGKORABBI) allapot.slot = null;
+    csere(!allapot.slot ? (fotoKell() && !allapot.fotok.length ? 'foto' : 'ido') : fotoKell() ? 'foto-adatok' : 'adatok');
+  }
   const fotosAdatlapHiba = () => { if (!fotosUt()) return false; const k = $('salonic'); return fotoKell() || !k || k.dataset.fotos !== '1'; };
   // az aktualis nezet CSERELESE (nem uj elozmeny-bejegyzes): a bongeszo vissza gombja ne ugorjon vissza a mar elkuldott fotos nezetre
   function csere(nev) {

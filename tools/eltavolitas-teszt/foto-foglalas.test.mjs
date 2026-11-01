@@ -471,9 +471,12 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
     await e.valasz('van'); await e.var_('foto'); await fotoFel(e);   // a foto NEM megy el
     await e.lap.click('#foto-tovabb'); await e.var_('ido');
     assert.deepEqual(await e.napok(), [9, 10]);
+    const hossz0 = await e.lap.evaluate(() => history.length);
+    const nezetek = new Set();
     for (let i = 0; i < 6; i++) {                             // bongeszo vissza: foto -> kerdes -> ido -> adatok ...
       await e.lap.goBack().catch(() => null); await e.lap.waitForTimeout(450);
       const nz = await e.nezet();
+      nezetek.add(nz[0]);
       const src = await e.lap.evaluate(() => { const k = document.getElementById('salonic'); return k && k.hasAttribute('src') ? k.getAttribute('src') : null; });
       if (nz[0] === 'adatok') {
         assert.ok(src === null || (!/back=/.test(src) && Number(new URL(src).searchParams.get('startDate')) >= Date.UTC(2026, 10, 8, 23, 0, 0) / 1000), 'a lathato adatlap nem a regi nem fotos keret: ' + src);
@@ -483,6 +486,25 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
     const veg = await e.lap.evaluate(() => { const k = document.getElementById('salonic'); return k && k.hasAttribute('src') ? k.getAttribute('src') : null; });
     assert.ok(veg === null || !/back=/.test(veg), 'a veg-allapotban sincs nem fotos Salonic-keret: ' + veg);
     assert.equal(e.posztok.length, 0, 'foto nem ment el');
+    assert.ok(await e.lap.evaluate(() => history.length) <= hossz0, 'a bongeszo-elozmenybol inditott atiranyitas nem ir uj bejegyzest (nincs vissza-gomb csapda)');
+    // a bongeszo vissza-gombja nem akad be: a foglalo elejere (kezelesvalasztas / nyito) el lehet jutni
+    let nz = (await e.nezet())[0];
+    for (let i = 0; i < 12 && !['szolg', 'kezdo'].includes(nz); i++) { await e.lap.goBack().catch(() => null); await e.lap.waitForTimeout(350); nz = (await e.nezet())[0]; nezetek.add(nz); }
+    assert.ok(['szolg', 'kezdo'].includes(nz), 'a vissza-gombbal el lehet jutni a foglalo elejere (nem akad be): ' + [...nezetek].join(','));
+    await e.ctx.close();
+  });
+
+  test('reteg-mod (mhPmuNezet): a regi adatlap-bejegyzesre visszalepve a fotos vendeg nem kap regi keretet, az atiranyitas CSERE (uj: false)', async () => {
+    const e = await fo('/foglalo-pmu?beagyazva=1&reteg=1&kezeles=471160');
+    await e.var_('kerdes'); await e.valasz('elso'); await e.var_('ido'); await e.slot(); await e.var_('adatok');
+    await e.vissza(); await e.vissza();
+    await e.valasz('van'); await e.var_('foto'); await fotoFel(e); await e.lap.click('#foto-tovabb'); await e.var_('ido');
+    const j0 = (await e.reteg()).length;
+    await e.lap.evaluate(() => window.postMessage({ mhPmuNezet: 'adatok', idx: 4 }, location.origin));
+    await e.lap.waitForTimeout(500);
+    assert.deepEqual(await e.nezet(), ['ido'], 'a regi nem fotos adatlap helyett az idopont');
+    const uj = (await e.reteg()).slice(j0);
+    assert.ok(uj.length >= 1 && uj.every((x) => x.uj === false), 'az atiranyitas csere: ' + JSON.stringify(uj));
     await e.ctx.close();
   });
 

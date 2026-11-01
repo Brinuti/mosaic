@@ -62,7 +62,7 @@ Javasolt összekötő kulcs: a fotós vendég levele (táblázat) és a Salonic-
 - A telefonos visszahívás, a `/pmu-vh`: változatlan.
 
 ## 4. Védett fájl, hash, rollback
-- `assets/js/foglalo-pmu.js` blob-hash: **77eb8a6dad3f6bbb489803eed02848305c179abd** (a main a #587 után) → **60b9a96c83d330b5fb23a5cd120203d984f2407e** (ez a PR).
+- `assets/js/foglalo-pmu.js` blob-hash: **77eb8a6dad3f6bbb489803eed02848305c179abd** (a main a #587 után) → **a19d71d05130e988ab5aa58489359365350988b2** (ez a PR).
 - Módosított: a `kerdes=kihagy` kivétele; a kérdés + a fotó az időpont elé; `FOTOS_LEGKORABBI`; `fotosUt()` / `fotoKell()`; lépés-jelző (3 változat); `ELOZO`; `BELEPES.foto` / `foto-adatok` / `kerdes` / `ido`; a fotós levél jelölése; `pmuLepes` (`foto_ut`, nincs submit/success fotós úton); `pmuLead` (`foglalassal`); a köszönő-oldal (`/pmu-foto-ok`) és a burkoló (`keretbenOldalEredeti`) az R3 blokk **után**.
 - `tools/test-pmu-lead.mjs`: a `pmu_foto_lead` zárt mezőlistája `foglalassal`-sal bővült (alapérték 0).
 - `tools/netlify-build.mjs`: csak a `GV_KIHAGY` mintája (a `/pmu-foto-ok` ne kapjon Google-értékelés számot).
@@ -76,4 +76,4 @@ Javasolt összekötő kulcs: a fotós vendég levele (táblázat) és a Salonic-
 5. **Dátumfüggő szövegek**: „A legkorábbi időpont: november 9.” a foglalóban csak 2026-11-09 előtt látszik; az eltávolítás-oldal szövegei („Időpontok november 9-től”, „a fotóval jelentkezőknek az első időpont november 9.”) statikusak: nov. 9. után át kell írni. A `FOTOS_LEGKORABBI` szűrő és a 491949-es szabály nov. 9. után is hat, ezeket Feri döntésére lehet kivenni.
 
 ## 5. Tesztek (2026-11-01)
-`tools/eltavolitas-teszt/foto-foglalas.test.mjs` 20/20 (mockolt Salonic, rögzített óra 2026-11-01): nem fotós út (kérdés az időpont előtt, nincs szűrő, nincs levél, a belső számláló lépései), fotós út (fotó kötelező, 22:59:59Z kimarad / 23:00:00Z bent, levél mezői, `foto_ut`, `foglalassal`, nincs submit/success, vissza-lépések), `/pmu-foto-ok` átirányítás (az URL paraméter nélküli) és a nem fotós `/pmu-ok`, kezelésváltás, telefonos ág változatlan, eltávolítás (491949) szabálya. Védett csomagok: `test-pmu-lead` 9/9, `test-gclid-r1r3` 14/14, `test-lpt-forras` 59/59, `test-foglalo-atkotes` 20/20, `test-foglalas-kulcs` 46/46.
+`tools/eltavolitas-teszt/foto-foglalas.test.mjs` 21/21 (mockolt Salonic, rögzített óra 2026-11-01): nem fotós út (kérdés az időpont előtt, nincs szűrő, nincs levél, a belső számláló lépései), fotós út (fotó kötelező, 22:59:59Z kimarad / 23:00:00Z bent, levél mezői, `foto_ut`, `foglalassal`, nincs submit/success, vissza-lépések), `/pmu-foto-ok` átirányítás (az URL paraméter nélküli) és a nem fotós `/pmu-ok`, kezelésváltás, telefonos ág változatlan, eltávolítás (491949) szabálya. Védett csomagok: `test-pmu-lead` 9/9, `test-gclid-r1r3` 14/14, `test-lpt-forras` 59/59, `test-foglalo-atkotes` 20/20, `test-foglalas-kulcs` 46/46.
