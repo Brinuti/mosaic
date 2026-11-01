@@ -129,7 +129,8 @@ MERES_VID_BE = "1"
 # (az eles [vars]-ban nincs META_ELO_TESZT_KOD*; ezek csak az [env.preview.vars]-ban vannak). Kell hozza a META_ELO_TOKEN titok (Secret, Production). A HeadSpa (META_ELO_BE = "headspa") KULON DECISION #240-szerinti lepes, ide NEM kerul.
 # ROLLBACK: a kovetkezo sor torlese (vagy META_ELO_BE ures) + deploy; a bongeszos pmu-ok URL-szabaly valtozatlan marad.
 # UJ-98 (01-MERES #167 6539251724): a HeadSpa (DECISION #240) ide kerul: META_ELO_BE = "headspa,pmu" - a HeadSpa szerveres Schedule az ELO HeadSpa-datasetre (3473839859576758), KOZOS event_id-vel, teszt-kod NELKUL. ROLLBACK: "pmu"-ra visszairni (vagy a sor torlese) + deploy.
-META_ELO_BE = "headspa,pmu"
+# SZORTELENITES (Elysion-pixel 643342342027957; Feri 2026-10-31 16:51, #167 6545661338, PR #570 kod): "szor" a kapcsolo-listaba, a HeadSpa #553 24H visszameres (11-01 09:43) PASS utan, a Meta elysion-ok Schedule URL-szabaly INACTIVE-ra allitasaval EGYIDEJUEG (kulonben dupla). ROLLBACK: "szor" kivetele + deploy; az URL-szabaly vissza.
+META_ELO_BE = "headspa,pmu,szor"
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei
