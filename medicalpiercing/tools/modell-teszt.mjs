@@ -172,6 +172,8 @@ egyenlo([T.szolitas({ nev: 'Kovács Anna', kereszt: 'Anna' }), T.szolitas({ nev:
   ellenorzes(t0.html.includes('09:54') && t0.html.includes('10:24'), 't0: erkezes (09:54) es a szuras ideje (10:24)', t0.szoveg);
   ellenorzes(!/vizsga|kiserlet|k[ií]s[eé]rlet|kísérlet/i.test(t0.html + t0.szoveg), 't0: nem vizsga / kiserlet (a tulajdonos kerese)');
   ellenorzes(/Kov[aá]cs Rich[aá]rd/.test(t0.html), 't0: Kovacs Richard felugyelete');
+  ellenorzes(/nyilatkozat/i.test(t0.html) && /e-mailben/.test(t0.html), 't0: a nyilatkozatot e-mailben kuldjuk');
+  for (const tp of ['t0', 'm48', 'm24', 'lemondas', 'felszabadult', 'felajanlas']) for (const mg of [false, true]) { const lv = level(tp, { ...f, megerositve: mg ? 1 : null, tartva_eddig: MOST + 1800 }); ellenorzes(!/személyi|szemelyi/i.test(lv.html + lv.szoveg + lv.targy), `${tp}${mg ? ' (megerositett)' : ''}: nem kerunk szemelyi igazolvanyt`); }
   ellenorzes(!/fotó|fotoz|videó/i.test(t0.html.replace(/fotó(t|k)? (nem|sem)/gi, '')) || /nem k[eé]sz[ií]t/i.test(t0.html), 't0: ha szo van fotorol, akkor csak a tiltasrol');
 }
 

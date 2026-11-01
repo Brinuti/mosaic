@@ -17,12 +17,13 @@ A modell ingyen kap piercinget és ékszert (az ékszert megtartja). Ez **oktat�
 
 ## Idősávok
 Egy piercer 120 perc alatt 5 szúrást végez (mind az 5 típusból egyet), 24 perc / szúrás, 10:00-tól: 10:00, 10:24, 10:48, 11:12, 11:36. A piercerek eltolva kezdenek (az i. szúrásnál a (i + k) % 5. típus), így ugyanabban az időben nem ugyanazt a típust szúrják.
-Minden szúráshoz **két foglalás** tartozik: elsődleges (a szúrás kezdete) és **tartalék** (+12 perc). A tartalék csak akkor foglalható / látszik, ha az elsődleges már foglalt, és külön tudomásulvételt kér (várhatás / nem kerülés sorra). Valós hely: nov. 25.: 10, nov. 30.: 15.
-**Érkezés = a foglalt időpont – 30 perc** (feltételezés, lásd lent).
+Minden szúráshoz **két foglalás** tartozik: elsődleges (a szúrás kezdete) és **tartalék** (+12 perc). A tartalék csak akkor foglalható / látszik, ha az elsődleges már foglalt, és külön tudomásulvételt kér (várhat). Valós hely: nov. 25.: 10, nov. 30.: 15.
+**Érkezés = a foglalt időpont – 30 perc** (a tulajdonos döntése, 2026-11-01).
+Ha az elsődleges és a tartalék vendég is megjelenik, **mindkettőt megszúrjuk** (a tartalék várhat; ezt a foglaláskor külön tudomásul veszi).
 Egy sávot az adatbázis részleges egyedi indexe (`modell_hely`) véd: két egyidejű foglalásból csak az egyik sikerül.
 
 ## Kapcsolók és környezetek
-- `MODELL_FOGLALAS` (`wrangler.toml` `[vars]`): `"ki"` (alap) = az **éles** (`www.medicalpiercing.hu`) oldalon a foglalás zárva („hamarosan indul”); `"be"` = nyitva. **A „be” állítás a valódi vendégeknek menő levelek miatt a tulajdonos külön, kifejezett kérésére történik.**
+- `MODELL_FOGLALAS` (`wrangler.toml` `[vars]`): `"be"` = az **éles** (`www.medicalpiercing.hu`) foglalás nyitva (**2026-11-01 óta, a tulajdonos kifejezett kérésére**; valódi vendégeknek mennek a levelek); `"ki"` = zárva („hamarosan indul”). A nap után (nov. 30.) állítsd `"ki"`-re.
 - `MODELL_FELSZABADITAS`: `"be"` esetén a szúrás előtt 12 órával sem megerősített foglalás felszabadul (és a várólistás kapja). Alap: `"ki"`.
 - Előnézeten (`*.pages.dev`) és helyben a foglalás mindig megy, de a sorok `kornyezet = 'elonezet'` jelűek: nem foglalnak helyet az éles sávokból, és **levél soha nem megy ki** róluk. Az éles és az előnézet ugyanazt az adatbázist használja (`MP_MERES_DB`, `mp-meres`; a fiók D1-kerete betelt).
 - Levélküldés: a projekt Gmail-fiókja (`SMTP_USER` / titkos `SMTP_PASS`), mint a többi MP-levél.
@@ -39,14 +40,12 @@ Betelt típusra a vendég feliratkozhat (nap szerint vagy bármelyik napra). Ha 
 Név, e-mail, telefon: csak a foglaláshoz. A `tick` az utolsó nap (nov. 30.) után **30 nappal** minden `modell_*` sort töröl (`adatTorles`); az űrlap is ezt ígéri. A `tick`-et addig is érdemes kézzel lefuttatni (admin kulcs), ha nem jár látogató.
 
 ## Élesítés előtt (ellenőrzőlista)
-1. A tulajdonos jóváhagyja a szövegeket és a feltételezéseket (lent).
-2. Ékszerfotók felkerülnek (jövő hét), a „Fotókat hamarosan” sorok frissülnek.
-3. `MODELL_FOGLALAS = "be"` a `wrangler.toml`-ban, merge, majd éles próbafoglalás saját címmel és lemondás.
-4. A nap után: `MODELL_FOGLALAS = "ki"`.
+1. ~~A tulajdonos jóváhagyja a szövegeket és a feltételezéseket.~~ Megtörtént (2026-11-01).
+2. Ékszerfotók és az ajak / orr típusa (a tulajdonos később adja meg): a „Fotókat hamarosan” sorok frissülnek.
+3. ~~`MODELL_FOGLALAS = "be"`, merge, éles próbafoglalás és lemondás.~~ Megtörtént (2026-11-01).
+4. A nap után: `MODELL_FOGLALAS = "ki"`, és a személyes adatok törlése (`/api/modell/tick`, 30 nap után automatikus).
 
-## Feltételezések (a tulajdonos megerősítése kell)
-- Érkezés: a saját idősáv előtt 30 perccel (nem mindenki 9:30-ra).
-- Késés / meg nem jelenés szabálya nincs rögzítve.
-- Ha az elsődleges és a tartalék vendég is megjelenik, a tartalék várhat vagy nem kerülhet sorra (ezt a foglaláskor tudomásul veszi).
-- Az ajak- és orrpiercing pontos típusa (pl. labret, orrcimpa) és a rook füle nincs megadva az oldalon.
-- Nincs SMS (csak e-mail); nincs mérőkód / eseménykövetés a foglalón (külön jóváhagyás kell).
+## Döntések és nyitott pontok
+- Érkezés a saját idősáv előtt 30 perccel (döntés, 2026-11-01). Ha az elsődleges és a tartalék vendég is megjelenik, mindkettőt megszúrjuk (döntés).
+- Személyi igazolványt nem kérünk. A nyilatkozatot a szalon e-mailben küldi (nem része a foglalónak; a levelek és az oldal ezt jelzik).
+- **Nyitott:** az ajak- és orrpiercing pontos típusa, a rook füle és az ékszerfotók (a tulajdonos később adja meg); késés szabálya nincs rögzítve; nincs SMS; nincs mérőkód / eseménykövetés a foglalón (külön jóváhagyás kell).
