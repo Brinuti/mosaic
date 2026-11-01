@@ -129,6 +129,29 @@ export function utvonalConsentOsszesites(docs, { tolMs = 0, mezo = 'first_bookin
   return ki;
 }
 
+// UJ-99 (01-MERES 6560646238 3.): a tag 95 feltetelenek megfelelo sorok (foglalasi oldal x first_booking_raw=false x navigate x ad_storage granted/true) EGYEDI foglalasra vetitve, Budapest-naponkent.
+// Az egyedi azonosito a page_location `booking_id` query-parametere (mintaja: ^[A-Za-z0-9_-]{20,40}$), CSAK a memoriaban keszul belole halmaz; kimenet: darabszamok, azonosito / hash / query NEM kerul ki.
+const BOOKING_ID_MINTA = /^[A-Za-z0-9_-]{20,40}$/;
+export function egyediFoglalasok(docs, { tolMs = 0, mezo = 'first_booking_raw' } = {}) {
+  const nap = {}; const halmaz = {};
+  for (const d of docs || []) {
+    const ms = Date.parse(d && d.created_at); if (!Number.isFinite(ms) || ms < tolMs) continue;
+    const dd = (d && d.data) || {};
+    let pn = ''; let bid = null;
+    try { const u = new URL(String(dd.page_location || '')); pn = u.pathname; const b = u.searchParams.get('booking_id'); bid = b && BOOKING_ID_MINTA.test(b) ? b : null; } catch { /* nincs */ }
+    if (pn !== '/foglalas-ok/' && pn !== '/foglalas-moricz/') continue;
+    if (kategoria(dd[mezo]) !== 'false') continue;
+    const nv = dd.a76_nav === undefined || dd.a76_nav === null ? 'nincs' : String(dd.a76_nav).split('|')[0];
+    if (nv !== 'navigate') continue;
+    const as = dd.consent_state && typeof dd.consent_state === 'object' ? dd.consent_state.ad_storage : undefined;
+    if (!(as === true || as === 'granted' || as === 'true')) continue;
+    const n = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest', dateStyle: 'short' }).format(new Date(ms));
+    nap[n] = nap[n] || { sorok: 0, egyedi_booking_id: 0, booking_id_nelkul: 0 }; halmaz[n] = halmaz[n] || new Set();
+    nap[n].sorok += 1;
+    if (bid) { if (!halmaz[n].has(bid)) { halmaz[n].add(bid); nap[n].egyedi_booking_id += 1; } } else nap[n].booking_id_nelkul += 1;
+  }
+  return nap;
+}
 // UJ-99 (01-MERES 6539251724): first_booking_raw x a76_nav (navigacio tipusa) keresztbontas - a tag 95 blokkolo triggere (120) nem-navigate betoltesnel tilt; zart halmaz, nyers ertek nem kerul ki.
 export const NAV_HALMAZ = Object.freeze(['navigate', 'reload', 'back_forward', 'prerender']);
 export function keresztNavFirstBooking(docs, { tolMs, mezo = 'first_booking_raw', navMezo = 'a76_nav' }) {
@@ -177,6 +200,8 @@ export async function futtat({ key, base = 'https://stape.a76.hu', kollekciok, n
     }
     if (process.env.SOROK === '1' || process.env.SOROK === '2' || sorok) { const uo = utvonalConsentOsszesites(k.docs, { tolMs, mezo }); for (const kk of Object.keys(uo).sort()) naplo(`  osszesites | ${kk} | db=${uo[kk]}`); }
     if (kategoriaMod) {
+      const eg = egyediFoglalasok(k.docs, { tolMs, mezo });
+      for (const nap of Object.keys(eg).sort()) naplo(`  egyedi | ${nap} | sorok=${eg[nap].sorok} egyedi_booking_id=${eg[nap].egyedi_booking_id} booking_id_nelkul=${eg[nap].booking_id_nelkul}`);
       const kr = keresztNavFirstBooking(k.docs, { tolMs, mezo });
       for (const kk of Object.keys(kr).sort()) naplo(`  kereszt | ${kk} | db=${kr[kk]}`);
       const hs = hianyzoSzerkezet(k.docs, { tolMs, mezo });

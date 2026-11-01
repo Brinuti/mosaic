@@ -132,3 +132,24 @@ test('consentJellemzes + utvonalConsentOsszesites (UJ-99): zart halmaz, query / 
   assert.deepEqual(ki, { '2026-10-30 | /foglalas-ok/ | first_booking_raw=1 | nav=nincs | ad_storage=granted': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=0 | nav=nincs | ad_storage=denied': 1, '2026-10-30 | /foglalas-moricz/ | first_booking_raw=nincs | nav=nincs | ad_storage=granted': 1, '2026-10-30 | egyeb | first_booking_raw=egyeb | nav=nincs | ad_storage=granted': 1 });
   assert.ok(!JSON.stringify(ki).match(/price|email|varatlan/));
 });
+
+test('egyediFoglalasok (UJ-99 3.): tag 95 feltetelnek megfelelo sorok egyedi booking_id-ra, azonosito nem kerul ki', async () => {
+  const { egyediFoglalasok } = await import('./a76-stape-store-szamlalo.mjs');
+  const B1 = 'AbCdEfGhIjKlMnOpQrStUv'; const B2 = 'ZyXwVuTsRqPoNmLkJiHgFe';
+  const sor = (iso, loc, fb, nav, cs) => ({ created_at: iso, data: { page_location: loc, first_booking_raw: fb, a76_nav: nav, consent_state: cs } });
+  const g = { ad_storage: true };
+  const docs = [
+    sor('2026-10-31T10:00:00Z', `https://a76.hu/foglalas-ok/?booking_id=${B1}&x=1`, 'false', 'navigate', g),
+    sor('2026-10-31T10:05:00Z', `https://a76.hu/foglalas-ok/?booking_id=${B1}`, 'false', 'navigate', g), // ugyanaz a foglalas ujra
+    sor('2026-10-31T11:00:00Z', `https://a76.hu/foglalas-moricz/?booking_id=${B2}`, 'false', 'navigate|x', { ad_storage: 'granted' }),
+    sor('2026-10-31T12:00:00Z', 'https://a76.hu/foglalas-ok/', 'false', 'navigate', g), // nincs booking_id
+    sor('2026-10-31T13:00:00Z', `https://a76.hu/foglalas-ok/?booking_id=${B2}`, 'false', 'reload', g), // nem navigate
+    sor('2026-10-31T14:00:00Z', `https://a76.hu/foglalas-ok/?booking_id=${B2}`, 'true', 'navigate', g), // nem false
+    sor('2026-10-31T15:00:00Z', `https://a76.hu/foglalas-ok/?booking_id=${B2}`, 'false', 'navigate', { ad_storage: false }), // consent denied
+    sor('2026-10-31T16:00:00Z', `https://a76.hu/masik/?booking_id=${B2}`, 'false', 'navigate', g), // nem foglalasi oldal
+    sor('2026-10-31T17:00:00Z', 'https://a76.hu/foglalas-ok/?booking_id=rovid', 'false', 'navigate', g), // ervenytelen minta
+  ];
+  const ki = egyediFoglalasok(docs, { tolMs: 0 });
+  assert.deepEqual(ki, { '2026-10-31': { sorok: 5, egyedi_booking_id: 2, booking_id_nelkul: 2 } });
+  assert.ok(!JSON.stringify(ki).includes(B1) && !JSON.stringify(ki).includes(B2));
+});
