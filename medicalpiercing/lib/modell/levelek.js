@@ -43,7 +43,7 @@ const reszletek = (f, d) => kartya([
 
 const mitErdemesTudni = () => alcim('Mit érdemes tudnod?') + lista([
   'Ez egy <b>oktatási gyakorlónap (workshop)</b>: vidéki piercereink Kovács Richárd felügyelete mellett gyakorolnak, te vagy a modell. A szúrás a szokásos steril eszközökkel és G23 titánium ékszerrel történik.',
-  'A gyakorlónapra 18 év feletti jelentkezőket várunk.',
+  'A gyakorlónapra 18 év feletti jelentkezőket várunk. A szúrásról fotó- és videófelvétel készül.',
   'A <b>nyilatkozatot e-mailben küldjük el</b> neked, külön levélben. Ha bizonytalan vagy abban, hogy a piercing neked való-e, előtte írj vagy hívj minket.',
   'Gyakorlónapon előfordulhat, hogy néhány percet várnod kell. Köszönjük a türelmedet!',
   'A szúrás után az ingyenes kontroll időpontját az oldalunkon online is lefoglalhatod.',
