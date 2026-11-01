@@ -289,6 +289,58 @@ describe('bongeszos', () => {
     await ctx.close();
   });
 
+  // ---- a foglalo-motor viselkedese (mockolt Salonic, rogzitett ora: 2026-11-01) ----
+  const SZOLG_HTML = '<div>' + [
+    ['471160', 'Ingyenes konzultáció', '', 30], ['471153', 'Szemöldök tetoválás - Hibrid - 99.000 Ft helyett most', '79000', 90], ['491949', 'Tetoválás eltávolítás', '20000', 30],
+  ].map(([id, nev, ar, perc]) => `<input data-id="${id}" data-name="${nev}" data-price="${ar}" data-duration="${perc}">`).join('') + '</div>';
+  const idopont = (iso) => Date.parse(iso) / 1000;
+  const SLOTOK = { status: 'success', data: { blocks: { 0: { a: { slots: {
+    elott: { timestamp: idopont('2026-11-08T22:59:59Z') }, hatar: { timestamp: idopont('2026-11-08T23:00:00Z') }, kesobb: { timestamp: idopont('2026-11-10T09:00:00Z') },
+  } } } } } };
+  const motor = async (url) => {
+    const ctx = await bongeszo.newContext({ viewport: { width: 900, height: 1100 } });
+    const lap = await ctx.newPage();
+    await lap.clock.setFixedTime(new Date('2026-11-01T12:00:00Z'));
+    await lap.route(/^(?!http:\/\/localhost)/, (r) => {
+      const u = r.request().url(); const cors = { 'access-control-allow-origin': '*' };
+      if (u.startsWith('https://mosaic-pmu.salonic.hu/employees/')) return r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'text/html' }, body: SZOLG_HTML });
+      if (u.startsWith('https://api.salonic.hu/calendar/getAvailableTimes')) return r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify(SLOTOK) });
+      return r.abort();
+    });
+    await lap.goto(bazis + url, { waitUntil: 'load' });
+    await lap.waitForSelector('.nnap:not(.ures)', { timeout: 15000 });
+    const napok = () => lap.evaluate(() => [...document.querySelectorAll('.nnap:not([disabled]):not(.ures)')].map((e) => parseInt(e.textContent, 10)));
+    const nezet = () => lap.evaluate(() => [...document.querySelectorAll('[data-nezet]')].filter((e) => !e.hidden && getComputedStyle(e).display !== 'none').map((e) => e.dataset.nezet));
+    const slot = async () => { await lap.getByRole('button', { name: /^\d\d:\d\d$/ }).first().click(); await lap.waitForTimeout(400); };
+    return { ctx, lap, napok, nezet, slot };
+  };
+  test('motor: a Tetoválás eltávolítás (491949) csak 2026-11-09 00:00-tól foglalható (22:59:59Z kimarad, 23:00:00Z bent), a konzultáció mindent lát; időpont után adatok, vissza = időpont', async () => {
+    const e = await motor('/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=491949');
+    assert.deepEqual(await e.napok(), [9, 10]);
+    await e.slot();
+    assert.deepEqual(await e.nezet(), ['adatok']);
+    assert.equal(await e.lap.locator('#lepesjelzo li').count(), 3, 'kihagyáskor 3 lépés (nincs Kérdés)');
+    assert.ok(!(await e.lap.locator('#lepesjelzo').innerText()).includes('Kérdés'));
+    await e.lap.locator('button[aria-label*="issza"], #vissza, .vissza').first().click();
+    await e.lap.waitForTimeout(400);
+    assert.deepEqual(await e.nezet(), ['ido']);
+    await e.ctx.close();
+    const k = await motor('/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=konzultacio');
+    assert.deepEqual(await k.napok(), [8, 9, 10], 'a konzultációra nincs korlát');
+    await k.slot();
+    assert.deepEqual(await k.nezet(), ['adatok']);
+    await k.ctx.close();
+  });
+  test('motor: a kérdés marad, ha nincs ?kerdes=kihagy, vagy ha a szolgáltatás sminktetoválás (471153)', async () => {
+    for (const url of ['/foglalo-pmu?beagyazva=1&kezeles=konzultacio', '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=471153', '/foglalo-pmu?beagyazva=1&kezeles=491949']) {
+      const e = await motor(url);
+      await e.slot();
+      assert.deepEqual(await e.nezet(), ['kerdes'], url);
+      assert.equal(await e.lap.locator('#lepesjelzo li').count(), 4, url + ': 4 lépés');
+      await e.ctx.close();
+    }
+  });
+
   test('mobil: a ragados sav a hero utan latszik, az urlapnal elrejtozik; asztalon nincs', async () => {
     const { ctx, lap } = await nezet(true);
     assert.equal(await lap.getAttribute('#el-sav', 'data-lathato'), '0');

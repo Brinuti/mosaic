@@ -6,7 +6,7 @@ teszt: `tools/eltavolitas-teszt/eltavolitas.test.mjs`.
 
 ## Alapelvek
 - **Nem foglalható online** (`docs/booking-engine/DECISIONS.md` 3.): csak fotó alapján indul. Nincs Salonic-szolgáltatás, a foglaló nem érintett.
-- **A foglalási folyamathoz, a `foglalo-pmu.js`-hez, a `suti.js`-hez, a GTM-hez nem nyúl** (csak új fájlok; semelyik meglévő fájl nem változott).
+- **A `suti.js`-hez, a GTM-hez és a külső fiókokhoz nem nyúl.** A foglaló-motorhoz (`assets/js/foglalo-pmu.js`) a 4. körtől két szűk módosítás tartozik (lásd lent: blob-hash, rollback).
 - **Eredményígéret nincs** (nincs „teljes eltűnés”, „hegmentes”, „nyom nélkül”, „garantált”); a teszt tiltott kifejezés-listával őrzi.
 - **Nem került ki** (nem vállalt / nem igazolt): haladás-kontroll, bérletvédelem, 90 napos ártartás, a lézer típusa, képesítések, eltávolítási esetszám, a szalon Google-értékelése.
 - A képek: lézervédő szemüveges vendégek (a hozzájárulást Feri megerősítette, 2026-11-01), EXIF nélkül. A „közvetlenül utána” kép NEM végeredmény, az oldal így is címkézi.
@@ -47,7 +47,7 @@ Indexelhetővé tétel: a `<meta name="robots">` sor törlése + bejegyzés a `t
 9. A `suti.js`-ben az `ana` hozzájárulás alapból engedélyezett (DECISION #170), ezért az `eltavolitas_foto_lead` alapértelmezetten bekerül a dataLayerbe; érdemes megnézni, hogy a GTM-ben nincs-e „minden esemény” trigger. (A GTM és a GA4 a `suti.js`-en át ezen az oldalon is betöltődik, mint minden oldalon; Meta-pixel nincs.)
 
 ## Visszavonás
-Az oldal csak új fájlokból áll: a PR visszavonása (revert) vagy a `foglalas/sminktetovalas-eltavolitas-budapest.html` törlése mindent visszaállít, más oldalt nem érint.
+Az oldal saját fájljai (új fájlok) törölhetők / a PR-ok visszavonhatók, más oldalt nem érintenek. **A foglaló-motor módosításának visszavonása (4. kör, lásd ott) minden PMU-foglaló oldalt érint**: lásd a „4. kör” rollback-tervét.
 
 
 ## 2026-11-01, 3. kör (Feri): kettős konverzió, a lézer, Melitta
@@ -73,3 +73,11 @@ Az oldal csak új fájlokból áll: a PR visszavonása (revert) vagy a `foglalas
 - **Mérés:** a 491949 szolgáltatás új a PMU-leképezésben (`SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json`, ismeretlen PMU-ár → HOLD, DECISION #195/3): a mérési oldalnak fel kell vennie, különben az eltávolítás-foglalás konverziója tartásba kerül.
 - Gép-szakasz: „Az egyik piacvezető lézer, amellyel dolgozom” (Feri szövege, a „piacvezető” állítást nem tudtam igazolni: az iSkin-adatlap sem a gyártót, sem piaci pozíciót nem említ), két forgalmazói termékkép (ideiglenes).
 - „Hány alkalom kell?”: 1–3 alkalom; **„kb. 1–3 hónap a gyógyulással együtt (alkalmanként nagyjából 4–6 hét)”: a 4–6 hetes köz a piaci gyakorlatból származó becslés, Melittának meg kell erősítenie.**
+
+### 4. kör: védett fájl, blob-hash, rollback (a független review kérésére rögzítve)
+- `assets/js/foglalo-pmu.js` blob-hash: **7666da3f7a8ea79a434e8abd6fbf4307bb3b84eb** (a 943224a1-en) → **d5615b71e1573be18bec53eebee95cfd0109588a** (a #584 merge, 8bce1481) → a „4. kör utólagos javítása” (lépésjelző, megjegyzés) után a main aktuális blobja (`git rev-parse origin/main:assets/js/foglalo-pmu.js`).
+- Tartalom: (1) `KERDES_KIHAGY` / `kerdesKihagy()` + `slotValaszt` + `ELOZO.adatok` + lépésjelző (nincs „Kérdés” lépés kihagyáskor), (2) `LEGKORABBI['491949']`. Paraméter nélkül (`?kerdes=kihagy` hiányában) és a 491949-től eltérő szolgáltatásnál a viselkedés bitre azonos a korábbival (statikusan és viselkedési tesztekkel őrzött).
+- **Rollback-terv:** (a) teljes visszaállítás: a #584 + az utólagos javítás PR visszavonása, vagy `git checkout 943224a1 -- assets/js/foglalo-pmu.js` (a régi blob 7666da3f…); ekkor az eltávolítás-oldal naptára a „Volt már sminktetoválásod?” kérdést is feltenné (az „igen” fotóra visz) és a 491949 nov. 9. előtt is foglalható lenne. (b) szűkebb: csak a két blokk (`KERDES_KIHAGY…`, `LEGKORABBI…`) törlése; az oldal `data-kezeles-kulcs` attribútumának kiürítése nem kapcsolja ki a naptárat, a kártyák kikapcsolásához az oldalt kell visszavonni.
+- Vendégadat nem érintett. Mérést érint (új belépési pont, új szolgáltatás-azonosító): jelölve a PR-okban és a mérési ablaknak szóló összefoglalóban.
+- Nyitott (Feri / mérési oldal): a 491949 felvétele a leképezésbe (`business-config.js`: a „removal” most nem foglalás, a 491949 `first_treatment`); a 491949 megjelenik az általános PMU-listákban is (`/sminktetovalas-budapest`, önálló `/foglalo-pmu`), ahol a „Volt már sminktetoválásod?” kérdés miatt az „igen” fotóra visz: döntés kell, elrejtsük-e onnan; a Salonic saját foglalási oldalán a nov. 9. előtti időpontot a Salonic beállításával lehet korlátozni (külső fiók).
+- A korábbi megjegyzés a lépésjelzőről (kozmetikai) **téves volt**: a „Kérdés ✓” lépés kattintható volt és fotóra vihetett; javítva (kihagyáskor 3 lépés).

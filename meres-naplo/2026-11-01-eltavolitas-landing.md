@@ -1,6 +1,6 @@
 # 2026-11-01 – /sminktetovalas-eltavolitas-budapest (új oldal) – teszt-napló
 
-Változás: csak új fájlok (oldal, CSS, JS, képek, videó, teszt, doksi). Mérést érintő változás: **nincs** (suti.js, GTM, pixel, foglalo-pmu.js változatlan).
+Változás: csak új fájlok (oldal, CSS, JS, képek, videó, teszt, doksi). Mérést érintő változás az 1. körben: **nincs** (suti.js, GTM, pixel, foglalo-pmu.js változatlan). A 4. körtől a foglaló-motor (`foglalo-pmu.js`) módosul: lásd lent és docs/ELTAVOLITAS_LANDING.md „4. kör: védett fájl, blob-hash, rollback”.
 Új, semmihez nem kötött dataLayer-esemény: `eltavolitas_foto_lead` (lásd docs/ELTAVOLITAS_LANDING.md).
 
 - `tools/eltavolitas-teszt/eltavolitas.test.mjs`: 21/21 zöld (statikus 8: + method="post"; noindex, nincs sitemap/#-link/mérőkód, tiltott kifejezések, hivatkozott fájlok, üzletág=pmu, EXIF-mentes képek;
@@ -8,8 +8,8 @@ Változás: csak új fájlok (oldal, CSS, JS, képek, videó, teszt, doksi). Mé
   a beküldött mezők eltávolítás-jelöléssel + 2 fotó, a dataLayer-esemény csak hozzájárulással és PII nélkül, ragadós sáv, görgetés URL-változás nélkül).
 - Meglévő tesztek alapvonala (origin/main a51de11a) és az ággal: azonos eredmény (tools/ajandek-teszt/menu 19/20, tools/headspa-teszt/akciossav 3/4, tools/hero-teszt 19/28, tools/headspa-teszt/fejlec 42/44;
   google-szam 12/12) – a hibák a hónapváltás szövegeihez kötődnek, nem ehhez a változáshoz.
-- Védett hash-ek: változatlanok (nincs módosított meglévő fájl).
-- Rollback: a PR revertje (csak új fájlok).
+- Védett hash-ek az 1–3. körben: változatlanok (nincs módosított meglévő fájl). A 4. körtől a `foglalo-pmu.js` blobja változik: 7666da3f… → d5615b71… (lásd docs).
+- Rollback az 1–3. körben: a PR revertje (csak új fájlok); a 4. kör rollback-terve: docs/ELTAVOLITAS_LANDING.md.
 
 - Független review (2026-11-01, PR #579): első kör FAIL (B1: hiányzó method="post"; B2: a Zapier-lánc / SMS nincs dokumentálva) – mindkettő javítva; a megjegyzések közül javítva: kockázatos szövegek (alt, „alakul ki”, „kell halványítani”), a ragadós sáv ikonja és rejtett fókusza, aria-invalid / aria-describedby, a fókusz sorrendje, a fotófeldolgozás sorba állítása és zárolása, ImageBitmap.close(), `celoldal` osztály törölve. Nyitva (Feri / Melitta): lásd docs/ELTAVOLITAS_LANDING.md „megerősítendő” 1–9.
 - Zapier-lánc (csak olvasás): `weboldal-pmu-visszahivas-to-sheet-oktober` + `melitta-pmu-oktober-sms` engedélyezve; a lead-levelünk a trigger-lekérdezésre illeszkedik és a Zap minden mezőjét értelmezi; módosítás nincs.
@@ -19,3 +19,5 @@ Változás: csak új fájlok (oldal, CSS, JS, képek, videó, teszt, doksi). Mé
 - 3. kör (Feri): kettős konverzió (ingyenes konzultáció / eltávolító kezelés), a Dermway I lézer bemutatása, Melitta-blokk a /sminktetovalas-budapest oldalról. A konzultáció a MEGLEVŐ beágyazott /foglalo-pmu foglalót nyitja (nincs módosított foglaló-kód); új belépési pont a PMU-konzultáció foglaláshoz (mérést érint: a mérési oldal döntse el az eltávolítás-forrás megkülönböztetését). Tesztek: 22/22.
 
 - 4. kör (Feri): minden foglalás naptárba (konzultáció + Salonic 491949 „Tetoválás eltávolítás”); a `foglalo-pmu.js`-ben két additív módosítás: `?kerdes=kihagy` (csak konzultáció / eltávolítás) és `LEGKORABBI['491949']` = 2026-11-09. Élő ellenőrzés Salonic-adatokkal: eltávolítás első szabad napja nov. 10., kérdés kimarad, vissza = időpont-választás; szemöldök + kihagy: a kérdés megmarad. Engine-tesztek: pmu-lead 9/0, foglalo-atkotes 20/0, foglalas-kulcs 46/0, gclid-r1r3 14/0, lpt-forras 59/0; landing: 23/23. A 491949 felvétele a mérési leképezésbe a mérési oldal dolga.
+
+- 4. kör utólagos javítás (független review: a doksi javítása, lépésjelző „Kérdés” lépése kihagyáskor, megjegyzés frissítése; +2 viselkedési engine-teszt mockolt Salonic-kal: 22:59:59Z / 23:00:00Z határ, 3 lépéses jelző, a kérdés marad kihagyás nélkül és 471153-nál). Tesztek: landing 25/25, engine-tesztek változatlanul zöldek.
