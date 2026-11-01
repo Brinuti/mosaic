@@ -74,6 +74,14 @@ export async function metaEloKuld(db, fk, deps = {}) {
   return r;
 }
 
+// UJ-105 (01-MERES #167 6553591298): a 'nincs_ernyo' naplosor kapjon indokot, hogy a ket eset elkulonuljon (a viselkedes valtozatlan, csak a naplo szovege).
+// A sorrend az esemenyek() feltetelet koveti: kupon elobb, mint a jelleg; a „visszajaro” a Salonic nem-uj-vendeg jelzese; minden mas (pl. ismeretlen jelleg, HeadSpa konzultacio) „egyeb”.
+function nincsErnyoIndok(fk) {
+  if (fk && fk.kupon) return 'kupon (DECISION #194)';
+  if (fk && fk.jelleg === 'visszajaro') return 'visszajaro';
+  return 'egyeb: nincs ernyo-jogosult esemeny';
+}
+
 async function metaEloKuldBelso(db, fk, deps = {}) {
   try {
     const env = deps.env || {};
@@ -84,7 +92,7 @@ async function metaEloKuldBelso(db, fk, deps = {}) {
     // PMU biztonsagi halo (Feri 10-31 14:25): a „korrekcio” (0 Ft-os javitas) SOHA nem szamit, akkor sem, ha a Salonic uj vendegnek jelolne
     if (szervesUzletag(fk.uzletag) && /korrekci/i.test(String(fk.szolgaltatas || ''))) return { allapot: 'nincs_ernyo', indok: 'korrekcio: nem szamit' };
     const e = esemenyek({ ...fk, ertek: Number.isFinite(Number(fk.ertek)) ? fk.ertek : 0 }, konzultacioTabla(env)).find((x) => x.tipus === 'ernyo');
-    if (!e) return { allapot: 'nincs_ernyo' };
+    if (!e) return { allapot: 'nincs_ernyo', indok: nincsErnyoIndok(fk) };
     await sema(db);
     const now = deps.now ? deps.now() : Date.now(); const t = Math.floor(now / 1000);
     const meglevo = await db.prepare('SELECT esemeny_id, allapot, probalkozas, frissitve FROM meres_meta_elo WHERE esemeny_id = ?1').bind(e.esemeny_id).first();
