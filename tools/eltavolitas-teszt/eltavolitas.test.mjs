@@ -152,7 +152,7 @@ describe('bongeszos', () => {
 
   test('urlap: ures bekuldes hibakat mutat es nem kuld; ervenyes bekuldes a jelolt mezokkel megy', async () => {
     const { ctx, lap, hibak, posztok } = await nezet(true);
-    await lap.evaluate(() => document.getElementById('foto-urlap').scrollIntoView());
+    await lap.evaluate(() => document.getElementById('foglalas').scrollIntoView());
     await lap.click('#el-kuld');
     for (const m of ['foto', 'terulet', 'nev', 'telefon', 'email', 'hozzajarul']) {
       assert.ok((await lap.textContent('#el-h-' + m)).trim().length > 5, m + ': nincs hibauzenet');
@@ -182,7 +182,7 @@ describe('bongeszos', () => {
       assert.ok(buf.includes(mezo) || Buffer.from(buf, 'latin1').toString('utf8').includes(mezo), 'hianyzik a bekuldesbol: ' + mezo);
     }
     const utf = Buffer.from(buf, 'latin1').toString('utf8');
-    assert.match(utf, /name="kezeles"\r\n\r\nSminktetoválás eltávolítás – szemöldök \(fotó alapján\)/);
+    assert.match(utf, /name="kezeles"\r\n\r\nSminktetoválás eltávolítás – előre küldött fotó \(konzultációhoz\) – szemöldök/);
     assert.match(utf, /name="ag"\r\n\r\nEltávolítás/);
     assert.ok(!utf.includes('name="foto3"'));
     const esemenyek = (await lap.evaluate(() => window.dataLayer)).filter((e) => e.event === 'eltavolitas_foto_lead');
@@ -266,13 +266,33 @@ describe('bongeszos', () => {
     await ctx.close();
   });
 
+  test('foglalas: az ingyenes konzultacio a beagyazott foglalot nyitja, a kezeles-kartya (amig nincs Salonic-szolgaltatas) az urlapra visz; a hero gombja a konzultaciot valasztja', async () => {
+    const { ctx, lap } = await nezet(false);
+    await lap.route('**/foglalo-pmu**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>foglalo</p>' }));
+    assert.equal(await lap.isHidden('#el-foglalo-doboz'), true);
+    await lap.click('#el-fo-gomb');
+    await lap.waitForFunction(() => !document.getElementById('el-foglalo-doboz').hidden);
+    const src = await lap.getAttribute('#el-foglalo', 'src');
+    assert.match(src, /^\/foglalo-pmu\?beagyazva=1&kezeles=konzultacio$/);
+    assert.equal(await lap.getAttribute('.el-valaszt[data-valaszt=konzultacio]', 'aria-pressed'), 'true');
+    // a beagyazott foglalo jelzi a magassagat
+    await lap.evaluate(() => window.postMessage({ mhFoglalo: true, magassag: 555 }, location.origin));
+    await lap.evaluate(() => document.getElementById('el-foglalo').contentWindow && 0);
+    // kezeles: nincs sajat Salonic-szolgaltatas -> urlap, cel = kezeles
+    await lap.click('.el-valaszt[data-valaszt=kezeles]');
+    await lap.waitForFunction(() => document.getElementById('foto-urlap').getBoundingClientRect().top < 400);
+    assert.equal(await lap.inputValue('#el-cel'), 'kezeles');
+    assert.equal(await lap.isHidden('#el-foglalo-doboz'), true);
+    await ctx.close();
+  });
+
   test('mobil: a ragados sav a hero utan latszik, az urlapnal elrejtozik; asztalon nincs', async () => {
     const { ctx, lap } = await nezet(true);
     assert.equal(await lap.getAttribute('#el-sav', 'data-lathato'), '0');
     assert.equal(await lap.evaluate(() => getComputedStyle(document.getElementById('el-sav')).visibility), 'hidden', 'rejtett allapotban nem fokuszalhato');
     await lap.evaluate(() => window.scrollTo(0, 1400));
     await lap.waitForFunction(() => document.getElementById('el-sav').dataset.lathato === '1');
-    await lap.evaluate(() => document.getElementById('foto-urlap').scrollIntoView());
+    await lap.evaluate(() => document.getElementById('foglalas').scrollIntoView());
     await lap.waitForFunction(() => document.getElementById('el-sav').dataset.lathato === '0');
     await ctx.close();
     const a = await nezet(false);
@@ -284,7 +304,7 @@ describe('bongeszos', () => {
     const { ctx, lap } = await nezet(true);
     const url0 = lap.url();
     await lap.click('#el-fo-gomb');
-    await lap.waitForFunction(() => document.getElementById('foto-urlap').getBoundingClientRect().top < 300);
+    await lap.waitForFunction(() => document.getElementById('foglalas').getBoundingClientRect().top < 300);
     assert.equal(lap.url(), url0);
     await ctx.close();
   });
