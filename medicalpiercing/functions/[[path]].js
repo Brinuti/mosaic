@@ -31,6 +31,7 @@ import { UJ_ELES } from '../lib/uj-eles.js';
 import { hosValasztas, hosCsere, hosKepValasz } from '../lib/hirdetes-hos.js';
 import { foglalasom, foglalasMuvelet } from '../lib/foglalasom.js';
 import { kimenoFeldolgoz } from '../lib/lifecycle-kimeno.js';
+import { foglalasOldal } from '../lib/modell/vegpont.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
@@ -60,6 +61,7 @@ export async function onRequest(context) {
     const v = await foglalasom(request, context.env);
     if (v) return v;
   }
+  if (/^\/mf\//.test(url.pathname) && url.hostname !== 'medicalpiercing.hu') return foglalasOldal(request, context.env); // modellnap: "A foglalasod" (lib/modell/vegpont.js)
   // a Salonic adatlap stiluslapja: a bongeszo mindig ellenorzi (lib/salonic-css.js)
   if (url.pathname.startsWith(SALONIC_ELOTAG)) return salonicFajl(request, context.env.ASSETS);
 
