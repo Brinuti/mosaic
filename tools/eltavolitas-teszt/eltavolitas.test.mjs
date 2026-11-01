@@ -60,6 +60,14 @@ describe('statikus', () => {
     const { oldalUzletag } = await import(pathToFileURL(path.join(GYOKER, 'tools/foglalo-atkotes.mjs')).href);
     assert.equal(oldalUzletag(NEV), 'pmu');
   });
+  test('a foglalo-motor modositasa szuk hatokoru: kerdes-kihagyas csak konzultaciora / eltavolitasra, legkorabbi idopont csak a 491949 szolgaltatasra (2026-11-09)', () => {
+    const motor = fs.readFileSync(path.join(GYOKER, 'assets/js/foglalo-pmu.js'), 'utf8');
+    assert.match(motor, /const KERDES_KIHAGY = new URLSearchParams\(location\.search\)\.get\('kerdes'\) === 'kihagy';/);
+    assert.match(motor, /const kerdesKihagy = \(\) => KERDES_KIHAGY && !!allapot\.kezeles && \(allapot\.kezeles\.egyeb \|\| \/elt\[aá\]vol\[ií\]t\/i\.test/);
+    assert.match(motor, /const LEGKORABBI = \{ '491949': Date\.UTC\(2026, 10, 8, 23, 0, 0\) \/ 1000 \};/);
+    assert.equal(Date.UTC(2026, 10, 8, 23, 0, 0), Date.parse('2026-11-09T00:00:00+01:00'), '2026-11-09 00:00 Europe/Budapest');
+    assert.equal(new Date('2026-11-09T12:00:00Z').getUTCDay(), 1, 'november 9. hetfo');
+  });
   test('a kepek EXIF-mentesek (nincs helyadat / eszkozadat)', () => {
     for (const f of fs.readdirSync(path.join(GYOKER, 'assets/img/eltavolitas')).filter((x) => x.endsWith('.jpg'))) {
       const b = fs.readFileSync(path.join(GYOKER, 'assets/img/eltavolitas', f));
@@ -182,7 +190,7 @@ describe('bongeszos', () => {
       assert.ok(buf.includes(mezo) || Buffer.from(buf, 'latin1').toString('utf8').includes(mezo), 'hianyzik a bekuldesbol: ' + mezo);
     }
     const utf = Buffer.from(buf, 'latin1').toString('utf8');
-    assert.match(utf, /name="kezeles"\r\n\r\nSminktetoválás eltávolítás – előre küldött fotó \(konzultációhoz\) – szemöldök/);
+    assert.match(utf, /name="kezeles"\r\n\r\nSminktetoválás eltávolítás – előre küldött fotó – szemöldök/);
     assert.match(utf, /name="ag"\r\n\r\nEltávolítás/);
     assert.ok(!utf.includes('name="foto3"'));
     const esemenyek = (await lap.evaluate(() => window.dataLayer)).filter((e) => e.event === 'eltavolitas_foto_lead');
@@ -266,23 +274,18 @@ describe('bongeszos', () => {
     await ctx.close();
   });
 
-  test('foglalas: az ingyenes konzultacio a beagyazott foglalot nyitja, a kezeles-kartya (amig nincs Salonic-szolgaltatas) az urlapra visz; a hero gombja a konzultaciot valasztja', async () => {
+  test('foglalas: mindket kartya (konzultacio, eltavolito kezeles) a beagyazott naptarat nyitja, kerdes nelkul; a hero gombja a konzultaciot valasztja', async () => {
     const { ctx, lap } = await nezet(false);
     await lap.route('**/foglalo-pmu**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>foglalo</p>' }));
     assert.equal(await lap.isHidden('#el-foglalo-doboz'), true);
     await lap.click('#el-fo-gomb');
     await lap.waitForFunction(() => !document.getElementById('el-foglalo-doboz').hidden);
-    const src = await lap.getAttribute('#el-foglalo', 'src');
-    assert.match(src, /^\/foglalo-pmu\?beagyazva=1&kezeles=konzultacio$/);
-    assert.equal(await lap.getAttribute('.el-valaszt[data-valaszt=konzultacio]', 'aria-pressed'), 'true');
-    // a beagyazott foglalo jelzi a magassagat
-    await lap.evaluate(() => window.postMessage({ mhFoglalo: true, magassag: 555 }, location.origin));
-    await lap.evaluate(() => document.getElementById('el-foglalo').contentWindow && 0);
-    // kezeles: nincs sajat Salonic-szolgaltatas -> urlap, cel = kezeles
+    assert.equal(await lap.getAttribute('#el-foglalo', 'src'), '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=konzultacio');
     await lap.click('.el-valaszt[data-valaszt=kezeles]');
-    await lap.waitForFunction(() => document.getElementById('foto-urlap').getBoundingClientRect().top < 400);
-    assert.equal(await lap.inputValue('#el-cel'), 'kezeles');
-    assert.equal(await lap.isHidden('#el-foglalo-doboz'), true);
+    await lap.waitForFunction(() => document.getElementById('el-foglalo').getAttribute('src').endsWith('kezeles=491949'));
+    assert.equal(await lap.getAttribute('#el-foglalo', 'src'), '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=491949');
+    assert.equal(await lap.getAttribute('.el-valaszt[data-valaszt=kezeles]', 'aria-pressed'), 'true');
+    assert.equal(await lap.isVisible('#el-foglalo-doboz'), true);
     await ctx.close();
   });
 

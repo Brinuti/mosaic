@@ -20,6 +20,11 @@
   // ?reteg=1: a foglalo-reteg (assets/js/booking-engine) kereteben fut: a lepeseit a reteg viszi a sajat elozmenyeibe (nincs kozos bongeszo-elozmeny a keretbol:
   // a reteg visszalepes-szamlalasa pontos, a bongeszo vissza gombja lepesenkent visszalep), es bezaras / ujranyitas utan ott folytatja, ahol tartott
   const RETEG = BEAGYAZVA && new URLSearchParams(location.search).has('reteg');
+  // ?kerdes=kihagy (a /sminktetovalas-eltavolitas-budapest landingrol, Feri 2026-11-01): az eltavolitasra / konzultaciora jelentkezoknek van regi sminktetovalasuk, ezert nekik
+  // nem tesszuk fel a "Volt mar sminktetovalasod?" kerdest (az "igen" valasz fotofeltoltesre, nem foglalasra vinne): idopont-valasztas utan egyenesen az adatokhoz. CSAK a
+  // konzultacio es az eltavolitas szolgaltatasra hat (lasd kerdesKihagy); minden mas kezelesnel a kerdes valtozatlanul megmarad.
+  const KERDES_KIHAGY = new URLSearchParams(location.search).get('kerdes') === 'kihagy';
+  const kerdesKihagy = () => KERDES_KIHAGY && !!allapot.kezeles && (allapot.kezeles.egyeb || /elt[aá]vol[ií]t/i.test(allapot.kezeles.nev || ''));
 
   // A sajat kereteben nyiltunk meg (a Salonic visszairanyitott): nem rajzolunk, szolunk a szulonek.
   try {
@@ -245,7 +250,7 @@
   }
   // a fejlec vissza gombja mindig az elozo lepesre visz (nem a bongeszo elozmenyeiben lep vissza)
   const ELOZO = {
-    szolg: () => 'kezdo', ido: () => 'szolg', kerdes: () => (allapot.kerdesCel === 'c-ido' ? 'c-info' : 'ido'), adatok: () => 'kerdes',
+    szolg: () => 'kezdo', ido: () => 'szolg', kerdes: () => (allapot.kerdesCel === 'c-ido' ? 'c-info' : 'ido'), adatok: () => (kerdesKihagy() ? 'ido' : 'kerdes'),
     foto: () => (allapot.kerdesValasz ? 'kerdes' : 'kezdo'), 'foto-adatok': () => 'foto',
     'c-info': () => 'kezdo', 'c-ido': () => 'kerdes', 'c-adatok': () => 'c-ido',
   };
@@ -336,6 +341,9 @@
   }
   const arSzoveg = (k) => (k.ar ? ft(k.ar) : /ingyenes|konzult/i.test(k.nev) ? 'Ingyenes' : 'Egyedi ár');
 
+  // Szolgaltatas-specifikus legkorabbi idopont (Feri, 2026-11-01): a "Tetovalas eltavolitas" (Salonic 491949) csak a 2026-11-09-i hettol foglalhato; minden mas szolgaltatas valtozatlan.
+  // 2026-11-09 00:00 Europe/Budapest (a teli idoszamitas 10-25 ota: CET = UTC+1) = 2026-11-08T23:00Z.
+  const LEGKORABBI = { '491949': Date.UTC(2026, 10, 8, 23, 0, 0) / 1000 };
   async function szabadKezdesek(kezelesId, tol, napok) {
     const p = new URLSearchParams({
       startDate: tol, offset: 0, days: napok, placeId: SZALON.placeId, serviceId: kezelesId, employeeId: -1,
@@ -345,8 +353,9 @@
     if (j.status !== 'success') throw new Error('API: ' + j.status);
     const most = Date.now() / 1000 + 30 * 60; // a fel oran belul kezdodoket mar nem kinaljuk
     const ki = new Set();
+    const korai = LEGKORABBI[String(kezelesId)] || 0;
     for (const kezelok of Object.values(j.data.blocks || {})) {
-      for (const k of Object.values(kezelok)) for (const s of Object.values(k.slots || {})) if (s.timestamp > most) ki.add(s.timestamp);
+      for (const k of Object.values(kezelok)) for (const s of Object.values(k.slots || {})) if (s.timestamp > most && s.timestamp >= korai) ki.add(s.timestamp);
     }
     return [...ki].sort((a, b) => a - b);
   }
@@ -453,6 +462,7 @@
     pmuLepes('slot', undefined, { serviceId: allapot.kezeles && allapot.kezeles.id });
     // a kerdest senki nem ugorhatja at (a szemelyes konzultacio sem): regi PMU-val elobb foto kell
     allapot.kerdesCel = 'adatok';
+    if (kerdesKihagy()) { allapot.elozmeny = 'elso'; allapot.kerdesValasz = 'elso'; ugrik('adatok'); return; }
     ugrik('kerdes');
   }
 
