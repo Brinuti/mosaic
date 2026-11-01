@@ -47,6 +47,25 @@ createServer((req, res) => {
       .catch((e) => { res.writeHead(502, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ hiba: e.message })); });
     return;
   }
+  // a modellnap foglaloja (/api/modell/*, /mf/<kod>): helyben memoriaban futo SQLite-tal (tools/modell-d1.mjs); a host localhost, ezert elonezeti kornyezet (level nem megy ki)
+  if (url.pathname.startsWith('/api/modell/') || url.pathname.startsWith('/mf/')) {
+    const chunks = [];
+    req.on('data', (d) => chunks.push(d));
+    req.on('end', async () => {
+      try {
+        const { d1 } = await import('./modell-d1.mjs');
+        const { api, foglalasOldal } = await import('../lib/modell/vegpont.js');
+        globalThis.__modellDb ??= d1();
+        const env = { MP_MERES_DB: globalThis.__modellDb, MP_MERES_ADMIN_KULCS: 'helyi-teszt' };
+        const body = chunks.length ? Buffer.concat(chunks) : undefined;
+        const request = new Request('http://localhost:' + PORT + req.url, { method: req.method, headers: req.headers, body: ['GET', 'HEAD'].includes(req.method) ? undefined : body });
+        const valasz = url.pathname.startsWith('/mf/') ? await foglalasOldal(request, env) : await api(request, env, {});
+        res.writeHead(valasz.status, Object.fromEntries(valasz.headers));
+        res.end(Buffer.from(await valasz.arrayBuffer()));
+      } catch (e) { console.error('modell:', e); res.writeHead(500); res.end('hiba'); }
+    });
+    return;
+  }
   let ut; try { ut = decodeURIComponent(url.pathname); } catch { ut = url.pathname; }
   const ua = url.searchParams.get('nezet') === 'mobil' ? 'iPhone' : req.headers['user-agent'];
   const d = utvonal(ut, ua);

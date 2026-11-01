@@ -31,13 +31,14 @@ import { UJ_ELES } from '../lib/uj-eles.js';
 import { hosValasztas, hosCsere, hosKepValasz } from '../lib/hirdetes-hos.js';
 import { foglalasom, foglalasMuvelet } from '../lib/foglalasom.js';
 import { kimenoFeldolgoz } from '../lib/lifecycle-kimeno.js';
+import { foglalasOldal } from '../lib/modell/vegpont.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
 const TILTO_ROBOTS = 'User-agent: *\nDisallow: /\n';
 // Rejtett lapok: az eles domainen is noindex (a lap meta robots-a mellett fejlecben is). Az uj oldalak elesitese utan (lib/uj-eles.js) a rejtett
 // a regi Wix-klon (/regi/<eredeti utvonal>) es a link-index (/uj-oldalak); elotte az uj stilusu tukor (/uj/<eredeti utvonal>, /uj-fooldal)
-const REJTETT_LAPOK = new Set(['/uj-fooldal', '/uj-oldalak']);
+const REJTETT_LAPOK = new Set(['/uj-fooldal', '/uj-oldalak', '/modellnap']);   // /modellnap: a modellkereso napok foglaloja (lib/modell/), rejtett, nincs a sitemapben
 const REJTETT_ELOTAG = UJ_ELES ? /^\/regi(\/|$)/ : /^\/uj(\/|$)/;
 // a B-valtozatok (/b/<ut>: a konverzios kepernyotervek szerint, a tulajdonos kerese 2026-10-16) rejtettek: link nem mutat rajuk, a keresok nem indexelik
 const B_ELOTAG = /^\/b(\/|$)/;
@@ -60,6 +61,7 @@ export async function onRequest(context) {
     const v = await foglalasom(request, context.env);
     if (v) return v;
   }
+  if (/^\/mf\//.test(url.pathname) && url.hostname !== 'medicalpiercing.hu') return foglalasOldal(request, context.env); // modellnap: "A foglalasod" (lib/modell/vegpont.js)
   // a Salonic adatlap stiluslapja: a bongeszo mindig ellenorzi (lib/salonic-css.js)
   if (url.pathname.startsWith(SALONIC_ELOTAG)) return salonicFajl(request, context.env.ASSETS);
 

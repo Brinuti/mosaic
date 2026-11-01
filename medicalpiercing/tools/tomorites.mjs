@@ -5,8 +5,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const CSS = ['uj-fooldal', 'uj-oldalak', 'uj-kategoria', 'uj-sajat', 'uj-egyseges', 'uj-b'].map((n) => `assets/css/${n}.css`);
-const JS = ['assets/js/uj-fooldal.js', 'assets/js/uj-oldalak.js', 'assets/js/motor/motor.js', 'assets/js/motor/terkep.js', 'assets/js/motor/tipus.js'];
+const CSS = ['uj-fooldal', 'uj-oldalak', 'uj-kategoria', 'uj-sajat', 'uj-egyseges', 'uj-b', 'uj-modell'].map((n) => `assets/css/${n}.css`);
+const JS = ['assets/js/uj-fooldal.js', 'assets/js/uj-oldalak.js', 'assets/js/uj-modell.js', 'assets/js/motor/motor.js', 'assets/js/motor/terkep.js', 'assets/js/motor/tipus.js'];
 
 export async function tomorit(DIST) {
   let esbuild;
