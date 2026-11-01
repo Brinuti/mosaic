@@ -10,12 +10,13 @@ A foglaló **minden szolgáltatásnál** (ingyenes konzultáció, szemöldök, a
 | Lépés | Ha a vendég azt mondja: **„Nem, ez lesz az első”** | Ha azt: **„Igen, már van sminktetoválásom”** |
 |---|---|---|
 | 1. Kezelés | kiválasztja | kiválasztja |
-| 2. Kérdés | „Volt már sminktetoválásod (ezen a területen)?” (az eltávolításnál: „Van sminktetoválásod, amelyet eltávolíttatnál?”) | ugyanaz |
+| 2. Kérdés | „Volt már sminktetoválásod (ezen a területen)?” (az eltávolításnál nincs kérdés, lásd lent) | ugyanaz |
 | 3. Fotó | – | **kötelező**: legalább 1, legfeljebb 5 fotó; fotó nélkül nem lehet tovább |
 | 4. Időpont | a Salonic szabad időpontjai (a 491949 „Tetoválás eltávolítás” szolgáltatásnál 2026-11-09-től, ez a régi szabály marad) | a Salonic szabad időpontjai, **minden szolgáltatásra csak 2026-11-09 00:00-tól** (Europe/Budapest), a naptár felett: „A legkorábbi időpont: november 9.” |
 | 5. Elérhetőség | – | név, telefon, (e-mail nem kötelező), adatkezelési hozzájárulás → a fotók + a kezelés + a kiválasztott időpont a meglévő `pmu-proba-foto` levélben megy Melittának |
 | 6. Foglalás | a Salonic beágyazott adatlapja → sikeres foglalás → `/pmu-ok` | a Salonic beágyazott adatlapja (a Salonic-cím **`back` (mb_ azonosító) nélkül** megy, és a böngésző `mhBookingCtx`-e törölve) → sikeres foglalás → **`/pmu-foto-ok`** (nem a `/pmu-ok`) |
 
+- **Az eltávolítás szolgáltatásnál (Salonic 491949, „Tetoválás eltávolítás”) nincs kérdés** (Feri, 2026-11-01: aki eltávolítást választ, annak van régi tetoválása – ugyanaz, mintha „igen”-t válaszolt volna): kezelés → egyenesen a kötelező fotó → időpont nov. 9-től → elérhetőség + levél → Salonic. Vissza-lépéskor a fotóról a kezelésválasztásra visz (nem a kérdésre). Az ingyenes konzultációnál és a többi kezelésnél a kérdés marad. A fotó-gomb mobilon a telefon kameráját nyitja (`capture`: „Fotót készítek”), alatta a „vagy feltöltöm a galériából” link; asztalon fájlfeltöltés.
 - A kérdés szolgáltatásonként újra feltevődik (kezelésváltáskor a válasz törlődik). A haladás-sáv fotós úton: **Kezelés · Fotó · Időpont · Adatok**; egyébként: **Kezelés · Kérdés · Időpont · Adatok**.
 - Vissza-lépések: a fejléc vissza-gombja és a lépésjelző a Salonic-adatlapról az időpontra, onnan a kérdésre visz; a böngésző vissza-gombja az adatlapról az időpontra, onnan a „Fotó” nézetre (ha a fotó már elment: „A fotódat már elküldted”, a Tovább elérhető). Az elküldött fotó nem kerül újra elküldésre; a fotó-elküldés után az adatlap a `foto-adatok` bejegyzést **cseréli** (nincs böngésző-vissza hurok; foglaló-réteg módban a réteg előzmény-bejegyzést nem cserél, ott előre lépve rövid `foto-adatok` villanás után újra az adatlap jön – hurok nincs).
 - **A fotós munkamenet fotós marad**: a fotó elküldése után (a „foglalással” és a fotót csak elküldő ágakon is) a böngésző-munkamenetben (`sessionStorage` `mh_pmu_fotos`) megjegyezzük, hogy a vendég fotót küldött. Ha utána átvált „Nem, ez lesz az első”-re, másik kezelést vagy másik árkártyát választ, újratölt, vagy új keret nyílik ugyanabban a lapban, akkor is csak nov. 9-től kap időpontot, nincs újabb fotó-kérés, és a foglalás a `/pmu-foto-ok`-ra megy (nem lehet konverziós útra váltani). Új lap / privát ablak új munkamenet (tesztelésnél ezt használd). A telefonos visszahívás ág állapota ezt nem érinti (a „c-ido” ág nem fotós; a nézetváltáskor a főági nézetek visszaállítják a fotós állapotot).
@@ -62,7 +63,7 @@ Javasolt összekötő kulcs: a fotós vendég levele (táblázat) és a Salonic-
 - A telefonos visszahívás, a `/pmu-vh`: változatlan.
 
 ## 4. Védett fájl, hash, rollback
-- `assets/js/foglalo-pmu.js` blob-hash: **77eb8a6dad3f6bbb489803eed02848305c179abd** (a main a #587 után) → **a19d71d05130e988ab5aa58489359365350988b2** (ez a PR).
+- `assets/js/foglalo-pmu.js` blob-hash: **77eb8a6dad3f6bbb489803eed02848305c179abd** (a main a #587 után) → **9ffbcba602f31108bddce0006c6f66be3c3aa911** (6. kör; a #588 óta módosítva).
 - Módosított: a `kerdes=kihagy` kivétele; a kérdés + a fotó az időpont elé; `FOTOS_LEGKORABBI`; `fotosUt()` / `fotoKell()`; lépés-jelző (3 változat); `ELOZO`; `BELEPES.foto` / `foto-adatok` / `kerdes` / `ido`; a fotós levél jelölése; `pmuLepes` (`foto_ut`, nincs submit/success fotós úton); `pmuLead` (`foglalassal`); a köszönő-oldal (`/pmu-foto-ok`) és a burkoló (`keretbenOldalEredeti`) az R3 blokk **után**.
 - `tools/test-pmu-lead.mjs`: a `pmu_foto_lead` zárt mezőlistája `foglalassal`-sal bővült (alapérték 0).
 - `tools/netlify-build.mjs`: csak a `GV_KIHAGY` mintája (a `/pmu-foto-ok` ne kapjon Google-értékelés számot).

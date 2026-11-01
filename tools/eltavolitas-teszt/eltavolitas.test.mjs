@@ -72,15 +72,19 @@ describe('statikus', () => {
       assert.ok(!HTML.includes('/assets/img/eltavolitas/' + n + '.jpg'), 'a regi nev (' + n + '.jpg) nem maradhat');
     }
   });
-  test('a "Hogyan zajlik?" szakasz 3 lepes, az elso talalkozon mar az eltavolitast emliti, a fotot es a nov. 9-et', () => {
+  test('a "Hogyan zajlik?" szakasz 3 lepes, hasonlo szovegmennyiseggel; nincs benne a foglalo-magyarazat es a nov. 9., az elso talalkozon mar az eltavolitast kezdhetjuk', () => {
     const r = HTML.slice(HTML.indexOf('id="el-lepes-cim"'), HTML.indexOf('<!-- ============ 5. HANY ALKALOM'));
-    assert.equal((r.match(/<li>/g) || []).length, 3);
-    assert.match(r, /feltöltöd a fotód/);
-    assert.match(r, /november 9/);
-    assert.match(r, /az első találkozón elkezdeni az eltávolítást/i);
+    const bekezdesek = [...r.matchAll(/<li><h3>[^<]+<\/h3><p>([^<]+)<\/p><\/li>/g)].map((m) => m[1]);
+    assert.equal(bekezdesek.length, 3);
+    const hosszak = bekezdesek.map((b) => b.length);
+    assert.ok(Math.max(...hosszak) <= Math.min(...hosszak) * 1.25, 'a 3 blokk szovegmennyisege hasonlo: ' + hosszak.join(', '));
+    assert.match(r, /feltöltesz egy fotót/);
+    assert.ok(!/november 9/.test(r), 'a lepesekben nincs nov. 9.');
+    assert.ok(!/A foglaló megkérdezi|kérek egy fotót róla/.test(r + HTML.slice(HTML.indexOf('id="el-fogl-cim"'), HTML.indexOf('id="el-fogl-cim"') + 400)), 'nincs foglalo-magyarazat');
+    assert.match(r, /el is kezdhetjük az eltávolítást/);
     assert.match(r, /a kezelés a konzultációt is magában foglalja/);
     assert.match(r, /Külön konzultációra csak akkor jöjj, ha még nem biztos/);
-    assert.ok(!/(el is távolíthatjuk|elvégezni az eltávolítást|egy alkalommal eltávolít)/i.test(r + HTML.replace(/<[^>]+>/g, ' ')), 'nem sugallunk egy alkalmas teljes eltavolitast (1–3 alkalom)');
+    assert.ok(!/(elvégezni az eltávolítást|egy alkalommal eltávolít)/i.test(r + HTML.replace(/<[^>]+>/g, ' ')), 'nem sugallunk egy alkalmas teljes eltavolitast (1–3 alkalom)');
   });
   test('a kepek EXIF-mentesek (nincs helyadat / eszkozadat)', () => {
     for (const f of fs.readdirSync(path.join(GYOKER, 'assets/img/eltavolitas')).filter((x) => x.endsWith('.jpg'))) {

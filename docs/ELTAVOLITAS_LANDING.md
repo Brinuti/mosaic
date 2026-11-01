@@ -95,3 +95,7 @@ Az oldal saját fájljai (új fájlok) törölhetők / a PR-ok visszavonhatók, 
 - **„Hogyan zajlik?”**: 3 lépés (választás + fotó, időpont, „jössz, és kezdhetjük”); a szöveg: érdemes már az első találkozón eltávolítani, mert a kezelés a konzultációt is magában foglalja; külön konzultációra csak az jöjjön, aki még nem biztos az első alkalmas eltávolításban (Feri szavai).
 - **Képek**: a galéria képei `-v2` fájlnevet kaptak. Ok: a Cloudflare a képeket `cache-control: public, max-age=31536000` (1 év) fejléccel adja, ezért az azonos néven cserélt `utana-a.jpg` a korábban már látogatóknak (Feri böngészője is) a régi, tükrözetlen változatot mutatta. A 2. pár „utána” képe (flip + forgatás) a repóban jó volt; a `-v2` név miatt mindenki az újat kapja. **Szabály: kép cseréjekor új fájlnevet kell adni.**
 
+## 6. kör (Feri, 2026-11-01): eltávolításnál nincs kérdés; „Hogyan zajlik?” szövegek
+- Az „Eltávolító kezelés” (Salonic 491949) választása után a foglaló **nem kérdezi meg**, hogy van-e sminktetoválása (aki eltávolítást választ, annak van): egyenesen a kötelező fotó, utána az időpont (nov. 9-től). Az ingyenes konzultációnál a kérdés marad. Részletek: `docs/FOTOS_FOGLALAS.md` 1.
+- „Hogyan zajlik?”: a foglaló-magyarázat („a foglaló megkérdezi…”) és a „november 9” kikerült a lépésekből; a 3 blokk szövegmennyisége hasonló (a teszt ≤ 25% eltérést enged). A foglalási szakasz bevezetője egyszerű: „Válaszd ki, mire jönnél, és nézd meg a szabad időpontokat.”
+

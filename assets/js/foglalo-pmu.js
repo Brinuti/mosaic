@@ -238,9 +238,9 @@
     document.querySelector('input[name=elozmeny][value=van] + span').textContent = TERULET.igen;
     allapot.fotoKezeles = TERULET.fotoKezeles;
   }
-  // a kerdes ket valaszanak alapszovege (a terulet-valtozattal egyutt); az eltavolito szolgaltatasnal (491949) mas a megfogalmazas
-  const KERDES_ALAP = { elso: document.querySelector('input[name=elozmeny][value=elso] + span').textContent, van: document.querySelector('input[name=elozmeny][value=van] + span').textContent };
   const eltavolitasE = () => !!allapot.kezeles && /elt[aá]vol[ií]t/i.test(allapot.kezeles.nev || '');
+  // a kerdes nezete (eltavolitasnal nincs: a kezelesvalasztas)
+  const kerdesNezet = () => (allapot.kerdesCel !== 'c-ido' && eltavolitasE() ? 'szolg' : 'kerdes');
 
   // --- nezetek es vissza-gomb (a bongeszo vissza-gombja is mukodik, az adatok megmaradnak) ---
   const NEZETEK = [...document.querySelectorAll('[data-nezet]')].map((s) => s.dataset.nezet);
@@ -274,7 +274,7 @@
       const li = elem('li', { class: i < hol ? 'kesz' : i === hol ? 'most' : '', 'aria-current': i === hol ? 'step' : false });
       const bel = [elem('i', { szoveg: i < hol ? '✓' : String(i + 1) }), elem('span', { szoveg: t })];
       // a mar elkuldott fotohoz nem lepunk vissza (nem kuldjuk ujra): a "Foto" lepes ilyenkor a kerdesre visz
-      const cel = l[0] === 'fofoto' && nezetek[i] === 'foto' && allapot.fotoKuldve ? 'kerdes' : nezetek[i];
+      const cel = l[0] === 'fofoto' && nezetek[i] === 'foto' && allapot.fotoKuldve && !eltavolitasE() ? 'kerdes' : nezetek[i];
       if (i < hol && cel) li.append(elem('button', { type: 'button', class: 'lepes-gomb', 'aria-label': t + ': vissza erre a lépésre', onclick: () => ugrik(cel) }, ...bel));
       else li.append(...bel);
       return li;
@@ -284,9 +284,9 @@
   const ELOZO = {
     szolg: () => 'kezdo',
     kerdes: () => (allapot.kerdesCel === 'c-ido' ? 'c-info' : 'szolg'),
-    ido: () => (fotoKell() ? 'foto' : 'kerdes'),
+    ido: () => (fotoKell() ? 'foto' : kerdesNezet()),
     adatok: () => (fotoKell() ? 'foto-adatok' : 'ido'),
-    foto: () => (allapot.kerdesValasz ? 'kerdes' : 'kezdo'),
+    foto: () => (allapot.kerdesValasz ? kerdesNezet() : 'kezdo'),
     'foto-adatok': () => (fotosUt() ? 'ido' : 'foto'),
     'c-info': () => 'kezdo', 'c-ido': () => 'kerdes', 'c-adatok': () => 'c-ido',
   };
@@ -482,6 +482,8 @@
     allapot.kezeles = k;
     allapot.slot = null;
     allapot.kerdesCel = 'ido';
+    // az ELTAVOLITAS szolgaltatasnal nincs kerdes (Feri, 2026-11-01): aki eltavolitast valaszt, annak van regi sminktetovalasa - ugyanaz, mintha "igen"-t valaszolt volna: egyenesen a (kotelezo) foto
+    if (eltavolitasE()) { allapot.elozmeny = 'van'; allapot.kerdesValasz = 'van'; allapot.ag = 'B'; }
     pmuLepes('service', undefined, { serviceId: k.id });
     ugrik(allapot.kerdesValasz ? (fotoKell() ? 'foto' : 'ido') : 'kerdes');
   }
@@ -588,12 +590,9 @@
   }
   BELEPES.kerdes = () => {
     const telefon = allapot.kerdesCel === 'c-ido';
-    if (!telefon && !allapot.kezeles) { ugrik('szolg'); return; }
+    if (!telefon && (!allapot.kezeles || eltavolitasE())) { ugrik('szolg'); return; }   // eltavolitasnal nincs kerdes
     $('kerdes-osszegzes').replaceChildren(telefon ? '' : kezelesFejlec());
-    const elt = !telefon && eltavolitasE();
-    $('kerdes-cim').textContent = elt ? 'Van sminktetoválásod, amelyet eltávolíttatnál?' : TERULET ? TERULET.kerdes : telefon || (allapot.kezeles && allapot.kezeles.egyeb) ? 'Volt már sminktetoválásod?' : 'Volt már sminktetoválásod ezen a területen?';
-    document.querySelector('input[name=elozmeny][value=elso] + span').textContent = elt ? 'Nem, még nincs sminktetoválásom' : KERDES_ALAP.elso;
-    document.querySelector('input[name=elozmeny][value=van] + span').textContent = elt ? 'Igen, van – fotót töltök fel róla' : KERDES_ALAP.van;
+    $('kerdes-cim').textContent = TERULET ? TERULET.kerdes : telefon || (allapot.kezeles && allapot.kezeles.egyeb) ? 'Volt már sminktetoválásod?' : 'Volt már sminktetoválásod ezen a területen?';
     for (const r of document.querySelectorAll('input[name=elozmeny]')) r.checked = r.value === allapot.elozmeny;
     $('kerdes-tovabb').disabled = !allapot.elozmeny;
   };

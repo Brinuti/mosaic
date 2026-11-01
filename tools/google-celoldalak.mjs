@@ -41,6 +41,8 @@ export const CELOLDALAK = {
       ['\n      <button type="button" role="tab" aria-selected="false" data-szuro="ajak">Ajak</button>', ''],
       [/\n      <figure class="ref" data-kategoria="ajak">[^\n]*<\/figure>/g, '', 8],
       [/\n      <article class="ar-kartya" data-salonic="(?:ajak-aquarell|ajak-ruzs|szemhej)">[\s\S]*?<\/article>/g, '', 3],
+      // a sminktetovalas-eltavolitas hivatkozasok (2026-11-01; <!--eltav--> ... <!--/eltav--> jelolt blokkok) a kulcsszavas Google Ads-oldalra nem kerulnek (az oldal valtozatlan)
+      [/[ ]*<!--eltav-->\n[\s\S]*?<!--\/eltav-->\n/g, '', 5],
       // Irasmod: a cimekben „szemöldök tetoválás” (kulon), a szovegben egyszer „szemöldöktetoválás” (egybe)
       ['<h3>Ez lenne az első szemöldök&shy;tetoválásom</h3>', '<h3>Ez lenne az első szemöldök tetoválásom</h3>'],
       ['természetes, gyógyult sminktetoválások – a saját munkáim.', 'természetes, gyógyult szemöldöktetoválások – a saját munkáim.'],

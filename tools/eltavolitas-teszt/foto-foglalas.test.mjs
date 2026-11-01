@@ -523,14 +523,30 @@ describe('bongeszos: a motor viselkedese (mockolt Salonic)', () => {
     await e.ctx.close();
   });
 
-  test('a Tetoválás eltávolítás (491949) a nem fotos vendegnek is csak nov. 9-tol (a regi biztonsagi szabaly marad); fotosnak is', async () => {
+  test('Tetoválás eltávolítás (491949): NINCS kerdes (aki eltavolitast valaszt, annak van regi tetovalasa): egyenesen a kotelezo foto, utana idopont csak nov. 9-tol; vissza = kezelesvalasztas', async () => {
     const e = await fo('/foglalo-pmu?beagyazva=1&kezeles=491949');
-    await e.var_('kerdes');
-    assert.equal(await e.lap.locator('#kerdes-cim').innerText(), 'Van sminktetoválásod, amelyet eltávolíttatnál?', 'az eltavolitasnal sajat megfogalmazas');
-    assert.equal(await e.lap.locator('input[name=elozmeny][value=van] + span').innerText(), 'Igen, van – fotót töltök fel róla');
-    await e.valasz('elso');
-    await e.var_('ido');
+    await e.var_('foto');                                     // nincs kerdes-nezet
+    assert.deepEqual(await e.lepesek(), ['Kezelés', 'Fotó', 'Időpont', 'Adatok']);
+    assert.equal(await e.aktualisLepes(), 'Fotó');
+    assert.equal(await e.lap.isDisabled('#foto-tovabb'), true, 'foto nelkul nem lehet tovabb');
+    await fotoFel(e); await e.lap.click('#foto-tovabb'); await e.var_('ido');
     assert.deepEqual(await e.napok(), [9, 10]);
+    await e.vissza();                                         // idopont -> foto
+    assert.deepEqual(await e.nezet(), ['foto']);
+    await e.vissza();                                         // foto -> kezelesvalasztas (nem a kerdes)
+    assert.deepEqual(await e.nezet(), ['szolg']);
+    assert.ok(!(await e.posztok.length), 'foto nem ment el');
     await e.ctx.close();
+    // az ingyenes konzultacio es a tobbi kezeles kerdese megmarad; a kerdes az eltavolitasra visszalepve sem jelenik meg
+    const k = await fo('/foglalo-pmu?beagyazva=1&kezeles=471160');
+    await k.var_('kerdes');
+    assert.equal(await k.lap.locator('#kerdes-cim').innerText(), 'Volt már sminktetoválásod?');
+    await k.valasz('elso'); await k.var_('ido');
+    await k.vissza(); await k.var_('kerdes');
+    await k.vissza(); await k.var_('szolg');
+    await k.lap.getByRole('button', { name: /Tetoválás eltávolítás/ }).first().click();
+    await k.var_('foto');                                     // eltavolitas: a korabbi "elso" valasz torlodik, egyenesen a foto
+    assert.deepEqual(await k.lepesek(), ['Kezelés', 'Fotó', 'Időpont', 'Adatok']);
+    await k.ctx.close();
   });
 });
