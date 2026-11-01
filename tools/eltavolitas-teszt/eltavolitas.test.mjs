@@ -128,7 +128,7 @@ describe('bongeszos', () => {
         const talalat = [];
         const elemek = document.querySelectorAll('main p, main li, main h1, main h2, main h3, main figcaption, main summary, main small');
         for (const e of elemek) {
-          if (e.closest('[hidden]') || !e.offsetParent || e.closest('.el-ar')) continue; // az ar-sor ket oszlopos (nev | ar): a baseline-igazitas miatt nem sortoresi arva
+          if (e.closest('[hidden]') || !e.offsetParent || e.closest('.el-ar-racs')) continue; // az ar-sor ket oszlopos (nev | ar): a baseline-igazitas miatt nem sortoresi arva
           // csak a sajat szoveg-csomopontok (nem a beagyazott elemek, pl. gombok)
           const csomopontok = [];
           const bejar = (n) => { for (const g of n.childNodes) { if (g.nodeType === 3) csomopontok.push(g); else if (g.nodeType === 1 && !/^(BUTTON|A|SVG|SELECT|INPUT|SMALL|LABEL)$/i.test(g.tagName)) bejar(g); } };
@@ -159,7 +159,7 @@ describe('bongeszos', () => {
     }
     assert.equal(posztok.length, 0);
     // fotok: 2 db a repo kepeibol
-    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/kozben-a.jpg'), path.join(GYOKER, 'assets/img/eltavolitas/kozben-b.jpg')]);
+    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/utana-a.jpg'), path.join(GYOKER, 'assets/img/eltavolitas/utana-b.jpg')]);
     await lap.waitForSelector('.el-mini');
     assert.equal(await lap.locator('.el-mini').count(), 2);
     await lap.selectOption('#el-terulet', 'szemöldök');
@@ -198,7 +198,7 @@ describe('bongeszos', () => {
   test('urlap: hozzajarulas (ana) nelkul nincs dataLayer-esemeny, a kuldes ettol megy', async () => {
     const { ctx, lap, posztok } = await nezet(true);
     await lap.evaluate(() => { window.dataLayer = []; window.mhSuti = { engedely: () => false }; });
-    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/kozben-a.jpg')]);
+    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/utana-a.jpg')]);
     await lap.waitForSelector('.el-mini');
     await lap.selectOption('#el-terulet', 'ajak, szájkontúr');
     await lap.fill('#el-nev', 'Teszt Elek'); await lap.fill('#el-telefon', '+36 30 111 2222'); await lap.fill('#el-email', 'teszt@example.com');
@@ -215,7 +215,7 @@ describe('bongeszos', () => {
     let valasz = 500;
     await lap.unroute('**/*');
     await lap.route('**/*', (r) => { const k = r.request(); if (new URL(k.url()).origin !== bazis) return r.abort(); if (k.method() === 'POST') { posztok.push(k); return r.fulfill({ status: valasz, body: valasz === 200 ? 'ok' : 'hiba' }); } return r.continue(); });
-    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/kozben-a.jpg')]);
+    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/utana-a.jpg')]);
     await lap.waitForSelector('.el-mini');
     await lap.selectOption('#el-terulet', 'szemöldök');
     await lap.fill('#el-nev', 'Teszt Elek'); await lap.fill('#el-telefon', '06 30 111 2222'); await lap.fill('#el-email', 'teszt@example.com');
@@ -235,7 +235,7 @@ describe('bongeszos', () => {
 
   test('urlap: legfeljebb 5 foto (a 6. nem kerul be, a figyelmeztetes marad), a torles mukodik, es kozben a hibak aria-invalid-ot kapnak', async () => {
     const { ctx, lap } = await nezet(true);
-    const kepek = ['kozben-a.jpg', 'kozben-b.jpg', 'elotte-c.jpg', 'utana-c.jpg', 'video-poszter.jpg', 'kozben-a.jpg'].map((f) => path.join(GYOKER, 'assets/img/eltavolitas', f));
+    const kepek = ['utana-a.jpg', 'utana-b.jpg', 'elotte-c.jpg', 'utana-c.jpg', 'video-poszter.jpg', 'elotte-a.jpg'].map((f) => path.join(GYOKER, 'assets/img/eltavolitas', f));
     await lap.setInputFiles('#el-foto-input', kepek);
     await lap.waitForFunction(() => document.querySelectorAll('.el-mini').length === 5);
     assert.match(await lap.textContent('#el-h-foto'), /Legfeljebb 5/);
