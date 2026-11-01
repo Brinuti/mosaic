@@ -132,6 +132,9 @@ MERES_VID_BE = "1"
 # SZORTELENITES (Elysion-pixel 643342342027957; Feri 2026-10-31 16:51, #167 6545661338, PR #570 kod): "szor" a kapcsolo-listaba, a HeadSpa #553 24H visszameres (11-01 09:43) PASS utan, a Meta elysion-ok Schedule URL-szabaly INACTIVE-ra allitasaval EGYIDEJUEG (kulonben dupla). ROLLBACK: "szor" kivetele + deploy; az URL-szabaly vissza.
 # SZOR IDEIGLENES KIVETEL (01-MERES #167 6556444617/6556731534): a Meta elysion-ok URL-szabaly 13:00 Bp-ig nem lett INACTIVE-ra allitva -> a szerveres Szor-Schedule dupla szamolast nyitna. VISSZAKAPCSOLAS: "headspa,pmu,szor" + deploy, a Meta elysion-ok URL-szabaly INACTIVE-ra allitasaval EGYIDEJUEG (Feri kifejezett mondata / kattintasa).
 META_ELO_BE = "headspa,pmu"
+# PMU FOTOS FOGLALAS: PII-MENTES JELZES (Feri 2026-11-01, #588): a pmu-proba-foto urlap fogadasakor HMAC(telefon)+ido a D1 pmu_fotos_jel tablaba (KULCS_DB); a Salonic-foglalas (sd es motoros ut) telefon-HMAC-je egyezeseire
+# [jelzes-1h, jelzes+7nap] SEMMILYEN platform-esemeny nem megy (cellak 'kihagyva', indok: fotos_foglalas). ROLLBACK: a kovetkezo sor torlese (vagy "0") + deploy; a tabla ures marad / nem hasznalt.
+PMU_FOTOS_JEL = "1"
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei
@@ -182,6 +185,7 @@ META_ELO_TESZT_KOD = "TEST47348"        # Meta Test Events kod, HeadSpa dataset 
 META_ELO_TESZT_KOD_PMU = "TEST43023"    # Meta Test Events kod, PMU dataset 1019878750660854 (datasetenkent kulonbozik)
 TIKTOK_ELO_BE = "headspa"
 META_ELO_BE = "headspa,pmu"
+PMU_FOTOS_JEL = "1"
 # QA-2 ARNYEK-MERES (DECISION-LOG #99; lasd docs/booking-engine/QA2_ARNYEK.md): CSAK ELONEZET. Az eles ([vars]) NEM kapja meg: ott az elosztas ki van kapcsolva (MERES_ELOSZTO hianyzik).
 # A kuldes kizarolag az ARNYEK-celpontokra mehet (kodban rogzitve: netlify/lib/meres/platformok.js), tesztkoddal. A nem titkos ertekek ITT vannak; a titkok a Cloudflare feluleten / API-n,
 # Preview / Secret tipussal: META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GA4_TESZT_API_SECRET (beallitva 2026-10-06), GOOGLE_ARNYEK_WEBHOOK_URL (a Zapier-webhook; a Zap-et a meresi munkamenet epiti).

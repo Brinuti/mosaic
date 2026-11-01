@@ -19,6 +19,7 @@ import { CSP_CRM } from '../crm/lib/http.js';
 import { WorkerMailer } from 'worker-mailer';
 import { utvonal } from '../netlify/lib/utvonal.js';
 import { levelek } from '../netlify/lib/levelek.js';
+import { fotosJelIr } from '../netlify/lib/meres/fotos-jel.js'; // PMU fotos foglalas: PII-mentes jelzes (a konverzio-kizarashoz), lasd docs/FOTOS_FOGLALAS.md
 import { koszonoRogzit } from '../netlify/lib/ajandek.js';
 import { hosValasztas, hosCsere, hosKepValasz } from '../netlify/lib/hirdetes-hos.js';
 
@@ -109,6 +110,10 @@ async function urlap(context) {
     mellekletek.push({ filename: v.name || k, content: base64(await v.arrayBuffer()), mimeType: v.type || undefined });
   }
 
+  // PMU fotos urlap: szerveroldali, PII-mentes jelzes (HMAC(telefon) + ido) a mereshez - a nyers telefon nem tarolodik; hiba / kapcsoló KI (PMU_FOTOS_JEL) eseten a levelkuldes valtozatlan
+  if (nev === 'pmu-proba-foto' && env.KULCS_DB) {
+    try { await fotosJelIr(env.KULCS_DB, env, { telefon: d.telefon, foglalassal: /FOGLALÁSSAL/.test(String(d.ag || '')) }); } catch (e) { console.error('pmu-fotos-jel', e && e.message); }
+  }
   const lista = levelek(nev, d);
   if (!lista) return new Response('ok');
   // alapertekek: a Gmail-fiok; titkos valtozokent csak az SMTP_PASS kell (wrangler.toml)

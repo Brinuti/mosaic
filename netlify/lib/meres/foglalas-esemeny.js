@@ -9,6 +9,7 @@ import { foglalasAllapot, emailElemzes } from '../foglalas-kulcs.js';
 import { vendegNev } from './vendeg-nev.js';
 import { tiktokEloKuld } from './tiktok-elo.js'; // UJ-67/69/71/73: kodos elo TikTok-esemeny (alapbol KI)
 import { metaEloKuld } from './meta-elo.js'; // DECISION #240: HeadSpa Meta Schedule az elo pixelre (alapbol KI)
+import { fotosJelEgyezik, FOTOS_INDOK } from './fotos-jel.js'; // PMU fotos foglalas: NEM konverzio (Feri 2026-11-01, #588)
 
 export async function foglalasEsemenyKuldes({ db, env, mezok, bejovo = {}, eredmeny, fetchImpl, now, kuldo }) {
   const uzletag = SALONIC_UZLETAG[mezok.host];
@@ -30,6 +31,9 @@ export async function foglalasEsemenyKuldes({ db, env, mezok, bejovo = {}, eredm
   const ido = Math.floor((Number.isFinite(leveldatum) ? leveldatum : (now ? now() : Date.now())) / 1000);
   const v = (bejovo.vendeg && typeof bejovo.vendeg === 'object') ? bejovo.vendeg : {};
   const fk = { tipus: 'foglalas', uzletag, source_entity_id: sourceId, jelleg, kupon, ertek: ar ?? 0, ido, szolgaltatas: mezok.szolgaltatas || b.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: b.g || null, nev: vendegNev({ ...bejovo, vendeg: v }) }, oldal: b.oldal || null, uuid: mezok.uuid }; // nev (DECISION #202): a Zap `nev` mezoje, tartalekban a level szovegebol; csak hash-elesre (a nyers nev nem naplozodik)
+  // PMU fotos foglalas (Feri 2026-11-01): biztonsagbol a motoros uton is (a fotos ut nem ker mb_ parositast); a cellak 'kihagyva', indok: fotos_foglalas
+  let fotos = null;
+  if (uzletag === 'pmu') { fotos = await fotosJelEgyezik(db, env, { vendeg: v, t0: ido, uuid: mezok.uuid, ertek: ar ?? 0 }); if (fotos) fk.fixAllapot = { allapot: 'kihagyva', indok: FOTOS_INDOK, fotos: true }; }
   let eloAllapot = null; const eloEllenorzes = () => (eloAllapot ||= foglalasAllapot({ host: mezok.host, uuid: mezok.uuid, fetchImpl }).then((x) => x.allapot)); // egy Salonic-lekeres az elosztasnak es az elo TikTok-kuldesnek
   const r = await elosztas(db, fk, { env, fetchImpl, now, kuldo, eloEllenorzes });
   const tiktokElo = await tiktokEloKuld(db, { ...fk, uuid: mezok.uuid }, { env, fetchImpl, now, eloEllenorzes });

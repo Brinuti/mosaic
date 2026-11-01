@@ -174,11 +174,12 @@ try {
     if (idx < 0) throw new Error('nincs ilyen kezeles: ' + nevek.join(' | '));
     const valasztott = ((await kez.nth(idx).textContent()) || '').replace(/\s+/g, ' ').trim();
     await kez.nth(idx).click(); lepes('kezeles valasztva', { kezeles: valasztott.slice(0, 100) });
+    // 2026-11-01 (FOTOS_FOGLALAS.md): a foglalo sorrendje kezeles -> KERDES -> idopont -> adatlap (a "nem, ez lesz az elso" valasz a nem fotos ut: nincs fotokeres, nincs szuro)
+    await (await lathato(fo.locator('input[name=elozmeny][value=elso]'), 20000)).check(); lepes('kerdes: ez lesz az elso (nem fotos ut)');
+    await fo.locator('#kerdes-tovabb').click();
     const ido = await utolsoIdopont(fo.locator('.nnap.szabad'), fo.locator('.idogomb'));
     lepes('idopont valasztva (az utolso szabad nap utolso idopontja)', { ido: ido.szoveg });
-    await ido.loc.click(); // egy erintes az idoponton = tovabb
-    await (await lathato(fo.locator('input[name=elozmeny][value=elso]'), 20000)).check(); lepes('kerdes: ez lesz az elso');
-    await fo.locator('#kerdes-tovabb').click();
+    await ido.loc.click(); // egy erintes az idoponton = tovabb a Salonic-adatlapra
     if (MOD === 'valodi') await lathato(fo.locator('#salonic'), 20000); // szim modban a keret mar a koszonooldalra iranyit (a fo ablak elhagyja a landinget)
     if (MOD === 'valodi') await page.waitForTimeout(5000);
     const fr = page.frames().find((f) => /salonic\.hu\/guestData/.test(f.url()));

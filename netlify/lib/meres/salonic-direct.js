@@ -19,6 +19,7 @@ import { elosztas, meresSema, kapcsolokOlvas } from './elosztas.js';
 import { jellegRogzit } from './jelleg-rogzites.js';
 import { jellegSzabaly } from './jelleg-oldal.js';
 import { vendegNev } from './vendeg-nev.js';
+import { fotosJelEgyezik, FOTOS_INDOK } from './fotos-jel.js'; // PMU fotos foglalas: NEM konverzio (Feri 2026-11-01, #588)
 import { tiktokEloKuld } from './tiktok-elo.js';
 import { metaEloKuld } from './meta-elo.js';
 import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes, evKovetkeztet, isoUnix, nevtablaBetolt, nevtablaMent, norm, sema as parositasSema } from '../foglalas-kulcs.js';
@@ -294,7 +295,13 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
     forras: 'salonic_direct', attr_minoseg: 'C_salonic_direct', attr_jelek: attrJelek(v), ertek_minoseg: ar.minoseg, ertek_forras_jel: ar.forras };
   if (mod === 'confirmed' || mod === 'feloldva_confirmed') fk.fixAllapot = { allapot: 'kihagyva', indok: `reschedule_confirmed${mod === 'feloldva_confirmed' ? ' (feloldva)' : ''}: nincs uj konverzio (korabbi foglalas: ${String((csere && csere.regi_uuid) || '?').slice(0, 8)})` };
   else if (mod === 'suspected') fk.fixAllapot = { allapot: 'halasztva', indok: (csere && csere.hianyzo ? 'hianyzo_mezo' : 'reschedule_suspected') + ': HOLD, nincs automatikus kuldes (' + String((csere && csere.ok) || 'csere-gyanu').slice(0, 120) + ')' };
-  const eredmeny = { jelleg: zar.jelleg, kupon: zar.kupon, uj_vendeg: ujVendeg, ertek_minoseg: ar.minoseg, ertek_forras: ar.forras };
+  // PMU fotos foglalas (Feri 2026-11-01): a fotos urlap telefon-HMAC jelzese [jelzes-1h, jelzes+7nap] -> SEMMILYEN platform-esemeny (a cellak 'kihagyva', indok: fotos_foglalas); a reschedule HOLD / confirmed allapot elsobbseget elvez
+  let fotos = null;
+  if (uzletag === 'pmu' && !fk.fixAllapot) {
+    fotos = await fotosJelEgyezik(db, env, { vendeg: v, t0, uuid, ertek: ar.ertek, iras: !szaraz });
+    if (fotos) fk.fixAllapot = { allapot: 'kihagyva', indok: FOTOS_INDOK, fotos: true };
+  }
+  const eredmeny = { jelleg: zar.jelleg, kupon: zar.kupon, uj_vendeg: ujVendeg, ertek_minoseg: ar.minoseg, ertek_forras: ar.forras, ...(fotos ? { fotos_foglalas: true } : {}) };
   if (szaraz) {
     const lista = esemenyek({ ...fk, ertek: ar.ertek }, konzultacioTabla(env));
     return { ...eredmeny, terv_esemenyek: lista.map((e) => ({ esemeny_id: e.esemeny_id, nev: e.nev, tipus: e.tipus, ertek: ar.minoseg === 'exact' || e.ertek_forras !== 'tenyleges_ar' ? e.ertek : null, nyitott: !!e.nyitott })), fix_allapot: fk.fixAllapot || null };
