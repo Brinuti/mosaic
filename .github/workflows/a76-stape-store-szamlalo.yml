@@ -15,6 +15,22 @@ on:
         description: "Kollekciok vesszovel"
         required: false
         default: "a76_schedule_log,a76_foglalas_forras"
+      tol:
+        description: "Ettol (ISO, UTC), pl. 2026-10-26T10:40:00Z; ha ures, a napok szamitanak"
+        required: false
+        default: ""
+      sorok:
+        description: "1 = sorszintu nezet (ido, esemenynev, jelzo, oldal-utvonal; azonosito nincs); 2 = ugyanez + a page_location price/first_booking JELLEMZESE ertek nelkul (van/ures/csak szamjegy)"
+        required: false
+        default: "0"
+      mezo:
+        description: "0/1 jelzo mezo orankenti eloszlasa (alap: fbc_suti_van)"
+        required: false
+        default: "fbc_suti_van"
+      kategoria:
+        description: "1 = a mezo KATEGORIKUS (pl. first_booking_raw) napi bontasa esemenynev szerint, zart halmazzal (nyers ertek nem kerul a naplora)"
+        required: false
+        default: "0"
 
 permissions:
   contents: read
@@ -39,4 +55,8 @@ jobs:
           STAPE_BASE: https://stape.a76.hu
           NAPOK: ${{ github.event.inputs.napok }}
           KOLLEKCIOK: ${{ github.event.inputs.kollekciok }}
+          TOL: ${{ github.event.inputs.tol }}
+          MEZO_JELZO: ${{ github.event.inputs.mezo }}
+          SOROK: ${{ github.event.inputs.sorok }}
+          KATEGORIA: ${{ github.event.inputs.kategoria }}
         run: node tools/a76-stape-store-szamlalo.mjs
