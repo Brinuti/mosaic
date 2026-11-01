@@ -83,3 +83,6 @@ Az oldal saját fájljai (új fájlok) törölhetők / a PR-ok visszavonhatók, 
 - A korábbi megjegyzés a lépésjelzőről (kozmetikai) **téves volt**: a „Kérdés ✓” lépés kattintható volt és fotóra vihetett; javítva (kihagyáskor 3 lépés).
 
 - 2. előtte–utána pár (A): az „utána” kép (`utana-a.jpg`) függőlegesen tükrözve (Feri kérésére): az „előtte” és az „utána” kép a vendég két különböző oldalát mutatta (jobb / bal szemöldök), a tükrözéssel az „utána” kép is ugyanúgy áll (homlok balra, szemüveg a szemöldöktől jobbra, orr felül), mint az „előtte”. A többi pár nem tükrözött.
+
+- **A „Küldj előre fotót” blokk kikerült** (Feri, 2026-11-01): az oldalon nincs fotóküldő űrlap, nincs `eltavolitas_foto_lead` dataLayer-esemény, a `pmu-proba-foto` levelet innen nem küldjük (a fenti Zapier-lánc innen nem indul). Az oldal egyetlen konverziója a naptárba foglalás (ingyenes konzultáció / eltávolító kezelés).
+  A fotókérés a foglaló-átalakítás része lesz (fotó + foglalás), lásd a Feri-nek küldött javaslatot; addig az eltávolítás-oldalról fotó nélkül lehet foglalni.

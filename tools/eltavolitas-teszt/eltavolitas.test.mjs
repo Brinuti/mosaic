@@ -27,9 +27,6 @@ describe('statikus', () => {
       assert.ok(!fs.readFileSync(path.join(GYOKER, 'tools/wix-sitemap', f), 'utf8').includes(NEV), f + ': a noindex oldal nem lehet a sitemapban');
     }
   });
-  test('az urlap method="post" (JS nelkul sem kerul szemelyes adat az URL-be / a GA4 page_location-be)', () => {
-    assert.match(HTML, /<form id="el-urlap" method="post" novalidate>/);
-  });
   test('nincs href="#..." link, nincs data-cta, nincs merokod', () => {
     assert.ok(!/href="#/.test(HTML), 'href="#..." talalat');
     assert.ok(!/data-cta=/.test(HTML), 'data-cta talalat');
@@ -157,122 +154,6 @@ describe('bongeszos', () => {
       await ctx.close();
     });
   }
-
-  test('urlap: ures bekuldes hibakat mutat es nem kuld; ervenyes bekuldes a jelolt mezokkel megy', async () => {
-    const { ctx, lap, hibak, posztok } = await nezet(true);
-    await lap.evaluate(() => document.getElementById('foglalas').scrollIntoView());
-    await lap.click('#el-kuld');
-    for (const m of ['foto', 'terulet', 'nev', 'telefon', 'email', 'hozzajarul']) {
-      assert.ok((await lap.textContent('#el-h-' + m)).trim().length > 5, m + ': nincs hibauzenet');
-    }
-    assert.equal(posztok.length, 0);
-    // fotok: 2 db a repo kepeibol
-    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/utana-a.jpg'), path.join(GYOKER, 'assets/img/eltavolitas/utana-b.jpg')]);
-    await lap.waitForSelector('.el-mini');
-    assert.equal(await lap.locator('.el-mini').count(), 2);
-    await lap.selectOption('#el-terulet', 'szemöldök');
-    await lap.fill('#el-nev', 'Teszt Elek');
-    await lap.fill('#el-telefon', '06 30 111 2222');
-    await lap.fill('#el-email', 'teszt@example.com');
-    // hozzajarulas nelkul nem megy
-    await lap.click('#el-kuld');
-    assert.equal(posztok.length, 0);
-    assert.ok((await lap.textContent('#el-h-hozzajarul')).length > 5);
-    await lap.check('#el-hozzajarul');
-    // dataLayer: hozzajarulas nelkul nincs esemeny; majd 'ana' hozzajarulassal egy esemeny, PII nelkul
-    await lap.evaluate(() => { window.dataLayer = []; window.mhSuti = { engedely: (k) => k === 'ana' }; });
-    await lap.click('#el-kuld');
-    await lap.waitForSelector('#el-kesz:not([hidden])');
-    assert.equal(posztok.length, 1);
-    const adat = posztok[0].postData() || '';
-    const buf = posztok[0].postDataBuffer() ? posztok[0].postDataBuffer().toString('latin1') : adat;
-    for (const mezo of ['name="form-name"', 'pmu-proba-foto', 'Eltávolítás'.normalize('NFC'), 'name="oldal"', NEV, 'name="foto1"', 'name="foto2"', 'name="bot-field"']) {
-      assert.ok(buf.includes(mezo) || Buffer.from(buf, 'latin1').toString('utf8').includes(mezo), 'hianyzik a bekuldesbol: ' + mezo);
-    }
-    const utf = Buffer.from(buf, 'latin1').toString('utf8');
-    assert.match(utf, /name="kezeles"\r\n\r\nSminktetoválás eltávolítás – előre küldött fotó – szemöldök/);
-    assert.match(utf, /name="ag"\r\n\r\nEltávolítás/);
-    assert.ok(!utf.includes('name="foto3"'));
-    const esemenyek = (await lap.evaluate(() => window.dataLayer)).filter((e) => e.event === 'eltavolitas_foto_lead');
-    assert.equal(esemenyek.length, 1);
-    assert.deepEqual(Object.keys(esemenyek[0]).sort(), ['business', 'event', 'event_id', 'foto_db', 'lead_type', 'source_page', 'terulet']);
-    assert.equal(esemenyek[0].foto_db, 2);
-    assert.equal(esemenyek[0].terulet, 'szemoldok');
-    assert.ok(!JSON.stringify(esemenyek).match(/Teszt|example|111/), 'PII az esemenyben');
-    assert.deepEqual(hibak, []);
-    await ctx.close();
-  });
-
-  test('urlap: hozzajarulas (ana) nelkul nincs dataLayer-esemeny, a kuldes ettol megy', async () => {
-    const { ctx, lap, posztok } = await nezet(true);
-    await lap.evaluate(() => { window.dataLayer = []; window.mhSuti = { engedely: () => false }; });
-    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/utana-a.jpg')]);
-    await lap.waitForSelector('.el-mini');
-    await lap.selectOption('#el-terulet', 'ajak, szájkontúr');
-    await lap.fill('#el-nev', 'Teszt Elek'); await lap.fill('#el-telefon', '+36 30 111 2222'); await lap.fill('#el-email', 'teszt@example.com');
-    await lap.check('#el-hozzajarul');
-    await lap.click('#el-kuld');
-    await lap.waitForSelector('#el-kesz:not([hidden])');
-    assert.equal(posztok.length, 1);
-    assert.equal((await lap.evaluate(() => window.dataLayer)).filter((e) => e.event === 'eltavolitas_foto_lead').length, 0);
-    await ctx.close();
-  });
-
-  test('urlap: a szerverhiba (HTTP 500) hibauzenetet ad, az urlap marad, a masodik probalkozas sikerul', async () => {
-    const { ctx, lap, posztok } = await nezet(true);
-    let valasz = 500;
-    await lap.unroute('**/*');
-    await lap.route('**/*', (r) => { const k = r.request(); if (new URL(k.url()).origin !== bazis) return r.abort(); if (k.method() === 'POST') { posztok.push(k); return r.fulfill({ status: valasz, body: valasz === 200 ? 'ok' : 'hiba' }); } return r.continue(); });
-    await lap.setInputFiles('#el-foto-input', [path.join(GYOKER, 'assets/img/eltavolitas/utana-a.jpg')]);
-    await lap.waitForSelector('.el-mini');
-    await lap.selectOption('#el-terulet', 'szemöldök');
-    await lap.fill('#el-nev', 'Teszt Elek'); await lap.fill('#el-telefon', '06 30 111 2222'); await lap.fill('#el-email', 'teszt@example.com');
-    await lap.check('#el-hozzajarul');
-    await lap.click('#el-kuld');
-    await lap.waitForFunction(() => document.getElementById('el-h-kuld').textContent.length > 10);
-    assert.equal(await lap.isHidden('#el-kesz'), true);
-    assert.equal(await lap.isVisible('#el-urlap'), true);
-    assert.equal(await lap.getAttribute('#el-kuld', 'aria-disabled'), null);
-    assert.equal(await lap.locator('.el-mini').count(), 1, 'a fotok megmaradnak az ujraprobalkozashoz');
-    valasz = 200;
-    await lap.click('#el-kuld');
-    await lap.waitForSelector('#el-kesz:not([hidden])');
-    assert.equal(posztok.length, 2);
-    await ctx.close();
-  });
-
-  test('urlap: legfeljebb 5 foto (a 6. nem kerul be, a figyelmeztetes marad), a torles mukodik, es kozben a hibak aria-invalid-ot kapnak', async () => {
-    const { ctx, lap } = await nezet(true);
-    const kepek = ['utana-a.jpg', 'utana-b.jpg', 'elotte-c.jpg', 'utana-c.jpg', 'video-poszter.jpg', 'elotte-a.jpg'].map((f) => path.join(GYOKER, 'assets/img/eltavolitas', f));
-    await lap.setInputFiles('#el-foto-input', kepek);
-    await lap.waitForFunction(() => document.querySelectorAll('.el-mini').length === 5);
-    assert.match(await lap.textContent('#el-h-foto'), /Legfeljebb 5/);
-    await lap.click('.el-mini button');
-    assert.equal(await lap.locator('.el-mini').count(), 4);
-    await lap.click('#el-kuld');
-    assert.equal(await lap.getAttribute('#el-nev', 'aria-invalid'), 'true');
-    assert.equal(await lap.getAttribute('#el-terulet', 'aria-invalid'), 'true');
-    assert.equal(await lap.evaluate(() => document.activeElement.id), 'el-terulet', 'az elso hibas mezo (foto megvan) a terulet');
-    await lap.fill('#el-nev', 'Teszt Elek');
-    assert.equal(await lap.getAttribute('#el-nev', 'aria-invalid'), null);
-    await ctx.close();
-  });
-
-  test('JS nelkul az urlap POST-ot kuld a sajat cimre, az adat nem kerul az URL-be', async () => {
-    const ctx = await bongeszo.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
-    const lap = await ctx.newPage();
-    const kerelmek = [];
-    await lap.route('**/*', (r) => { const k = r.request(); if (new URL(k.url()).origin !== bazis) return r.abort(); if (k.method() === 'POST') { kerelmek.push({ m: k.method(), u: k.url() }); return r.fulfill({ status: 200, contentType: 'text/html', body: '<p>ok</p>' }); } return r.continue(); });
-    await lap.goto(bazis + '/' + NEV, { waitUntil: 'load' });
-    await lap.fill('#el-nev', 'Teszt Elek'); await lap.fill('#el-telefon', '06 30 111 2222'); await lap.fill('#el-email', 'teszt@example.com');
-    // Enter a mezoben = az urlap bekuldese JS nelkul (a gombkattintas-varakozas ritkan 30 mp-et allt, ez nem fugg tole)
-    await Promise.all([lap.waitForRequest((k) => k.method() === 'POST', { timeout: 15000 }), lap.press('#el-email', 'Enter')]);
-    assert.equal(kerelmek.length, 1);
-    assert.equal(kerelmek[0].m, 'POST');
-    assert.ok(!new URL(kerelmek[0].u).search, 'az URL-ben nem lehet lekerdezes-resz: ' + kerelmek[0].u);
-    assert.ok(!/Teszt|example|111/.test(lap.url()), 'szemelyes adat az URL-ben');
-    await ctx.close();
-  });
 
   test('foglalas: mindket kartya (konzultacio, eltavolito kezeles) a beagyazott naptarat nyitja, kerdes nelkul; a hero gombja a konzultaciot valasztja', async () => {
     const { ctx, lap } = await nezet(false);
