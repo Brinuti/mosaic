@@ -8,7 +8,20 @@
 <script>
   // a /pmu-ok (Salonic-foglalas utan) es a /pmu-vh (telefonos konzultacio utan) koszonooldal is ez az oldal:
   // ott - mint eddig - lefut a meres (suti.js); a /foglalo-pmu foglalon (es a landingbe agyazva) nem
-  if (/^\/pmu-(ok|vh)\/?$/.test(location.pathname)) { document.title = 'Foglalásod megérkezett!'; document.write('<script src="/assets/js/suti.js"><\/script>'); }
+  // FOTOS FOGLALAS (Feri, 2026-11-01): ha a fotos vendeg a Salonic utan (kitort a keretbol / uj lapon nyitotta) a FO ABLAKBAN mégis a /pmu-ok-ra kerul, a meres (suti.js) betoltese ELOTT
+  // atiranyitjuk a /pmu-foto-ok-ra (nem konverzio). Egyezes: a foglalo altal elmentett fotos jelzes (sessionStorage mh_pmu_foglalas.fotos) ES a bookingUrl startDate-je azonos az idopontjaval.
+  (function () {
+    var fotosAtir = false;
+    try {
+      if (/^\/pmu-ok\/?$/.test(location.pathname) && window.top === window.self) {
+        var f = JSON.parse(sessionStorage.getItem('mh_pmu_foglalas') || 'null');
+        var bu = new URL(new URLSearchParams(location.search).get('bookingUrl') || '');
+        fotosAtir = !!(f && f.fotos && String(f.ts) === bu.searchParams.get('startDate'));
+      }
+    } catch (e) { /* nincs jelzes: a szokasos ut */ }
+    if (fotosAtir) location.replace('/pmu-foto-ok');
+    else if (/^\/pmu-(ok|vh)\/?$/.test(location.pathname)) { document.title = 'Foglalásod megérkezett!'; document.write('<script src="/assets/js/suti.js"><\/script>'); }
+  })();
 </script>
 <link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
 <link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
@@ -410,7 +423,7 @@
       <div class="betolt" id="salonic-betolt">Foglalási űrlap betöltése…</div>
       <iframe id="salonic" title="Foglalás véglegesítése"></iframe>
     </div>
-    <p class="halk kicsi">Nem jelenik meg az űrlap? <a id="salonic-link" href="#" target="_top">Nyisd meg itt</a>.</p>
+    <p class="halk kicsi">Nem jelenik meg az űrlap? <span id="salonic-nyisd"><a id="salonic-link" href="#" target="_top">Nyisd meg itt</a>.</span><span id="salonic-hivj" hidden>Hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</span></p>
   </section>
 
   <!-- 5. koszonooldal -->
@@ -456,7 +469,7 @@
 
   <section data-nezet="foto-adatok" hidden>
     <h2>Elérhetőségeid</h2>
-    <p class="halk kicsi">A fotó alapján felveszem veled a kapcsolatot.</p>
+    <p class="halk kicsi" id="foto-adatok-szoveg">A fotó alapján felveszem veled a kapcsolatot.</p>
     <div id="foto-kuld-hiba"></div>
     <label class="mezo" data-mezo="nev"><span>Név <i>*</i></span><input type="text" autocomplete="name" placeholder="pl. Kovács Anna"><em class="hibauz">Kérlek, add meg a neved.</em></label>
     <label class="mezo" data-mezo="telefon"><span>Telefonszám <i>*</i></span><input type="tel" autocomplete="tel" placeholder="+36 30 123 4567"><em class="hibauz">Kérlek, érvényes telefonszámot adj meg.</em></label>

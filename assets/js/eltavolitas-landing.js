@@ -28,7 +28,7 @@
   // --- 1b) foglalas: ketfele jelentkezes (ingyenes konzultacio / eltavolito kezeles), MINDKETTO a naptarba nyilik ---
   // A naptar a MEGLEVO /foglalo-pmu foglalo (beagyazva): a keret magassagat a foglalo jelzi (postMessage), mint a /sminktetovalas-budapest oldalon.
   // Konzultacio: a Salonic "Ingyenes konzultacio" szolgaltatasa (?kezeles=konzultacio); eltavolito kezeles: a Salonic "Tetovalas eltavolitas" (#foglalas[data-kezeles-kulcs] = a szolgaltatas azonositoja).
-  // A "kerdes=kihagy" jelzesre a foglalo nem kerdezi meg, volt-e mar sminktetovalasod (az eltavolitasra jelentkezoknek van): idopont utan egyenesen az adatok.
+  // A foglalo (2026-11-01 ota, Feri) mindenkitol megkerdezi, volt-e mar sminktetovalasa; akinek van, elobb fotot tolt fel, es csak 2026-11-09-tol kap idopontot (lasd foglalo-pmu.js). A "kerdes=kihagy" jelzes megszunt.
   const foglSzekcio = $('foglalas');
   const fKeret = $('el-foglalo');
   const kerBox = $('el-foglalo-doboz');
@@ -38,7 +38,7 @@
     for (const b of foglSzekcio.querySelectorAll('[data-valaszt]')) b.setAttribute('aria-pressed', b.dataset.valaszt === mit ? 'true' : 'false');
     const kez = mit === 'kezeles' ? (foglSzekcio.dataset.kezelesKulcs || '').trim() : 'konzultacio';
     if (!kez) return;
-    if (utolso !== kez) { fKeret.src = '/foglalo-pmu?beagyazva=1&kerdes=kihagy&kezeles=' + encodeURIComponent(kez); utolso = kez; }
+    if (utolso !== kez) { fKeret.src = '/foglalo-pmu?beagyazva=1&kezeles=' + encodeURIComponent(kez); utolso = kez; }
     kerBox.hidden = false;
   }
   addEventListener('message', (e) => {

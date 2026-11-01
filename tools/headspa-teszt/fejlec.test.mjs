@@ -146,6 +146,43 @@ describe('a Wixes (klon) oldalak beegetett fejlece / lablece', () => {
   });
 });
 
+// 2026-11-01 (Feri): a FOGLALAS gomb a menusor jobb szelen (Arlista, GYIK, Kapcsolat UTAN); a Sminktetovalas legordulo "Tetovalas eltavolitas" elemmel (csak magyar oldalon)
+describe('FOGLALAS jobbra + Sminktetovalas legordulo (2026-11-01)', () => {
+  const cimek = (h, mobil) => [...h.matchAll(mobil
+    ? /<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-[A-Za-z0-9]+"[^>]*>(?:(?!<\/li>)[\s\S])*?wixui-vertical-menu__item-label">([^<]+)</g
+    : /<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item"[^>]*>(?:(?!<\/li>)[\s\S])*?wixui-horizontal-menu__item-label">([^<]+)</g)].map((m) => m[1].trim());
+  const oldalak = [
+    ['sajat oldal darab', FEJLEC],
+    ['Wixes (klon) oldal: headspa-kupon', { asztali: olvas('klon', 'headspa-kupon.html'), mobil: olvas('klon', 'm', 'headspa-kupon.html') }],
+    ['Wixes (klon) oldal: sminktetovalas-budapest-rovid', { asztali: olvas('klon', 'sminktetovalas-budapest-rovid.html'), mobil: olvas('klon', 'm', 'sminktetovalas-budapest-rovid.html') }],
+  ];
+  for (const [nev, forras] of oldalak) {
+    for (const [mod, mobil] of [['asztali', false], ['mobil', true]]) {
+      test(`${nev} (${mod}): a menusor vege Arlista, GYIK, Kapcsolat, FOGLALAS; a Sminktetovalas legordulo ket elemmel; ismetelhetetlen-biztos`, () => {
+        const uj = fejlecAtalakit(forras[mod], mobil);
+        assert.equal(fejlecAtalakit(uj, mobil), uj, 'ismetelhetetlen-biztos');
+        const h = fejlecResz(uj);
+        const c = cimek(h, mobil).filter((s) => !/^(Betti|Noel|Evelin)$/.test(s));
+        assert.deepEqual(c.slice(-4), ['Árlista', 'GYIK', 'Kapcsolat', 'FOGLALÁS'], c.join(' | '));
+        assert.equal(db(h, 'href="/sminktetovalas-eltavolitas-budapest"'), 1, 'pontosan egy eltavolitas-link');
+        assert.equal(db(h, 'href="/sminktetovalas-budapest"'), 2, 'a Sminktetovalas szulo + az almenu elso eleme');
+        assert.ok(h.includes('Tetoválás eltávolítás'));
+      });
+    }
+  }
+  test('az angol oldalakon nincs magyar legordulo (Tetovalas eltavolitas / aria-label), a FOGLALAS ott is a sor vegen', () => {
+    for (const [mod, mobil] of [['asztali', false], ['mobil', true]]) {
+      const forras = fejlecAtalakit(FEJLEC[mod], mobil, true);
+      const h = fejlecResz(forras);
+      assert.ok(!/Tetoválás eltávolítás|sminktetovalas-eltavolitas-budapest/.test(h), mod + ': nincs magyar eltavolitas-pont az angol menuben');
+      assert.ok(!/aria-label="(Toggle )?Sminktetoválás"/.test(h), mod + ': nincs magyar aria-label');
+      const c = cimek(h, mobil);
+      assert.ok(c.length >= 8, mod + ': az angol menu pontjai kiolvashatok (' + c.length + ')');
+      assert.equal(c[c.length - 1], c.find((l) => /FOGLAL|BOOK|RESERV/i.test(l)), mod + ': a foglalas gomb az angol menu utolso eleme: ' + c.join(' | '));
+    }
+  });
+});
+
 describe('az angol valtozat (<!--mh-nyelv:en-->)', () => {
   for (const [nev, mobil] of [['asztali', false], ['mobil', true]]) {
     test(`${nev}: angol menucimkek, GYIK nelkul, HU jelveny, angol akciosav + lablec; az oldal torzse valtozatlan`, () => {
@@ -201,7 +238,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
           logo: b(document.querySelector('#comp-m3znboq3')).right, ikon: b(document.querySelector('#comp-m7q6eklh')), nyelv: b(document.querySelector('#comp-m7jcfhgp')), vizsz: document.documentElement.scrollWidth - innerWidth };
       });
       assert.equal(r.n, 11, r.cimek.join(','));
-      assert.deepEqual(r.cimek.slice(-4), ['Árlista', 'FOGLALÁS', 'GYIK', 'Kapcsolat'], 'az Árlista a FOGLALÁS előtt');
+      assert.deepEqual(r.cimek.slice(-4), ['Árlista', 'GYIK', 'Kapcsolat', 'FOGLALÁS'], 'a FOGLALÁS a menüsor jobb szélén, az Árlista, a GYIK és a Kapcsolat után');
       assert.deepEqual(r.cimek.slice(0, 3), ['Head Spa', 'Páros Head Spa', 'Szőrtelenítés']);
       assert.equal(r.sorok, 1);
       assert.ok(r.utolso <= r.ikon.left - 4, `a menu vege (${Math.round(r.utolso)}) az "i" elott van (${Math.round(r.ikon.left)})`);
