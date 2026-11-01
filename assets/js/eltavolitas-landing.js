@@ -99,7 +99,7 @@
       b.type = 'button';
       b.textContent = '×';
       b.setAttribute('aria-label', (i + 1) + '. fotó törlése');
-      b.addEventListener('click', () => { URL.revokeObjectURL(f.url); fotok.splice(i, 1); rajzol(); });
+      b.addEventListener('click', () => { URL.revokeObjectURL(f.url); fotok.splice(i, 1); hiba('foto', ''); rajzol(); });
       d.append(img, b);
       return d;
     }));
@@ -187,6 +187,7 @@
     let elso = null;
     // a fokusz a lathato sorrend szerinti elso hibas mezore kerul: foto, terulet, nev, telefon, email, hozzajarulas
     if (!fotok.length) { hiba('foto', 'Kérlek, tölts fel legalább egy fotót: fotó nélkül nem tudok segíteni.'); elso = $('el-foto-input'); }
+    else hiba('foto', '');
     for (const mezo of ['terulet', 'nev', 'telefon', 'email']) {
       const jo = SZABALY[mezo](mezoErtek(mezo));
       hiba(mezo, jo ? '' : UZENET[mezo]);

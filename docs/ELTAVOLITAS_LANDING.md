@@ -21,9 +21,9 @@ A fotókat a böngésző 1600 px-re kicsinyíti. Az űrlap `method="post"` (JS n
 `weboldal-pmu-visszahivas-to-sheet-oktober` (Gmail-trigger: `from:mosaicheadspa@gmail.com subject:Sminktetoválás (visszahívást OR fotó)`) →
 sor a „Melitta - PMU - Ajánlatkérések” táblázat „Október” munkalapján (Szolgáltatás: „PMU – weboldal, fotót küldött”; az Üzenet oszlopban a „Kezelés: Sminktetoválás eltávolítás – <terület> (fotó alapján)” és az „Oldal: sminktetovalas-eltavolitas-budapest”),
 a fotók a Drive „Mosaic PMU – weboldali vendégfotók” mappa vendégenkénti almappájába, majd `melitta-pmu-oktober-sms` → **automatikus SMS a vendég telefonszámára**:
-„Szia! Lattam a jelentkezesed, hamarosan hivlak. Mentsd el a szamom, hogy tudd, en kereslek: 06707753965 - Melitta”.
+„Szia! Lattam a jelentkezesed, hamarosan hivlak. Mentsd el a szamom, hogy tudd, en kereslek: <Melitta mobilszama> - Melitta”.
 Ez eltávolítás-leadnél is megy (a szöveg általános, nem sminktetoválás-specifikus); az űrlap a telefonmezőnél jelzi: „rövid, automatikus visszaigazoló SMS is érkezhet”.
-A Zap `Ág`-értéket nem dolgoz fel, minden általunk küldött mező (Név, Telefonszám, Kezelés / terület, E-mail, Fotó n, Beküldve innen) a meglévő mezőnevekkel megy.
+(A Gmail-lekérdezés, az SMS szövege, az „Üzenet” oszlop tartalma és az, hogy a Zap az `Ág`-ot nem dolgozza fel, a két Zap forráskódjának 2026-11-01-i olvasásából származik; a 2026-10-04-i napló csak a lánc felépítését írja le.) A Zap `Ág`-értéket nem dolgoz fel, minden általunk küldött mező (Név, Telefonszám, Kezelés / terület, E-mail, Fotó n, Beküldve innen) a meglévő mezőnevekkel megy.
 
 ## Mérés (a mérési oldal dolga; ez a PR nem kapcsol be konverziót)
 - Az oldal nem tölt mérőkódot, nincs `data-cta`. A `suti.js` PIXEL-listái nem változtak.
